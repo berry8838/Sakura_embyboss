@@ -9,14 +9,14 @@ import datetime
 # tz = config["tz"]
 # tz_api = config["tz_api"]
 
-def sever_info(tz, tz_api):
+def sever_info(tz, tz_api,tz_id):
     # 请求头
     headers = {
         'Authorization': tz_api  # 后台右上角下拉菜单获取 API Token
     }
 
     # 请求地址
-    url = f'https://{tz}/api/v1/server/details?id=2'
+    url = f'https://{tz}/api/v1/server/details?id={tz_id}'
 
     # 获取当前日期
     now = datetime.datetime.now()

@@ -98,6 +98,7 @@ buy_year = config['buy']["year"]
 buy_half = config['buy']["half"]
 tz = config["tz"]
 tz_api = config["tz_api"]
+tz_id = config["tz_id"]
 
 prefixes = ['/', '!', '.', '#']
 
@@ -461,7 +462,7 @@ async def server(_, call):
     # 服务器此前运行，当前带宽，（探针
     emby, pwd, lv = select_one("select embyid,pwd,lv from emby where tg=%s",
                                call.from_user.id)
-    sever = sever_info(tz, tz_api)
+    sever = sever_info(tz, tz_api,tz_id)
     if lv == 'd': line = '**  没有账户，**无权查看'
     await bot.edit_message_caption(
         call.from_user.id,

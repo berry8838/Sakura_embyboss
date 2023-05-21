@@ -810,7 +810,8 @@ async def set_buy(_, msg):
     a = await judge_user(msg.from_user.id)
     if a == 1: await msg.reply("🚨 **这不是你能使用的！**")
     if a == 3:
-        await msg.reply("🔗 接下来请在 **120s** 内按月 季 半年 年的顺序发送四条链接用空格隔开：\n\n例如 **a b c d**  取消/cancel ")
+        await msg.reply(
+            "🔗 接下来请在 **120s** 内按月 季 半年 年的顺序发送四条链接用空格隔开：\n\n例如 **a b c d**  取消/cancel ")
         try:
             content = await _.listen(msg.from_user.id, filters=filters.text, timeout=120)
             if content.text == '/cancel':
@@ -922,8 +923,11 @@ async def job():
 
 
 # 每天x点检测
+# 创建一个AsyncIOScheduler对象
 scheduler = AsyncIOScheduler()
-scheduler.add_job(job, 'interval', minutes=1, timezone="Asia/Shanghai")
+# 添加一个cron任务，每2小时执行一次job函数
+scheduler.add_job(job, 'cron', hour='*/2', timezone="Asia/Shanghai")
+# 启动调度器
 scheduler.start()
 
 bot.run()

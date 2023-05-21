@@ -1,0 +1,30 @@
+{
+    "bot_name": "",
+    "bot_token": "",
+    "owner_api": "",
+    "owner_hash": "",
+    "owner": "",
+    "group": [],
+    "chanel": "",
+    "bot_photo": "https://telegra.ph/file/cf67ea496ed0670d706a0.jpg",
+    "buy": {
+        "mon": "",
+        "sea": "",
+        "half": "",
+        "year": ""
+    },
+    "open": "y",
+    "admins": [
+        ,
+    ],
+    "invite": "n",
+    "emby_api": "",
+    "emby_url": "",
+    "line": "",
+    "db_host": "",
+    "db_user": "",
+    "db_pwd": "",
+    "db": "",
+    "tz": "",
+    "tz_api": ""
+}

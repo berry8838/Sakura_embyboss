@@ -1,0 +1,20 @@
+[Unit]
+Description=此处填写您的服务名
+After=mysqld.service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=此处填写你在服务器上存放Bot的目录
+ExecStart=python3 /你/放/Bot/的/目录/main.py
+Restart=on-abnormal
+PrivateTmp=True
+RestartSec=5s
+KillMode=mixed
+
+StandardOutput=null
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

@@ -5,7 +5,6 @@
 # import uvloop
 # uvloop.install()
 import math
-import time
 import uuid
 import json
 from datetime import datetime, timedelta
@@ -21,7 +20,7 @@ from pykeyboard import InlineKeyboard, InlineButton
 
 # 配置
 from bot_manage.members import _create, start_user, _del, _reset, count_user, members_info, ban_user, \
-    count_buy, last_action
+    count_buy
 from bot_manage.nezha_res import sever_info
 from _mysql.sqlhelper import select_one, create_conn, update_one, close_conn, select_all
 
@@ -258,70 +257,71 @@ async def members(_, call):
 # 创建账户
 @bot.on_callback_query(filters.regex('create'))
 async def create(_, call):
-    us = select_one("select us from emby where tg=%s", call.from_user.id)[0]
+    embyid, us = select_one("select embyid,us from emby where tg=%s", call.from_user.id)
     # print(us)
-    if config["open"] == 'y' or int(us) > 0:
-        embyid = select_one(f"select embyid from emby where tg=%s",
-                            call.from_user.id)[0]
-        if embyid is not None:
-            await bot.answer_callback_query(call.id, '💦 你已经有账户啦！请勿重复注册。', show_alert=True)
-        elif config["open"] == 'y' and int(us) < 30:
-            await bot.answer_callback_query(call.id, f'💦 大笨蛋~ 你的积分才 {us} 点，继续加油。 ', show_alert=True)
-        elif config["open"] == 'n' and int(us) < 30:
-            await bot.answer_callback_query(call.id, f'🤖 自助注册尚未开启！！！ 敬请期待。。。', show_alert=True)
+    if embyid is not None:
+        await bot.answer_callback_query(call.id, '💦 你已经有账户啦！请勿重复注册。', show_alert=True)
+        pass
+    if config["open"] == 'y':
+        await bot.answer_callback_query(call.id, f"🪙 开放注册，免除积分要求。", show_alert=True)
+        await create_user(_, call, us=30, stats=config["open"])
+    elif config["open"] == 'n' and int(us) < 30:
+        await bot.answer_callback_query(call.id, f'🤖 自助注册尚未开启 / 积分{us}未达标 ', show_alert=True)
+    elif config["open"] == 'n' and int(us) >= 30:
+        await bot.answer_callback_query(call.id, f'🪙 积分满足要求，请稍后。', show_alert=True)
+        await create_user(_, call, us=us, stats=config["open"])
+    # else:
+    #     await bot.answer_callback_query(call.id, f'🤖 自助注册尚未开启！！！ 敬请期待。。。', show_alert=True)
+
+
+# 创号函数
+async def create_user(_, call, us, stats):
+    await bot.edit_message_caption(
+        chat_id=call.from_user.id,
+        message_id=call.message.id,
+        caption=
+        '🤖**注意：您已进入注册状态:\n\n• 请在2min内输入 `用户名 4~6位安全码`\n• 举个例子🌰：`苏苏 1234`**\n\n• 用户名中不限制中/英文/emoji 不可有空格；\n• 安全码为敏感操作时附加验证，请填入个人记得的数字；退出请点 /cancel')
+    try:
+        name = await _.listen(call.from_user.id, filters.text, timeout=120)
+        if name.text == '/cancel':
+            await name.delete()
+            await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                           caption='__您已经取消输入__ **会话已结束！**',
+                                           reply_markup=ikb([[('💨 - 返回', 'members')]]))
+            pass
         else:
+            c = name.text.split()
             await bot.edit_message_caption(
                 chat_id=call.from_user.id,
                 message_id=call.message.id,
                 caption=
-                '🤖**注意：您已进入注册状态:\n\n• 请在2min内输入 `用户名 4~6位安全码`\n• 举个例子🌰：`苏苏 1234`**\n\n• 用户名中不限制中/英文/emoji 不可有空格；\n• 安全码为敏感操作时附加验证，请填入个人记得的数字；退出请点 /cancel')
-            try:
-                name = await _.listen(call.from_user.id, filters.text, timeout=120)
-                if name.text == '/cancel':
-                    await name.delete()
-                    await bot.edit_message_caption(call.from_user.id, call.message.id,
-                                                   caption='__您已经取消输入__ **会话已结束！**',
-                                                   reply_markup=ikb([[('💨 - 返回', 'members')]]))
-                    pass
-                else:
-                    c = name.text.split()
-                    await bot.edit_message_caption(
-                        chat_id=call.from_user.id,
-                        message_id=call.message.id,
-                        caption=
-                        f'🆗 会话结束，收到您设置的用户名： \n  **{c[0]}**  安全码：**{c[1]}** \n\n__正在为您初始化账户，更新用户策略__......'
-                    )
-                    time.sleep(1)
-                    pwd = await _create(call.from_user.id, c[0], c[1], us)
-                    if pwd == 400:
-                        await bot.edit_message_caption(call.from_user.id,
-                                                       call.message.id,
-                                                       '**❎ 已有此账户名，请重新输入  注册**',
-                                                       reply_markup=ikb([[('🎯 重新注册',
-                                                                           'create')]]))
-                        await bot.delete_messages(call.from_user.id, name.id)
-                    elif pwd == 100:
-                        await bot.send_message(call.from_user.id,
-                                               '❔ __emby服务器未知错误！！！请联系闺蜜（管理）__ **会话已结束！**')
-                    else:
-                        await bot.edit_message_caption(
-                            call.from_user.id,
-                            call.message.id,
-                            f'**🎉 创建用户成功，更新用户策略完成！\n\n• 用户名 | `{c[0]}`\n• 密 码 | `{pwd}`\n• 安全码 | `{c[1]}`  (仅发送一次)\n• 当前线路 | \n  {line}**\n\n点击复制，妥善保存，查看密码请点【服务器】',
-                            reply_markup=ikb([[('🔙 - 返回', 'members')]]))
-                        await bot.delete_messages(call.from_user.id, name.id)
-            except asyncio.exceptions.TimeoutError:
+                f'🆗 会话结束，收到您设置的用户名： \n  **{c[0]}**  安全码：**{c[1]}** \n\n__正在为您初始化账户，更新用户策略__......'
+            )
+            await asyncio.sleep(1)
+            pwd = await _create(call.from_user.id, c[0], c[1], us, stats)
+            if pwd == 400:
                 await bot.edit_message_caption(call.from_user.id,
                                                call.message.id,
-                                               caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
-                                               reply_markup=ikb([[('🎗️ 返回', 'members')]
-                                                                 ]))
-    else:
-        await bot.answer_callback_query(call.id, f'🤖 自助注册尚未开启！！！ 敬请期待。。。', show_alert=True)
-        # await bot.edit_message_caption(chat_id=call.from_user.id,
-        #                                message_id=call.message.id,
-        #                                caption='🤖 **自助注册尚未开启！！！**\n\n敬请期待。。。',
-        #                                reply_markup=ikb([[('🔙 返回', 'members')]]))
+                                               '**❎ 已有此账户名，请重新输入  注册**',
+                                               reply_markup=ikb([[('🎯 重新注册',
+                                                                   'create')]]))
+                await bot.delete_messages(call.from_user.id, name.id)
+            elif pwd == 100:
+                await bot.send_message(call.from_user.id,
+                                       '❔ __emby服务器未知错误！！！请联系闺蜜（管理）__ **会话已结束！**')
+            else:
+                await bot.edit_message_caption(
+                    call.from_user.id,
+                    call.message.id,
+                    f'**🎉 创建用户成功，更新用户策略完成！\n\n• 用户名 | `{c[0]}`\n• 密 码 | `{pwd}`\n• 安全码 | `{c[1]}`  (仅发送一次)\n• 当前线路 | \n  {line}**\n\n点击复制，妥善保存，查看密码请点【服务器】',
+                    reply_markup=ikb([[('🔙 - 返回', 'members')]]))
+                await bot.delete_messages(call.from_user.id, name.id)
+    except asyncio.exceptions.TimeoutError:
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
+                                       reply_markup=ikb([[('🎗️ 返回', 'members')]
+                                                         ]))
 
 
 # 自鲨！！
@@ -462,7 +462,7 @@ async def server(_, call):
     # 服务器此前运行，当前带宽，（探针
     emby, pwd, lv = select_one("select embyid,pwd,lv from emby where tg=%s",
                                call.from_user.id)
-    sever = sever_info(tz, tz_api,tz_id)
+    sever = sever_info(tz, tz_api, tz_id)
     if lv == 'd': line = '**  没有账户，**无权查看'
     await bot.edit_message_caption(
         call.from_user.id,

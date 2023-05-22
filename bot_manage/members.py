@@ -33,7 +33,7 @@ async def start_user(uid, us):
 
 
 # 创建并且更新密码与策略
-async def _create(tg, name, pwd2, us):
+async def _create(tg, name, pwd2, us, stats):
     # if us == 0: us = 3
     now = datetime.now()
     ex = (now + timedelta(days=us))
@@ -66,8 +66,12 @@ async def _create(tg, name, pwd2, us):
                              headers=headers,
                              params=params,
                              data=policy.encode('utf-8'))
-            sql = f"update emby set embyid=%s,name=%s,pwd=%s,pwd2=%s,lv=%s,cr=%s,ex=%s,us=%s where tg={tg}"
-            update_one(sql, [id, name, pwd, pwd2, 'b', now, ex, 0])
+            if stats == 'y':
+                update_one(f"update emby set embyid=%s,name=%s,pwd=%s,pwd2=%s,lv=%s,cr=%s,ex=%s where tg={tg}",
+                           [id, name, pwd, pwd2, 'b', now, ex])
+            elif stats == 'n':
+                update_one(f"update emby set embyid=%s,name=%s,pwd=%s,pwd2=%s,lv=%s,cr=%s,ex=%s,us=%s where tg={tg}",
+                           [id, name, pwd, pwd2, 'b', now, ex, 0])
             return pwd
     elif _status == 400:
         return 400

@@ -6,7 +6,6 @@
 # uvloop.install()
 import math
 import uuid
-import json
 from datetime import datetime, timedelta
 import asyncio
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -14,96 +13,19 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 # pyrogram工具
 from pyromod import listen
 from pyrogram import Client, filters
-from pyrogram.errors import BadRequest
+from pyrogram.errors import BadRequest, UserNotParticipant, ChatAdminRequired
 from pyromod.helpers import ikb
 from pykeyboard import InlineKeyboard, InlineButton
 
 # 配置
-from bot_manage.members import _create, start_user, _del, _reset, count_user, members_info, ban_user, \
-    count_buy
-from bot_manage.nezha_res import sever_info
+from bot_manage import nezha_res, emby
+from config import *
 from _mysql.sqlhelper import select_one, create_conn, update_one, close_conn, select_all
+import mylogger
 
-import logging
-from logging.handlers import TimedRotatingFileHandler
-
-# 设置日志文件名和切换时间
-logname = 'log/log.txt'
-when = 'midnight'
-
-# 设置日志输出格式
-format = '%(asctime)s - %(levelname)s - %(lineno)d - %(message)s '
-
-# 设置日志输出时间格式
-datefmt = '%Y-%m-%d %H:%M:%S'
-
-# 设置日志输出级别
-level = logging.INFO
-
-# 配置logging基本设置
-logging.basicConfig(format=format, datefmt=datefmt, level=level)
-
-# 获取logger对象
-logger = logging.getLogger()
-
-# 创建TimedRotatingFileHandler对象
-handler = TimedRotatingFileHandler(filename=logname, when=when, backupCount=30)
-
-# 设置文件后缀
-handler.suffix = '%Y%m%d'
-
-# 添加handler到logger对象
-logger.addHandler(handler)
-
-# 写入日志信息
-logger.info('------bot started------')
-
-
-#
-# logging.basicConfig(
-#     level=logging.INFO,
-#     format='%(asctime)s - %(levelname)s - %(lineno)d - %(message)s ')
-# logger = logging.getLogger()
-# logger.info('------bot started------')
-
-
-def load_config():
-    global config
-    with open("config.json", "r", encoding="utf-8") as f:
-        config = json.load(f)
-
-
-def save_config():
-    with open("config.json", "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=4, ensure_ascii=False)
-
-
-'''
-这里读取bot相关的配置
-'''
-load_config()
-API_ID = config['owner_api']
-API_HASH = config['owner_hash']
-BOT_NAME = config['bot_name']
-BOT_TOKEN = config['bot_token']
-BOT_ID = BOT_TOKEN[:10]
-owner = int(config['owner'])
-group = config['group']
-chanel = config['chanel']
-photo = config['bot_photo']
-buy_mon = config['buy']['mon']
-buy_sea = config['buy']["sea"]
-buy_year = config['buy']["year"]
-buy_half = config['buy']["half"]
-tz = config["tz"]
-tz_api = config["tz_api"]
-tz_id = config["tz_id"]
+mylogger.logger.info('This is a message from main.py')
 
 prefixes = ['/', '!', '.', '#']
-
-''' 这里是em_by'''
-
-line = config['line']
 
 bot = Client(name=BOT_NAME,
              api_id=API_ID,
@@ -112,41 +34,63 @@ bot = Client(name=BOT_NAME,
 
 ''' 各种键盘 '''
 
-start_ikb = ikb([[('️👥 - 用户功能', 'members'), ('🌐 - 服务器', 'server')],
-                 [('💰 - 点击购买', 'buy_account')]])
-gm_menu = ikb([[('👥 - 用户功能', 'members'), ('🌐 - 服务器', 'server')],
-               [('💰 - 点击购买', 'buy_account')], [('👮🏻‍♂️ - admin', 'manage')]])
+
+# 判断身份先
+def judge_user(uid):
+    if uid != owner and uid not in config["admins"]:
+        return 1
+    else:
+        return 3
+
+
+# 旧键盘是固定的，现在给改成灵活的。以便于config的配置
+def judge_start_ikb(i):
+    keyword = InlineKeyboard(row_width=2)
+    keyword.row(InlineButton('️👥 - 用户功能', 'members'), InlineButton('🌐 - 服务器', 'server'))
+    if i == 1 and config["user_buy"] == "y":
+        keyword.row(InlineButton('💰 - 点击购买', 'buy_account'))
+
+    elif i == 3:
+        keyword.row(InlineButton('👮🏻‍♂️ - admin', 'manage'))
+    return keyword
+
+
+# 判断发起人是否在group，chanel
+async def judge_user_in_group(uid):
+    for i in group:
+        try:
+            u = await bot.get_chat_member(chat_id=i, user_id=uid)
+            u = str(u.status)
+            if u in ['ChatMemberStatus.OWNER', 'ChatMemberStatus.ADMINISTRATOR', 'ChatMemberStatus.MEMBER',
+                     'ChatMemberStatus.RESTRICTED']:
+                return True
+        except (UserNotParticipant, ChatAdminRequired) as e:
+            print(e + f"\n {uid} not in {i}")
+        else:
+            continue  # go next group
+    return False  # user is not in any group
+
+
 judge_group_ikb = ikb([[('🌟 - 频道入口 ', f't.me/{chanel}', 'url'),
-                        ('💫 - 群组入口', f't.me/+PwMryPmNSF9mMjk1', 'url')],
-                       [('❌ - 关闭消息', 'del')]])
+                        ('💫 - 群组入口', f't.me/{config["main_group"]}', 'url')],
+                       [('❌ - 关闭消息', 'closeit')]])
 # ----------------------------------------------
 members_ikb = ikb([[('👑 - 创建账号', 'create'), ('🗑️ - 删除账号', 'delme')],
                    [('🎟 - 邀请注册', 'invite_tg'), ('⭕ - 重置密码', 'reset')],
                    [('🕹️ - 主界面', 'back_start')]])
 
-buy = ikb([[('🌘 - 月付', buy_mon, 'url'), ('🌗 - 季付', buy_sea, 'url')],
-           [('🌖 - 半年付', buy_half, 'url'), ('🌕 - 年付', buy_year, 'url')],
-           [('🔙 - 返回', 'members')]])
 # --------------------------------------------
 invite_tg_ikb = ikb([[('（〃｀ 3′〃）', 'members')]])
 # -------------------------------------------
 gm_ikb_content = ikb([[('🎯 - 注册状态', 'open'), ('🎟️ - 生成注册', 'cr_link')],
                       [('🔎 - 查询注册', 'ch_link'), ('💊 - 邀请排行', 'iv_rank')], [('🌸 - 主界面', 'back_start')]])
 
-date_ikb = ikb([[('🌘 - 月付', "register_mon"), ('🌗 - 季付', "register_sea"),
-                 ('🌖 - 半年付', "register_half")],
-                [('🌕 - 年付', "register_year"), ('🎟️ - 已用', 'register_used')], [('🔙 - 返回', 'manage')]])
+date_ikb = ikb([[('🌘 - 月', "register_mon"), ('🌗 - 季', "register_sea"),
+                 ('🌖 - 半年', "register_half")],
+                [('🌕 - 年', "register_year"), ('🎟️ - 已用', 'register_used')], [('🔙 - 返回', 'manage')]])
 
 '''要用的bot函数就放这吧~'''
 '''判断用户身份'''
-
-
-async def judge_user(uid):
-    if uid != owner and uid not in config["admins"]:
-        return 1
-    else:
-        return 3
-
 
 '''
 开始命令功能部分辣 目前暂定为三大区域 用户，服务器,邀请（隐藏肯定是给管理用啦~）
@@ -158,21 +102,25 @@ async def judge_user(uid):
 @bot.on_message(filters.command('start', prefixes) & filters.private, group=1)
 async def _start(_, msg):
     welcome = f"""**✨ 只有你想见我的时候我们的相遇才有意义**\n\n💫 __你好鸭__  [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) """
-    if await judge_user(msg.from_user.id) == 3:
+    if judge_user(msg.from_user.id) == 3:
+        gm_menu = judge_start_ikb(3)
         await bot.send_photo(chat_id=msg.from_user.id,
                              photo=photo,
                              caption=welcome,
                              reply_markup=gm_menu)
-    elif await judge_user(msg.from_user.id) == 1:
-        await bot.send_photo(chat_id=msg.from_user.id,
-                             photo=photo,
-                             caption=welcome,
-                             reply_markup=start_ikb)
+    elif judge_user(msg.from_user.id) == 1:
+        if await judge_user_in_group(msg.from_user.id) is True:
+            start_ikb = judge_start_ikb(1)
+            await bot.send_photo(chat_id=msg.from_user.id,
+                                 photo=photo,
+                                 caption=welcome,
+                                 reply_markup=start_ikb)
+        else:
+            await msg.reply('💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？',
+                            reply_markup=judge_group_ikb)
+
     await msg.delete()
-    await start_user(msg.from_user.id, 0)
-    # elif await judge_user(message.from_user.id) == 0:
-    #     await message.reply('💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？',
-    #                         reply_markup=judge_group_ikb)
+    await members.start_user(msg.from_user.id, 0)
 
 
 @bot.on_message(filters.command('start', prefixes) & filters.private, group=2)
@@ -192,7 +140,7 @@ async def registe_code(_, msg):
                 # 此处需要写一个判断 now和ex的大小比较。进行日期加减。
                 if now > ex:
                     ex_new = now + timedelta(days=us)
-                    await ban_user(embyid, 1)
+                    await emby.ban_user(embyid, 1)
                     update_one("update emby set lv=%s, ex=%s,us=%s where tg=%s",
                                ['b', ex_new, 0, msg.from_user.id])
                     await msg.reply(f'🍒 __已解封账户并延长到期时间 {us}天 (以当前时间计)。__')
@@ -206,7 +154,7 @@ async def registe_code(_, msg):
                 pass
             else:
                 first = await bot.get_chat(result[1])
-                await start_user(msg.from_user.id, us)
+                await emby.start_user(msg.from_user.id, us)
                 update_one("update invite set us=%s,used=%s,usedtime=%s where id=%s",
                            [0, msg.from_user.id, now, register_code])
                 await bot.send_photo(
@@ -221,18 +169,20 @@ async def registe_code(_, msg):
             await bot.send_message(msg.from_user.id,
                                    f'此 `{register_code}` \n邀请码已被使用,是别人的形状了喔')
     except:
-        await start_user(msg.from_user.id, 0)
+        await emby.start_user(msg.from_user.id, 0)
 
 
 @bot.on_callback_query(filters.regex('back_start'))
 async def start(_, call):
     welcome = f"""**✨ 只有你想见我的时候我们的相遇才有意义**\n\n💫 __你好鸭__  [{call.from_user.first_name}](tg://user?id={call.from_user.id}) """
-    if call.from_user.id == owner or (call.from_user.id in config["admins"]):
+    if judge_user(call.from_user.id) == 3:
+        gm_menu = judge_start_ikb(3)
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
                                        caption=welcome,
                                        reply_markup=gm_menu)
     else:
+        start_ikb = judge_start_ikb(1)
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
                                        caption=welcome,
@@ -245,7 +195,7 @@ async def start(_, call):
 # 键盘中转
 @bot.on_callback_query(filters.regex('members'))
 async def members(_, call):
-    name, lv, ex, us = await members_info(call.from_user.id)
+    name, lv, ex, us = await emby.members_info(call.from_user.id)
     text = f"**▎** 欢迎进入用户界面！ {call.from_user.first_name}\n" \
            f"**· 🆔 用户ID** | `{call.from_user.id}`\n**· 📊 当前状态** | {lv} \n**· 🌸 可用积分** | {us}\n**· 💠 账号名称** | [{name}](tg://user?id={call.from_user.id})\n**· 🚨 到期时间** | {ex}"
     await bot.edit_message_caption(call.from_user.id,
@@ -261,7 +211,7 @@ async def create(_, call):
     # print(us)
     if embyid is not None:
         await bot.answer_callback_query(call.id, '💦 你已经有账户啦！请勿重复注册。', show_alert=True)
-        pass
+        return
     if config["open"] == 'y':
         await bot.answer_callback_query(call.id, f"🪙 开放注册，免除积分要求。", show_alert=True)
         await create_user(_, call, us=30, stats=config["open"])
@@ -295,10 +245,10 @@ async def create_user(_, call, us, stats):
                 chat_id=call.from_user.id,
                 message_id=call.message.id,
                 caption=
-                f'🆗 会话结束，收到您设置的用户名： \n  **{c[0]}**  安全码：**{c[1]}** \n\n__正在为您初始化账户，更新用户策略__......'
+                f'🆗 会话结束，收到设置\n\n用户名：**{c[0]}**  安全码：**{c[1]}** \n\n__正在为您初始化账户，更新用户策略__......'
             )
             await asyncio.sleep(1)
-            pwd = await _create(call.from_user.id, c[0], c[1], us, stats)
+            pwd = await emby.emby_create(call.from_user.id, c[0], c[1], us, stats)
             if pwd == 400:
                 await bot.edit_message_caption(call.from_user.id,
                                                call.message.id,
@@ -365,7 +315,7 @@ async def del_emby(_, call):
     await bot.edit_message_caption(call.from_user.id,
                                    call.message.id,
                                    caption='**🎯 get，正在删除ing。。。**')
-    res = await _del(call.from_user.id)
+    res = await emby.emby_del(call.from_user.id)
     if res is True:
         await bot.edit_message_caption(
             call.from_user.id,
@@ -419,7 +369,7 @@ async def reset(_, call):
         await bot.edit_message_caption(call1.from_user.id,
                                        call1.message.id,
                                        caption='**🎯 收到，正在重置ing。。。**')
-        data = await _reset(embyid)
+        data = await emby.emby_reset(embyid)
         if data is True:
             await bot.edit_message_caption(call1.from_user.id,
                                            call1.message.id,
@@ -462,13 +412,13 @@ async def server(_, call):
     # 服务器此前运行，当前带宽，（探针
     emby, pwd, lv = select_one("select embyid,pwd,lv from emby where tg=%s",
                                call.from_user.id)
-    sever = sever_info(tz, tz_api, tz_id)
+    sever = nezha_res.sever_info(config)
     if lv == 'd': line = '**  没有账户，**无权查看'
     await bot.edit_message_caption(
         call.from_user.id,
         call.message.id,
         caption=
-        f'**▎⚡ 线路：**\n  {line}\n\n**· 💌 用户密码 | ** `{pwd}`\n{sever}\n**· 🌏 - {call.message.date}**',
+        f'**▎⚡ 线路：**\n  {line}\n\n**· 💌 用户密码 | ** `{pwd}`\n' + sever + f'**· 🌏 - {call.message.date}**',
         reply_markup=ikb([[('🔙 - 用户', 'memembers'), ('❌ - 关闭', 'closeit')]]))
 
 
@@ -480,8 +430,8 @@ async def buy_some(_, call):
     await bot.edit_message_caption(
         call.from_user.id,
         call.message.id,
-        caption='**🛒请选择购买对应时长的套餐：**\n网页付款后会发邀请码连接，点击跳转到bot开始注册和续期程式。',
-        reply_markup=buy)
+        caption='**🛒请选择购买对应时长的套餐：**\n网页付款后会发邀请码连接，点击跳转到bot开始注册和续期程式。', )
+    # reply_markup=buy)
 
 
 """ admin """
@@ -491,7 +441,7 @@ async def buy_some(_, call):
 @bot.on_callback_query(filters.regex('manage'))
 async def gm_ikb(_, call):
     open_stats = config["open"]
-    users, emby_users = await count_user()
+    users, emby_users = await emby.count_user()
     gm_text = f'🫧 欢迎您，亲爱的管理员 {call.from_user.first_name}\n\n⭕注册状态：{open_stats}\n🤖bot使用人数：{users}\n👥已注册用户数：{emby_users}'
     await bot.edit_message_caption(call.from_user.id,
                                    call.message.id,
@@ -612,7 +562,7 @@ async def cr_paginate(i, j, num):
 # 开始检索
 @bot.on_callback_query(filters.regex('ch_link'))
 async def ch_link(_, call):
-    used, mon, sea, half, year = await count_buy()
+    used, mon, sea, half, year = await emby.count_buy()
     await bot.edit_message_caption(call.from_user.id,
                                    call.message.id,
                                    caption=f'**📰查看某一项：\n·已使用 - {used}\n·月付 - {mon}\n·季付 - {sea}\n·半年付 - {half}\n·年付 - {year}**',
@@ -669,7 +619,7 @@ async def paginate_keyboard(_, call):
 # 管理用户
 @bot.on_message(filters.command('kk', prefixes))
 async def user_info(_, msg):
-    a = await judge_user(msg.from_user.id)
+    a = judge_user(msg.from_user.id)
     if a == 1: pass
     if a == 3:
         # print(msg)
@@ -684,7 +634,7 @@ async def user_info(_, msg):
                 ban = ''
                 keyboard = InlineKeyboard()
                 try:
-                    name, lv, ex, us = await members_info(uid)
+                    name, lv, ex, us = await emby.members_info(uid)
                     if lv == "c /已禁用":
                         ban += "🌟 解除禁用"
                     else:
@@ -707,7 +657,7 @@ async def user_info(_, msg):
             ban = ''
             keyboard = InlineKeyboard()
             try:
-                name, lv, ex, us = await members_info(uid)
+                name, lv, ex, us = await emby.members_info(uid)
                 if lv == "c /已禁用":
                     ban += "🌟 解除禁用"
                 else:
@@ -727,7 +677,7 @@ async def user_info(_, msg):
 
 @bot.on_callback_query(filters.regex('user_ban'))
 async def gift(_, call):
-    a = await judge_user(call.from_user.id)
+    a = judge_user(call.from_user.id)
     if a == 1: await call.answer("请不要以下犯上 ok？", show_alert=True)
     if a == 3:
         b = int(call.data.split("-")[1])
@@ -737,18 +687,18 @@ async def gift(_, call):
             await call.message.edit(f'💢 ta 没有注册账户。')
         else:
             if lv != "c":
-                await ban_user(embyid, 0)
+                await emby.ban_user(embyid, 0)
                 update_one("update emby set lv=%s where tg=%s", ['c', b])
                 await call.message.edit(f'🎯 已完成禁用。此状态将在下次续期时刷新')
             elif lv == "c":
-                await ban_user(embyid, 1)
+                await emby.ban_user(embyid, 1)
                 update_one("update emby set lv=%s where tg=%s", ['b', b])
                 await call.message.edit(f'🎯 已解除禁用。')
 
 
 @bot.on_callback_query(filters.regex('gift'))
 async def gift(_, call):
-    a = await judge_user(call.from_user.id)
+    a = judge_user(call.from_user.id)
     if a == 1: await call.answer("请不要以下犯上 ok？", show_alert=True)
     if a == 3:
         b = int(call.data.split("-")[1])
@@ -761,7 +711,7 @@ async def gift(_, call):
         #                                    caption=f"[{first.first_name}](tg://user?id={b}) 还没有私聊过bot，终止操作")
         #     pass
         if embyid is None:
-            await start_user(b, 30)
+            await emby.start_user(b, 30)
             await bot.edit_message_caption(call.message.chat.id,
                                            call.message.id,
                                            caption=f'🌟 好的，管理员 {call.from_user.first_name} 已为 [{first.first_name}](tg://user?id={b}) 赠予资格。\n前往bot进行下一步操作：',
@@ -776,7 +726,7 @@ async def gift(_, call):
 
 @bot.on_message(filters.command('score', prefixes=prefixes))
 async def score_user(_, msg):
-    a = await judge_user(msg.from_user.id)
+    a = judge_user(msg.from_user.id)
     if a == 1: await msg.reply("🚨 **这不是你能使用的！**")
     if a == 3:
         if msg.reply_to_message is None:
@@ -807,31 +757,29 @@ async def score_user(_, msg):
                     f"· 🎯 [{first.first_name}](tg://user?id={uid}) : 积分发生变化 **{b}** \n· 🎟️ 实时积分: **{us}**")
 
 
-@bot.on_message(filters.command('setbuy', prefixes=prefixes) & filters.private)
+# 可调节设置
+@bot.on_message(filters.command('config', prefixes=prefixes) & filters.user(owner))
 async def set_buy(_, msg):
-    a = await judge_user(msg.from_user.id)
-    if a == 1: await msg.reply("🚨 **这不是你能使用的！**")
-    if a == 3:
-        await msg.reply(
-            "🔗 接下来请在 **120s** 内按月 季 半年 年的顺序发送四条链接用空格隔开：\n\n例如 **a b c d**  取消/cancel ")
-        try:
-            content = await _.listen(msg.from_user.id, filters=filters.text, timeout=120)
-            if content.text == '/cancel':
-                await bot.send_message(msg.from_user.id, text='⭕ 您已经取消操作了。')
-                # await bot.delete_messages(content.from_user.id, content.message.id)
-            else:
-                try:
-                    c = content.text.split()
-                    config["buy"]["mon"] = c[0]
-                    config["buy"]["sea"] = c[1]
-                    config["buy"]["half"] = c[2]
-                    config["buy"]["year"] = c[3]
-                    save_config()
-                    await msg.reply("✅ Done! 现在可以/start - 购买里查看一下设置了。")
-                except:
-                    await msg.reply("⚙️ **似乎链接格式有误，请重试**")
-        except:
-            await msg.reply("🔗 **没有收到链接，请重试**")
+    await msg.reply(
+        "🔗 接下来请在 **120s** 内按月 季 半年 年的顺序发送四条链接用空格隔开：\n\n例如 **a b c d**  取消/cancel ")
+    try:
+        content = await _.listen(msg.from_user.id, filters=filters.text, timeout=120)
+        if content.text == '/cancel':
+            await bot.send_message(msg.from_user.id, text='⭕ 您已经取消操作了。')
+            # await bot.delete_messages(content.from_user.id, content.message.id)
+        else:
+            try:
+                c = content.text.split()
+                config["buy"]["mon"] = c[0]
+                config["buy"]["sea"] = c[1]
+                config["buy"]["half"] = c[2]
+                config["buy"]["year"] = c[3]
+                save_config()
+                await msg.reply("✅ Done! 现在可以/start - 购买里查看一下设置了。")
+            except:
+                await msg.reply("⚙️ **似乎链接格式有误，请重试**")
+    except:
+        await msg.reply("🔗 **没有收到链接，请重试**")
 
 
 """ 杂类 """
@@ -878,8 +826,7 @@ async def close_it(_, call):
     if str(call.message.chat.type) == "ChatType.PRIVATE":
         await call.message.delete()
     else:
-        await judge_user(call.from_user.id)
-        a = await judge_user(call.from_user.id)
+        a = judge_user(call.from_user.id)
         if a == 1: await call.answer("请不要以下犯上 ok？", show_alert=True)
         if a == 3:
             await bot.delete_messages(call.message.chat.id, call.message.id)
@@ -900,7 +847,7 @@ async def job():
                 update_one("update emby set ex=%s,us=%s where tg=%s", [ex, a, i[0]])
                 await bot.send_message(i[0], f'✨**自动任务：**\n  在当前时间自动续期 30天 Done！')
             else:
-                if await ban_user(i[1], 0) is True:
+                if await emby.ban_user(i[1], 0) is True:
                     update_one("update emby set lv=%s where tg=%s", ['c', i[0]])
                 await bot.send_message(i[0],
                                        f'💫**自动任务：**\n  你的账号已到期\n{i[1]}\n已禁用，但仍为您保留您的数据，请及时续期。')
@@ -914,7 +861,7 @@ async def job():
             if i[1] is not None and int(i[3]) >= 30:
                 a = int(i[3]) - 30
                 ex = (now + timedelta(days=30))
-                await ban_user(i[1], 1)
+                await emby.ban_user(i[1], 1)
                 update_one("update emby set lv=%s,ex=%s,us=%s where tg=%s",
                            ['b', ex, a, i[0]])
                 await bot.send_message(i[0], f'✨**自动任务：**\n  解封账户，在当前时间自动续期 30天 \nDone！')

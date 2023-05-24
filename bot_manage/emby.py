@@ -1,23 +1,10 @@
 import json
-from datetime import datetime, timedelta
-from _mysql.sqlhelper import update_one, select_one, create_conn, close_conn
-import requests as r
 import re
-
+from datetime import datetime, timedelta
+import requests as r
+from _mysql.sqlhelper import update_one, select_one, create_conn, close_conn
 from bot_manage.mima import pwd_create
-
-'''为了好看点我想把所有请求embyapi的代码放在下面'''
-with open("config.json", "r", encoding="utf-8") as f:
-    config = json.load(f)
-
-api = config["emby_api"]
-url = config["emby_url"]
-
-headers = {
-    'accept': 'application/json',
-    'content-type': 'application/json',
-}
-params = (('api_key', api),)
+from config import api,url,params,headers
 
 
 # 第一次遇见bot
@@ -33,8 +20,9 @@ async def start_user(uid, us):
 
 
 # 创建并且更新密码与策略
-async def _create(tg, name, pwd2, us, stats):
+async def emby_create(tg, name, pwd2, us, stats):
     # if us == 0: us = 3
+    # print(tg, name, pwd2, us, stats)
     now = datetime.now()
     ex = (now + timedelta(days=us))
     # ex = (now + timedelta(seconds=us))
@@ -48,10 +36,10 @@ async def _create(tg, name, pwd2, us, stats):
     if _status == 200:
         try:
             id1 = re.findall(r'\"(.*?)\"', new_user.text)
-            id = id1[9]
+            embyid = id1[9]
             pwd = await pwd_create(8)
             pwd_data = {
-                "Id": f"{id}",
+                "Id": f"{embyid}",
                 "NewPw": f"{pwd}",
             }
             _pwd = r.post(url + f'/emby/Users/{id}/Password',
@@ -68,10 +56,10 @@ async def _create(tg, name, pwd2, us, stats):
                              data=policy.encode('utf-8'))
             if stats == 'y':
                 update_one(f"update emby set embyid=%s,name=%s,pwd=%s,pwd2=%s,lv=%s,cr=%s,ex=%s where tg={tg}",
-                           [id, name, pwd, pwd2, 'b', now, ex])
+                           [embyid, name, pwd, pwd2, 'b', now, ex])
             elif stats == 'n':
                 update_one(f"update emby set embyid=%s,name=%s,pwd=%s,pwd2=%s,lv=%s,cr=%s,ex=%s,us=%s where tg={tg}",
-                           [id, name, pwd, pwd2, 'b', now, ex, 0])
+                           [embyid, name, pwd, pwd2, 'b', now, ex, 0])
             return pwd
     elif _status == 400:
         return 400
@@ -84,7 +72,7 @@ async def _create(tg, name, pwd2, us, stats):
 
 
 # 删除
-async def _del(tgid):
+async def emby_del(tgid):
     embyid = select_one("select embyid from emby where tg = %s", tgid)[0]
     headers1 = {
         'accept': '*/*',
@@ -100,7 +88,7 @@ async def _del(tgid):
 
 
 # 重置密码
-async def _reset(id):
+async def emby_reset(id):
     pwd_data = {
         "Id": f"{id}",
         "ResetPassword": "true",
@@ -259,18 +247,3 @@ async def check_cr(_, call):
             else:
                 await bot.send_message(query.from_user.id, 'timeout')
 '''
-# 判断发起人是否在群和bot—owner，gm,后期改动态键盘。
-# async def judge_user(uid):
-#     global _config
-#     load_config()
-#     if uid != owner and uid not in _config["admins"]:
-#         try:
-#             u = await bot.get_chat_member(chat_id=group, user_id=uid)
-#             u = str(u.status)
-#             if u in ['ChatMemberStatus.OWNER', 'ChatMemberStatus.ADMINISTRATOR', 'ChatMemberStatus.MEMBER',
-#                      'ChatMemberStatus.RESTRICTED']:
-#                 return 1
-#         except BadRequest:
-#             return 0
-#     else:
-#         return 3

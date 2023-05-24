@@ -4,12 +4,14 @@ import requests as r
 import datetime
 
 
-# with open("config.json", "r", encoding="utf-8") as f:
-#     config = json.load(f)
-# tz = config["tz"]
-# tz_api = config["tz_api"]
-
-def sever_info(tz, tz_api,tz_id):
+def sever_info(config):
+    tz = config["tz"]
+    if tz == "": return "\n"
+    tz_api = config["tz_api"]
+    # 若是为填入数据则返回空
+    if tz_api == "": return "\n", print(" 探针api 未设置！！！")
+    tz_id = config["tz_id"]
+    if tz_id == "": return "\n", print(" 探针id 未设置！！！")
     # 请求头
     headers = {
         'Authorization': tz_api  # 后台右上角下拉菜单获取 API Token
@@ -65,15 +67,17 @@ def sever_info(tz, tz_api,tz_id):
                  f"**· 📶 内存 | {Mempercent}% [{MemUsed}/{MemTotal}]\n**" \
                  f"**· ⚡ 网速 | ↓{NetInSpeed}/s  ↑{NetOutSpeed}/s\n**" \
                  f"**· 🌊 流量 | ↓{NetInTransfer}  ↑{NetOutTransfer}\n**" \
-                 f"**· 🗓 在线 | {uptime} 天**\n"
+                 f"**· 🗓 在线 | {uptime} 天**\n\n"
     # f"CPU {CPU}% [{detail['host']['Arch']}]\n" \
     # f"负载 {Load1} {Load5} {Load15}\n" \
     # f"交换 {Swapercent}% [{SwapUsed}/{SwapTotal}]\n" \
     # f"硬盘 {Diskpercent}% [{DiskUsed}/{DiskTotal}]\n" \
 
-    # print(status_msg)
     return status_msg
 
 
-# if __name__ == "__main__":
-    # sever_info(tz,tz_api)
+if __name__ == "__main__":
+    with open("../config.json", "r", encoding="utf-8") as f:
+        config = json.load(f)
+    status_msg = sever_info(config)
+    print(status_msg)

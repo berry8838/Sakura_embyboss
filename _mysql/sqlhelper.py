@@ -1,5 +1,4 @@
 from _mysql.db_utils import POOL
-import pymysql
 
 
 def create_conn():

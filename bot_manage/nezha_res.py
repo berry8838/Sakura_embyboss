@@ -2,29 +2,27 @@ import json
 import humanize as humanize
 import requests as r
 import datetime
+from config import tz, tz_api, tz_id
 
 
-def sever_info(config):
-    tz = config["tz"]
+def sever_info():
     if tz == "": return "\n"
-    tz_api = config["tz_api"]
     # 若是为填入数据则返回空
     if tz_api == "": return "\n", print(" 探针api 未设置！！！")
-    tz_id = config["tz_id"]
     if tz_id == "": return "\n", print(" 探针id 未设置！！！")
     # 请求头
-    headers = {
+    tz_headers = {
         'Authorization': tz_api  # 后台右上角下拉菜单获取 API Token
     }
 
     # 请求地址
-    url = f'https://{tz}/api/v1/server/details?id={tz_id}'
+    tz_url = f'https://{tz}/api/v1/server/details?id={tz_id}'
 
     # 获取当前日期
     now = datetime.datetime.now()
     day = now.day
     # 发送GET请求，获取服务器流量信息
-    res = r.get(url, headers=headers).json()
+    res = r.get(tz_url, headers=tz_headers).json()
     # print(res)
 
     detail = res["result"][0]
@@ -75,9 +73,6 @@ def sever_info(config):
 
     return status_msg
 
-
-if __name__ == "__main__":
-    with open("../config.json", "r", encoding="utf-8") as f:
-        config = json.load(f)
-    status_msg = sever_info(config)
-    print(status_msg)
+# if __name__ == "__main__":
+# status_msg = sever_info()
+# print(status_msg)

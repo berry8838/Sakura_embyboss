@@ -42,3 +42,8 @@ host = config["db_host"]
 user = config["db_user"]
 pwd = config["db_pwd"]
 db = config["db"]
+
+# 探针
+tz = config["tz"]
+tz_api = config["tz_api"]
+tz_id = config["tz_id"]

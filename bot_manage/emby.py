@@ -4,7 +4,8 @@ from datetime import datetime, timedelta
 import requests as r
 from _mysql.sqlhelper import update_one, select_one, create_conn, close_conn
 from bot_manage.mima import pwd_create
-from config import api,url,params,headers
+from config import api, url, params, headers
+from mylogger import *
 
 
 # 第一次遇见bot

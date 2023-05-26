@@ -26,6 +26,7 @@ owner = int(config['owner'])
 group = config['group']
 chanel = config['chanel']
 photo = config['bot_photo']
+buy = config["buy"]
 
 # emby
 api = config["emby_api"]

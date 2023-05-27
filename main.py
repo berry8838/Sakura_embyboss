@@ -432,11 +432,12 @@ async def my_info(_, msg):
     text = ''
     try:
         name, lv, ex, us = await emby.members_info(msg.from_user.id)
-        dlt = (ex - datetime.now()).days
         text += f"**· 🍉 TG名称** | [{msg.from_user.first_name}](tg://user?id={msg.from_user.id})\n" \
                 f"**· 🍒 TG ID** | `{msg.from_user.id}`\n**· 🍓 当前状态** | {lv}\n" \
-                f"**· 🌸 积分数量** | {us}\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | **{ex}**\n" \
-                f"**· 📅 剩余天数** | **{dlt}** 天"
+                f"**· 🌸 积分数量** | {us}\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | **{ex}**"
+        if ex != "无账户信息":
+            dlt = (ex - datetime.now()).days
+            text += f"\n**· 📅 剩余天数** | **{dlt}** 天"
     except TypeError:
         text += f'**· 🆔 TG** ：[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})\n数据库中没有此ID。请先私聊我。'
     finally:
@@ -709,8 +710,10 @@ async def user_info(_, msg):
                         ban += '💢 禁用账户'
                     text += f"**· 🍉 TG名称** | [{first.first_name}](tg://user?id={uid})\n**· 🍒 TG-ID** | `{uid}`\n" \
                             f"**· 🍓 当前状态** | {lv} \n" \
-                            f"**· 🌸 积分数量** | {us}\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | **{ex}**\n" \
-                            f"**· 📅 剩余天数** | **{dlt}** 天"
+                            f"**· 🌸 积分数量** | {us}\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | **{ex}**"
+                    if ex != "无账户信息":
+                        dlt = (ex - datetime.now()).days
+                        text += f"\n**· 📅 剩余天数** | **{dlt}** 天"
                     keyboard.row(
                         InlineButton(' ✨ 赠送资格', f'gift-{uid}'),
                         InlineButton(ban, f'user_ban-{uid}')
@@ -729,15 +732,16 @@ async def user_info(_, msg):
             keyboard = InlineKeyboard()
             try:
                 name, lv, ex, us = await emby.members_info(uid)
-                dlt = (ex - datetime.now()).days
                 if lv == "c /已禁用":
                     ban += "🌟 解除禁用"
                 else:
                     ban += '💢 禁用账户'
                 text += f"**· 🍉 TG名称** | [{first.first_name}](tg://user?id={uid})\n**· 🍒 TG-ID** | `{uid}`\n" \
                         f"**· 🍓 当前状态** | {lv} \n" \
-                        f"**· 🌸 积分数量** | {us}\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | **{ex}**\n" \
-                        f"**· 📅 剩余天数** | **{dlt}** 天"
+                        f"**· 🌸 积分数量** | {us}\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | **{ex}**"
+                if ex != "无账户信息":
+                    dlt = (ex - datetime.now()).days
+                    text += f"\n**· 📅 剩余天数** | **{dlt}** 天"
                 keyboard.row(
                     InlineButton(' ✨ 赠送资格', f'gift-{uid}'),
                     InlineButton(ban, f'user_ban-{uid}')
@@ -820,7 +824,7 @@ async def score_user(_, msg):
                 # print(c)
             except (IndexError, KeyError, BadRequest):
                 await msg.reply(
-                    "🔔 **使用格式为：**[命令符]score [id] [加减分数]\n  或回复某人[命令符]score [+/-分数] 请再次确认tg_id输入正确")
+                    "🔔 **使用格式为：**[命令符]score [id] [加减分数]\n\n或回复某人[命令符]score [+/-分数] 请再次确认tg_id输入正确")
             else:
                 sqlhelper.update_one("update emby set us=us+%s where tg=%s", [c, b])
                 us = sqlhelper.select_one("select us from emby where tg =%s", b)[0]

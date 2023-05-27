@@ -703,7 +703,6 @@ async def user_info(_, msg):
                 keyboard = InlineKeyboard()
                 try:
                     name, lv, ex, us = await emby.members_info(uid)
-                    dlt = (ex - datetime.now()).days
                     if lv == "c /已禁用":
                         ban += "🌟 解除禁用"
                     else:

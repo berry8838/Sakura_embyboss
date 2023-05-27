@@ -58,13 +58,13 @@ def judge_start_ikb(i):
 async def judge_user_in_group(uid):
     for i in group:
         try:
-            u = await bot.get_chat_member(chat_id=i, user_id=uid)
+            u = await bot.get_chat_member(chat_id=int(i), user_id=uid)
             u = str(u.status)
             if u in ['ChatMemberStatus.OWNER', 'ChatMemberStatus.ADMINISTRATOR', 'ChatMemberStatus.MEMBER',
                      'ChatMemberStatus.RESTRICTED']:
                 return True
         except (UserNotParticipant, ChatAdminRequired) as e:
-            print(e + f"\n {uid} not in {i}")
+            print(e)
         else:
             continue  # go next group
     return False  # user is not in any group
@@ -838,7 +838,7 @@ async def score_user(_, msg):
                 b = int(msg.text.split()[1])
                 # print(c)
             except IndexError:
-                await msg.reply("🔔 **使用格式为：**[命令符]score [id] [加减分数]\n  或回复某人[命令符]score [+/-分数]")
+                await msg.reply("🔔 **使用格式为：**[命令符]score [id] [加减分数]\n\n或回复某人[命令符]score [+/-分数]")
             else:
                 sqlhelper.update_one("update emby set us=us+%s where tg=%s", [b, uid])
                 us = sqlhelper.select_one("select us from emby where tg =%s", uid)[0]
@@ -1014,35 +1014,31 @@ async def leave_bot(chat_id):
 
 @bot.on_message(~filters.chat(group) & filters.group)
 async def anti_use_bot(_, msg):
-    # print(msg, group)
+    # print(msg)
     keyword = ikb([[("🈺 ╰(￣ω￣ｏ)", "t.me/Aaaaa_su", "url")]])
-    # if msg.chat.id in group:
-    #     await msg.reply("✅ **授权群组**\n\no(*////▽////*)q，欢迎使用全世界最可爱的bot！",
-    #               reply_markup=ikb([[("||o(*°▽°*)o|Ю [有人吗?]", f"t.me/{BOT_NAME}", "url")]]))
-    # else:
     if msg.from_user is not None:
         try:
-            await bot.send_message(owner,
-                                   f"[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})"
-                                   f"[`{msg.from_user.id}`]试图将bot拉入 `{msg.chat.id}` 已被发现")
             await bot.send_message(msg.chat.id,
                                    f'❎ 这并非一个授权群组！！！[`{msg.chat.id}`]\n\n本bot将在 **30s** 自动退出如有疑问请联系开发👇',
                                    reply_markup=keyword)
             logging.info(f"【[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})"
                          f"[`{msg.from_user.id}`]试图将bot拉入 `{msg.chat.id}` 已被发现】")
             asyncio.create_task(leave_bot(msg.chat.id))
+            await bot.send_message(owner,
+                                   f"[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})"
+                                   f"[`{msg.from_user.id}`]试图将bot拉入 `{msg.chat.id}` 已被发现")
         except Exception as e:
             # 记录异常信息
             logging.error(e)
 
     elif msg.from_user is None:
         try:
-            await bot.send_message(chat_id=owner, text=f'有坏蛋 试图将bot拉入 `{msg.chat.id}` 已被发现')
             await bot.send_message(msg.chat.id,
                                    f'❎ 这并非一个授权群组！！！[`{msg.chat.id}`]\n\n本bot将在 **30s** 自动退出如有疑问请联系开发👇',
                                    reply_markup=keyword)
             logging.info(f"【有坏蛋试图将bot拉入 `{msg.chat.id}` 已被发现】")
             asyncio.create_task(leave_bot(msg.chat.id))
+            await bot.send_message(chat_id=owner, text=f'有坏蛋 试图将bot拉入 `{msg.chat.id}` 已被发现')
         except Exception as e:
             # 记录异常信息
             logging.error(e)

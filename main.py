@@ -1,12 +1,11 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# import uvloop
-# uvloop.install()
+import uvloop
+uvloop.install()
 import math
 import uuid
 from datetime import datetime, timedelta
 import asyncio
-
 import pymysql
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -71,7 +70,7 @@ async def judge_user_in_group(uid):
 
 
 judge_group_ikb = ikb([[('🌟 - 频道入口 ', f't.me/{chanel}', 'url'),
-                        ('💫 - 群组入口', f't.me/{config["main_group"]}', 'url')],
+                        ('💫 - 群组入口', f't.me/{config["main_group"]}')],
                        [('❌ - 关闭消息', 'closeit')]])
 # ----------------------------------------------
 members_ikb = ikb([[('👑 - 创建账号', 'create'), ('🗑️ - 删除账号', 'delme')],
@@ -241,7 +240,7 @@ async def create_user(_, call, us, stats):
                 '• 安全码为敏感操作时附加验证，请填入个人记得的数字；退出请点 /cancel')
     try:
         name = await _.listen(call.from_user.id, filters.text, timeout=120)
-    except asyncio.exceptions.TimeoutError:
+    except asyncio.TimeoutError:
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
                                        caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
@@ -324,7 +323,7 @@ async def del_me(_, call):
                                                    caption='**💢 验证不通过，安全码错误。**',
                                                    reply_markup=ikb(
                                                        [[('♻️ - 重试', 'delme')], [('🔙 - 返回', 'members')]]))
-        except asyncio.exceptions.TimeoutError:
+        except asyncio.TimeoutError:
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
                                            caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
@@ -384,7 +383,7 @@ async def reset(_, call):
                                                    caption='**💢 验证不通过，安全码错误。',
                                                    reply_markup=ikb(
                                                        [[('♻️ - 重试', 'reset')], [('🔙 - 返回', 'members')]]))
-        except asyncio.exceptions.TimeoutError:
+        except asyncio.TimeoutError:
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
                                            caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
@@ -515,7 +514,7 @@ async def cr_link(_, call):
         content = await _.listen(call.from_user.id,
                                  filters=filters.text,
                                  timeout=120)
-    except asyncio.exceptions.TimeoutError:
+    except asyncio.TimeoutError:
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
                                        caption='⭕ 超时 or 格式输入错误，已取消操作。',
@@ -856,26 +855,6 @@ async def set_buy(_, msg):
             logging.info(f"【admin】：{msg.from_user.id} 新更新 管理 {c}")
 
 
-# try:
-#     content = await _.listen(msg.from_user.id, filters=filters.text, timeout=120)
-#     if content.text == '/cancel':
-#         await bot.send_message(msg.from_user.id, text='⭕ 您已经取消操作了。')
-#         # await bot.delete_messages(content.from_user.id, content.message.id)
-#     else:
-#         try:
-#             c = content.text.split()
-#             config["buy"]["mon"] = c[0]
-#             config["buy"]["sea"] = c[1]
-#             config["buy"]["half"] = c[2]
-#             config["buy"]["year"] = c[3]
-#             save_config()
-#             await msg.reply("✅ Done! 现在可以/start - 购买里查看一下设置了。")
-#         except:
-#             await msg.reply("⚙️ **似乎链接格式有误，请重试**")
-# except:
-#     await msg.reply("🔗 **没有收到链接，请重试**")
-
-
 @bot.on_callback_query(filters.regex("log_out"))
 async def log_out(_, call):
     try:
@@ -894,7 +873,7 @@ async def set_tz(_, call):
         "【设置探针】\n\n请依次输入探针地址，api_token，设置的检测id 如：\ntz\napi_token\ntz_id  取消点击 /cancel")
     try:
         txt = await _.listen(call.from_user.id, filters.text, timeout=120)
-    except asyncio.exceptions.TimeoutError:
+    except asyncio.TimeoutError:
         await bot.send_message(call.from_user.id, text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
     else:
         if txt.text == '/cancel':
@@ -937,7 +916,7 @@ async def add_groups(_, call):
             '如更换连接请输入格式形如： \n\n`[按钮描述]-[link1],\n[按钮描述]-[link2],\n[按钮描述]-[link3]` 退出状态请按 /cancel')
         try:
             txt = await _.listen(call.from_user.id, filters.text, timeout=120)
-        except asyncio.exceptions.TimeoutError:
+        except asyncio.TimeoutError:
             await bot.send_message(call.from_user.id, text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
         else:
             if txt.text == '/cancel':
@@ -1040,42 +1019,49 @@ async def close_it(_, call):
 async def job():
     now = datetime.now()
     # 询问 到期时间的用户，判断有无积分，有则续期，无就禁用
-    result = sqlhelper.select_all(
-        "select tg,embyid,ex,us from emby where (ex < %s and lv=%s)", [now, 'b'])
-    # print(result)
-    if result is not None:
-        for i in result:
-            if i[3] != 0 and int(i[3] >= 30):
-                a = int(i[3]) - 30
-                ex = (now + timedelta(days=30))
-                sqlhelper.update_one("update emby set ex=%s,us=%s where tg=%s", [ex, a, i[0]])
-                await bot.send_message(i[0], f'✨**自动任务：**\n  在当前时间自动续期 30天 Done！')
-                logging.info(f"✨**自动任务：**{i[0]} 在当前时间自动续期 30天 Done！- {ex}- {i[1]}")
-            else:
-                if await emby.ban_user(i[1], 0) is True:
-                    sqlhelper.update_one("update emby set lv=%s where tg=%s", ['c', i[0]])
-                await bot.send_message(i[0],
-                                       f'💫**自动任务：**\n  你的账号已到期\n{i[1]}\n已禁用，但仍为您保留您的数据，请及时续期。')
-                logging.info(f"✨**自动任务：**{i[0]} 账号已到期,已禁用 - {i[1]}")
-    else:
+    try:
+        result = sqlhelper.select_all(
+            "select tg,embyid,ex,us from emby where (ex < %s and lv=%s)", [now, 'b'])
+    except TypeError:
         pass
-    # 询问 已禁用用户，若有积分变化则续期
-    result1 = sqlhelper.select_all("select tg,embyid,ex,us from emby where lv=%s", 'c')
-    # print(result1)
-    if result1 is not None:
-        for i in result1:
-            if i[1] is not None and int(i[3]) >= 30:
-                a = int(i[3]) - 30
-                ex = (now + timedelta(days=30))
-                await emby.ban_user(i[1], 1)
-                sqlhelper.update_one("update emby set lv=%s,ex=%s,us=%s where tg=%s",
-                                     ['b', ex, a, i[0]])
-                await bot.send_message(i[0], f'✨**自动任务：**\n  解封账户，在当前时间自动续期 30天 \nDone！')
-                logging.info(f"✨**自动任务：**{i[0]} 解封账户，在当前时间自动续期 30天 Done！- {ex}")
-            else:
-                pass
     else:
+        if result is not None:
+            for i in result:
+                if i[3] != 0 and int(i[3] >= 30):
+                    a = int(i[3]) - 30
+                    ex = (now + timedelta(days=30))
+                    sqlhelper.update_one("update emby set ex=%s,us=%s where tg=%s", [ex, a, i[0]])
+                    await bot.send_message(i[0], f'✨**自动任务：**\n  在当前时间自动续期 30天 Done！')
+                    logging.info(f"✨**自动任务：**{i[0]} 在当前时间自动续期 30天 Done！- {ex}- {i[1]}")
+                else:
+                    if await emby.ban_user(i[1], 0) is True:
+                        sqlhelper.update_one("update emby set lv=%s where tg=%s", ['c', i[0]])
+                    await bot.send_message(i[0],
+                                           f'💫**自动任务：**\n  你的账号已到期\n{i[1]}\n已禁用，但仍为您保留您的数据，请及时续期。')
+                    logging.info(f"✨**自动任务：**{i[0]} 账号已到期,已禁用 - {i[1]}")
+        else:
+            pass
+    try:
+        # 询问 已禁用用户，若有积分变化则续期
+        result1 = sqlhelper.select_all("select tg,embyid,ex,us from emby where lv=%s", 'c')
+    except TypeError:
         pass
+    else:
+        # print(result1)
+        if result1 is not None:
+            for i in result1:
+                if i[1] is not None and int(i[3]) >= 30:
+                    a = int(i[3]) - 30
+                    ex = (now + timedelta(days=30))
+                    await emby.ban_user(i[1], 1)
+                    sqlhelper.update_one("update emby set lv=%s,ex=%s,us=%s where tg=%s",
+                                         ['b', ex, a, i[0]])
+                    await bot.send_message(i[0], f'✨**自动任务：**\n  解封账户，在当前时间自动续期 30天 \nDone！')
+                    logging.info(f"✨**自动任务：**{i[0]} 解封账户，在当前时间自动续期 30天 Done！- {ex}")
+                else:
+                    pass
+        else:
+            pass
 
 
 # 每天x点检测

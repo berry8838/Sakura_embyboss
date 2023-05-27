@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# import uvloop
-# uvloop.install()
+import uvloop
+uvloop.install()
 import math
 import uuid
 from datetime import datetime, timedelta
@@ -241,7 +241,7 @@ async def create_user(_, call, us, stats):
                 '• 安全码为敏感操作时附加验证，请填入个人记得的数字；退出请点 /cancel')
     try:
         name = await _.listen(call.from_user.id, filters.text, timeout=120)
-    except asyncio.exceptions.TimeoutError:
+    except asyncio.TimeoutError:
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
                                        caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
@@ -324,7 +324,7 @@ async def del_me(_, call):
                                                    caption='**💢 验证不通过，安全码错误。**',
                                                    reply_markup=ikb(
                                                        [[('♻️ - 重试', 'delme')], [('🔙 - 返回', 'members')]]))
-        except asyncio.exceptions.TimeoutError:
+        except asyncio.TimeoutError:
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
                                            caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
@@ -384,7 +384,7 @@ async def reset(_, call):
                                                    caption='**💢 验证不通过，安全码错误。',
                                                    reply_markup=ikb(
                                                        [[('♻️ - 重试', 'reset')], [('🔙 - 返回', 'members')]]))
-        except asyncio.exceptions.TimeoutError:
+        except asyncio.TimeoutError:
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
                                            caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
@@ -425,6 +425,22 @@ async def invite_tg(_, call):
                                    call.message.id,
                                    caption='o(*////▽////*)q\n\n**正在努力开发中！！**',
                                    reply_markup=invite_tg_ikb)
+
+
+@bot.on_message(filters.command('myinfo', prefixes))
+async def my_info(_, msg):
+    text = ''
+    try:
+        name, lv, ex, us = await emby.members_info(msg.from_user.id)
+        dlt = (ex - datetime.now()).days
+        text += f"**· 🍉 TG名称** | [{msg.from_user.first_name}](tg://user?id={msg.from_user.id})\n" \
+                f"**· 🍒 TG ID** | `{msg.from_user.id}`\n**· 🍓 当前状态** | {lv}\n" \
+                f"**· 🌸 积分数量** | {us}\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | **{ex}**\n" \
+                f"**· 📅 剩余天数** | **{dlt}** 天"
+    except TypeError:
+        text += f'**· 🆔 TG** ：[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})\n数据库中没有此ID。请先私聊我。'
+    finally:
+        await msg.reply(text)
 
 
 """ 服务器讯息打印 """
@@ -515,7 +531,7 @@ async def cr_link(_, call):
         content = await _.listen(call.from_user.id,
                                  filters=filters.text,
                                  timeout=120)
-    except asyncio.exceptions.TimeoutError:
+    except asyncio.TimeoutError:
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
                                        caption='⭕ 超时 or 格式输入错误，已取消操作。',
@@ -686,12 +702,15 @@ async def user_info(_, msg):
                 keyboard = InlineKeyboard()
                 try:
                     name, lv, ex, us = await emby.members_info(uid)
+                    dlt = (ex - datetime.now()).days
                     if lv == "c /已禁用":
                         ban += "🌟 解除禁用"
                     else:
                         ban += '💢 禁用账户'
-                    text += f"**· 🍉 TG名称** | [{first.first_name}](tg://user?id={uid})\n**· 🍓 当前状态** | {lv} \n" \
-                            f"**· 🌸 积分数量** | {us}\n\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | {ex}"
+                    text += f"**· 🍉 TG名称** | [{first.first_name}](tg://user?id={uid})\n**· 🍒 TG-ID** | `{uid}`\n" \
+                            f"**· 🍓 当前状态** | {lv} \n" \
+                            f"**· 🌸 积分数量** | {us}\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | **{ex}**\n" \
+                            f"**· 📅 剩余天数** | **{dlt}** 天"
                     keyboard.row(
                         InlineButton(' ✨ 赠送资格', f'gift-{uid}'),
                         InlineButton(ban, f'user_ban-{uid}')
@@ -710,12 +729,15 @@ async def user_info(_, msg):
             keyboard = InlineKeyboard()
             try:
                 name, lv, ex, us = await emby.members_info(uid)
+                dlt = (ex - datetime.now()).days
                 if lv == "c /已禁用":
                     ban += "🌟 解除禁用"
                 else:
                     ban += '💢 禁用账户'
-                text += f"**· 🍉 TG名称** | [{first.first_name}](tg://user?id={uid})\n**· 🍓 当前状态** | {lv} \n" \
-                        f"**· 🌸 积分数量** | {us}\n\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | {ex}"
+                text += f"**· 🍉 TG名称** | [{first.first_name}](tg://user?id={uid})\n**· 🍒 TG-ID** | `{uid}`\n" \
+                        f"**· 🍓 当前状态** | {lv} \n" \
+                        f"**· 🌸 积分数量** | {us}\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | **{ex}**\n" \
+                        f"**· 📅 剩余天数** | **{dlt}** 天"
                 keyboard.row(
                     InlineButton(' ✨ 赠送资格', f'gift-{uid}'),
                     InlineButton(ban, f'user_ban-{uid}')
@@ -894,7 +916,7 @@ async def set_tz(_, call):
         "【设置探针】\n\n请依次输入探针地址，api_token，设置的检测id 如：\ntz\napi_token\ntz_id  取消点击 /cancel")
     try:
         txt = await _.listen(call.from_user.id, filters.text, timeout=120)
-    except asyncio.exceptions.TimeoutError:
+    except asyncio.TimeoutError:
         await bot.send_message(call.from_user.id, text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
     else:
         if txt.text == '/cancel':
@@ -937,7 +959,7 @@ async def add_groups(_, call):
             '如更换连接请输入格式形如： \n\n`[按钮描述]-[link1],\n[按钮描述]-[link2],\n[按钮描述]-[link3]` 退出状态请按 /cancel')
         try:
             txt = await _.listen(call.from_user.id, filters.text, timeout=120)
-        except asyncio.exceptions.TimeoutError:
+        except asyncio.TimeoutError:
             await bot.send_message(call.from_user.id, text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
         else:
             if txt.text == '/cancel':

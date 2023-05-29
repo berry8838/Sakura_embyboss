@@ -109,7 +109,7 @@ port ,点开表 embyboss，点击导入刚刚下载的文件。
 • 在`embyboss.service`
 里面编辑我中文标注的3行,默认可以分别填入`embyboss`，`/root/Sakura_embyboss/` ,`/root/Sakura_embyboss/main.py`  
 • 若有修改请按照自己的修改填写  
-• 保存后运行 `mv embyboss.service /usr/lib/systemd/system`
+• 保存后运行 `mv embyboss.service /usr/lib/systemd/system`  
 • 以下是控制命令
 
 ```

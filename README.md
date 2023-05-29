@@ -49,21 +49,23 @@ systemctl enable docker
 
 • 接着在Sakura_embyboss目录下面找到文件`docker-compose.yml`，修改成自己的设置后保存。  
 • 在Sakura_embyboss目录运行命令`docker-compose up -d`。  
-• 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，打开你的phpmyadmin 即 ip:port ,点开表 embyboss，点击导入刚刚下载的文件。  
+• 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，打开你的phpmyadmin 即 ip:
+port ,点开表 embyboss，点击导入刚刚下载的文件。  
 ![如何导入](https://telegra.ph/file/3652396e27a3b72f708de.png)
 
 #### 配置数据库（2）
 
 • 在你已经拥有宝塔面板前提下使用宝塔面板  
-• 安装好mysql，phpmyadmin，新增加一个数据库，用户名密码也可以自己设置，但接下去的设置需要自己替换
-![tup](https://telegra.ph/file/c1aa98b6205bebf88137c.png)  
-• 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)
+• 安装好mysql，phpmyadmin，新增加一个数据库，用户名密码也可以自己设置，但接下去的设置需要自己替换  
+![bt](https://telegra.ph/file/c1aa98b6205bebf88137c.png)  
+• 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，直接在面板数据库中导入这份文件
 
 ------------------
 
 ### 3、配置文件填写
 
-• 打开文件`config.json`，参考下列说明填写自己的内容（bot，数据库，emby等等）  
+• 打开文件`config_example.json`，参考下列说明填写自己的内容（bot，数据库，emby等等）  
+• 填写完整以后改名成`config.json`  
 • 必填项目
 
 ```
@@ -126,7 +128,7 @@ systemctl stop embyboss
 
 ## 感谢（排序不分先后）
 
+• [小宝原先的的按钮风格](https://t.me/EmbyClubBot)  
 • [MisakaF_Emby- 使用EMBY API的方法。](https://github.com/berry8838/MisakaF_Emby)  
 • [xiaocao 的service写法](https://github.com/xiaocao666tzh/EmbyBot)  
 • [待定，准备抄抄 Nolovenodie 的海报推送，虽然在样式上已经启发了很多](https://github.com/Nolovenodie/EmbyTools)  
-• [小宝原先的的按钮风格](https://t.me/EmbyClubBot)

@@ -128,7 +128,7 @@ systemctl stop embyboss
 
 ## 感谢（排序不分先后）
 
-• [小宝原先的的按钮风格](https://t.me/EmbyClubBot)  
-• [MisakaF_Emby- 使用EMBY API的方法。](https://github.com/berry8838/MisakaF_Emby)  
-• [xiaocao 的service写法](https://github.com/xiaocao666tzh/EmbyBot)  
-• [待定，准备抄抄 Nolovenodie 的海报推送，虽然在样式上已经启发了很多](https://github.com/Nolovenodie/EmbyTools)  
+• [小宝的按钮风格](https://t.me/EmbyClubBot)  
+• [MisakaF_Emby - 使用EMBY API的方法。](https://github.com/MisakaFxxk/MisakaF_Emby)  
+• [xiaocao - service写法](https://github.com/xiaocao666tzh/EmbyBot)  
+• [待定 Nolovenodie - 海报推送](https://github.com/Nolovenodie/EmbyTools)  

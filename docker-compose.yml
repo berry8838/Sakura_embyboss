@@ -1,0 +1,27 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql # 容器名
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci # 设置utf8字符集
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456 # root管理员用户密码
+      MYSQL_USER: susu   # 创建需要连接的用户
+      MYSQL_DATABASE: embyboss # 数据库名字
+      MYSQL_PASSWORD: 1234  # 设置普通用户的密码
+      MYSQL_ROOT_HOST: "%" # 所有ip可连接
+    ports:
+      - '3306:3306'  # host物理直接映射端口为
+    volumes:
+      - /root/Sakura_embyboss/db:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 8080:80  #映射端口可以自己改的
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    depends_on:
+      - mysql

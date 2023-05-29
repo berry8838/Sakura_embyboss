@@ -471,12 +471,16 @@ async def server(_, call):
 '''购买注册'''
 
 
-@bot.on_callback_query(filters.regex('buy_account'))
-async def buy_some(_, call):
+def buy_sth_ikb():
     d = config["buy"]
-    # print(d)
     lines = array_chunk(d, 2)
     keyboard = ikb(lines)
+    return keyboard
+
+
+@bot.on_callback_query(filters.regex('buy_account'))
+async def buy_some(_, call):
+    keyboard = buy_sth_ikb()
     await bot.edit_message_caption(
         call.from_user.id,
         call.message.id,
@@ -949,17 +953,17 @@ async def set_tz(_, call):
 async def add_groups(_, call):
     if config["user_buy"] == "y":
         config["user_buy"] = "n"
-        await bot.send_message(call.from_user.id, '**👮🏻‍♂️ 已经为您关闭注册系统啦！**',
+        await bot.send_message(call.from_user.id, '**👮🏻‍♂️ 已经为您关闭购买系统啦！**',
                                reply_markup=ikb([[("💨 - 清除消息", "closeit")]]))
         save_config()
         logging.info(f"【admin】：管理员 {call.from_user.first_name} - 关闭了购买按钮")
     elif config["user_buy"] == "n":
         config["user_buy"] = "y"
-        await bot.send_message(call.from_user.id, '**👮🏻‍♂️ 已经为您开启注册系统啦！**')
+        await bot.send_message(call.from_user.id, '**👮🏻‍♂️ 已经为您开启购买系统啦！**')
         save_config()
         logging.info(f"【admin】：管理员 {call.from_user.first_name} - 开启了购买按钮")
         await call.message.reply(
-            '如更换连接请输入格式形如： \n\n`[按钮描述]-[link1],\n[按钮描述]-[link2],\n[按钮描述]-[link3]` 退出状态请按 /cancel')
+            '如更换购买连接请输入格式形如： \n\n`[按钮描述]-[link1],\n[按钮描述]-[link2],\n[按钮描述]-[link3]` 退出状态请按 /cancel')
         try:
             txt = await _.listen(call.from_user.id, filters.text, timeout=120)
         except asyncio.TimeoutError:

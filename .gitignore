@@ -9,5 +9,3 @@ gen
 !/keaiji.session
 !/keaiji_bot.session
 !/keaiji_bot.session-journal
-!/log/
-!/log/log.txt

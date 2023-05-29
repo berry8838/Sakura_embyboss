@@ -57,7 +57,7 @@ systemctl enable docker
 • 在你已经拥有宝塔面板前提下使用宝塔面板  
 • 安装好mysql，phpmyadmin，新增加一个数据库，用户名密码也可以自己设置，但接下去的设置需要自己替换
 ![tup](https://telegra.ph/file/c1aa98b6205bebf88137c.png)  
-• 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)
+• 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，直接在面板数据库中导入这份文件
 
 ------------------
 

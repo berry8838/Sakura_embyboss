@@ -365,6 +365,13 @@ async def reset(_, call):
                                            caption='**🔰账户安全验证**：\n\n 👮🏻验证是否本人进行敏感操作，请对我发送您设置的安全码。倒计时 120 s\n'
                                                    '🛑 **停止请点 /cancel**')
             m = await _.listen(call.from_user.id, filters.text, timeout=120)
+        except asyncio.TimeoutError:
+            await bot.edit_message_caption(call.from_user.id,
+                                           call.message.id,
+                                           caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
+                                           reply_markup=ikb([[('🎗️ 返回', 'members')]
+                                                             ]))
+        else:
             if m.text == '/cancel':
                 await m.delete()
                 await bot.edit_message_caption(call.from_user.id, call.message.id,
@@ -372,46 +379,66 @@ async def reset(_, call):
                                                reply_markup=ikb([[('💨 - 返回', 'members')]]))
                 pass
             else:
-                if m.text == pwd2:
-                    await m.delete()
-                    await bot.edit_message_caption(call.from_user.id, call.message.id,
-                                                   caption='**🥰 温馨提示：**\n'
-                                                           '重置密码是用于您已经忘记密码情况下使用，它会将您的密码清空，这意味着之后您只需要输入用户名回车即可登录。',
-                                                   reply_markup=ikb([[('✅ - yes', 'mima')], [('❎ - no', 'members')]]))
-                else:
+                if m.text != pwd2:
                     await m.delete()
                     await bot.edit_message_caption(call.from_user.id, call.message.id,
                                                    caption='**💢 验证不通过，安全码错误。',
                                                    reply_markup=ikb(
                                                        [[('♻️ - 重试', 'reset')], [('🔙 - 返回', 'members')]]))
-        except asyncio.TimeoutError:
-            await bot.edit_message_caption(call.from_user.id,
-                                           call.message.id,
-                                           caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
-                                           reply_markup=ikb([[('🎗️ 返回', 'members')]
-                                                             ]))
+                else:
+                    await m.delete()
+                    await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                                   caption='🎯 请在 120s内 输入你要更新的密码，不可以带emoji符号和空值。不然概不负责哦。\n\n'
+                                                           '点击 /cancel 将重置为空密码并退出。 无更改退出状态请等待120s')
+                    try:
+                        mima = await _.listen(call.from_user.id, filters.text, timeout=120)
+                    except asyncio.TimeoutError:
+                        await bot.edit_message_caption(call.from_user.id,
+                                                       call.message.id,
+                                                       caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
+                                                       reply_markup=ikb([[('🎗️ 返回', 'members')]]))
+                    else:
+                        if mima.text == '/cancel':
+                            await mima.delete()
+                            await bot.edit_message_caption(call.from_user.id,
+                                                           call.message.id,
+                                                           caption='**🎯 收到，正在重置ing。。。**')
+                            data = await emby.emby_reset(embyid)
+                            if data is True:
+                                sqlhelper.update_one("update emby set pwd=null where embyid=%s", embyid)
+                                await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                                               caption='🕶️ 操作完成！已为您重置密码为 空。',
+                                                               reply_markup=ikb([[('💨 - 返回', 'members')]]))
+                                logging.info(f"【重置密码】：{call.from_user.id} 成功重置了密码！")
+                            else:
+                                await bot.edit_message_caption(call.from_user.id,
+                                                               call.message.id,
+                                                               caption='🫥 操作失败！请联系管理员。',
+                                                               reply_markup=ikb([[('🔙 - 返回', 'members')]
+                                                                                 ]))
+                                logging.error(f"【重置密码】：{call.from_user.id} 重置密码失败 ！")
 
-    @bot.on_callback_query(filters.regex('mima'))
-    async def reset1(_, call1):
-        await bot.edit_message_caption(call1.from_user.id,
-                                       call1.message.id,
-                                       caption='**🎯 收到，正在重置ing。。。**')
-        data = await emby.emby_reset(embyid)
-        if data is True:
-            await bot.edit_message_caption(call1.from_user.id,
-                                           call1.message.id,
-                                           caption='🕶️ 操作完成！已设为空密码。',
-                                           reply_markup=ikb([[('🔙 - 返回', 'members')]
-                                                             ]))
-            sqlhelper.update_one("update emby set pwd=null where embyid=%s", embyid)
-            logging.info(f"【重置密码】：{call.from_user.id} 成功重置了密码！")
-        else:
-            await bot.edit_message_caption(call1.from_user.id,
-                                           call1.message.id,
-                                           caption='🫥 操作失败！请联系管理员。',
-                                           reply_markup=ikb([[('🔙 - 返回', 'members')]
-                                                             ]))
-            logging.error(f"【重置密码】：{call.from_user.id} 重置密码失败 ！")
+                        else:
+                            await mima.delete()
+                            await bot.edit_message_caption(call.from_user.id,
+                                                           call.message.id,
+                                                           caption='**🎯 收到，正在重置ing。。。**')
+                            # print(mima.text)
+                            a = mima.text
+                            data = await emby.emby_mima(embyid, a)
+                            if data is True:
+                                sqlhelper.update_one("update emby set pwd=%s where embyid=%s", [a, embyid])
+                                await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                                               caption=f'🕶️ 操作完成！已为您重置密码为 {a}。',
+                                                               reply_markup=ikb([[('💨 - 返回', 'members')]]))
+                                logging.info(f"【重置密码】：{call.from_user.id} 成功重置了密码为 {a} ！")
+                            else:
+                                await bot.edit_message_caption(call.from_user.id,
+                                                               call.message.id,
+                                                               caption='🫥 操作失败！请联系管理员。',
+                                                               reply_markup=ikb([[('🔙 - 返回', 'members')]
+                                                                                 ]))
+                                logging.error(f"【重置密码】：{call.from_user.id} 重置密码失败 ！")
 
 
 # @bot.on_callback_query(filters.regex('hide'))

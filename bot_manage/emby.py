@@ -37,10 +37,10 @@ async def emby_create(tg, name, pwd2, us, stats):
     if _status == 200:
         try:
             id1 = re.findall(r'\"(.*?)\"', new_user.text)
-            embyid = id1[9]
+            id = id1[9]
             pwd = await pwd_create(8)
             pwd_data = {
-                "Id": f"{embyid}",
+                "Id": f"{id}",
                 "NewPw": f"{pwd}",
             }
             _pwd = r.post(url + f'/emby/Users/{id}/Password',
@@ -50,17 +50,17 @@ async def emby_create(tg, name, pwd2, us, stats):
         except:
             return 100
         else:
-            policy = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":3}'
+            policy = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2}'
             _policy = r.post(url + f'/emby/Users/{id}/Policy',
                              headers=headers,
                              params=params,
                              data=policy.encode('utf-8'))
             if stats == 'y':
                 update_one(f"update emby set embyid=%s,name=%s,pwd=%s,pwd2=%s,lv=%s,cr=%s,ex=%s where tg={tg}",
-                           [embyid, name, pwd, pwd2, 'b', now, ex])
+                           [id, name, pwd, pwd2, 'b', now, ex])
             elif stats == 'n':
                 update_one(f"update emby set embyid=%s,name=%s,pwd=%s,pwd2=%s,lv=%s,cr=%s,ex=%s,us=%s where tg={tg}",
-                           [embyid, name, pwd, pwd2, 'b', now, ex, 0])
+                           [id, name, pwd, pwd2, 'b', now, ex, 0])
             return pwd
     elif _status == 400:
         return 400
@@ -68,18 +68,18 @@ async def emby_create(tg, name, pwd2, us, stats):
 
 # 插入：更新策略隐藏或显示某个库。
 '''
-      policy = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":3,"BlockedMediaFolders":["电影"]}'
+      policy = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2,"BlockedMediaFolders":["电影"]}'
 '''
 
 
 # 删除
 async def emby_del(tgid):
-    embyid = select_one("select embyid from emby where tg = %s", tgid)[0]
+    id = select_one("select embyid from emby where tg = %s", tgid)[0]
     headers1 = {
         'accept': '*/*',
     }
     try:
-        res = r.delete(url + f'/emby/Users/{embyid}', headers=headers1, params=params)
+        res = r.delete(url + f'/emby/Users/{id}', headers=headers1, params=params)
         update_one(
             "update emby set embyid=NULL,name=null,pwd=null,pwd2=null,cr=null,ex=null,lv='d' where tg=%s",
             tgid)
@@ -99,6 +99,23 @@ async def emby_reset(id):
                       headers=headers,
                       params=params,
                       json=pwd_data)
+        # print(_pwd)
+        return True
+    except:
+        return False
+
+
+async def emby_mima(id, new):
+    pwd_reset = {
+        "Id": f"{id}",
+        "NewPw": f"{new}",
+    }
+    try:
+        _pwd = r.post(url + f'/emby/Users/{id}/Password',
+                      headers=headers,
+                      params=params,
+                      json=pwd_reset)
+        print(_pwd)
         # print(_pwd)
         return True
     except:

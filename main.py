@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-import uvloop
-uvloop.install()
+# import uvloop
+# uvloop.install()
 import math
 import uuid
 from datetime import datetime, timedelta
@@ -12,7 +12,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 # pyrogram工具
 from pyromod import listen
-from pyrogram import Client, filters
+from pyrogram import filters
 from pyrogram.errors import BadRequest, UserNotParticipant, ChatAdminRequired
 from pyromod.helpers import ikb, array_chunk
 from pykeyboard import InlineKeyboard, InlineButton
@@ -22,24 +22,6 @@ from mylogger import *
 from bot_manage import nezha_res, emby
 from config import *
 from _mysql import sqlhelper
-
-prefixes = ['/', '!', '.', '#']
-
-bot = Client(name=BOT_NAME,
-             api_id=API_ID,
-             api_hash=API_HASH,
-             bot_token=BOT_TOKEN)
-
-''' 各种键盘 '''
-
-'''判断用户身份'''
-
-
-def judge_user(uid):
-    if uid != owner and uid not in config["admins"]:
-        return 1
-    else:
-        return 3
 
 
 # 旧键盘是固定的，现在给改成灵活的。以便于config的配置

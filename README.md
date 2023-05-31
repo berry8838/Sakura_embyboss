@@ -7,20 +7,51 @@
 
 ## 待办
 
-None
+- [ ] 推送相关
+    - [ ] 添加排行榜推送[EmbyTools](https://github.com/Nolovenodie/EmbyTools)
+    - [ ] 添加Emby中的更新推送
+    - [ ] 添加收藏影片推送?
+- [ ] 趣味功能
+    - [ ] 积分红包
+    - [ ] 公告功能(群发信息)
+    - [ ] 重新启用签到?
+- [ ] 基本功能
+    - [ ] 支持修改线路line
+    - [ ] 支持修改adddmins列表
+    - [ ] 修改检测定时
+    - [ ] 查询中添加删除账户按钮
+    - [ ] 添加白名单用户
+    - [ ] 重新绑定账户/ 用于被tg注销时不丢失emby
+    - [ ] 添加邀请功能
+    - [ ] 支持docker部署
 
 ## 使用帮助
 
-还没写好。效果图可以给几张 [点这里](https://telegra.ph/embyboss-05-29)，还有一些命令截图就暂时没写。
+- [部分效果图](https://telegra.ph/embyboss-05-29)
+- 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符多添加三种  
+  即命令使用 ：`/start = .start = #start = !start`   快来试试吧
+
+```
+用户:
+    /start 开启面板 (私聊)
+    /exchange 使用注册码 (私聊)
+    /myinfo 查看自己状态 (无限制)
+
+admins:
+    除去以上用户命令，还有
+    /score +\-[分数] 对用户的积分调整
+    /kk 查看用户 有赠与注册资格和禁用账户选项
+    /config 查看日志，修改探针设置，购买按钮等
+```
 
 ## 配置说明
 
-写的有点乱。不懂可以来 [群里](https://t.me/Aaaaa_su) 问我hhhh，我还是很高兴有人能看上我的这个小玩意。  
-我的鸡鸡是 Ubuntu 20.04系统，Debian应该也差别不大，那么接下来就是怎么配置启动了。
+- 写的有点乱。不懂可以来 [群里](https://t.me/Aaaaa_su) 问我hhhh，我还是很高兴有人能看上我的这个小玩意。
+- 我的鸡鸡是 Ubuntu 20.04系统，Debian应该也差别不大，那么接下来就是怎么配置启动了。
 
 ### 1、拉取代码
 
-• 下载源码到本地。然后切到文件目录中给main.py加上可执行权限，安装需要的依赖。
+- 下载源码到本地。然后切到文件目录中给main.py加上可执行权限，安装需要的依赖。
 
 ```
 sudo apt install python3-pip
@@ -31,12 +62,12 @@ git clone https://github.com/berry8838/Sakura_embyboss.git && cd Sakura_embyboss
 
 ### 2、配置数据库
 
-• 有两种方式配置数据库。分别说，任选一种
+- 有两种方式配置数据库。分别说，任选一种
 
 #### 配置数据库 (1)
 
-• 用docker-compose一步到位。
-如果你还没有安装docker、docker compose，下面是安装步骤：
+- 用docker-compose一步到位。
+  如果你还没有安装docker、docker compose，下面是安装步骤：
 
 ```shell
 curl -fsSL https://get.docker.com | bash -s docker
@@ -47,26 +78,26 @@ systemctl start docker
 systemctl enable docker
 ```
 
-• 接着在Sakura_embyboss目录下面找到文件`docker-compose.yml`，修改成自己的设置后保存。  
-• 在Sakura_embyboss目录运行命令`docker-compose up -d`。  
-• 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，打开你的phpmyadmin 即 ip:
-port ,点开表 embyboss，点击导入刚刚下载的文件。  
-![如何导入](https://telegra.ph/file/3652396e27a3b72f708de.png)
+- 接着在Sakura_embyboss目录下面找到文件`docker-compose.yml`，修改成自己的设置后保存。
+- 在Sakura_embyboss目录运行命令`docker-compose up -d`。
+- 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，打开你的phpmyadmin 即 ip:
+  port ,点开表 embyboss，点击导入刚刚下载的文件。  
+  ![如何导入](https://telegra.ph/file/3652396e27a3b72f708de.png)
 
 #### 配置数据库（2）
 
-• 在你已经拥有宝塔面板前提下使用宝塔面板  
-• 安装好mysql，phpmyadmin，新增加一个数据库，用户名密码也可以自己设置，但接下去的设置需要自己替换  
-![bt](https://telegra.ph/file/c1aa98b6205bebf88137c.png)  
-• 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，直接在面板数据库中导入这份文件
+- 在你已经拥有宝塔面板前提下使用宝塔面板
+- 安装好mysql，phpmyadmin，新增加一个数据库，用户名密码也可以自己设置，但接下去的设置需要自己替换  
+  ![宝塔](https://telegra.ph/file/c1aa98b6205bebf88137c.png)
+- 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，直接在面板数据库中导入这份文件
 
 ------------------
 
 ### 3、配置文件填写
 
-• 打开文件`config_example.json`，参考下列说明填写自己的内容（bot，数据库，emby等等）  
-• 填写完整以后改名成`config.json`  
-• 必填项目
+- 打开文件`config_example.json`，参考下列说明填写自己的内容（bot，数据库，emby等等）
+- 填写完整以后改名成`config.json`
+- 必填项目
 
 ```
 "bot_name": ""    bot的username，比如我的机器人@keaiji1_bot，就填keaiji1_bot
@@ -77,7 +108,7 @@ port ,点开表 embyboss，点击导入刚刚下载的文件。
 "group": []       授权群组id (带-号的)，未授权的群组拉bot会自动退出。不在群组的成员会提示先加入群组
 "main_group": ""  你群组的用户名或者你私密群组的邀请链接  
                   如 https://t.me/+7ZL9MbJd8h44Zjc1 中的 "+7ZL9MbJd8h44Zjc1"
-"chanel": ""      你频道名，没有的话就随便填个 Google.com 吧
+"chanel": ""      你频道username，没有的话就随便填个 Google.com 吧
 "bot_photo": "https://telegra.ph/file/1437f7f348c6c71f0b9ab.png",
                   bot发送消息时的图片。必填
 "user_buy": "n"   开启购买按钮，建议默认关闭，后续可以在bot里自行配置
@@ -106,11 +137,11 @@ port ,点开表 embyboss，点击导入刚刚下载的文件。
 
 ### 4、启动bot
 
-• 在`embyboss.service`
-里面编辑我中文标注的3行,默认可以分别填入`embyboss`，`/root/Sakura_embyboss/` ,`/root/Sakura_embyboss/main.py`  
-• 若有修改请按照自己的修改填写  
-• 保存后运行 `mv embyboss.service /usr/lib/systemd/system`  
-• 以下是控制命令
+- 在`embyboss.service`
+  里面编辑我中文标注的3行,默认可以分别填入`embyboss`，`/root/Sakura_embyboss/` ,`/root/Sakura_embyboss/main.py`
+- 若有修改请按照自己的修改填写
+- 保存后运行 `mv embyboss.service /usr/lib/systemd/system`
+- 以下是控制命令
 
 ```
 systemctl daemon-reload
@@ -128,7 +159,7 @@ systemctl stop embyboss
 
 ## 感谢（排序不分先后）
 
-• [小宝的按钮风格](https://t.me/EmbyClubBot)  
-• [MisakaF_Emby - 使用EMBY API的方法。](https://github.com/MisakaFxxk/MisakaF_Emby)  
-• [xiaocao - service写法](https://github.com/xiaocao666tzh/EmbyBot)  
-• [待定 Nolovenodie - 海报推送](https://github.com/Nolovenodie/EmbyTools)  
+- [小宝的按钮风格](https://t.me/EmbyClubBot)
+- [MisakaF_Emby - 使用EMBY API的方法。](https://github.com/MisakaFxxk/MisakaF_Emby)
+- [xiaocao - service写法](https://github.com/xiaocao666tzh/EmbyBot)
+- [待定 Nolovenodie - 海报推送](https://github.com/Nolovenodie/EmbyTools)  

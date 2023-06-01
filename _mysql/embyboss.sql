@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： mysql:3306
--- 生成日期： 2023-05-29 07:26:26
+-- 生成日期： 2023-06-01 14:31:08
 -- 服务器版本： 5.7.42
 -- PHP 版本： 8.1.17
 
@@ -48,9 +48,9 @@ CREATE TABLE `emby` (
 
 CREATE TABLE `invite` (
   `id` char(255) NOT NULL,
-  `tg` int(255) DEFAULT NULL,
+  `tg` bigint(255) DEFAULT NULL,
   `us` int(255) DEFAULT NULL,
-  `used` int(11) DEFAULT NULL,
+  `used` bigint(255) DEFAULT NULL,
   `usedtime` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

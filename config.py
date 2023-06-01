@@ -50,17 +50,3 @@ tz_api = config["tz_api"]
 tz_id = config["tz_id"]
 
 prefixes = ['/', '!', '.', '#']
-
-from pyrogram import Client
-
-bot = Client(name=BOT_NAME,
-             api_id=API_ID,
-             api_hash=API_HASH,
-             bot_token=BOT_TOKEN)
-
-
-def judge_user(uid):
-    if uid != owner and uid not in config["admins"]:
-        return 1
-    else:
-        return 3

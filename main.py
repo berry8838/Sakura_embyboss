@@ -1,7 +1,8 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# import uvloop
-# uvloop.install()
+import uvloop
+
+uvloop.install()
 import math
 import uuid
 from datetime import datetime, timedelta
@@ -12,7 +13,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 # pyrogram工具
 from pyromod import listen
-from pyrogram import filters
+from pyrogram import filters, Client
 from pyrogram.errors import BadRequest, UserNotParticipant, ChatAdminRequired
 from pyromod.helpers import ikb, array_chunk
 from pykeyboard import InlineKeyboard, InlineButton
@@ -22,6 +23,18 @@ from mylogger import *
 from bot_manage import nezha_res, emby
 from config import *
 from _mysql import sqlhelper
+
+bot = Client(name=BOT_NAME,
+             api_id=API_ID,
+             api_hash=API_HASH,
+             bot_token=BOT_TOKEN)
+
+
+def judge_user(uid):
+    if uid != owner and uid not in config["admins"]:
+        return 1
+    else:
+        return 3
 
 
 # 旧键盘是固定的，现在给改成灵活的。以便于config的配置
@@ -364,7 +377,7 @@ async def reset(_, call):
                 if m.text != pwd2:
                     await m.delete()
                     await bot.edit_message_caption(call.from_user.id, call.message.id,
-                                                   caption='**💢 验证不通过，安全码错误。',
+                                                   caption='**💢 验证不通过，安全码错误。**',
                                                    reply_markup=ikb(
                                                        [[('♻️ - 重试', 'reset')], [('🔙 - 返回', 'members')]]))
                 else:
@@ -436,8 +449,17 @@ async def invite_tg(_, call):
                                    reply_markup=invite_tg_ikb)
 
 
+# 查看自己的信息
+# 消息自焚
+async def send_msg_delete(chat, msgid):
+    # print(chat, msgid)
+    await asyncio.sleep(60)
+    await bot.delete_messages(chat, msgid)
+
+
 @bot.on_message(filters.command('myinfo', prefixes))
 async def my_info(_, msg):
+    # print(msg.id)
     text = ''
     try:
         name, lv, ex, us = await emby.members_info(msg.from_user.id)
@@ -450,7 +472,9 @@ async def my_info(_, msg):
     except TypeError:
         text += f'**· 🆔 TG** ：[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})\n数据库中没有此ID。请先私聊我。'
     finally:
-        await msg.reply(text)
+        send_msg = await msg.reply(text)
+        await msg.delete()
+        asyncio.create_task(send_msg_delete(msg.chat.id, send_msg.id))
 
 
 """ 服务器讯息打印 """
@@ -877,8 +901,8 @@ async def set_buy(_, msg):
                              reply_markup=keyword)
 
 
-@bot.on_message(filters.command('addadmin', prefixes=prefixes) & filters.user(owner))
-async def set_buy(_, msg):
+@bot.on_message(filters.command('proadmin', prefixes=prefixes) & filters.user(owner))
+async def pro_admin(_, msg):
     a = judge_user(msg.from_user.id)
     if a == 1:
         await msg.reply("🚨 **这不是你能使用的！**")
@@ -886,32 +910,35 @@ async def set_buy(_, msg):
         try:
             c = msg.text.split()[1]
         except IndexError:
-            await msg.reply("输入格式为：/addadmin [tgid]")
+            await msg.reply("输入格式为：/proadmin [tgid]")
         else:
-            config["admins"].append(c)
-            save_config()
+            if c not in config["admins"]:
+                config["admins"].append(c)
+                save_config()
+            send = await msg.reply(f'新更新 管理员 {c}，当前admins：\n{config["admins"]}\n1 min后自焚')
             await msg.delete()
             logging.info(f"【admin】：{msg.from_user.id} 新更新 管理 {c}")
+            asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
 
 
-# try:
-#     content = await _.listen(msg.from_user.id, filters=filters.text, timeout=120)
-#     if content.text == '/cancel':
-#         await bot.send_message(msg.from_user.id, text='⭕ 您已经取消操作了。')
-#         # await bot.delete_messages(content.from_user.id, content.message.id)
-#     else:
-#         try:
-#             c = content.text.split()
-#             config["buy"]["mon"] = c[0]
-#             config["buy"]["sea"] = c[1]
-#             config["buy"]["half"] = c[2]
-#             config["buy"]["year"] = c[3]
-#             save_config()
-#             await msg.reply("✅ Done! 现在可以/start - 购买里查看一下设置了。")
-#         except:
-#             await msg.reply("⚙️ **似乎链接格式有误，请重试**")
-# except:
-#     await msg.reply("🔗 **没有收到链接，请重试**")
+@bot.on_message(filters.command('revadmin', prefixes=prefixes) & filters.user(owner))
+async def del_admin(_, msg):
+    a = judge_user(msg.from_user.id)
+    if a == 1:
+        await msg.reply("🚨 **这不是你能使用的！**")
+    if a == 3:
+        try:
+            c = msg.text.split()[1]
+        except IndexError:
+            await msg.reply("输入格式为：/revadmin [tgid]")
+        else:
+            if c in config["admins"]:
+                config["admins"].remove(c)
+                save_config()
+            send = await msg.reply(f'新减少 管理员 {c}，当前admins：\n{config["admins"]} \n**1 min后自焚**')
+            await msg.delete()
+            logging.info(f"【admin】：{msg.from_user.id} 新减少 管理 {c}")
+            asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
 
 
 @bot.on_callback_query(filters.regex("log_out"))

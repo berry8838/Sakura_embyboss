@@ -90,6 +90,14 @@ date_ikb = ikb([[('🌘 - 月', "register_mon"), ('🌗 - 季', "register_sea"),
 '''
 
 
+@bot.on_message((filters.command('start', prefixes) | filters.command('exchange', prefixes)) & filters.chat(group))
+async def gun_sb(_, msg):
+    await msg.delete()
+    send = await msg.reply(f"🤖 看不懂是私聊命令吗？去私聊。@{BOT_NAME}")
+    asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+
+
+# 开启面板
 @bot.on_message(filters.command('start', prefixes) & filters.private)
 async def _start(_, msg):
     welcome = f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n💫 __你好鸭__  [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) "
@@ -114,16 +122,19 @@ async def _start(_, msg):
     await emby.start_user(msg.from_user.id, 0)
 
 
+# 兑换注册码
 @bot.on_message(filters.command('exchange', prefixes) & filters.private)
 async def rgs_code(_, msg):
     try:
         register_code = msg.command[1]
     except IndexError:
-        await msg.reply("🔍 **无效的值。\n\n正确用法:** `/exchange [注册码]`")
+        send = await msg.reply("🔍 **无效的值。\n\n正确用法:** `/exchange [注册码]`")
+        asyncio.create_task(send_msg_delete(send.chat.id, send.id))
     else:
         result = sqlhelper.select_one("select us,tg from invite where id=%s", register_code)
         if result is None:
-            await msg.reply("⛔ **你输入了一个错误的注册码。\n\n正确用法:** `/exchange [注册码]`")
+            send = await msg.reply("⛔ **你输入了一个错误的注册码。\n\n正确用法:** `/exchange [注册码]`")
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         elif result[0] != 0:
             us = result[0]
             embyid, ex = sqlhelper.select_one(f"select embyid,ex from emby where tg=%s",
@@ -168,10 +179,10 @@ async def rgs_code(_, msg):
                         caption=f'🎊 少年郎，恭喜你，已经收到了 [{first.first_name}](tg://user?id={result[1]}) 发送的邀请注册资格\n\n请选择你的选项~',
                         reply_markup=ikb([[('🎟️ 注册', 'create'), ('⭕ 取消', 'closeit')]]))
                     logging.info(f"【兑换码】：{msg.chat.id} 使用了 {register_code}")
-
         else:
-            await bot.send_message(msg.from_user.id,
-                                   f'此 `{register_code}` \n邀请码已被使用,是别人的形状了喔')
+            send = await bot.send_message(msg.from_user.id,
+                                          f'此 `{register_code}` \n邀请码已被使用,是别人的形状了喔')
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
 
 
 @bot.on_callback_query(filters.regex('back_start'))

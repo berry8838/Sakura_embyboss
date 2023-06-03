@@ -473,8 +473,8 @@ async def my_info(_, msg):
         text += f'**· 🆔 TG** ：[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})\n数据库中没有此ID。请先私聊我。'
     finally:
         send_msg = await msg.reply(text)
-        await msg.delete()
         asyncio.create_task(send_msg_delete(msg.chat.id, send_msg.id))
+        await msg.delete()
 
 
 """ 服务器讯息打印 """
@@ -576,19 +576,16 @@ async def cr_link(_, call):
                                        reply_markup=ikb([[('⌨️ - 重新尝试', 'cr_link'), ('🔙 返回', 'manage')]]))
     else:
         if content.text == '/cancel':
+            await content.delete()
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
                                            caption='⭕ 您已经取消操作了。',
                                            reply_markup=ikb([[('🔙 返回', 'manage')]]))
-            await bot.delete_messages(content.from_user.id, content.id)
         else:
             c = content.text.split()
             count = int(c[1])
             times = c[0]
             days = int(times) * 30
-            # print(int(times) * 30)
-            await bot.edit_message_caption(call.from_user.id, call.message.id,
-                                           "__🍒 请稍等，正在努力加载ing了噜__")
             conn, cur = sqlhelper.create_conn()
             links = ''
             i = 1
@@ -611,9 +608,12 @@ async def cr_link(_, call):
                 await bot.send_message(call.from_user.id, chunk,
                                        disable_web_page_preview=True,
                                        reply_markup=ikb([[('❌ - Close', 'closeit')]]))
+            await bot.edit_message_caption(call.from_user.id,
+                                           call.message.id,
+                                           caption=f'📂 {BOT_NAME}已为 您 生成了 {count} 个 {days} 天邀请码 ',
+                                           reply_markup=ikb([[('⌨️ - 继续创建', 'cr_link'), ('🔙 返回主页', 'manage')]]))
+            await content.delete()
             logging.info(f"【admin】：{BOT_NAME}已为 {content.from_user.id} 生成了 {count} 个 {days} 天邀请码")
-        # except BadRequest as e:
-        #     logging.error(f"【admin】: {content.from_user.id} 生成的邀请码超出文本框限制 {e}")
 
 
 # 翻页内容
@@ -723,6 +723,7 @@ async def paginate_keyboard(_, call):
 # 管理用户
 @bot.on_message(filters.command('kk', prefixes))
 async def user_info(_, msg):
+    await msg.delete()
     a = judge_user(msg.from_user.id)
     if a == 1:
         pass
@@ -733,7 +734,8 @@ async def user_info(_, msg):
                 uid = msg.text.split()[1]
                 first = await bot.get_chat(uid)
             except (IndexError, KeyError, BadRequest):
-                await msg.reply('**请先给我一个正确的id！**\n用法： [command] [id]')
+                send = await msg.reply('**请先给我一个正确的id！**\n用法： [command] [id]')
+                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
             else:
                 text = ''
                 ban = ''
@@ -757,9 +759,10 @@ async def user_info(_, msg):
                 except TypeError:
                     text += f'**· 🆔 TG** ：[{first.first_name}](tg://user?id={uid})\n数据库中没有此ID。ta 还没有私聊过我。'
                 finally:
-                    keyboard.row(InlineButton('❌ - 关闭', 'closeit'))
-                    await bot.send_photo(msg.chat.id, photo=photo, caption=text, protect_content=True,
-                                         reply_markup=keyboard)
+                    keyboard.row(InlineButton('❌ - 删除账户', f'closeemby-{uid}'))
+                    send = await bot.send_photo(msg.chat.id, photo=photo, caption=text, protect_content=True,
+                                                reply_markup=keyboard)
+                    asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         else:
             uid = msg.reply_to_message.from_user.id
             first = await bot.get_chat(uid)
@@ -785,11 +788,13 @@ async def user_info(_, msg):
             except TypeError:
                 text += f'**· 🆔 TG** ：[{first.first_name}](tg://user?id={uid})\n数据库中没有此ID。ta 还没有私聊过我。'
             finally:
-                keyboard.row(InlineButton('❌ - 关闭', 'closeit'))
-                await bot.send_message(msg.chat.id, text, protect_content=True,
-                                       reply_to_message_id=msg.reply_to_message.id, reply_markup=keyboard)
+                keyboard.row(InlineButton('❌ - 删除账户', f'closeemby-{uid}'))
+                send = await bot.send_message(msg.chat.id, text, protect_content=True,
+                                              reply_to_message_id=msg.reply_to_message.id, reply_markup=keyboard)
+                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
 
 
+# 封禁或者解除
 @bot.on_callback_query(filters.regex('user_ban'))
 async def gift(_, call):
     a = judge_user(call.from_user.id)
@@ -800,20 +805,24 @@ async def gift(_, call):
         # first = await bot.get_chat(b)
         embyid, lv = sqlhelper.select_one("select embyid,lv from emby where tg = %s", b)
         if embyid is None:
-            await call.message.edit(f'💢 ta 没有注册账户。')
+            send = await call.message.reply(f'💢 ta 没有注册账户。')
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         else:
             if lv != "c":
                 await emby.ban_user(embyid, 0)
                 sqlhelper.update_one("update emby set lv=%s where tg=%s", ['c', b])
-                await call.message.edit(f'🎯 已完成禁用。此状态将在下次续期时刷新')
+                send = await call.message.reply(f'🎯 已完成禁用。此状态将在下次续期时刷新')
                 logging.info(f"【admin】：{call.from_user.id} 完成禁用 {b} de 账户 ")
+                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
             elif lv == "c":
                 await emby.ban_user(embyid, 1)
                 sqlhelper.update_one("update emby set lv=%s where tg=%s", ['b', b])
-                await call.message.edit(f'🎯 已解除禁用。')
+                send = await call.message.reply(f'🎯 已解除禁用。')
                 logging.info(f"【admin】：{call.from_user.id} 解除禁用 {b} de 账户 ")
+                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
 
 
+# 赠送资格
 @bot.on_callback_query(filters.regex('gift'))
 async def gift(_, call):
     a = judge_user(call.from_user.id)
@@ -824,30 +833,48 @@ async def gift(_, call):
         first = await bot.get_chat(b)
         # try:
         embyid = sqlhelper.select_one("select embyid from emby where tg = %s", b)[0]
-        # except:
-        #     await bot.edit_message_caption(call.message.chat.id,
-        #                                    call.message.id,
-        #                                    caption=f"[{first.first_name}](tg://user?id={b}) 还没有私聊过bot，终止操作")
-        #     pass
         if embyid is None:
             await emby.start_user(b, 30)
-            await bot.edit_message_caption(call.message.chat.id,
-                                           call.message.id,
-                                           caption=f"🌟 好的，管理员 {call.from_user.first_name}"
-                                                   f'已为 [{first.first_name}](tg://user?id={b}) 赠予资格。'
-                                                   '\n前往bot进行下一步操作：',
-                                           reply_markup=ikb([[("(👉ﾟヮﾟ)👉 点这里", f"t.me/{BOT_NAME}", "url")]]))
+            send = await call.message.reply(f"🌟 好的，管理员 {call.from_user.first_name}"
+                                            f'已为 [{first.first_name}](tg://user?id={b}) 赠予资格。前往bot进行下一步操作：',
+                                            reply_markup=ikb([[("(👉ﾟヮﾟ)👉 点这里", f"t.me/{BOT_NAME}", "url")]]))
             await bot.send_photo(b, photo, f"💫 亲爱的 {first.first_name} \n💘请查收：",
                                  reply_markup=ikb([[("💌 - 点击注册", "create")], [('❌ - 关闭', 'closeit')]]))
             logging.info(f"【admin】：{call.from_user.id} 已发送 注册资格 {first.first_name} - {b} ")
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         else:
-            await bot.edit_message_caption(call.message.chat.id,
-                                           call.message.id,
-                                           caption=f'💢 ta 已注册账户。', reply_markup=ikb([[('❌ - 关闭', 'closeit')]]))
+            send = await call.message.reply(f'💢 ta 已注册账户。',
+                                            reply_markup=ikb([[('❌ - 已开启自动删除', 'closeit')]]))
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+
+
+# 删除账户
+@bot.on_callback_query(filters.regex('closeemby'))
+async def close_emby(_, call):
+    a = judge_user(call.from_user.id)
+    if a == 1:
+        await call.answer("请不要以下犯上 ok？", show_alert=True)
+    if a == 3:
+        b = int(call.data.split("-")[1])
+        first = await bot.get_chat(b)
+        embyid, lv = sqlhelper.select_one("select embyid,lv from emby where tg = %s", b)
+        if embyid is None:
+            send = await call.message.reply(f'💢 ta 还没有注册账户。')
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+        else:
+            if await emby.emby_del(b) is True:
+                send = await call.message.reply(f'🎯 done，等级：{lv} - {first.first_name}的账户已完成删除。')
+                logging.info(f"【admin】：{call.from_user.id} 完成删除 {b} 的账户 ")
+                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+            else:
+                send = await call.message.reply(f'🎯 done，等级：{lv} - {first.first_name}的账户删除失败。')
+                logging.info(f"【admin】：{call.from_user.id} 对 {b} 的账户删除失败 ")
+                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
 
 
 @bot.on_message(filters.command('score', prefixes=prefixes))
 async def score_user(_, msg):
+    await msg.delete()
     a = judge_user(msg.from_user.id)
     if a == 1:
         await msg.reply("🚨 **这不是你能使用的！**")
@@ -859,15 +886,17 @@ async def score_user(_, msg):
                 first = await bot.get_chat(b)
                 # print(c)
             except (IndexError, KeyError, BadRequest):
-                await msg.reply(
+                send = await msg.reply(
                     "🔔 **使用格式为：**[命令符]score [id] [加减分数]\n\n或回复某人[命令符]score [+/-分数] 请再次确认tg_id输入正确")
+                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
             else:
                 sqlhelper.update_one("update emby set us=us+%s where tg=%s", [c, b])
                 us = sqlhelper.select_one("select us from emby where tg =%s", b)[0]
-                await msg.reply(
+                send = await msg.reply(
                     f"· 🎯管理员 {msg.from_user.first_name} 调节了 [{first.first_name}](tg://user?id={b}) 积分： {c}"
                     f"\n· 🎟️ 实时积分: **{us}**")
                 logging.info(f"【admin】[积分]：{msg.from_user.first_name} 对 {first.first_name}-{b}  {c}分  ")
+                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         else:
             try:
                 uid = msg.reply_to_message.from_user.id
@@ -875,70 +904,144 @@ async def score_user(_, msg):
                 b = int(msg.text.split()[1])
                 # print(c)
             except IndexError:
-                await msg.reply("🔔 **使用格式为：**[命令符]score [id] [加减分数]\n\n或回复某人[命令符]score [+/-分数]")
+                send = await msg.reply(
+                    "🔔 **使用格式为：**[命令符]score [id] [加减分数]\n\n或回复某人[命令符]score [+/-分数]")
+                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
             else:
                 sqlhelper.update_one("update emby set us=us+%s where tg=%s", [b, uid])
                 us = sqlhelper.select_one("select us from emby where tg =%s", uid)[0]
-                await msg.reply(
+                send = await msg.reply(
                     f"· 🎯管理员 {msg.from_user.first_name} 调节了 [{first.first_name}](tg://user?id={uid}) 积分： {b}"
                     f"\n· 🎟️ 实时积分: **{us}**")
                 logging.info(f"【admin】[积分]：{msg.from_user.first_name} 对 {first.first_name}-{uid}  {b}分  ")
+                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
 
 
 # 可调节设置
 @bot.on_message(filters.command('config', prefixes=prefixes) & filters.user(owner))
 async def set_buy(_, msg):
-    a = judge_user(msg.from_user.id)
-    if a == 1:
-        await msg.reply("🚨 **这不是你能使用的！**")
-    if a == 3:
-        await msg.delete()
-        keyword = ikb(
-            [[("📄 - 导出日志", "log_out")], [("📌 - 设置探针", "set_tz"), ("🈺 - 开关购买", "set_buy")],
-             [("💨 - 清除消息", "closeit")]])
-
-        await bot.send_photo(msg.from_user.id, photo, caption="🌸 欢迎回来！\n\n👇点击你要修改的内容。",
-                             reply_markup=keyword)
+    keyword = ikb(
+        [[("📄 - 导出日志", "log_out")], [("📌 - 设置探针", "set_tz"), ("🈺 - 开关购买", "set_buy")],
+         [('💠 - emby线路', 'set_line')], [("💨 - 清除消息", "closeit")]])
+    await bot.send_photo(msg.from_user.id, photo, caption="🌸 欢迎回来！\n\n👇点击你要修改的内容。",
+                         reply_markup=keyword)
+    asyncio.create_task(send_msg_delete(msg.chat.id, msg.id))
 
 
+# 新增管理名单
 @bot.on_message(filters.command('proadmin', prefixes=prefixes) & filters.user(owner))
 async def pro_admin(_, msg):
-    a = judge_user(msg.from_user.id)
-    if a == 1:
-        await msg.reply("🚨 **这不是你能使用的！**")
-    if a == 3:
+    if msg.reply_to_message is None:
         try:
-            c = msg.text.split()[1]
-        except IndexError:
-            await msg.reply("输入格式为：/proadmin [tgid]")
-        else:
-            if c not in config["admins"]:
-                config["admins"].append(c)
-                save_config()
-            send = await msg.reply(f'新更新 管理员 {c}，当前admins：\n{config["admins"]}\n1 min后自焚')
+            uid = msg.text.split()[1]
+            first = await bot.get_chat(uid)
+        except (IndexError, KeyError, BadRequest):
+            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/proadmin [tgid]')
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
             await msg.delete()
-            logging.info(f"【admin】：{msg.from_user.id} 新更新 管理 {c}")
+        else:
+            if uid not in config["admins"]:
+                config["admins"].append(uid)
+                save_config()
+            send = await msg.reply(f'👮🏻 新更新 管理员 {first.first_name}-{uid}，当前admins：\n{config["admins"]}')
+            await msg.delete()
+            logging.info(f"【admin】：{msg.from_user.id} 新更新 管理 {first.first_name}-{uid}")
             asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
+    else:
+        uid = msg.reply_to_message.from_user.id
+        first = await bot.get_chat(uid)
+        if uid not in config["admins"]:
+            config["admins"].append(uid)
+            save_config()
+        send = await msg.reply(f'👮🏻 新更新 管理员 {first.first_name}-{uid}，当前admins：\n{config["admins"]}')
+        await msg.delete()
+        logging.info(f"【admin】：{msg.from_user.id} 新更新 管理 {first.first_name}-{uid}")
+        asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
 
 
+# 增加白名单
+@bot.on_message(filters.command('prouser', prefixes=prefixes) & filters.chat(admins))
+async def pro_user(_, msg):
+    if msg.reply_to_message is None:
+        try:
+            uid = msg.text.split()[1]
+            first = await bot.get_chat(uid)
+        except (IndexError, KeyError, BadRequest):
+            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/prouser [tgid]')
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+            await msg.delete()
+        else:
+            sqlhelper.update_one("update emby set lv=%s where tg=%s", ['a', uid])
+            send = await msg.reply(f"🎉 恭喜 [{first.first_name}](tg://{uid}) 获得白名单.")
+            await msg.delete()
+            logging.info(f"【admin】：{msg.from_user.id} 新更新 白名单 {first.first_name}-{uid}")
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+    else:
+        uid = msg.reply_to_message.from_user.id
+        first = await bot.get_chat(uid)
+        sqlhelper.update_one("update emby set lv=%s where tg=%s", ['a', uid])
+        send = await msg.reply(f"🎉 恭喜 [{first.first_name}](tg://{uid}) 获得白名单。")
+        await msg.delete()
+        logging.info(f"【admin】：{msg.from_user.id} 新更新 白名单 {first.first_name}-{uid}")
+        asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
+
+
+# 减少管理
 @bot.on_message(filters.command('revadmin', prefixes=prefixes) & filters.user(owner))
 async def del_admin(_, msg):
-    a = judge_user(msg.from_user.id)
-    if a == 1:
-        await msg.reply("🚨 **这不是你能使用的！**")
-    if a == 3:
+    if msg.reply_to_message is None:
         try:
-            c = msg.text.split()[1]
-        except IndexError:
-            await msg.reply("输入格式为：/revadmin [tgid]")
-        else:
-            if c in config["admins"]:
-                config["admins"].remove(c)
-                save_config()
-            send = await msg.reply(f'新减少 管理员 {c}，当前admins：\n{config["admins"]} \n**1 min后自焚**')
+            uid = msg.text.split()[1]
+            first = await bot.get_chat(uid)
+        except (IndexError, KeyError, BadRequest):
+            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/revadmin [tgid]')
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
             await msg.delete()
-            logging.info(f"【admin】：{msg.from_user.id} 新减少 管理 {c}")
+        else:
+            if uid in config["admins"]:
+                config["admins"].remove(uid)
+                save_config()
+            send = await msg.reply(f'👮🏻 已减少 管理员 {first.first_name}-{uid}，当前admins：\n{config["admins"]}')
+            await msg.delete()
+            logging.info(f"【admin】：{msg.from_user.id} 新减少 管理 {first.first_name}-{uid}")
             asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
+    else:
+        uid = msg.reply_to_message.from_user.id
+        first = await bot.get_chat(uid)
+        if uid in config["admins"]:
+            config["admins"].remove(uid)
+            save_config()
+        send = await msg.reply(f'👮🏻 已减少 管理员 {first.first_name}-{uid}，当前admins：\n{config["admins"]}')
+        await msg.delete()
+        logging.info(f"【admin】：{msg.from_user.id} 新减少 管理 {first.first_name}-{uid}")
+        asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
+
+
+# 减少白名单
+@bot.on_message(filters.command('revuser', prefixes=prefixes) & filters.chat(admins))
+async def pro_user(_, msg):
+    if msg.reply_to_message is None:
+        try:
+            uid = msg.text.split()[1]
+            first = await bot.get_chat(uid)
+        except (IndexError, KeyError, BadRequest):
+            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/prouser [tgid]')
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+            await msg.delete()
+        else:
+            sqlhelper.update_one("update emby set lv=%s where tg=%s", ['b', uid])
+            send = await msg.reply(f"🎉 恭喜 [{first.first_name}](tg://{uid}) 被移出白名单.")
+            await msg.delete()
+            logging.info(f"【admin】：{msg.from_user.id} 新移除 白名单 {first.first_name}-{uid}")
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+    else:
+        uid = msg.reply_to_message.from_user.id
+        first = await bot.get_chat(uid)
+        sqlhelper.update_one("update emby set lv=%s where tg=%s", ['b', uid])
+        send = await msg.reply(f"🎉 恭喜 [{first.first_name}](tg://{uid}) 被移出白名单。")
+        await msg.delete()
+        logging.info(f"【admin】：{msg.from_user.id} 新移除 白名单 {first.first_name}-{uid}")
+        asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
 
 
 @bot.on_callback_query(filters.regex("log_out"))
@@ -949,23 +1052,28 @@ async def log_out(_, call):
                                 reply_markup=ikb([[("❎ - 清除消息", "closeit")]]))
     except Exception as e:
         logging.error(e)
+        logging.info(f"【admin】：{call.from_user.id} - 导出日志失败！")
     else:
         logging.info(f"【admin】：{call.from_user.id} - 导出日志成功！")
 
 
 @bot.on_callback_query(filters.regex("set_tz"))
 async def set_tz(_, call):
-    await call.message.reply(
+    send = await call.message.reply(
         "【设置探针】\n\n请依次输入探针地址，api_token，设置的检测id 如：\ntz\napi_token\ntz_id  取消点击 /cancel")
     try:
         txt = await _.listen(call.from_user.id, filters.text, timeout=120)
     except asyncio.TimeoutError:
-        await bot.send_message(call.from_user.id, text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
+        await send.delete()
+        send1 = await bot.send_message(call.from_user.id,
+                                       text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
+        asyncio.create_task(send_msg_delete(call.message.chat.id, send1.id))
     else:
         if txt.text == '/cancel':
-            # await txt.delete()
-            await bot.send_message(call.from_user.id, text='__您已经取消输入__ **会话已结束！**')
-            pass
+            await send.delete()
+            await txt.delete()
+            send1 = await bot.send_message(call.from_user.id, text='__您已经取消输入__ **会话已结束！**')
+            asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
         else:
             try:
                 c = txt.text.split()
@@ -973,47 +1081,63 @@ async def set_tz(_, call):
                 s_tzapi = c[1]
                 s_tzid = c[2]
             except IndexError:
-                # await txt.delete()
-                await txt.reply("请注意格式！如：tz\napi_token\ntz_id")
+                await txt.delete()
+                await send.delete()
+                send1 = await txt.reply("请注意格式！如：探针地址tz\napi_token\n检测的tz_id")
+                asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
             else:
-                # await txt.delete()
+                await txt.delete()
+                await send.delete()
                 config["tz"] = s_tz
                 config["tz_api"] = s_tzapi
                 config["tz_id"] = s_tzid
                 save_config()
-                await txt.reply(f"{s_tz}\n{s_tzapi}\n{s_tzid}  设置完成！done！")
+                send1 = await txt.reply(f"网址: {s_tz}\napi_token: {s_tzapi}\n检测的id: {s_tzid}  设置完成！done！")
                 logging.info(f"【admin】：{call.from_user.id} - 更新探针设置完成")
+                asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
 
 
 @bot.on_callback_query(filters.regex("set_buy"))
 async def add_groups(_, call):
     if config["user_buy"] == "y":
         config["user_buy"] = "n"
-        await bot.send_message(call.from_user.id, '**👮🏻‍♂️ 已经为您关闭购买系统啦！**',
-                               reply_markup=ikb([[("💨 - 清除消息", "closeit")]]))
+        send = await bot.send_message(call.from_user.id, '**👮🏻‍♂️ 已经为您关闭购买系统啦！**',
+                                      reply_markup=ikb([[("♻️ - 清除消息", "closeit")]]))
         save_config()
         logging.info(f"【admin】：管理员 {call.from_user.first_name} - 关闭了购买按钮")
+        asyncio.create_task(send_msg_delete(call.message.chat.id, send.id))
     elif config["user_buy"] == "n":
         config["user_buy"] = "y"
-        await bot.send_message(call.from_user.id, '**👮🏻‍♂️ 已经为您开启购买系统啦！**')
+        send1 = await bot.send_message(call.from_user.id, '**👮🏻‍♂️ 已经为您开启购买系统啦！**')
         save_config()
         logging.info(f"【admin】：管理员 {call.from_user.first_name} - 开启了购买按钮")
-        await call.message.reply(
+        send = await call.message.reply(
             '如更换购买连接请输入格式形如： \n\n`[按钮描述]-[link1],\n[按钮描述]-[link2],\n[按钮描述]-[link3]` 退出状态请按 /cancel')
         try:
             txt = await _.listen(call.from_user.id, filters.text, timeout=120)
         except asyncio.TimeoutError:
-            await bot.send_message(call.from_user.id, text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
+            await send1.delete()
+            await send.delete()
+            send2 = await bot.send_message(call.from_user.id, text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
+            asyncio.create_task(send_msg_delete(send2.chat.id, send2.id))
         else:
             if txt.text == '/cancel':
-                # await txt.delete()
-                await bot.send_message(call.from_user.id, text='__您已经取消输入__ 退出状态。')
+                await txt.delete()
+                await send1.delete()
+                await send.delete()
+                send3 = await bot.send_message(call.from_user.id, text='__您已经取消输入__ 退出状态。')
+                asyncio.create_task(send_msg_delete(send3.chat.id, send3.id))
             else:
                 try:
                     c = txt.text.split(",")
                     # print(c)
                 except IndexError:
-                    await call.message.reply("格式有误。\n[按钮描述]-[link1],\n[按钮描述]-[link2],\n[按钮描述]-[link3]")
+                    await txt.delete()
+                    await send1.delete()
+                    await send.delete()
+                    send4 = await call.message.reply(
+                        "格式有误。'-'和',' 用英文\n[按钮描述]-[link1],\n[按钮描述]-[link2],\n[按钮描述]-[link3]")
+                    asyncio.create_task(send_msg_delete(send4.chat.id, send4.id))
                 else:
                     d = []
                     for i in c:
@@ -1023,16 +1147,56 @@ async def add_groups(_, call):
                     d.append(["💫 - 回到首页", "back_start"])
                     lines = array_chunk(d, 2)
                     keyboard = ikb(lines)
+                    await txt.delete()
+                    await send1.delete()
+                    await send.delete()
                     try:
-                        await bot.send_message(txt.from_user.id, "【体验样式】：\n🛒请选择购买对应时长的套餐：\n\n网页付款后会发邀请码连接，"
-                                                                 "点击跳转到bot开始注册和续期程式。",
-                                               reply_markup=keyboard)
+                        send5 = await bot.send_message(txt.from_user.id, "【体验样式】：\n🛒请选择购买对应时长的套餐：\n\n网页付款后会发邀请码连接，"
+                                                                         "点击跳转到bot开始注册和续期程式。",
+                                                       reply_markup=keyboard)
                         config["buy"] = d
                         save_config()
                         logging.info(f"【admin】：{txt.from_user.id} - 更新了购买按钮设置。")
+                        asyncio.create_task(send_msg_delete(send5.chat.id, send5.id))
                     except BadRequest as e:
-                        await bot.send_message(txt.from_user.id, "输入的link格式错误，请重试。http/https+link")
+                        send6 = await bot.send_message(txt.from_user.id, "输入的link格式错误，请重试。http/https+link")
                         logging.error(f"{e}")
+                        asyncio.create_task(send_msg_delete(send6.chat.id, send6.id))
+
+
+@bot.on_callback_query(filters.regex('set_line'))
+async def set_emby_line(_, call):
+    send = await call.message.reply(
+        "💘【设置线路】\n\n对我发送向emby用户展示的emby地址吧，支持markdown写法。 取消点击 /cancel")
+    try:
+        txt = await _.listen(call.from_user.id, filters.text, timeout=120)
+    except asyncio.TimeoutError:
+        await send.delete()
+        send1 = await bot.send_message(call.from_user.id,
+                                       text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
+        asyncio.create_task(send_msg_delete(call.message.chat.id, send1.id))
+    else:
+        if txt.text == '/cancel':
+            await send.delete()
+            await txt.delete()
+            send1 = await bot.send_message(call.from_user.id, text='__您已经取消输入__ **会话已结束！**')
+            asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
+        else:
+            try:
+                c = txt.text
+            except IndexError:
+                await txt.delete()
+                await send.delete()
+                send1 = await txt.reply("请注意格式。")
+                asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
+            else:
+                await txt.delete()
+                await send.delete()
+                config["line"] = c
+                save_config()
+                send1 = await txt.reply(f"网址样式: \n{config['line']}\n设置完成！done！")
+                logging.info(f"【admin】：{call.from_user.id} - 更新emby线路为{config['line']}设置完成")
+                asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
 
 
 """ 杂类 """

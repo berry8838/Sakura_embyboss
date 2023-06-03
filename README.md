@@ -16,11 +16,10 @@
     - [ ] 公告功能(群发信息)
     - [ ] 重新启用签到?
 - [ ] 基本功能
-    - [ ] 支持修改线路line
-    - [x] 支持修改adddmins列表
-    - [ ] 修改检测定时
-    - [ ] 查询中添加删除账户按钮
-    - [ ] 添加白名单用户
+    - [x] 服务消息1min自焚
+    - [x] /config 修改adddmins列表、emby线路
+    - [x] 查询中添加删除账户按钮
+    - [x] 添加/移除白名单用户
     - [ ] 重新绑定账户/ 用于被tg注销时不丢失emby
     - [ ] 添加邀请功能
     - [ ] 支持docker部署
@@ -29,7 +28,8 @@
 
 - [部分效果图](https://telegra.ph/embyboss-05-29)
 - 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符多添加三种  
-  即命令使用 ：`/start = .start = #start = !start`   快来试试吧
+  即命令使用 ：`/start = .start = #start = !start = 。start`   快来试试吧
+- 用户到期检测为每两个小时询问一遍，如需更改请自行 cron 写法更换。
 
 ```
 用户:
@@ -42,6 +42,8 @@ admins:
     /score +\-[分数] 对用户的积分调整
     /kk 查看用户 有赠与注册资格和禁用账户选项
     /config 查看日志，修改探针设置，购买按钮等
+    /proadmin /revadmin 增加或者移除admin成员
+    /prouser /revadmin 白名单操作
 ```
 
 ## 配置说明

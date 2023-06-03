@@ -27,6 +27,7 @@ group = config['group']
 chanel = config['chanel']
 photo = config['bot_photo']
 buy = config["buy"]
+admins = config["admins"]
 
 # emby
 api = config["emby_api"]
@@ -49,4 +50,4 @@ tz = config["tz"]
 tz_api = config["tz_api"]
 tz_id = config["tz_id"]
 
-prefixes = ['/', '!', '.', '#']
+prefixes = ['/', '!', '.', '#','。']

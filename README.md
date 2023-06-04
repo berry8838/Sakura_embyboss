@@ -28,7 +28,7 @@
 
 - [部分效果图](https://telegra.ph/embyboss-05-29)
 - 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符多添加三种  
-  即命令使用 ：`/start = .start = #start = !start = 。start`   快来试试吧
+  即命令使用 ：`/start = .start = #start = !start = 。start`   快来试试吧，另外请给bot开好删除消息权限。
 - 用户到期检测为每两个小时询问一遍，如需更改请自行 cron 写法更换。
 
 ```

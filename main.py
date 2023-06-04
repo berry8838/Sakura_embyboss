@@ -681,7 +681,7 @@ async def ch_link(_, call):
     await bot.edit_message_caption(call.from_user.id,
                                    call.message.id,
                                    caption='**📰查看某一项：'
-                                           f'·已使用 - {used}\n·月付 - {mon}\n·季付 - {sea}\n·半年付 - {half}\n·年付 - {year}**',
+                                           f'·已使用 - {used}\n·月码 - {mon}\n·季码 - {sea}\n·半年码 - {half}\n·年码 - {year}**',
                                    reply_markup=date_ikb)
 
 
@@ -767,10 +767,11 @@ async def user_info(_, msg):
                         InlineButton(' ✨ 赠送资格', f'gift-{uid}'),
                         InlineButton(ban, f'user_ban-{uid}')
                     )
+                    keyboard.row(InlineButton('❌ - 删除账户', f'closeemby-{uid}'))
                 except TypeError:
                     text += f'**· 🆔 TG** ：[{first.first_name}](tg://user?id={uid})\n数据库中没有此ID。ta 还没有私聊过我。'
+                    keyboard.row(InlineButton('❌ - 删除消息', f'closeit'))
                 finally:
-                    keyboard.row(InlineButton('❌ - 删除账户', f'closeemby-{uid}'))
                     send = await bot.send_photo(msg.chat.id, photo=photo, caption=text, protect_content=True,
                                                 reply_markup=keyboard)
                     asyncio.create_task(send_msg_delete(send.chat.id, send.id))
@@ -796,10 +797,11 @@ async def user_info(_, msg):
                     InlineButton(' ✨ 赠送资格', f'gift-{uid}'),
                     InlineButton(ban, f'user_ban-{uid}')
                 )
+                keyboard.row(InlineButton('❌ - 删除账户', f'closeemby-{uid}'))
             except TypeError:
                 text += f'**· 🆔 TG** ：[{first.first_name}](tg://user?id={uid})\n数据库中没有此ID。ta 还没有私聊过我。'
+                keyboard.row(InlineButton('❌ - 删除消息', f'closeit'))
             finally:
-                keyboard.row(InlineButton('❌ - 删除账户', f'closeemby-{uid}'))
                 send = await bot.send_message(msg.chat.id, text, protect_content=True,
                                               reply_to_message_id=msg.reply_to_message.id, reply_markup=keyboard)
                 asyncio.create_task(send_msg_delete(send.chat.id, send.id))

@@ -1,3 +1,7 @@
+"""
+根据哪吒探针项目修改，只是图服务器界面好看。
+"""
+
 import json
 import humanize as humanize
 import requests as r

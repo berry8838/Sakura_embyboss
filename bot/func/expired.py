@@ -32,7 +32,8 @@ async def job():
     else:
         pass
     # 询问 已禁用用户，若有积分变化则续期
-    result1 = sqlhelper.select_all("select tg,embyid,ex,us from emby where lv=%s", 'c')
+    result1 = sqlhelper.select_all(
+        "select tg,embyid,ex,us from emby where  (ex < %s and lv=%s)", [now, 'c'])
     # print(result1)
     if result1 is not None:
         for i in result1:

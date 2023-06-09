@@ -60,6 +60,9 @@ async def emby_create(tg, name, pwd2, us, stats):
             elif stats == 'n':
                 update_one(f"update emby set embyid=%s,name=%s,pwd=%s,pwd2=%s,lv=%s,cr=%s,ex=%s,us=%s where tg={tg}",
                            [id, name, pwd, pwd2, 'b', now, ex, 0])
+            elif stats == 'o':
+                update_one(f"insert into emby2(embyid,name,pwd,pwd2,cr,ex,expired) values (%s,%s,%s,%s,%s,%s,%s)",
+                           [id, name, pwd, 1234, now, ex, 0])
             return pwd
     elif _status == 400:
         return 400

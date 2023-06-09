@@ -15,11 +15,9 @@
     - [ ] 积分红包
     - [ ] 公告功能(群发信息)
     - [ ] 重新启用签到?
-- [ ] 基本功能
-    - [x] 服务消息1min自焚
-    - [x] /config 修改adddmins列表、emby线路
-    - [x] 查询中添加删除账户按钮
-    - [x] 添加/移除白名单用户
+- [ ] 基本功能  
+已实现的基础功能请看使用帮助
+    - [ ] 控制指定显示/隐藏某个库（nsfw）
     - [ ] 重新绑定账户/ 用于被tg注销时不丢失emby
     - [ ] 添加邀请功能
     - [ ] 支持docker部署
@@ -33,17 +31,17 @@
 
 ```
 用户:
-    /start 开启面板 (私聊)
-    /exchange 使用注册码 (私聊)
-    /myinfo 查看自己状态 (无限制)
-
+    /start            - 开启面板 (私聊)
+    /exchange [注册码] - 使用注册码 (私聊)
+    /myinfo           - 查看自己状态 (无限制)
 admins:
-    除去以上用户命令，还有
-    /score +\-[分数] 对用户的积分调整
-    /kk 查看用户 有赠与注册资格和禁用账户选项
-    /config 查看日志，修改探针设置，购买按钮等
-    /proadmin /revadmin 增加或者移除admin成员
-    /prouser /revadmin 白名单操作
+    /kk            - 查看用户，含赠送注册、禁用账户、删除账户
+    /config        - 含查看日志，修改探针设置，购买按钮,修改展示用户的emby线路等
+    /create [name] - 创建非绑定tg的emby账户
+    /proadmin /revadmin [id] 或回复某人[命令] - 增加或移除admin成员
+    /prouser  /revuser  [id] 或回复某人[命令] - 增加或移除白名单成员
+    /score [tgid] [+\-分数] 或回复某人/score [+/-分数] - 对用户的积分调整
+    /renew [emby_name] [+/-天数] 或回复某人/renew [+/-天数] - 调整到期时间
 ```
 
 ## 配置说明
@@ -115,9 +113,9 @@ systemctl enable docker
                   bot发送消息时的图片。必填
 "user_buy": "n"   开启购买按钮，建议默认关闭，后续可以在bot里自行配置
 "open": "n",      是否开启自由注册。
-"admins": []      拥有管理权限的id
+"admins": []      拥有管理权限的id，记得要填入owner里的tgid，其他添加id要用英文逗号隔开
 "emby_api": ""    emby的api，在后台自己创建一个
-"emby_url": ""    建议ip，http://255.255.255.36:8096 这样的，是发送给enby的网址，填域名请保证反代不会挂
+"emby_url": ""    建议ip，http://255.255.255.36:8096 最后不带斜杠，是发送给enby的网址，填域名请保证反代不会挂
 "line": ""        展示给用户的emby地址
 "db_host": ""     如上，数据库的ip 如：255.255.255.36 不需要3306端口，默认的
 "db_user": "susu" 数据库用户名
@@ -130,7 +128,7 @@ systemctl enable docker
 ```
 "buy": [],      购买按钮的样式，建议不填，等bot起来去里面设置。报错很麻烦
 "invite": "n",  没写好，可以忽略。 
-"tz": "",
+"tz": "",       探针地址，形如：tz.susuyyds.xyz 最后不带斜杠
 "tz_api": "",
 "tz_id": ""     tz开头的三项是和nezha探针在一起的项目，没有哪吒探针就忽略。
 ```

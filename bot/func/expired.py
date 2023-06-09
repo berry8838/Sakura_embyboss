@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from _mysql import sqlhelper
 from bot.func import emby
-from config import bot
+from config import bot, owner
 
 
 async def job():
@@ -49,6 +49,16 @@ async def job():
                 pass
     else:
         pass
+    result2 = sqlhelper.select_all(
+        "select embyid,name,ex from emby2 where (ex < %s and expired=%s) ", [now, 0])
+    if result2 is not None:
+        for i in result2:
+            await emby.ban_user(i[0], 0)
+            sqlhelper.update_one("update emby2 set expired=%s where embyid=%s", [1, i[0]])
+            await bot.send_message(owner, f'✨**自动任务：**\n  到期封印非TG账户：`{i[1]}` \nDone！')
+            logging.info(f"自动任务：{i[0]} 封印非TG账户{i[1]} Done！")
+    else:
+        pass
 
 
 # 每天x点检测
@@ -56,6 +66,6 @@ async def job():
 scheduler = AsyncIOScheduler()
 # 添加一个cron任务，每2小时执行一次job函数
 scheduler.add_job(job, 'cron', hour='*/2', timezone="Asia/Shanghai")
-# scheduler.add_job(job, 'cron', miniters='*/2', timezone="Asia/Shanghai")
+# scheduler.add_job(job, 'cron', minute='*/2', timezone="Asia/Shanghai")
 # 启动调度器
 scheduler.start()

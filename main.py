@@ -1,8 +1,8 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# import uvloop
-#
-# uvloop.install()
+import uvloop
+
+uvloop.install()
 
 # 四个界面
 import bot.sever_panel

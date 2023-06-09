@@ -3,26 +3,9 @@
 import uvloop
 
 uvloop.install()
-
-# 四个界面
-import bot.sever_panel
-import bot.start
-import bot.member_panel
-import bot.admin_panel
-import bot.config_panel
-
-# 注册码
-import bot.func.exchange
-
-# 功能
-import bot.func.expired
-import bot.func.user_permission
-import bot.func.kk
-import bot.func.leave_unauth_chat
-import bot.func.score
-import bot.mylogger
-import bot.extra.create
-
+from bot import admin_panel, config_panel, member_panel, mylogger, sever_panel, start
+from bot.func import emby, exchange, expired, kk, leave_unauth_chat, mima, nezha_res, score, user_permission
+from bot.extra import create
 from config import *
 
 bot.run()

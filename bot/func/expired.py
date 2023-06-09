@@ -43,7 +43,7 @@ async def job():
                 await emby.ban_user(i[1], 1)
                 sqlhelper.update_one("update emby set lv=%s,ex=%s,us=%s where tg=%s",
                                      ['b', ex, a, i[0]])
-                await bot.send_message(i[0], f'✨**自动任务：**\n  解封账户，在当前时间自动续期 30天 \nDone！')
+                await bot.send_message(i[0], f'✨**自动任务：**\n  解封账户，在当前时间自动续期 30天 Done！')
                 logging.info(f"✨**自动任务：**{i[0]} 解封账户，在当前时间自动续期 30天 Done！- {ex}")
             else:
                 pass
@@ -55,7 +55,7 @@ async def job():
         for i in result2:
             await emby.ban_user(i[0], 0)
             sqlhelper.update_one("update emby2 set expired=%s where embyid=%s", [1, i[0]])
-            await bot.send_message(owner, f'✨**自动任务：**\n  到期封印非TG账户：`{i[1]}` \nDone！')
+            await bot.send_message(owner, f'✨**自动任务：**\n  到期封印非TG账户：`{i[1]}` Done！')
             logging.info(f"自动任务：{i[0]} 封印非TG账户{i[1]} Done！")
     else:
         pass

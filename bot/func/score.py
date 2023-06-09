@@ -54,7 +54,7 @@ async def score_user(_, msg):
             logging.info(f"【admin】[积分]：{msg.from_user.first_name} 对 {first.first_name}-{uid}  {b}分  ")
 
 
-@bot.on_message(filters.command('renew', prefixes) & filters.user(owner))
+@bot.on_message(filters.command('renew', prefixes) & filters.user(admins))
 async def renew_user(_, msg):
     if msg.reply_to_message is None:
         try:
@@ -66,40 +66,58 @@ async def renew_user(_, msg):
                 "🔔 **使用格式：**/renew [emby_name] [加减天数]\n\n或回复某人 /renew [+/-天数] \nemby_name为emby账户名")
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         else:
-            embyid, ex = sqlhelper.select_one("select embyid,ex from emby2 where name=%s", b)
-            if embyid is not None:
-                ex_new = datetime.now()
-                if ex_new > ex:
-                    ex_new = ex_new + timedelta(days=c)
-                    print(ex_new)
-                    await emby.ban_user(embyid, 1)
-                    await msg.reply(f'🍒 __已调整emby用户 {b} 到期时间 {c}天 (以当前时间计)。__')
-                elif ex_new < ex:
-                    ex_new = ex + timedelta(days=c)
-                    await msg.reply(f'🍒  __已调整emby用户 {b} 到期时间 {c}天__ ')
-                sqlhelper.update_one("update emby2 set ex=%s,expired=%s where name=%s", [ex_new, 0, b])
-                logging.info(f"【admin】[extra]：{msg.from_user.first_name} 对 emby账户{b} 调节 {c} 天  ")
-            else:
-                embyid, lv, ex = sqlhelper.select_one("select embyid,lv,ex from emby where name=%s", b)
+            try:
+                embyid, ex, expired = sqlhelper.select_one("select embyid,ex,expired from emby2 where name=%s", b)
                 if embyid is not None:
                     ex_new = datetime.now()
                     if ex_new > ex:
                         ex_new = ex_new + timedelta(days=c)
-                        print(ex_new)
-                        await msg.reply(f'🍒 __已调整emby用户 {b} 到期时间 {c}天 (以当前时间计)。__')
+                        await msg.reply(
+                            f'🍒 __已调整 emby 用户 {b} 到期时间 {c}天 (以当前时间计)__'
+                            f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                     elif ex_new < ex:
                         ex_new = ex + timedelta(days=c)
-                        await msg.reply(f'🍒  __已调整emby用户 {b} 到期时间 {c}天__ ')
+                        await msg.reply(
+                            f'🍒 __已调整 emby 用户 {b} 到期时间 {c}天__'
+                            f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                     if ex_new < datetime.now():
-                        lv = 'c'
+                        expired = 1
                         await emby.ban_user(embyid, 0)
                     if ex_new > datetime.now():
-                        lv = 'b'
+                        expired = 0
                         await emby.ban_user(embyid, 1)
-                    sqlhelper.update_one("update emby set ex=%s,lv=%s where name=%s", [ex_new, lv, b])
-                    logging.info(f"【admin】[extra]：{msg.from_user.first_name} 对 emby账户{b} 调节 {c} 天  ")
-                else:
+                    sqlhelper.update_one("update emby2 set ex=%s,expired=%s where name=%s", [ex_new, expired, b])
+                    logging.info(
+                        f"【admin】[renew]：{msg.from_user.first_name} 对 emby账户{b} 调节 {c} 天, 📅 实时到期：{ex_new} ")
+            except TypeError:
+                try:
+                    embyid, lv, ex = sqlhelper.select_one("select embyid,lv,ex from emby where name=%s", b)
+                except TypeError:
                     await msg.reply(f"♻️ 没有检索到 {b} 这个账户，请确认重试。")
+                else:
+                    if embyid is not None:
+                        ex_new = datetime.now()
+                        if ex_new > ex:
+                            ex_new = ex_new + timedelta(days=c)
+                            # print(ex_new)
+                            await msg.reply(
+                                f'🍒 __已调整 emby 用户 {b} 到期时间 {c} 天 (以当前时间计)__'
+                                f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
+                        elif ex_new < ex:
+                            ex_new = ex + timedelta(days=c)
+                            await msg.reply(
+                                f'🍒 __已调整 emby 用户 {b} 到期时间 {c} 天__'
+                                f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
+                        if ex_new < datetime.now():
+                            lv = 'c'
+                            await emby.ban_user(embyid, 0)
+                        if ex_new > datetime.now():
+                            lv = 'b'
+                            await emby.ban_user(embyid, 1)
+                        sqlhelper.update_one("update emby set ex=%s,lv=%s where name=%s", [ex_new, lv, b])
+                        logging.info(
+                            f"【admin】[renew]：{msg.from_user.first_name} 对 emby账户{b} 调节 {c} 天，"
+                            f"实时到期：{ex_new.strftime('%Y-%m-%d %H:%M:%S')}")
     else:
         try:
             uid = msg.reply_to_message.from_user.id
@@ -108,7 +126,7 @@ async def renew_user(_, msg):
             # print(c)
         except IndexError:
             send = await msg.reply(
-                "🔔 **使用格式：**/renew [emby_name] [加减天数]\n\n或回复某人 /renew [+/-天数] \nemby_name为emby账户名")
+                "🔔 **使用格式：**/renew [emby_name] [加减天数]\n\n或回复某人 /renew [+/-天数]\nemby_name为emby账户名")
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         else:
             embyid, name, lv, ex = sqlhelper.select_one("select embyid,name,lv,ex from emby where tg=%s", uid)
@@ -117,13 +135,19 @@ async def renew_user(_, msg):
                 if ex_new > ex:
                     ex_new = ex_new + timedelta(days=b)
                     await msg.reply(
-                        f'🍒 __已调整用户 [{first.first_name}](tg://user?id={uid})-{name} 到期时间 {b}天 (以当前时间计)__')
+                        f'🍒 __已调整用户 [{first.first_name}](tg://user?id={uid})-{name} 到期时间 {b}天 (以当前时间计)__'
+                        f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                     await bot.send_message(uid,
                                            f"🎯 管理员 {msg.from_user.first_name} 调节了您的到期时间：{b}天"
-                                           f"📅 实时到期：{ex_new} ")
+                                           f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                 elif ex_new < ex:
                     ex_new = ex + timedelta(days=b)
-                    await msg.reply(f'🍒  __已调整用户 {first.first_name}({uid})-{name} 到期时间 {b}天__')
+                    await msg.reply(
+                        f'🍒  __已调整用户 {first.first_name}({uid})-{name} 到期时间 {b}天__'
+                        f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")} ')
+                    await bot.send_message(uid,
+                                           f"🎯 管理员 {msg.from_user.first_name} 调节了您的到期时间：{b}天"
+                                           f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                 if ex_new < datetime.now():
                     lv = 'c'
                     await emby.ban_user(embyid, 0)
@@ -132,6 +156,7 @@ async def renew_user(_, msg):
                     await emby.ban_user(embyid, 1)
                 sqlhelper.update_one("update emby set ex=%s,lv=%s where tg=%s", [ex_new, lv, uid])
                 logging.info(
-                    f"【admin】[extra]：{msg.from_user.first_name} 对 {first.first_name}({uid})-{name} 用户调节到期时间 {b} 天")
+                    f"【admin】[renew]：{msg.from_user.first_name} 对 {first.first_name}({uid})-{name} 用户调节到期时间 {b} 天"
+                    f'  实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
             else:
-                await msg.reply("💢 回复的 ta 还没有注册账户呢")
+                await msg.reply(f"💢 [ta](tg://user?id={uid}) 还没有注册账户呢")

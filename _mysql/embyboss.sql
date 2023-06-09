@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： mysql:3306
--- 生成日期： 2023-06-01 14:31:08
+-- 生成日期： 2023-06-09 22:21:22
 -- 服务器版本： 5.7.42
 -- PHP 版本： 8.1.17
 
@@ -31,7 +31,7 @@ CREATE TABLE `emby` (
   `tg` bigint(255) NOT NULL,
   `embyid` char(255) DEFAULT NULL,
   `name` char(255) CHARACTER SET utf8mb4 DEFAULT NULL,
-  `pwd` char(255) DEFAULT NULL,
+  `pwd` char(255) CHARACTER SET utf8mb4 DEFAULT NULL,
   `pwd2` char(255) CHARACTER SET utf8mb4 DEFAULT NULL,
   `lv` char(255) CHARACTER SET utf8mb4 NOT NULL,
   `cr` datetime DEFAULT NULL,
@@ -39,6 +39,22 @@ CREATE TABLE `emby` (
   `us` int(255) NOT NULL DEFAULT '0',
   `iv` int(255) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `emby2`
+--
+
+CREATE TABLE `emby2` (
+  `embyid` char(255) CHARACTER SET utf8 NOT NULL,
+  `name` char(255) CHARACTER SET utf8mb4 DEFAULT NULL,
+  `pwd` char(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pwd2` char(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `cr` datetime DEFAULT NULL,
+  `ex` datetime DEFAULT NULL,
+  `expired` int(1) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -63,6 +79,12 @@ CREATE TABLE `invite` (
 --
 ALTER TABLE `emby`
   ADD PRIMARY KEY (`tg`);
+
+--
+-- 表的索引 `emby2`
+--
+ALTER TABLE `emby2`
+  ADD PRIMARY KEY (`embyid`);
 
 --
 -- 表的索引 `invite`

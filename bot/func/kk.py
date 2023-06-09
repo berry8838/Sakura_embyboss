@@ -98,7 +98,7 @@ async def gift(_, call):
     if a == 3:
         b = int(call.data.split("-")[1])
         # first = await bot.get_chat(b)
-        embyid, lv = sqlhelper.select_one("select embyid,lv from emby where tg = %s", b)
+        embyid, name, lv = sqlhelper.select_one("select embyid,name,lv from emby where tg = %s", b)
         if embyid is None:
             send = await call.message.reply(f'💢 ta 没有注册账户。')
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
@@ -106,15 +106,13 @@ async def gift(_, call):
             if lv != "c":
                 await emby.ban_user(embyid, 0)
                 sqlhelper.update_one("update emby set lv=%s where tg=%s", ['c', b])
-                send = await call.message.reply(f'🎯 已完成禁用。此状态将在下次续期时刷新')
-                logging.info(f"【admin】：{call.from_user.id} 完成禁用 {b} de 账户 ")
-                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+                await call.message.reply(f'🎯 {name} 已完成禁用。此状态将在下次续期时刷新')
+                logging.info(f"【admin】：{call.from_user.id} 完成禁用 {b} 账户 {name}")
             elif lv == "c":
                 await emby.ban_user(embyid, 1)
                 sqlhelper.update_one("update emby set lv=%s where tg=%s", ['b', b])
-                send = await call.message.reply(f'🎯 已解除禁用。')
-                logging.info(f"【admin】：{call.from_user.id} 解除禁用 {b} de 账户 ")
-                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+                await call.message.reply(f'🎯 {name} 已解除禁用。')
+                logging.info(f"【admin】：{call.from_user.id} 解除禁用 {b}账户 {name}")
 
 
 # 赠送资格
@@ -130,13 +128,12 @@ async def gift(_, call):
         embyid = sqlhelper.select_one("select embyid from emby where tg = %s", b)[0]
         if embyid is None:
             await emby.start_user(b, 30)
-            send = await call.message.reply(f"🌟 好的，管理员 {call.from_user.first_name}"
-                                            f'已为 [{first.first_name}](tg://user?id={b}) 赠予资格。前往bot进行下一步操作：',
-                                            reply_markup=ikb([[("(👉ﾟヮﾟ)👉 点这里", f"t.me/{BOT_NAME}", "url")]]))
+            await call.message.reply(f"🌟 好的，管理员 {call.from_user.first_name}"
+                                     f'已为 [{first.first_name}](tg://user?id={b}) 赠予资格。前往bot进行下一步操作：',
+                                     reply_markup=ikb([[("(👉ﾟヮﾟ)👉 点这里", f"t.me/{BOT_NAME}", "url")]]))
             await bot.send_photo(b, photo, f"💫 亲爱的 {first.first_name} \n💘请查收：",
                                  reply_markup=ikb([[("💌 - 点击注册", "create")], [('❌ - 关闭', 'closeit')]]))
             logging.info(f"【admin】：{call.from_user.id} 已发送 注册资格 {first.first_name} - {b} ")
-            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         else:
             send = await call.message.reply(f'💢 ta 已注册账户。',
                                             reply_markup=ikb([[('❌ - 已开启自动删除', 'closeit')]]))
@@ -152,16 +149,14 @@ async def close_emby(_, call):
     if a == 3:
         b = int(call.data.split("-")[1])
         first = await bot.get_chat(b)
-        embyid, lv = sqlhelper.select_one("select embyid,lv from emby where tg = %s", b)
+        embyid, name, lv = sqlhelper.select_one("select embyid,name,lv from emby where tg = %s", b)
         if embyid is None:
             send = await call.message.reply(f'💢 ta 还没有注册账户。')
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         else:
             if await emby.emby_del(b) is True:
-                send = await call.message.reply(f'🎯 done，等级：{lv} - {first.first_name}的账户已完成删除。')
-                logging.info(f"【admin】：{call.from_user.id} 完成删除 {b} 的账户 ")
-                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+                await call.message.reply(f'🎯 done，等级：{lv} - {first.first_name}的账户 {name} 已完成删除。')
+                logging.info(f"【admin】：{call.from_user.id} 完成删除 {b} 的账户 {name}")
             else:
-                send = await call.message.reply(f'🎯 done，等级：{lv} - {first.first_name}的账户删除失败。')
-                logging.info(f"【admin】：{call.from_user.id} 对 {b} 的账户删除失败 ")
-                asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+                await call.message.reply(f'🎯 done，等级：{lv} - {first.first_name}的账户 {name} 删除失败。')
+                logging.info(f"【admin】：{call.from_user.id} 对 {b} 的账户 {name} 删除失败 ")

@@ -1,8 +1,8 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-import uvloop
-
-uvloop.install()
+# import uvloop
+#
+# uvloop.install()
 
 # 四个界面
 import bot.sever_panel
@@ -21,7 +21,7 @@ import bot.func.kk
 import bot.func.leave_unauth_chat
 import bot.func.score
 import bot.mylogger
-
+import bot.extra.create
 
 from config import *
 

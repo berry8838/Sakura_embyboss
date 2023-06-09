@@ -1,0 +1,270 @@
+2023-06-09 00:39:02,864 - INFO - 36 - ------bot started------ 
+2023-06-09 00:39:03,661 - INFO - 56 - Connecting... 
+2023-06-09 00:39:03,664 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 00:39:03,665 - INFO - 270 - NetworkTask started 
+2023-06-09 00:39:04,774 - INFO - 131 - Session initialized: Layer 150 
+2023-06-09 00:39:04,775 - INFO - 132 - Device: CPython 3.9.13 - Pyrogram 2.0.79 
+2023-06-09 00:39:04,775 - INFO - 133 - System: Windows 10 (EN) 
+2023-06-09 00:39:04,776 - INFO - 148 - Session started 
+2023-06-09 00:39:04,782 - INFO - 248 - PingTask started 
+2023-06-09 00:39:05,322 - INFO - 154 - Started 12 HandlerTasks 
+2023-06-09 00:39:22,142 - INFO - 29 - 【创建tg外账户】：1661037800 - 建立了账户 niuniu  
+2023-06-09 00:40:30,985 - INFO - 75 - Stop signal received (SIGINT). Exiting... 
+2023-06-09 00:40:30,994 - INFO - 167 - Stopped 12 HandlerTasks 
+2023-06-09 00:40:30,995 - INFO - 267 - PingTask stopped 
+2023-06-09 00:40:30,995 - INFO - 77 - Disconnected 
+2023-06-09 00:40:30,995 - INFO - 286 - NetworkTask stopped 
+2023-06-09 00:40:30,996 - INFO - 174 - Session stopped 
+2023-06-09 00:40:44,361 - INFO - 36 - ------bot started------ 
+2023-06-09 00:40:45,273 - INFO - 56 - Connecting... 
+2023-06-09 00:40:45,275 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 00:40:45,277 - INFO - 270 - NetworkTask started 
+2023-06-09 00:40:46,449 - INFO - 131 - Session initialized: Layer 150 
+2023-06-09 00:40:46,449 - INFO - 132 - Device: CPython 3.9.13 - Pyrogram 2.0.79 
+2023-06-09 00:40:46,449 - INFO - 133 - System: Windows 10 (EN) 
+2023-06-09 00:40:46,450 - INFO - 148 - Session started 
+2023-06-09 00:40:46,456 - INFO - 248 - PingTask started 
+2023-06-09 00:40:46,838 - INFO - 154 - Started 12 HandlerTasks 
+2023-06-09 00:41:13,457 - INFO - 29 - 【创建tg外账户】：1661037800 - 建立了账户 niuniu1  
+2023-06-09 00:41:53,967 - INFO - 286 - NetworkTask stopped 
+2023-06-09 00:41:53,968 - INFO - 267 - PingTask stopped 
+2023-06-09 00:41:53,969 - INFO - 77 - Disconnected 
+2023-06-09 00:41:53,969 - INFO - 174 - Session stopped 
+2023-06-09 00:41:53,970 - INFO - 56 - Connecting... 
+2023-06-09 00:41:53,971 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 00:41:53,972 - INFO - 270 - NetworkTask started 
+2023-06-09 00:41:54,857 - INFO - 131 - Session initialized: Layer 150 
+2023-06-09 00:41:54,857 - INFO - 132 - Device: CPython 3.9.13 - Pyrogram 2.0.79 
+2023-06-09 00:41:54,857 - INFO - 133 - System: Windows 10 (EN) 
+2023-06-09 00:41:54,857 - INFO - 148 - Session started 
+2023-06-09 00:41:54,857 - INFO - 248 - PingTask started 
+2023-06-09 00:50:47,167 - INFO - 286 - NetworkTask stopped 
+2023-06-09 00:50:47,167 - INFO - 267 - PingTask stopped 
+2023-06-09 00:50:47,167 - INFO - 77 - Disconnected 
+2023-06-09 00:50:47,167 - INFO - 174 - Session stopped 
+2023-06-09 00:50:47,167 - INFO - 56 - Connecting... 
+2023-06-09 00:51:08,196 - WARNING - 59 - Unable to connect due to network issues: [WinError 121] 信号灯超时时间已到 
+2023-06-09 00:51:09,223 - INFO - 56 - Connecting... 
+2023-06-09 00:51:13,534 - INFO - 75 - Stop signal received (SIGINT). Exiting... 
+2023-06-09 00:51:13,534 - INFO - 167 - Stopped 12 HandlerTasks 
+2023-06-09 00:51:13,549 - INFO - 77 - Disconnected 
+2023-06-09 00:51:13,549 - INFO - 174 - Session stopped 
+2023-06-09 00:51:13,549 - WARNING - 59 - Unable to connect due to network issues: [WinError 995] 由于线程退出或应用程序请求，已中止 I/O 操作。 
+2023-06-09 00:56:08,720 - INFO - 36 - ------bot started------ 
+2023-06-09 00:56:09,542 - INFO - 56 - Connecting... 
+2023-06-09 00:56:09,543 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 00:56:09,545 - INFO - 270 - NetworkTask started 
+2023-06-09 00:56:10,556 - INFO - 77 - Disconnected 
+2023-06-09 00:56:10,556 - INFO - 286 - NetworkTask stopped 
+2023-06-09 00:56:10,557 - INFO - 174 - Session stopped 
+2023-06-09 00:56:10,557 - INFO - 56 - Connecting... 
+2023-06-09 00:56:10,558 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 00:56:10,559 - INFO - 270 - NetworkTask started 
+2023-06-09 00:56:11,993 - INFO - 131 - Session initialized: Layer 150 
+2023-06-09 00:56:11,993 - INFO - 132 - Device: CPython 3.9.13 - Pyrogram 2.0.79 
+2023-06-09 00:56:11,993 - INFO - 133 - System: Windows 10 (EN) 
+2023-06-09 00:56:11,994 - INFO - 148 - Session started 
+2023-06-09 00:56:11,999 - INFO - 248 - PingTask started 
+2023-06-09 00:56:13,428 - INFO - 154 - Started 12 HandlerTasks 
+2023-06-09 00:58:00,004 - INFO - 27 - Running job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:00:00 CST)" (scheduled at 2023-06-09 00:58:00+08:00) 
+2023-06-09 00:58:06,885 - INFO - 59 - 自动任务：60bef93b8fa342e099766ebc4cffd5c8 封印非TG账户niuniu1 Done！ 
+2023-06-09 00:58:06,886 - INFO - 39 - Job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:00:00 CST)" executed successfully 
+2023-06-09 01:00:00,024 - INFO - 27 - Running job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:02:00 CST)" (scheduled at 2023-06-09 01:00:00+08:00) 
+2023-06-09 01:00:06,820 - INFO - 59 - 自动任务：60bef93b8fa342e099766ebc4cffd5c8 封印非TG账户niuniu1 Done！ 
+2023-06-09 01:00:06,821 - INFO - 39 - Job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:02:00 CST)" executed successfully 
+2023-06-09 01:00:12,583 - INFO - 75 - Stop signal received (SIGINT). Exiting... 
+2023-06-09 01:00:12,592 - INFO - 167 - Stopped 12 HandlerTasks 
+2023-06-09 01:00:12,593 - INFO - 267 - PingTask stopped 
+2023-06-09 01:00:12,593 - INFO - 77 - Disconnected 
+2023-06-09 01:00:12,594 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:00:12,594 - INFO - 174 - Session stopped 
+2023-06-09 01:00:44,696 - INFO - 36 - ------bot started------ 
+2023-06-09 01:00:45,482 - INFO - 56 - Connecting... 
+2023-06-09 01:00:45,483 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:00:45,485 - INFO - 270 - NetworkTask started 
+2023-06-09 01:00:46,877 - INFO - 131 - Session initialized: Layer 150 
+2023-06-09 01:00:46,878 - INFO - 132 - Device: CPython 3.9.13 - Pyrogram 2.0.79 
+2023-06-09 01:00:46,878 - INFO - 133 - System: Windows 10 (EN) 
+2023-06-09 01:00:46,878 - INFO - 148 - Session started 
+2023-06-09 01:00:46,884 - INFO - 248 - PingTask started 
+2023-06-09 01:00:47,653 - INFO - 154 - Started 12 HandlerTasks 
+2023-06-09 01:02:04,658 - WARNING - 24 - Run time of job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:04:00 CST)" was missed by 0:00:04.658230 
+2023-06-09 01:02:05,019 - INFO - 29 - 【创建tg外账户】：1661037800 - 建立了账户 susu1  
+2023-06-09 01:04:00,007 - INFO - 27 - Running job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:06:00 CST)" (scheduled at 2023-06-09 01:04:00+08:00) 
+2023-06-09 01:04:03,442 - INFO - 39 - Job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:06:00 CST)" executed successfully 
+2023-06-09 01:05:55,566 - INFO - 75 - Stop signal received (SIGINT). Exiting... 
+2023-06-09 01:05:55,577 - INFO - 167 - Stopped 12 HandlerTasks 
+2023-06-09 01:05:55,578 - INFO - 267 - PingTask stopped 
+2023-06-09 01:05:55,578 - INFO - 77 - Disconnected 
+2023-06-09 01:05:55,579 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:05:55,579 - INFO - 174 - Session stopped 
+2023-06-09 01:06:14,820 - INFO - 36 - ------bot started------ 
+2023-06-09 01:06:15,891 - INFO - 56 - Connecting... 
+2023-06-09 01:06:15,892 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:06:15,894 - INFO - 270 - NetworkTask started 
+2023-06-09 01:06:17,331 - INFO - 131 - Session initialized: Layer 150 
+2023-06-09 01:06:17,332 - INFO - 132 - Device: CPython 3.9.13 - Pyrogram 2.0.79 
+2023-06-09 01:06:17,332 - INFO - 133 - System: Windows 10 (EN) 
+2023-06-09 01:06:17,332 - INFO - 148 - Session started 
+2023-06-09 01:06:17,338 - INFO - 248 - PingTask started 
+2023-06-09 01:06:18,202 - INFO - 154 - Started 12 HandlerTasks 
+2023-06-09 01:08:00,010 - INFO - 27 - Running job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:10:00 CST)" (scheduled at 2023-06-09 01:08:00+08:00) 
+2023-06-09 01:08:05,816 - INFO - 59 - 自动任务：97c67ffc268a46a6b9bef69a9477cf01 封印非TG账户susu1 Done！ 
+2023-06-09 01:08:05,816 - INFO - 39 - Job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:10:00 CST)" executed successfully 
+2023-06-09 01:08:16,156 - INFO - 75 - Stop signal received (SIGINT). Exiting... 
+2023-06-09 01:08:16,164 - INFO - 167 - Stopped 12 HandlerTasks 
+2023-06-09 01:08:16,165 - INFO - 267 - PingTask stopped 
+2023-06-09 01:08:16,165 - INFO - 77 - Disconnected 
+2023-06-09 01:08:16,165 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:08:16,166 - INFO - 174 - Session stopped 
+2023-06-09 01:10:23,195 - INFO - 36 - ------bot started------ 
+2023-06-09 01:10:24,005 - INFO - 56 - Connecting... 
+2023-06-09 01:10:24,015 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:10:24,017 - INFO - 270 - NetworkTask started 
+2023-06-09 01:10:25,341 - INFO - 131 - Session initialized: Layer 150 
+2023-06-09 01:10:25,341 - INFO - 132 - Device: CPython 3.9.13 - Pyrogram 2.0.79 
+2023-06-09 01:10:25,341 - INFO - 133 - System: Windows 10 (EN) 
+2023-06-09 01:10:25,341 - INFO - 148 - Session started 
+2023-06-09 01:10:25,341 - INFO - 248 - PingTask started 
+2023-06-09 01:10:26,027 - INFO - 154 - Started 12 HandlerTasks 
+2023-06-09 01:10:58,230 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:10:58,231 - INFO - 267 - PingTask stopped 
+2023-06-09 01:10:58,231 - INFO - 77 - Disconnected 
+2023-06-09 01:10:58,231 - INFO - 174 - Session stopped 
+2023-06-09 01:10:58,232 - INFO - 56 - Connecting... 
+2023-06-09 01:10:58,233 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:10:58,233 - INFO - 270 - NetworkTask started 
+2023-06-09 01:10:58,322 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:10:59,231 - INFO - 77 - Disconnected 
+2023-06-09 01:10:59,232 - INFO - 174 - Session stopped 
+2023-06-09 01:10:59,232 - INFO - 56 - Connecting... 
+2023-06-09 01:10:59,233 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:10:59,234 - INFO - 270 - NetworkTask started 
+2023-06-09 01:10:59,331 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:00,245 - INFO - 77 - Disconnected 
+2023-06-09 01:11:00,246 - INFO - 174 - Session stopped 
+2023-06-09 01:11:00,246 - INFO - 56 - Connecting... 
+2023-06-09 01:11:00,247 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:00,248 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:00,327 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:01,254 - INFO - 77 - Disconnected 
+2023-06-09 01:11:01,255 - INFO - 174 - Session stopped 
+2023-06-09 01:11:01,255 - INFO - 56 - Connecting... 
+2023-06-09 01:11:01,257 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:01,258 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:01,334 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:02,260 - INFO - 77 - Disconnected 
+2023-06-09 01:11:02,260 - INFO - 174 - Session stopped 
+2023-06-09 01:11:02,260 - INFO - 56 - Connecting... 
+2023-06-09 01:11:02,262 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:02,263 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:02,360 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:03,272 - INFO - 77 - Disconnected 
+2023-06-09 01:11:03,273 - INFO - 174 - Session stopped 
+2023-06-09 01:11:03,273 - INFO - 56 - Connecting... 
+2023-06-09 01:11:03,274 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:03,275 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:03,367 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:04,287 - INFO - 77 - Disconnected 
+2023-06-09 01:11:04,287 - INFO - 174 - Session stopped 
+2023-06-09 01:11:04,288 - INFO - 56 - Connecting... 
+2023-06-09 01:11:04,289 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:04,291 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:04,374 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:05,307 - INFO - 77 - Disconnected 
+2023-06-09 01:11:05,307 - INFO - 174 - Session stopped 
+2023-06-09 01:11:05,307 - INFO - 56 - Connecting... 
+2023-06-09 01:11:05,309 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:05,310 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:05,394 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:06,313 - INFO - 77 - Disconnected 
+2023-06-09 01:11:06,313 - INFO - 174 - Session stopped 
+2023-06-09 01:11:06,313 - INFO - 56 - Connecting... 
+2023-06-09 01:11:06,315 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:06,317 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:06,409 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:07,320 - INFO - 77 - Disconnected 
+2023-06-09 01:11:07,320 - INFO - 174 - Session stopped 
+2023-06-09 01:11:07,320 - INFO - 56 - Connecting... 
+2023-06-09 01:11:07,321 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:07,322 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:07,410 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:08,324 - INFO - 77 - Disconnected 
+2023-06-09 01:11:08,324 - INFO - 174 - Session stopped 
+2023-06-09 01:11:08,324 - INFO - 56 - Connecting... 
+2023-06-09 01:11:08,326 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:08,327 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:08,412 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:09,327 - INFO - 77 - Disconnected 
+2023-06-09 01:11:09,327 - INFO - 174 - Session stopped 
+2023-06-09 01:11:09,327 - INFO - 56 - Connecting... 
+2023-06-09 01:11:09,329 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:09,330 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:09,415 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:10,347 - INFO - 77 - Disconnected 
+2023-06-09 01:11:10,347 - INFO - 174 - Session stopped 
+2023-06-09 01:11:10,348 - INFO - 56 - Connecting... 
+2023-06-09 01:11:10,349 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:10,349 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:10,430 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:11,358 - INFO - 77 - Disconnected 
+2023-06-09 01:11:11,358 - INFO - 174 - Session stopped 
+2023-06-09 01:11:11,358 - INFO - 56 - Connecting... 
+2023-06-09 01:11:11,360 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:11,361 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:11,444 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:12,373 - INFO - 77 - Disconnected 
+2023-06-09 01:11:12,373 - INFO - 174 - Session stopped 
+2023-06-09 01:11:12,374 - INFO - 56 - Connecting... 
+2023-06-09 01:11:12,375 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:12,376 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:12,457 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:13,382 - INFO - 77 - Disconnected 
+2023-06-09 01:11:13,382 - INFO - 174 - Session stopped 
+2023-06-09 01:11:13,382 - INFO - 56 - Connecting... 
+2023-06-09 01:11:13,384 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:13,385 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:13,474 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:14,385 - INFO - 77 - Disconnected 
+2023-06-09 01:11:14,385 - INFO - 174 - Session stopped 
+2023-06-09 01:11:14,386 - INFO - 56 - Connecting... 
+2023-06-09 01:11:14,387 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:14,388 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:14,464 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:15,388 - INFO - 77 - Disconnected 
+2023-06-09 01:11:15,388 - INFO - 174 - Session stopped 
+2023-06-09 01:11:15,388 - INFO - 56 - Connecting... 
+2023-06-09 01:11:15,390 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:15,391 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:16,402 - INFO - 77 - Disconnected 
+2023-06-09 01:11:16,402 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:16,403 - INFO - 174 - Session stopped 
+2023-06-09 01:11:16,404 - INFO - 56 - Connecting... 
+2023-06-09 01:11:16,405 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:16,405 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:17,416 - INFO - 77 - Disconnected 
+2023-06-09 01:11:17,416 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:17,417 - INFO - 174 - Session stopped 
+2023-06-09 01:11:17,418 - INFO - 56 - Connecting... 
+2023-06-09 01:11:17,419 - INFO - 63 - Connected! Production DC5 - IPv4 - TCPAbridgedO 
+2023-06-09 01:11:17,419 - INFO - 270 - NetworkTask started 
+2023-06-09 01:11:17,976 - INFO - 286 - NetworkTask stopped 
+2023-06-09 01:11:18,417 - INFO - 77 - Disconnected 
+2023-06-09 01:11:18,417 - INFO - 174 - Session stopped 
+2023-06-09 01:11:18,418 - INFO - 56 - Connecting... 
+2023-06-09 01:11:39,446 - WARNING - 59 - Unable to connect due to network issues: [WinError 121] 信号灯超时时间已到 
+2023-06-09 01:11:40,463 - INFO - 56 - Connecting... 
+2023-06-09 01:12:00,017 - INFO - 27 - Running job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:14:00 CST)" (scheduled at 2023-06-09 01:12:00+08:00) 
+2023-06-09 01:12:03,700 - INFO - 39 - Job "job (trigger: cron[minute='*/2'], next run at: 2023-06-09 01:14:00 CST)" executed successfully 
+2023-06-09 01:12:03,700 - WARNING - 59 - Unable to connect due to network issues: [WinError 121] 信号灯超时时间已到 
+2023-06-09 01:12:04,726 - INFO - 56 - Connecting... 
+2023-06-09 01:12:25,756 - WARNING - 59 - Unable to connect due to network issues: [WinError 121] 信号灯超时时间已到 
+2023-06-09 01:12:26,777 - WARNING - 72 - Connection failed! Trying again... 
+2023-06-09 01:12:26,793 - INFO - 77 - Disconnected 
+2023-06-09 01:12:26,793 - INFO - 174 - Session stopped 
+2023-06-09 01:12:26,793 - INFO - 56 - Connecting... 
+2023-06-09 01:12:29,938 - INFO - 75 - Stop signal received (SIGINT). Exiting... 
+2023-06-09 01:12:29,946 - INFO - 167 - Stopped 12 HandlerTasks 
+2023-06-09 01:12:29,951 - INFO - 77 - Disconnected 
+2023-06-09 01:12:29,951 - INFO - 174 - Session stopped 
+2023-06-09 01:12:29,951 - WARNING - 59 - Unable to connect due to network issues: [WinError 995] 由于线程退出或应用程序请求，已中止 I/O 操作。 

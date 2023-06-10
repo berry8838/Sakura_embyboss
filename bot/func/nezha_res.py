@@ -20,7 +20,7 @@ def sever_info():
     }
 
     # 请求地址
-    tz_url = f'https://{tz}/api/v1/server/details?id={tz_id}'
+    tz_url = f'{tz}/api/v1/server/details?id={tz_id}'
 
     # 获取当前日期
     now = datetime.datetime.now()

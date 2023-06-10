@@ -108,6 +108,10 @@ async def emby_reset(id):
 
 
 async def emby_mima(id, new):
+    pwd_data = {
+        "Id": f"{id}",
+        "ResetPassword": "true",
+    }
     pwd_reset = {
         "Id": f"{id}",
         "NewPw": f"{new}",
@@ -116,9 +120,11 @@ async def emby_mima(id, new):
         _pwd = r.post(url + f'/emby/Users/{id}/Password',
                       headers=headers,
                       params=params,
+                      json=pwd_data)
+        _pwd = r.post(url + f'/emby/Users/{id}/Password',
+                      headers=headers,
+                      params=params,
                       json=pwd_reset)
-        print(_pwd)
-        # print(_pwd)
         return True
     except:
         return False
@@ -181,14 +187,14 @@ async def count_buy():
 async def ban_user(id, stats):
     try:
         if stats == 0:
-            policy = '{"IsDisabled":true}'
+            policy = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":true,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2}'
             _policy = r.post(url + f'/emby/Users/{id}/Policy',
                              headers=headers,
                              params=params,
                              data=policy)
             return True
         else:
-            policy = '{"IsDisabled":false}'
+            policy = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2}'
             _policy = r.post(url + f'/emby/Users/{id}/Policy',
                              headers=headers,
                              params=params,

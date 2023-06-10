@@ -20,7 +20,7 @@ async def set_buy(_, msg):
     asyncio.create_task(send_msg_delete(msg.chat.id, msg.id))
 
 
-@bot.on_callback_query(filters.regex("log_out"))
+@bot.on_callback_query(filters.regex("log_out") & filters.user(owner))
 async def log_out(_, call):
     try:
         await bot.send_document(call.from_user.id, document="log/log.txt", file_name="log.txt",
@@ -33,7 +33,7 @@ async def log_out(_, call):
         logging.info(f"【admin】：{call.from_user.id} - 导出日志成功！")
 
 
-@bot.on_callback_query(filters.regex("set_tz"))
+@bot.on_callback_query(filters.regex("set_tz") & filters.user(owner))
 async def set_tz(_, call):
     send = await call.message.reply(
         "【设置探针】\n\n请依次输入探针地址，api_token，设置的检测id 如：\ntz\napi_token\ntz_id  取消点击 /cancel")
@@ -73,7 +73,7 @@ async def set_tz(_, call):
                 asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
 
 
-@bot.on_callback_query(filters.regex("set_buy"))
+@bot.on_callback_query(filters.regex("set_buy") & filters.user(owner))
 async def add_groups(_, call):
     if config["user_buy"] == "y":
         config["user_buy"] = "n"
@@ -140,7 +140,7 @@ async def add_groups(_, call):
                         asyncio.create_task(send_msg_delete(send6.chat.id, send6.id))
 
 
-@bot.on_callback_query(filters.regex('set_line'))
+@bot.on_callback_query(filters.regex('set_line') & filters.user(owner))
 async def set_emby_line(_, call):
     send = await call.message.reply(
         "💘【设置线路】\n\n对我发送向emby用户展示的emby地址吧，支持markdown写法。 取消点击 /cancel")

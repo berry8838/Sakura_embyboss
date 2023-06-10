@@ -209,3 +209,21 @@ async def renewall(_, msg):
             logging.info(f"【派送任务】 -{msg.from_user.first_name}({msg.from_user.id}) 派出 {a} 天 * {b} ，耗时：{times}s")
         else:
             await bot.edit_message_caption(msg.chat.id, send.id, caption="⚡【派送任务】\n\n结束，没有一个有号的。")
+
+
+# 重启
+@bot.on_message(filters.command('restart', prefixes) & filters.user(owner))
+async def restart_bot(_, msg):
+    import subprocess
+    # 创建一个新的进程对象
+    p = subprocess.Popen("systemctl restart embyboss", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    # 与进程交互，获取输出和错误
+    output, error = p.communicate()
+    # 打印输出和错误
+    print(output.decode())
+    print(error.decode())
+    # 获取进程的返回值
+    returncode = p.returncode
+    # 打印返回值
+    print(returncode)
+    await msg.reply(f"{returncode}")

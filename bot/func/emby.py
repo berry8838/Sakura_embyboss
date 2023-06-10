@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import requests as r
 from _mysql.sqlhelper import update_one, select_one, create_conn, close_conn
 from bot.func.mima import pwd_create
-from config import api, url, params, headers
+from config import api, url, params, headers, config
 
 
 # 第一次遇见bot
@@ -69,9 +69,26 @@ async def emby_create(tg, name, pwd2, us, stats):
 
 
 # 插入：更新策略隐藏或显示某个库。
-'''
-      policy = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2,"BlockedMediaFolders":["电影"]}'
-'''
+async def emby_block(id, stats):
+    block = str(config["block"]).replace("'", '"')
+    policy1 = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2,"BlockedMediaFolders":'+block +'}'
+    # print(policy1)
+    policy2 = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2}'
+    try:
+        if stats == 0:
+            _policy = r.post(url + f'/emby/Users/{id}/Policy',
+                             headers=headers,
+                             params=params,
+                             data=policy1.encode('utf-8'))
+            return True
+        else:
+            _policy = r.post(url + f'/emby/Users/{id}/Policy',
+                             headers=headers,
+                             params=params,
+                             data=policy2)
+            return True
+    except:
+        return False
 
 
 # 删除

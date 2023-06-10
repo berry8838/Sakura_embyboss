@@ -252,21 +252,69 @@ async def reset(_, call):
                                 logging.error(f"【重置密码】：{call.from_user.id} 重置密码失败 ！")
 
 
-# @bot.on_callback_query(filters.regex('hide'))
-# async def hide_media(_,call):
+# 显示/隐藏某些库
+@bot.on_callback_query(filters.regex('embyblock'))
+async def embyblock(_, call):
+    embyid, lv = sqlhelper.select_one("select embyid,lv from emby where tg = %s", call.from_user.id)
+    if embyid is None:
+        await bot.answer_callback_query(call.id, '未查询到账户，不许乱点！💢', show_alert=True)
+    elif lv == "c":
+        await bot.answer_callback_query(call.id, '账户到期，封禁中无法使用！💢', show_alert=True)
+    elif config["block"] == "":
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption='🎬 管理员未设置。。。',
+                                       reply_markup=ikb([[('o(*////▽////*)q ', 'members')]]))
+    else:
+        emby_block_ikb = ikb([[("🕹️ - 显示", f"emby-unblock-{embyid}"), ("🕶️ - 隐藏", f"emby-block-{embyid}")],
+                              [('（〃｀ 3′〃）', 'members')]])
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption=f'🎬 目前设定的库为: \n**{config["block"]}**\n请选择你的操作。',
+                                       reply_markup=emby_block_ikb)
 
 
-# 邀请系统
-@bot.on_callback_query(filters.regex('invite_tg'))
-async def invite_tg(_, call):
+@bot.on_callback_query(filters.regex('emby-block'))
+async def user_emby_block(_, call):
+    embyid = call.data.split('-')[2]
+    # print(embyid)
     await bot.edit_message_caption(call.from_user.id,
                                    call.message.id,
-                                   caption='o(*////▽////*)q\n\n**正在努力开发中！！**',
-                                   reply_markup=invite_tg_ikb)
+                                   caption=f'🎬 正在为您关闭显示 {config["block"]}')
+    re = await emby.emby_block(embyid, 0)
+    if re is True:
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption=f'🕶️ Done!\n 小尾巴隐藏好了。',
+                                       reply_markup=ikb([[('ο(=•ω＜=)ρ⌒☆ 已隐藏', 'members')]]))
+    else:
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption=f'🕶️ Error!\n 隐藏失败，请上报管理检查)',
+                                       reply_markup=ikb([[('🎗️ - 返回', 'members')]]))
+
+
+@bot.on_callback_query(filters.regex('emby-unblock'))
+async def user_emby_unblock(_, call):
+    embyid = call.data.split('-')[2]
+    print(embyid)
+    await bot.edit_message_caption(call.from_user.id,
+                                   call.message.id,
+                                   caption=f'🎬 正在为您开启显示')
+    re = await emby.emby_block(embyid, 1)
+    if re is True:
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption=f'🎬 Done!\n 小尾巴被抓住辽。',
+                                       reply_markup=ikb([[('╰(￣ω￣ｏ) 成功显示', 'members')]]))
+    else:
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption=f'🎬 Error!\n 显示失败，请上报管理检查设置',
+                                       reply_markup=ikb([[('🎗️ - 返回', 'members')]]))
 
 
 # 查看自己的信息
-
 
 @bot.on_message(filters.command('myinfo', prefixes))
 async def my_info(_, msg):

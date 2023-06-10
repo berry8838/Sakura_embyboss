@@ -12,12 +12,12 @@ from config import *
 
 @bot.on_message(filters.command('config', prefixes=prefixes) & filters.user(owner))
 async def set_buy(_, msg):
+    await msg.delete()
     keyword = ikb(
         [[("📄 - 导出日志", "log_out")], [("📌 - 设置探针", "set_tz"), ("🈺 - 开关购买", "set_buy")],
-         [('💠 - emby线路', 'set_line')], [("💨 - 清除消息", "closeit")]])
+         [('💠 - emby线路', 'set_line'), ('🎬 - 显/隐指定库', 'set_block')], [("💨 - 清除消息", "closeit")]])
     await bot.send_photo(msg.from_user.id, photo, caption="🌸 欢迎回来！\n\n👇点击你要修改的内容。",
                          reply_markup=keyword)
-    asyncio.create_task(send_msg_delete(msg.chat.id, msg.id))
 
 
 @bot.on_callback_query(filters.regex("log_out") & filters.user(owner))
@@ -173,3 +173,32 @@ async def set_emby_line(_, call):
                 send1 = await txt.reply(f"网址样式: \n{config['line']}\n设置完成！done！")
                 logging.info(f"【admin】：{call.from_user.id} - 更新emby线路为{config['line']}设置完成")
                 asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
+
+
+@bot.on_callback_query(filters.regex('set_block') & filters.user(owner))
+async def set_block(_, call):
+    send = await call.message.reply(
+        "🎬【设置需要显示/隐藏的库】\n对我发送库的名字，多个用空格隔开\n例: `电影 纪录片` 取消点击 /cancel")
+    try:
+        txt = await _.listen(call.from_user.id, filters.text, timeout=120)
+    except asyncio.TimeoutError:
+        await send.delete()
+        send1 = await bot.send_message(call.from_user.id,
+                                       text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
+        asyncio.create_task(send_msg_delete(call.message.chat.id, send1.id))
+    else:
+        if txt.text == '/cancel':
+            await send.delete()
+            await txt.delete()
+            send1 = await bot.send_message(call.from_user.id, text='__您已经取消输入__ **会话已结束！**')
+            asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
+        else:
+            c = txt.text.split()
+            print(c)
+            config["block"] = c
+            save_config()
+            await send.delete()
+            await txt.delete()
+            send1 = await txt.reply(f"🎬 指定显示/隐藏内容如下: \n{config['block']}\n设置完成！done！")
+            logging.info(f"【admin】：{call.from_user.id} - 更新指定显示/隐藏内容库为 {config['block']} 设置完成")
+            asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))

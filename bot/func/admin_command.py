@@ -3,6 +3,7 @@
 """
 
 import logging
+import time
 from datetime import datetime, timedelta
 
 from pyrogram.errors import BadRequest
@@ -51,6 +52,7 @@ async def score_user(_, msg):
             await msg.reply(
                 f"· 🎯管理员 {msg.from_user.first_name} 调节了 [{first.first_name}](tg://user?id={uid}) 积分： {b}"
                 f"\n· 🎟️ 实时积分: **{us}**")
+            await msg.delete()
             logging.info(f"【admin】[积分]：{msg.from_user.first_name} 对 {first.first_name}-{uid}  {b}分  ")
 
 
@@ -155,6 +157,7 @@ async def renew_user(_, msg):
                     lv = 'b'
                     await emby.ban_user(embyid, 1)
                 sqlhelper.update_one("update emby set ex=%s,lv=%s where tg=%s", [ex_new, lv, uid])
+                await msg.delete()
                 logging.info(
                     f"【admin】[renew]：{msg.from_user.first_name} 对 {first.first_name}({uid})-{name} 用户调节到期时间 {b} 天"
                     f'  实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
@@ -162,12 +165,47 @@ async def renew_user(_, msg):
                 await msg.reply(f"💢 [ta](tg://user?id={uid}) 还没有注册账户呢")
 
 
-# 给自己的账号开管理员后台
+# 小功能 - 给自己的账号开管理员后台
 @bot.on_message(filters.command('admin', prefixes) & filters.user(admins))
 async def reload_admins(_, msg):
     await msg.delete()
     embyid = sqlhelper.select_one("select embyid from emby where tg=%s", msg.from_user.id)[0]
     # print(embyid)
     await emby.re_admin(embyid)
-    send = await msg.reply("👮🏻 授权完成。已开启管理emby后台")
+    send = await msg.reply("👮🏻 授权完成。已开启emby后台")
+    logging.info(f"{msg.from_user.first_name} - {msg.from_user.id} 开启了 emby 后台")
     asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+
+
+# 小功能 - 给所有未被封禁的 emby 延长指定天数。
+@bot.on_message(filters.command('renewall', prefixes) & filters.user(owner))
+async def renewall(_, msg):
+    try:
+        a = int(msg.text.split()[1])
+    except IndexError:
+        send = await msg.reply(
+            "🔔 **使用格式：**/renewall [+/-天数]\n\n  给所有未封禁emby [+/-天数]")
+        asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+    else:
+        send = await bot.send_photo(msg.chat.id, photo=photo, caption="⚡【派送任务】\n  **正在开启派送中...请稍后**")
+        result = sqlhelper.select_all("select tg,embyid,name,ex from emby where lv=%s", 'b')
+        if result is not None:
+            b = 0
+            start = time.perf_counter()
+            for i in result:
+                ex_new = i[3] + timedelta(days=a)
+                try:
+                    sqlhelper.update_one("update emby set ex=%s where tg=%s", [ex_new, i[0]])
+                    await bot.send_message(i[0],
+                                           f"🎯 管理员 {msg.from_user.first_name} 调节了您的 {i[2]} 到期时间：{a}天"
+                                           f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
+                except:
+                    continue
+                b += 1
+            end = time.perf_counter()
+            times = end - start
+            await bot.edit_message_caption(msg.chat.id, send.id,
+                                           caption=f"⚡【派送任务】\n  派出 {a} 天 * {b} ，耗时：{times:.3f}s\n  消息已私发。")
+            logging.info(f"【派送任务】 -{msg.from_user.first_name}({msg.from_user.id}) 派出 {a} 天 * {b} ，耗时：{times}s")
+        else:
+            await bot.edit_message_caption(msg.chat.id, send.id, caption="⚡【派送任务】\n\n结束，没有一个有号的。")

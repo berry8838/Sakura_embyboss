@@ -42,6 +42,7 @@ admins:
     /prouser  /revuser  [id] 或回复某人[命令] - 增加或移除白名单成员
     /score [tgid] [+\-分数] 或回复某人/score [+/-分数] - 对用户的积分调整
     /renew [emby_name] [+/-天数] 或回复某人/renew [+/-天数] - 调整到期时间
+    /renewall [+/-天数] 一键派送天数给所有未封禁的用户
 ```
 
 ## 配置说明
@@ -128,7 +129,7 @@ systemctl enable docker
 ```
 "buy": [],      购买按钮的样式，建议不填，等bot起来去里面设置。报错很麻烦
 "invite": "n",  没写好，可以忽略。 
-"tz": "",       探针地址，形如：tz.susuyyds.xyz 最后不带斜杠
+"tz": "",       探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠
 "tz_api": "",
 "tz_id": ""     tz开头的三项是和nezha探针在一起的项目，没有哪吒探针就忽略。
 ```

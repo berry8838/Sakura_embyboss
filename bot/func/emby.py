@@ -204,6 +204,19 @@ async def ban_user(id, stats):
         return False
 
 
+async def re_admin(id):
+    try:
+        policy = '{"IsAdministrator":true,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2}'
+        _policy = r.post(url + f'/emby/Users/{id}/Policy',
+                         headers=headers,
+                         params=params,
+                         data=policy)
+        # print(_policy)
+        return True
+    except:
+        return False
+
+
 '''
 代码片段杂货，没用的东西：
                 下载媒体

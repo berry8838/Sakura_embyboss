@@ -143,7 +143,7 @@ async def renew_user(_, msg):
                 elif ex_new < ex:
                     ex_new = ex + timedelta(days=b)
                     await msg.reply(
-                        f'🍒 __已调整用户 [{first.first_name}](tg://user?id={uid}) - {name} 到期时间 {b}天'
+                        f'🍒 __已调整用户 [{first.first_name}](tg://user?id={uid}) - {name} 到期时间 {b}天__'
                         f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")} ')
                     await bot.send_message(uid,
                                            f"🎯 管理员 {msg.from_user.first_name} 调节了您的到期时间：{b}天"
@@ -160,3 +160,14 @@ async def renew_user(_, msg):
                     f'  实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
             else:
                 await msg.reply(f"💢 [ta](tg://user?id={uid}) 还没有注册账户呢")
+
+
+# 给自己的账号开管理员后台
+@bot.on_message(filters.command('admin', prefixes) & filters.user(admins))
+async def reload_admins(_, msg):
+    await msg.delete()
+    embyid = sqlhelper.select_one("select embyid from emby where tg=%s", msg.from_user.id)[0]
+    # print(embyid)
+    await emby.re_admin(embyid)
+    send = await msg.reply("👮🏻 授权完成。已开启管理emby后台")
+    asyncio.create_task(send_msg_delete(send.chat.id, send.id))

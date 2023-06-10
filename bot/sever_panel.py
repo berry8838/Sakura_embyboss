@@ -27,6 +27,6 @@ async def server(_, call):
     await bot.edit_message_caption(
         call.from_user.id,
         call.message.id,
-        caption=f'**▎⚡ 线路：**\n  {x}\n\n**· 💌 用户密码 | ** `{pwd1}`\n' + sever + f'**· 🌏 - {call.message.date}**',
+        caption=f'**▎⚡ 线路：**\n{x}\n\n**· 💌 用户密码 | ** `{pwd1}`\n' + sever + f'**· 🌏 - {call.message.date}**',
         reply_markup=ikb([[('🔙 - 用户', 'memembers'), ('❌ - 关闭', 'closeit')]]))
 

@@ -121,8 +121,6 @@ async def add_groups(_, call):
                             a = i.split("-")
                             f = [f"{a[0]}", f"{a[1]}", "url"]
                         except IndexError:
-                            send = await call.message.reply(
-                                "格式有误。'-'和',' 用英文\n[按钮描述]-[link1],\n[按钮描述]-[link2],\n[按钮描述]-[link3]")
                             break
                         else:
                             d.append(f)

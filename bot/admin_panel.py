@@ -82,7 +82,7 @@ async def cr_link(_, call):
                 uid = f'OvO-{times}-' + str(uuid.uuid4()).replace('-', '')
                 # print(uid)
                 # link = f'{i}. t.me/{BOT_NAME}?start=' + uid + '\n'    # 取消链接形式换成注册码
-                link = f'{i}. ' + uid + '\n'
+                link = f'{i}. `' + uid + '`\n'
                 links += link
                 cur.execute(
                     f"insert into invite(id,tg,us) values ('{uid}', {call.from_user.id}, {days})"
@@ -100,7 +100,7 @@ async def cr_link(_, call):
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
                                            caption=f'📂 {BOT_NAME}已为 您 生成了 {count} 个 {days} 天邀请码 ',
-                                           reply_markup=ikb([[('⌨️ - 继续创建', 'cr_link'), ('🔙 返回主页', 'manage')]]))
+                                           reply_markup=ikb([[('♻️ - 继续创建', 'cr_link'), ('🎗️ - 返回主页', 'manage')]]))
             await content.delete()
             logging.info(f"【admin】：{BOT_NAME}已为 {content.from_user.id} 生成了 {count} 个 {days} 天邀请码")
 
@@ -130,9 +130,9 @@ async def paginate_register(tgid, us):
             e = d + 1
         for link in result:
             if us == 0:
-                c = f'{e}. ' + f'{link[0]}' + f'\n【使用者】: **[{link[1]}](tg://user?id={link[1]})**\n【日期】: __{link[2]}__\n'
+                c = f'{e}. `' + f'{link[0]}`' + f'\n【使用者】: **[{link[1]}](tg://user?id={link[1]})**\n【日期】: __{link[2]}__\n'
             else:
-                c = f'{e}. ' + f'{link[0]}\n'
+                c = f'{e}. `' + f'{link[0]}`\n'
             x += c
             e += 1
         a.append(x)

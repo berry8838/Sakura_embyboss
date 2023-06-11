@@ -17,7 +17,7 @@
     - [ ] 重新启用签到?
 - [ ] 基本功能  
 已实现的基础功能请看使用帮助
-    - [ ] 控制指定显示/隐藏某个库（nsfw）
+    - [x] 控制指定显示/隐藏某个库（nsfw）,已经实现，拉取代码时请不要忘了在你的config.json中检查有无block字段
     - [ ] 重新绑定账户/ 用于被tg注销时不丢失emby
     - [ ] 添加邀请功能
     - [ ] 支持docker部署
@@ -32,6 +32,7 @@
 ```
 用户:
     /start            - 开启面板 (私聊)
+                        包括：注册，重置密码，显示或隐藏内容，删除账号
     /exchange [注册码] - 使用注册码 (私聊)
     /myinfo           - 查看自己状态 (无限制)
 admins:
@@ -43,8 +44,17 @@ admins:
     /score [tgid] [+\-分数] 或回复某人/score [+/-分数] - 对用户的积分调整
     /renew [emby_name] [+/-天数] 或回复某人/renew [+/-天数] - 调整到期时间
     /renewall [+/-天数] 一键派送天数给所有未封禁的用户
+    /restart 重启bot
 ```
+- 怎么无痛更新(按默认设置)，如有配置文件的更新请注意更新。
 
+```shell
+cd /root/Sakura_embyboss
+git fetch --all
+git reset --hard origin/master
+git pull origin master
+systemctl restart embyboss
+```
 ## 配置说明
 
 - 写的有点乱。不懂可以来 [群里](https://t.me/Aaaaa_su) 问我hhhh，我还是很高兴有人能看上我的这个小玩意。
@@ -127,8 +137,9 @@ systemctl enable docker
 • 不填项目
 
 ```
-"buy": [],      购买按钮的样式，建议不填，等bot起来去里面设置。报错很麻烦
-"invite": "n",  没写好，可以忽略。 
+"buy": [],      购买按钮的样式，不填，等bot起来去里面设置。报错很麻烦
+"invite": "n",  没写好，可以忽略
+"block":""      不填，确保有这个字段就行。等bot起来去里面设置
 "tz": "",       探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠
 "tz_api": "",
 "tz_id": ""     tz开头的三项是和nezha探针在一起的项目，没有哪吒探针就忽略。

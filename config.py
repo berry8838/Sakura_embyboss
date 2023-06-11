@@ -3,7 +3,7 @@ import json
 from pyromod import listen
 from pykeyboard import InlineButton, InlineKeyboard
 from pyrogram import Client, filters
-from pyrogram.errors import UserNotParticipant, ChatAdminRequired
+from pyrogram.errors import UserNotParticipant, ChatAdminRequired, BadRequest
 from pyromod.helpers import ikb, array_chunk
 
 
@@ -134,11 +134,14 @@ def buy_sth_ikb():
 @bot.on_callback_query(filters.regex('buy_account'))
 async def buy_some(_, call):
     keyboard = buy_sth_ikb()
-    await bot.edit_message_caption(
-        call.from_user.id,
-        call.message.id,
-        caption='**🛒请选择购买对应时长的套餐：**\n\n网页付款后会发邀请码连接，点击跳转到bot开始注册和续期程式。',
-        reply_markup=keyboard)
+    try:
+        await bot.edit_message_caption(
+            call.from_user.id,
+            call.message.id,
+            caption='**🛒请选择购买对应时长的套餐：**\n\n网页付款后会发邀请码连接，点击跳转到bot开始注册和续期程式。',
+            reply_markup=keyboard)
+    except BadRequest:
+        await call.message.reply('购买按钮设置错误，请咨询管理员设置是否正确。')
 
 
 @bot.on_callback_query(filters.regex('closeit'))

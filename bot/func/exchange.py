@@ -28,8 +28,11 @@ async def rgs_code(_, msg):
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         elif result[0] != 0:
             us = result[0]
-            embyid, ex = sqlhelper.select_one(f"select embyid,ex from emby where tg=%s",
-                                              msg.from_user.id)
+            try:
+                embyid, ex = sqlhelper.select_one(f"select embyid,ex from emby where tg=%s",msg.from_user.id)
+            except TypeError:
+                await msg.reply("出错了，不确定您是否有资格使用，请先 /start")
+                return
             if embyid is not None:
                 # 此处需要写一个判断 now和ex的大小比较。进行日期加减。
                 ex_new = datetime.now()

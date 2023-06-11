@@ -117,9 +117,15 @@ async def add_groups(_, call):
                 else:
                     d = []
                     for i in c:
-                        a = i.split("-")
-                        f = [f"{a[0]}", f"{a[1]}", "url"]
-                        d.append(f)
+                        try:
+                            a = i.split("-")
+                            f = [f"{a[0]}", f"{a[1]}", "url"]
+                        except IndexError:
+                            send = await call.message.reply(
+                                "格式有误。'-'和',' 用英文\n[按钮描述]-[link1],\n[按钮描述]-[link2],\n[按钮描述]-[link3]")
+                            break
+                        else:
+                            d.append(f)
                     d.append(["💫 - 回到首页", "back_start"])
                     lines = array_chunk(d, 2)
                     keyboard = ikb(lines)

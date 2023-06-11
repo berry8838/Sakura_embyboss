@@ -16,10 +16,13 @@ async def gm_ikb(_, call):
     open_stats = config["open"]
     users, emby_users = await emby.count_user()
     gm_text = f'🫧 欢迎您，亲爱的管理员 {call.from_user.first_name}\n\n⭕注册状态：{open_stats}\n🤖bot使用人数：{users}\n👥已注册用户数：{emby_users}'
-    await bot.edit_message_caption(call.from_user.id,
-                                   call.message.id,
-                                   caption=gm_text,
-                                   reply_markup=gm_ikb_content)
+    try:
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption=gm_text,
+                                       reply_markup=gm_ikb_content)
+    except BadRequest:
+        return
 
 
 # 开关注册

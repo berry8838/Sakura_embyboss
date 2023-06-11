@@ -76,12 +76,12 @@ async def renew_user(_, msg):
                     if ex_new > ex:
                         ex_new = ex_new + timedelta(days=c)
                         await msg.reply(
-                            f'🍒 __已调整 emby 用户 {b} 到期时间 {c}天 (以当前时间计)__'
+                            f'🍒 __管理员 {msg.from_user.first_name} 已调整 emby 用户 {b} 到期时间 {c}天 (以当前时间计)__'
                             f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                     elif ex_new < ex:
                         ex_new = ex + timedelta(days=c)
                         await msg.reply(
-                            f'🍒 __已调整 emby 用户 {b} 到期时间 {c}天__'
+                            f'🍒 __管理员 {msg.from_user.first_name} 已调整 emby 用户 {b} 到期时间 {c}天__'
                             f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                     if ex_new < datetime.now():
                         expired = 1
@@ -104,12 +104,12 @@ async def renew_user(_, msg):
                             ex_new = ex_new + timedelta(days=c)
                             # print(ex_new)
                             await msg.reply(
-                                f'🍒 __已调整 emby 用户 {b} 到期时间 {c} 天 (以当前时间计)__'
+                                f'🍒 __管理员 {msg.from_user.first_name} 已调整 emby 用户 {b} 到期时间 {c} 天 (以当前时间计)__'
                                 f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                         elif ex_new < ex:
                             ex_new = ex + timedelta(days=c)
                             await msg.reply(
-                                f'🍒 __已调整 emby 用户 {b} 到期时间 {c} 天__'
+                                f'🍒 __管理员 {msg.from_user.first_name} 已调整 emby 用户 {b} 到期时间 {c} 天__'
                                 f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                         if ex_new < datetime.now():
                             lv = 'c'
@@ -138,7 +138,7 @@ async def renew_user(_, msg):
                 if ex_new > ex:
                     ex_new = ex_new + timedelta(days=b)
                     await msg.reply(
-                        f'🍒 __已调整用户 [{first.first_name}](tg://user?id={uid}) - {name} 到期时间 {b}天 (以当前时间计)__'
+                        f'🍒 __管理员 {msg.from_user.first_name} 已调整用户 [{first.first_name}](tg://user?id={uid}) - {name} 到期时间 {b}天 (以当前时间计)__'
                         f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                     await bot.send_message(uid,
                                            f"🎯 管理员 {msg.from_user.first_name} 调节了您的到期时间：{b}天"
@@ -146,7 +146,7 @@ async def renew_user(_, msg):
                 elif ex_new < ex:
                     ex_new = ex + timedelta(days=b)
                     await msg.reply(
-                        f'🍒 __已调整用户 [{first.first_name}](tg://user?id={uid}) - {name} 到期时间 {b}天__'
+                        f'🍒 __管理员 {msg.from_user.first_name} 已调整用户 [{first.first_name}](tg://user?id={uid}) - {name} 到期时间 {b}天__'
                         f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")} ')
                     await bot.send_message(uid,
                                            f"🎯 管理员 {msg.from_user.first_name} 调节了您的到期时间：{b}天"

@@ -2,6 +2,7 @@
 用户区面板代码
 功能区由创建账户，重置密码，删除账户，邀请注册
 """
+from pyrogram.errors import BadRequest
 from pyromod import listen
 import logging
 from datetime import datetime
@@ -17,10 +18,13 @@ async def members(_, call):
     text = f"**▎** 欢迎进入用户界面！ {call.from_user.first_name}\n" \
            f"**· 🆔 用户ID** | `{call.from_user.id}`\n**· 📊 当前状态** | {lv} \n**· 🌸 可用积分** | {us}\n" \
            f"**· 💠 账号名称** | [{name}](tg://user?id={call.from_user.id})\n**· 🚨 到期时间** | {ex}"
-    await bot.edit_message_caption(call.from_user.id,
-                                   call.message.id,
-                                   caption=text,
-                                   reply_markup=members_ikb)
+    try:
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption=text,
+                                       reply_markup=members_ikb)
+    except BadRequest:
+        await call.message.reply("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai")
 
 
 # 创建账户
@@ -32,8 +36,12 @@ async def create(_, call):
         await bot.answer_callback_query(call.id, '💦 你已经有账户啦！请勿重复注册。')
         return
     if config["open"] == 'y':
-        await bot.answer_callback_query(call.id, f"🪙 开放注册，免除积分要求。")
-        await create_user(_, call, us=30, stats=config["open"])
+        try:
+            await bot.answer_callback_query(call.id, f"🪙 开放注册，免除积分要求。")
+        except BadRequest:
+            return
+        else:
+            await create_user(_, call, us=30, stats=config["open"])
     elif config["open"] == 'n' and int(us) < 30:
         await bot.answer_callback_query(call.id, f'🤖 自助注册尚未开启 / 积分{us}未达标 ', show_alert=True)
     elif config["open"] == 'n' and int(us) >= 30:
@@ -45,11 +53,14 @@ async def create(_, call):
 
 # 创号函数
 async def create_user(_, call, us, stats):
-    await bot.edit_message_caption(
-        chat_id=call.from_user.id,
-        message_id=call.message.id,
-        caption='🤖**注意：您已进入注册状态:\n\n• 请在2min内输入 `用户名 4~6位安全码`\n• 举个例子🌰：`苏苏 1234`**\n\n• 用户名中不限制中/英文/emoji 不可有空格；'
-                '• 安全码为敏感操作时附加验证，请填入个人记得的数字；退出请点 /cancel')
+    try:
+        await bot.edit_message_caption(
+            chat_id=call.from_user.id,
+            message_id=call.message.id,
+            caption='🤖**注意：您已进入注册状态:\n\n• 请在2min内输入 `用户名 4~6位安全码`\n• 举个例子🌰：`苏苏 1234`**\n\n• 用户名中不限制中/英文/emoji 不可有空格；'
+                    '• 安全码为敏感操作时附加验证，请填入个人记得的数字；退出请点 /cancel')
+    except BadRequest:
+        return
     try:
         name = await _.listen(call.from_user.id, filters.text, timeout=120)
     except asyncio.TimeoutError:
@@ -110,12 +121,22 @@ async def del_me(_, call):
     embyid, pwd2 = sqlhelper.select_one("select embyid,pwd2 from emby where tg = %s", call.from_user.id)
     if embyid is None:
         await bot.answer_callback_query(call.id, '未查询到账户，不许乱点！💢', show_alert=True)
+        return
     else:
         try:
             await bot.edit_message_caption(call.from_user.id, call.message.id,
                                            caption='**🔰账户安全验证**：\n\n👮🏻验证是否本人进行敏感操作，请对我发送您设置的安全码。倒计时 120s\n'
                                                    '🛑 **停止请点 /cancel**')
+        except BadRequest:
+            return
+        try:
             m = await _.listen(call.from_user.id, filters.text, timeout=120)
+        except asyncio.TimeoutError:
+            await bot.edit_message_caption(call.from_user.id,
+                                           call.message.id,
+                                           caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
+                                           reply_markup=ikb([[('🎗️ 返回', 'members')]]))
+        else:
             if m.text == '/cancel':
                 await m.delete()
                 await bot.edit_message_caption(call.from_user.id, call.message.id,
@@ -135,19 +156,16 @@ async def del_me(_, call):
                                                    caption='**💢 验证不通过，安全码错误。**',
                                                    reply_markup=ikb(
                                                        [[('♻️ - 重试', 'delme')], [('🔙 - 返回', 'members')]]))
-        except asyncio.TimeoutError:
-            await bot.edit_message_caption(call.from_user.id,
-                                           call.message.id,
-                                           caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
-                                           reply_markup=ikb([[('🎗️ 返回', 'members')]
-                                                             ]))
 
 
 @bot.on_callback_query(filters.regex('delemby'))
 async def del_emby(_, call):
-    await bot.edit_message_caption(call.from_user.id,
-                                   call.message.id,
-                                   caption='**🎯 get，正在删除ing。。。**')
+    try:
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption='**🎯 get，正在删除ing。。。**')
+    except BadRequest:
+        return
     res = await emby.emby_del(call.from_user.id)
     if res is True:
         await bot.edit_message_caption(
@@ -170,11 +188,15 @@ async def reset(_, call):
     embyid, pwd2 = sqlhelper.select_one("select embyid,pwd2 from emby where tg = %s", call.from_user.id)
     if embyid is None:
         await bot.answer_callback_query(call.id, '未查询到账户，不许乱点！💢', show_alert=True)
+        return
     else:
         try:
             await bot.edit_message_caption(call.from_user.id, call.message.id,
                                            caption='**🔰账户安全验证**：\n\n 👮🏻验证是否本人进行敏感操作，请对我发送您设置的安全码。倒计时 120 s\n'
                                                    '🛑 **停止请点 /cancel**')
+        except BadRequest:
+            return
+        try:
             m = await _.listen(call.from_user.id, filters.text, timeout=120)
         except asyncio.TimeoutError:
             await bot.edit_message_caption(call.from_user.id,
@@ -261,26 +283,35 @@ async def embyblock(_, call):
     elif lv == "c":
         await bot.answer_callback_query(call.id, '账户到期，封禁中无法使用！💢', show_alert=True)
     elif config["block"] == "":
-        await bot.edit_message_caption(call.from_user.id,
-                                       call.message.id,
-                                       caption='🎬 管理员未设置。。。',
-                                       reply_markup=ikb([[('o(*////▽////*)q ', 'members')]]))
+        try:
+            await bot.edit_message_caption(call.from_user.id,
+                                           call.message.id,
+                                           caption='🎬 管理员未设置。。。',
+                                           reply_markup=ikb([[('o(*////▽////*)q ', 'members')]]))
+        except BadRequest:
+            return
     else:
         emby_block_ikb = ikb([[("🕹️ - 显示", f"emby-unblock-{embyid}"), ("🕶️ - 隐藏", f"emby-block-{embyid}")],
                               [('（〃｀ 3′〃）', 'members')]])
-        await bot.edit_message_caption(call.from_user.id,
-                                       call.message.id,
-                                       caption=f'🎬 目前设定的库为: \n**{config["block"]}**\n请选择你的操作。',
-                                       reply_markup=emby_block_ikb)
+        try:
+            await bot.edit_message_caption(call.from_user.id,
+                                           call.message.id,
+                                           caption=f'🎬 目前设定的库为: \n**{config["block"]}**\n请选择你的操作。',
+                                           reply_markup=emby_block_ikb)
+        except BadRequest:
+            return
 
 
 @bot.on_callback_query(filters.regex('emby-block'))
 async def user_emby_block(_, call):
     embyid = call.data.split('-')[2]
     # print(embyid)
-    await bot.edit_message_caption(call.from_user.id,
-                                   call.message.id,
-                                   caption=f'🎬 正在为您关闭显示 {config["block"]}')
+    try:
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption=f'🎬 正在为您关闭显示 {config["block"]}')
+    except BadRequest:
+        return
     re = await emby.emby_block(embyid, 0)
     if re is True:
         await bot.edit_message_caption(call.from_user.id,
@@ -297,10 +328,13 @@ async def user_emby_block(_, call):
 @bot.on_callback_query(filters.regex('emby-unblock'))
 async def user_emby_unblock(_, call):
     embyid = call.data.split('-')[2]
-    print(embyid)
-    await bot.edit_message_caption(call.from_user.id,
-                                   call.message.id,
-                                   caption=f'🎬 正在为您开启显示')
+    # print(embyid)
+    try:
+        await bot.edit_message_caption(call.from_user.id,
+                                       call.message.id,
+                                       caption=f'🎬 正在为您开启显示')
+    except BadRequest:
+        return
     re = await emby.emby_block(embyid, 1)
     if re is True:
         await bot.edit_message_caption(call.from_user.id,

@@ -37,7 +37,7 @@
     /myinfo           - 查看自己状态 (无限制)
 admins:
     /kk            - 查看用户，含赠送注册、禁用账户、删除账户
-    /config        - 含查看日志，修改探针设置，购买按钮,修改展示用户的emby线路等
+    /config        - 含查看日志，修改探针，购买按钮,emby_line，设置显示/隐藏库（nsfw）等
     /create [name] - 创建非绑定tg的emby账户
     /proadmin /revadmin [id] 或回复某人[命令] - 增加或移除admin成员
     /prouser  /revuser  [id] 或回复某人[命令] - 增加或移除白名单成员
@@ -45,6 +45,7 @@ admins:
     /renew [emby_name] [+/-天数] 或回复某人/renew [+/-天数] - 调整到期时间
     /renewall [+/-天数] 一键派送天数给所有未封禁的用户
     /restart 重启bot
+    /admin 仅限管理使用，会开启当前tg绑定的emby控制台，所以admin不要随便给
 ```
 - 怎么无痛更新(按默认设置)，如有配置文件的更新请注意更新。
 

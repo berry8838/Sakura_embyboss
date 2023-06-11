@@ -15,10 +15,10 @@ from config import *
 async def pro_admin(_, msg):
     if msg.reply_to_message is None:
         try:
-            uid = msg.text.split()[1]
+            uid = int(msg.text.split()[1])
             first = await bot.get_chat(uid)
         except (IndexError, KeyError, BadRequest):
-            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/proadmin [tgid]')
+            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/proadmin [tgid]或回复其他人')
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
             await msg.delete()
         else:
@@ -46,10 +46,10 @@ async def pro_admin(_, msg):
 async def pro_user(_, msg):
     if msg.reply_to_message is None:
         try:
-            uid = msg.text.split()[1]
+            uid = int(msg.text.split()[1])
             first = await bot.get_chat(uid)
         except (IndexError, KeyError, BadRequest):
-            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/prouser [tgid]')
+            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/prouser [tgid]或回复某人')
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
             await msg.delete()
         else:
@@ -73,10 +73,10 @@ async def pro_user(_, msg):
 async def del_admin(_, msg):
     if msg.reply_to_message is None:
         try:
-            uid = msg.text.split()[1]
+            uid = int(msg.text.split()[1])
             first = await bot.get_chat(uid)
         except (IndexError, KeyError, BadRequest):
-            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/revadmin [tgid]')
+            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/revadmin [tgid]或回复某人')
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
             await msg.delete()
         else:
@@ -104,10 +104,10 @@ async def del_admin(_, msg):
 async def pro_user(_, msg):
     if msg.reply_to_message is None:
         try:
-            uid = msg.text.split()[1]
+            uid = int(msg.text.split()[1])
             first = await bot.get_chat(uid)
         except (IndexError, KeyError, BadRequest):
-            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/prouser [tgid]')
+            send = await msg.reply('**请先给我一个正确的id！**\n输入格式为：/prouser [tgid]或回复某人')
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
             await msg.delete()
         else:

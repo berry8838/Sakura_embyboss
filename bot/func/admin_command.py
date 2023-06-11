@@ -3,6 +3,7 @@
 """
 
 import logging
+import os
 import time
 from datetime import datetime, timedelta
 
@@ -214,16 +215,9 @@ async def renewall(_, msg):
 # 重启
 @bot.on_message(filters.command('restart', prefixes) & filters.user(owner))
 async def restart_bot(_, msg):
-    import subprocess
-    # 创建一个新的进程对象
-    p = subprocess.Popen("systemctl restart embyboss", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    # 与进程交互，获取输出和错误
-    output, error = p.communicate()
-    # 打印输出和错误
-    print(output.decode())
-    print(error.decode())
-    # 获取进程的返回值
-    returncode = p.returncode
-    # 打印返回值
-    print(returncode)
-    await msg.reply(f"{returncode}")
+    send = await msg.reply("Restarting，等待几秒钟。")
+    with open(".restartmsg", "w") as f:
+        f.write(f"{msg.chat.id} {send.id}\n")
+        f.close()
+    # some code here
+    os.execl('/bin/systemctl', 'systemctl', 'restart', 'embyboss')  # 用当前进程执行systemctl命令，重启embyboss服务

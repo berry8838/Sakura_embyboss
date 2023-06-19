@@ -1,7 +1,9 @@
 # Sakura_embyboss（体验版）
 ### 最新更新指南  
 更新了新的依赖，所以需要本地也更新，否则版本不兼容，无法启动  
+目前要求python3.8及以上！！！
 ```
+先去拉取代码在执行下面步骤 -> 详见下方使用帮助板块
 pip3 install -r requirements.txt
 ```
 - __将已有的命令总结到 #使用帮助，方便导入 [BotFather](https://t.me/BotFather)__  
@@ -71,10 +73,12 @@ config - 含查看日志，修改探针，购买按钮,emby_line，设置显示/
 - 怎么无痛更新(按默认设置)，如有配置文件的更新请注意更新。
 
 ```shell
+# 拉取代码
 cd /root/Sakura_embyboss
 git fetch --all
 git reset --hard origin/master
 git pull origin master
+# 启动命令
 systemctl restart embyboss
 ```
 ## 配置说明

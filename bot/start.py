@@ -5,8 +5,9 @@
 import asyncio
 from pyrogram import filters
 from pyrogram.errors import BadRequest
+from pyromod.helpers import ikb
 
-from bot.func import emby
+from bot.reply import emby
 from config import bot, prefixes, BOT_NAME, photo, judge_group_ikb, group, send_msg_delete, judge_user, judge_start_ikb, \
     judge_user_in_group
 
@@ -14,7 +15,8 @@ from config import bot, prefixes, BOT_NAME, photo, judge_group_ikb, group, send_
 @bot.on_message((filters.command('start', prefixes) | filters.command('exchange', prefixes)) & filters.chat(group))
 async def gun_sb(_, msg):
     await msg.delete()
-    send = await msg.reply(f"🤖 看不懂是私聊命令吗？去私聊。@{BOT_NAME}")
+    send = await msg.reply(f"🤖 亲爱的 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 这是一条私聊命令 👇",
+                           reply_markup=ikb([[('点击我 ༼ つ ◕_◕ ༽つ', f't.me/{BOT_NAME}', 'url')]]))
     asyncio.create_task(send_msg_delete(send.chat.id, send.id))
 
 

@@ -1,20 +1,21 @@
 """
 用户区面板代码
-功能区由创建账户，重置密码，删除账户，邀请注册
+功能区由创建账户，重置密码，删除账户，显隐媒体库
 """
-from pyrogram.errors import BadRequest
-from pyromod import listen
 import logging
 from datetime import datetime
+
+from pyromod.listen.listen import ListenerTimeout
+
 from _mysql import sqlhelper
-from bot.func import emby
+from bot.reply import emby, query
 from config import *
 
 
 # 键盘中转
 @bot.on_callback_query(filters.regex('members'))
 async def members(_, call):
-    name, lv, ex, us = await emby.members_info(call.from_user.id)
+    name, lv, ex, us = await query.members_info(call.from_user.id)
     text = f"**▎** 欢迎进入用户界面！ {call.from_user.first_name}\n" \
            f"**· 🆔 用户ID** | `{call.from_user.id}`\n**· 📊 当前状态** | {lv} \n**· 🌸 可用积分** | {us}\n" \
            f"**· 💠 账号名称** | [{name}](tg://user?id={call.from_user.id})\n**· 🚨 到期时间** | {ex}"
@@ -29,24 +30,34 @@ async def members(_, call):
 
 # 创建账户
 @bot.on_callback_query(filters.regex('create'))
-async def create(_, call):
+async def create(_, call, open_timing_task=None):
     embyid, us = sqlhelper.select_one("select embyid,us from emby where tg=%s", call.from_user.id)
-    # print(us)
+    open_stat, all_user_limit, timing = await query.open_check()
+    # open_stat, all_user_limit, timing, users, emby_users = await query.open_all()
     if embyid is not None:
         await bot.answer_callback_query(call.id, '💦 你已经有账户啦！请勿重复注册。')
         return
-    if config["open"] == 'y':
-        try:
-            await bot.answer_callback_query(call.id, f"🪙 开放注册，免除积分要求。")
-        except BadRequest:
-            return
+    if open_stat == 'y':
+        config["open"]["tem"] += 1
+        if config["open"]["tem"] > all_user_limit:
+            config["open"]["stat"] = 'n'
+            save_config()
+            try:
+                await bot.answer_callback_query(call.id, f"⭕ 很抱歉，当前设定总数已达限制。")
+            except BadRequest:
+                return
         else:
-            await create_user(_, call, us=30, stats=config["open"])
-    elif config["open"] == 'n' and int(us) < 30:
+            try:
+                await bot.answer_callback_query(call.id, f"🪙 开放注册，免除积分要求。")
+            except BadRequest:
+                return
+            else:
+                await create_user(_, call, us=30, stats='y')
+    elif open_stat == 'n' and int(us) < 30:
         await bot.answer_callback_query(call.id, f'🤖 自助注册尚未开启 / 积分{us}未达标 ', show_alert=True)
-    elif config["open"] == 'n' and int(us) >= 30:
+    elif open_stat == 'n' and int(us) >= 30:
         await bot.answer_callback_query(call.id, f'🪙 积分满足要求，请稍后。')
-        await create_user(_, call, us=us, stats=config["open"])
+        await create_user(_, call, us=us, stats='n')
     # else:
     #     await bot.answer_callback_query(call.id, f'🤖 自助注册尚未开启！！！ 敬请期待。。。', show_alert=True)
 
@@ -58,12 +69,12 @@ async def create_user(_, call, us, stats):
             chat_id=call.from_user.id,
             message_id=call.message.id,
             caption='🤖**注意：您已进入注册状态:\n\n• 请在2min内输入 `用户名 4~6位安全码`\n• 举个例子🌰：`苏苏 1234`**\n\n• 用户名中不限制中/英文/emoji 不可有空格；'
-                    '• 安全码为敏感操作时附加验证，请填入个人记得的数字；退出请点 /cancel')
+                    '\n• 安全码为敏感操作时附加验证，请填入个人记得的数字；退出请点 /cancel')
     except BadRequest:
         return
     try:
-        name = await _.listen(call.from_user.id, filters.text, timeout=120)
-    except asyncio.TimeoutError:
+        name = await call.message.chat.listen(filters.text, timeout=120)
+    except ListenerTimeout:
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
                                        caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
@@ -109,8 +120,8 @@ async def create_user(_, call, us, stats):
                     await bot.edit_message_caption(
                         call.from_user.id,
                         call.message.id,
-                        f'**🎉 创建用户成功，更新用户策略完成！\n\n• 用户名称 | `{emby_name}`\n• 用户密码 | `{pwd1}`\n• 安全密码 | `{emby_pwd2}`  '
-                        f'(仅发送一次)\n• 当前线路 | \n  {config["line"]}**\n\n点击复制，妥善保存，查看密码请点【服务器】',
+                        f'**🎉 创建用户成功，更新用户策略完成！\n\n• 用户名称 | `{emby_name}`\n• 用户密码 | `{pwd1[0]}`\n• 安全密码 | `{emby_pwd2}`'
+                        f'（仅发送一次）\n• 到期时间 | `{pwd1[1]}`\n• 当前线路\n{config["line"]}**\n\n点击复制，妥善保存，查看密码请点【服务器】',
                         reply_markup=ikb([[('🔙 - 返回', 'members')]]))
                     logging.info(f"【创建账户】：{call.from_user.id} - 建立了 {emby_name} ")
 
@@ -130,8 +141,8 @@ async def del_me(_, call):
         except BadRequest:
             return
         try:
-            m = await _.listen(call.from_user.id, filters.text, timeout=120)
-        except asyncio.TimeoutError:
+            m = await call.message.chat.listen(filters.text, timeout=120)
+        except ListenerTimeout:
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
                                            caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
@@ -166,7 +177,8 @@ async def del_emby(_, call):
                                        caption='**🎯 get，正在删除ing。。。**')
     except BadRequest:
         return
-    res = await emby.emby_del(call.from_user.id)
+    id = sqlhelper.select_one("select embyid from emby where tg = %s", call.from_user.id)[0]
+    res = await emby.emby_del(id)
     if res is True:
         await bot.edit_message_caption(
             call.from_user.id,
@@ -197,8 +209,8 @@ async def reset(_, call):
         except BadRequest:
             return
         try:
-            m = await _.listen(call.from_user.id, filters.text, timeout=120)
-        except asyncio.TimeoutError:
+            m = await call.message.chat.listen(filters.text, timeout=120)
+        except ListenerTimeout:
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
                                            caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
@@ -224,8 +236,8 @@ async def reset(_, call):
                                                    caption='🎯 请在 120s内 输入你要更新的密码，不可以带emoji符号和空值。不然概不负责哦。\n\n'
                                                            '点击 /cancel 将重置为空密码并退出。 无更改退出状态请等待120s')
                     try:
-                        mima = await _.listen(call.from_user.id, filters.text, timeout=120)
-                    except asyncio.TimeoutError:
+                        mima = await call.message.chat.listen(filters.text, timeout=120)
+                    except ListenerTimeout:
                         await bot.edit_message_caption(call.from_user.id,
                                                        call.message.id,
                                                        caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
@@ -355,7 +367,7 @@ async def my_info(_, msg):
     # print(msg.id)
     text = ''
     try:
-        name, lv, ex, us = await emby.members_info(msg.from_user.id)
+        name, lv, ex, us = await query.members_info(msg.from_user.id)
         text += f"**· 🍉 TG名称** | [{msg.from_user.first_name}](tg://user?id={msg.from_user.id})\n" \
                 f"**· 🍒 TG ID** | `{msg.from_user.id}`\n**· 🍓 当前状态** | {lv}\n" \
                 f"**· 🌸 积分数量** | {us}\n**· 💠 账号名称** | {name}\n**· 🚨 到期时间** | **{ex}**"
@@ -366,5 +378,5 @@ async def my_info(_, msg):
         text += f'**· 🆔 TG** ：[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})\n数据库中没有此ID。请先私聊我。'
     finally:
         send_msg = await msg.reply(text)
-        asyncio.create_task(send_msg_delete(msg.chat.id, send_msg.id))
         await msg.delete()
+        asyncio.create_task(send_msg_delete(msg.chat.id, send_msg.id))

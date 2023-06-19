@@ -10,7 +10,12 @@
   "bot_photo": "https://telegra.ph/file/1437f7f348c6c71f0b9ab.png",
   "user_buy": "n",
   "buy": [],
-  "open": "n",
+  "open": {
+    "stat": "n",
+    "all_user": 50,
+    "timing": 0,
+    "tem": 0
+  },
   "admins": [],
   "invite": "n",
   "emby_api": "",

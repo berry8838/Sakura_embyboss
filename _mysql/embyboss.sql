@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： mysql:3306
--- 生成日期： 2023-06-09 22:21:22
+-- 生成日期： 2023-06-19 10:18:03
 -- 服务器版本： 5.7.42
 -- PHP 版本： 8.1.17
 
@@ -53,6 +53,7 @@ CREATE TABLE `emby2` (
   `pwd2` char(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `cr` datetime DEFAULT NULL,
   `ex` datetime DEFAULT NULL,
+  `lv` char(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `expired` int(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

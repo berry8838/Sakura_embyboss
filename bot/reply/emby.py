@@ -1,9 +1,8 @@
-import json
 import re
 from datetime import datetime, timedelta
 import requests as r
 from _mysql.sqlhelper import update_one, select_one, create_conn, close_conn
-from bot.func.mima import pwd_create
+from bot.reply.mima import pwd_create
 from config import api, url, params, headers, config
 
 
@@ -61,9 +60,9 @@ async def emby_create(tg, name, pwd2, us, stats):
                 update_one(f"update emby set embyid=%s,name=%s,pwd=%s,pwd2=%s,lv=%s,cr=%s,ex=%s,us=%s where tg={tg}",
                            [id, name, pwd, pwd2, 'b', now, ex, 0])
             elif stats == 'o':
-                update_one(f"insert into emby2(embyid,name,pwd,pwd2,cr,ex,expired) values (%s,%s,%s,%s,%s,%s,%s)",
-                           [id, name, pwd, 1234, now, ex, 0])
-            return pwd
+                update_one(f"insert into emby2(embyid,name,pwd,pwd2,cr,ex,lv,expired) values (%s,%s,%s,%s,%s,%s,%s,%s)",
+                           [id, name, pwd, 1234, now, ex, 'b', 0])
+            return pwd, ex.strftime("%Y-%m-%d %H:%M:%S")
     elif _status == 400:
         return 400
 
@@ -71,7 +70,7 @@ async def emby_create(tg, name, pwd2, us, stats):
 # 插入：更新策略隐藏或显示某个库。
 async def emby_block(id, stats):
     block = str(config["block"]).replace("'", '"')
-    policy1 = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2,"BlockedMediaFolders":'+block +'}'
+    policy1 = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2,"BlockedMediaFolders":' + block + '}'
     # print(policy1)
     policy2 = '{"IsAdministrator":false,"IsHidden":true,"IsHiddenRemotely":true,"IsDisabled":false,"EnableRemoteControlOfOtherUsers":false,"EnableSharedDeviceControl":false,"EnableRemoteAccess":true,"EnableLiveTvManagement":false,"EnableLiveTvAccess":true,"EnableMediaPlayback":true,"EnableAudioPlaybackTranscoding":false,"EnableVideoPlaybackTranscoding":false,"EnablePlaybackRemuxing":false,"EnableContentDeletion":false,"EnableContentDownloading":false,"EnableSubtitleDownloading":false,"EnableSubtitleManagement":false,"EnableSyncTranscoding":false,"EnableMediaConversion":false,"EnableAllDevices":true,"SimultaneousStreamLimit":2}'
     try:
@@ -92,16 +91,15 @@ async def emby_block(id, stats):
 
 
 # 删除
-async def emby_del(tgid):
-    id = select_one("select embyid from emby where tg = %s", tgid)[0]
+async def emby_del(id):
     headers1 = {
         'accept': '*/*',
     }
     try:
         res = r.delete(url + f'/emby/Users/{id}', headers=headers1, params=params)
         update_one(
-            "update emby set embyid=NULL,name=null,pwd=null,pwd2=null,cr=null,ex=null,lv='d' where tg=%s",
-            tgid)
+            "update emby set embyid=NULL,name=null,pwd=null,pwd2=null,cr=null,ex=null,lv='d' where embyid=%s",
+            id)
         return True
     except:
         return False
@@ -147,57 +145,14 @@ async def emby_mima(id, new):
         return False
 
 
+# 最后活动时间
 async def last_action(uid):
-    embyid = select_one("select embyid from emby where tg = %s", uid)
-    ac = r.get(f"{url}/emby/users/{embyid}?api_key={api}").text
-    ac = json.loads(ac)
-    last_time = ac["LastActivityDate"]
-    print(last_time)
-    return last_time
-
-
-# member_info
-async def members_info(id):
-    name, lv, ex, us = select_one("select name,lv,ex,us from emby where tg=%s",
-                                  id)
-    if name is not None:
-        name = name
-        if lv == 'a': lv = lv + ' /白名单'
-        if lv == 'c': lv = lv + ' /已禁用'
-        if lv == 'b': lv = lv + ' /正常'
-    else:
-        name = '无账户信息'
-        lv = lv + ' /未注册'
-        ex = '无账户信息'
-    return name, lv, ex, us
-
-
-# 服务器查询（人数，
-async def count_user():
-    conn, cur = create_conn()
-    cur.execute("select count(tg) from emby")
-    users = cur.fetchone()[0]
-    cur.execute("select count(embyid) from emby")
-    emby_users = cur.fetchone()[0]
-    close_conn(conn, cur)
-    return users, emby_users
-
-
-# buy链接的查询
-async def count_buy():
-    conn, cur = create_conn()
-    cur.execute("select count(us) from invite where us=0")
-    used = cur.fetchone()[0]
-    cur.execute("select count(us) from invite where us=30")
-    mon = cur.fetchone()[0]
-    cur.execute("select count(us) from invite where us=90")
-    sea = cur.fetchone()[0]
-    cur.execute("select count(us) from invite where us=180")
-    half = cur.fetchone()[0]
-    cur.execute("select count(us) from invite where us=365")
-    year = cur.fetchone()[0]
-    close_conn(conn, cur)
-    return used, mon, sea, half, year
+    embyid = select_one("select embyid from emby where tg = %s", uid)[0]
+    ac = r.get(f"{url}/emby/users/{embyid}?api_key={api}", headers=headers, params=params).json()
+    print(ac)
+    # last_time = ac["LastActivityDate"]
+    # print(last_time)
+    # return last_time
 
 
 # 封禁账户

@@ -7,7 +7,7 @@ from pyrogram.errors import BadRequest
 from pyromod.helpers import ikb
 
 from _mysql import sqlhelper
-from bot.func import nezha_res
+from bot.reply import nezha_res
 from config import bot, config
 
 
@@ -24,7 +24,7 @@ async def server(_, call):
     # 服务器此前运行，当前带宽，（探针
     embyid, pwd1, lv = sqlhelper.select_one("select embyid,pwd,lv from emby where tg=%s", call.from_user.id)
     sever = nezha_res.sever_info()
-    if lv == "d" or lv == "c":
+    if lv == "d" or lv == "c" or lv == "e":
         x = '**无权查看**'
     else:
         x = config["line"]

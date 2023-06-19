@@ -7,6 +7,7 @@
 import logging
 from pyromod import listen
 from pyrogram.errors import BadRequest
+from pyromod.listen.listen import ListenerTypes, ListenerTimeout
 from config import *
 
 
@@ -38,8 +39,8 @@ async def set_tz(_, call):
     send = await call.message.reply(
         "【设置探针】\n\n请依次输入探针地址，api_token，设置的检测id 如：\ntz\napi_token\ntz_id  取消点击 /cancel")
     try:
-        txt = await _.listen(call.from_user.id, filters.text, timeout=120)
-    except asyncio.TimeoutError:
+        txt = await call.message.chat.listen(filters.text, timeout=120)
+    except ListenerTimeout:
         await send.delete()
         send1 = await bot.send_message(call.from_user.id,
                                        text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
@@ -90,8 +91,8 @@ async def add_groups(_, call):
         send = await call.message.reply(
             '如更换购买连接请输入格式形如： \n\n`[按钮描述]-[link1],\n[按钮描述]-[link2],\n[按钮描述]-[link3]` 退出状态请按 /cancel')
         try:
-            txt = await _.listen(call.from_user.id, filters.text, timeout=120)
-        except asyncio.TimeoutError:
+            txt = await call.message.chat.listen(filters.text, timeout=120)
+        except ListenerTimeout:
             await send1.delete()
             await send.delete()
             send2 = await bot.send_message(call.from_user.id, text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
@@ -144,13 +145,14 @@ async def add_groups(_, call):
                         asyncio.create_task(send_msg_delete(send6.chat.id, send6.id))
 
 
+# 设置 emby 线路
 @bot.on_callback_query(filters.regex('set_line') & filters.user(owner))
 async def set_emby_line(_, call):
     send = await call.message.reply(
         "💘【设置线路】\n\n对我发送向emby用户展示的emby地址吧，支持markdown写法。 取消点击 /cancel")
     try:
-        txt = await _.listen(call.from_user.id, filters.text, timeout=120)
-    except asyncio.TimeoutError:
+        txt = await call.message.chat.listen(filters.text, timeout=120)
+    except ListenerTimeout:
         await send.delete()
         send1 = await bot.send_message(call.from_user.id,
                                        text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
@@ -179,30 +181,40 @@ async def set_emby_line(_, call):
                 asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
 
 
+# 创建一个回调查询处理函数，用来设置需要显示/隐藏的库
 @bot.on_callback_query(filters.regex('set_block') & filters.user(owner))
 async def set_block(_, call):
+    # 使用ask方法发送一条消息，并等待用户的回复，最多120秒，只接受文本类型的消息
+    # try:
+    #     txt = await call.message.chat.ask(
+    #         "🎬【设置需要显示/隐藏的库】\n对我发送库的名字，多个用空格隔开\n例: `电影 纪录片` 取消点击 /cancel",
+    #         filters=filters.text,
+    #         timeout=120)
     send = await call.message.reply(
         "🎬【设置需要显示/隐藏的库】\n对我发送库的名字，多个用空格隔开\n例: `电影 纪录片` 取消点击 /cancel")
     try:
-        txt = await _.listen(call.from_user.id, filters.text, timeout=120)
-    except asyncio.TimeoutError:
+        txt = await call.message.chat.listen(filters=filters.text, timeout=120)
+    except ListenerTimeout:
+        # 如果超时了，提示用户，并结束会话
         await send.delete()
         send1 = await bot.send_message(call.from_user.id,
                                        text='💦 __没有获取到您的输入__ **会话状态自动取消！**')
         asyncio.create_task(send_msg_delete(call.message.chat.id, send1.id))
+        return
+    # 如果收到了回复，判断是否是取消命令
+    if txt.text == '/cancel':
+        await send.delete()
+        await txt.delete()
+        send1 = await bot.send_message(call.from_user.id, text='__您已经取消输入__ **会话已结束！**')
+        asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
     else:
-        if txt.text == '/cancel':
-            await send.delete()
-            await txt.delete()
-            send1 = await bot.send_message(call.from_user.id, text='__您已经取消输入__ **会话已结束！**')
-            asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
-        else:
-            c = txt.text.split()
-            print(c)
-            config["block"] = c
-            save_config()
-            await send.delete()
-            await txt.delete()
-            send1 = await txt.reply(f"🎬 指定显示/隐藏内容如下: \n{config['block']}\n设置完成！done！")
-            logging.info(f"【admin】：{call.from_user.id} - 更新指定显示/隐藏内容库为 {config['block']} 设置完成")
-            asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))
+        # 分割回复的文本，保存到配置文件中
+        c = txt.text.split()
+        # print(c)
+        config["block"] = c
+        save_config()
+        await txt.delete()
+        await send.delete()
+        send1 = await txt.reply(f"🎬 指定显示/隐藏内容如下: \n{config['block']}\n设置完成！done！")
+        logging.info(f"【admin】：{call.from_user.id} - 更新指定显示/隐藏内容库为 {config['block']} 设置完成")
+        asyncio.create_task(send_msg_delete(txt.chat.id, send1.id))

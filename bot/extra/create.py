@@ -1,6 +1,6 @@
 import logging
 
-from bot.func import emby
+from bot.reply import emby
 from config import *
 
 
@@ -24,7 +24,7 @@ async def login_account(_, msg):
             logging.error("未知错误，检查数据库和emby状态")
         else:
             await bot.edit_message_text(msg.from_user.id, send.id,
-                                        f'**🎉 创建用户成功，更新用户策略完成！\n\n• 用户名称 | `{name}`\n• 用户密码 | `{pwd1}`\n• 安全密码 | `{1234}` '
-                                        f'\n• 当前线路 | \n{config["line"]}**')
+                                        f'**🎉 创建用户成功，更新用户策略完成！\n\n• 用户名称 | `{name}`\n• 用户密码 | `{pwd1[0]}`\n• 安全密码 | `{1234}` '
+                                        f'\n• 当前线路 | \n{config["line"]}\n\n• 到期时间 | {pwd1[1]}**')
             logging.info(f"【创建tg外账户】：{msg.from_user.id} - 建立了账户 {name} ")
 

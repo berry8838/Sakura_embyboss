@@ -1,11 +1,11 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-import uvloop
-
-uvloop.install()
+# import uvloop
+#
+# uvloop.install()
 
 from bot import admin_panel, config_panel, member_panel, mylogger, sever_panel, start
-from bot.func import emby, exchange, expired, kk, leave_unauth_chat, mima, nezha_res, admin_command, user_permission
+from bot.func import exchange, expired, kk, leave_unauth_chat, admin_command, user_permission
 from bot.extra import create
 from config import *
 
@@ -25,8 +25,12 @@ def check_restart():
                 line = f.readline()
                 # 将字符串分割为列表，并转换为整数
                 chat_id, msg_id = [int(x) for x in line.split()]
-                bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text='Restarted Successfully!')
-                os.remove(".restartmsg")    # 使用 os.remove 来删除文件
+                f.close()
+                try:
+                    bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text='Restarted Successfully!')
+                except BadRequest:
+                    pass
+                os.remove(".restartmsg")  # 使用 os.remove 来删除文件
                 logging.info(f"目标：{chat_id}, 消息id：{msg_id} 已提示重启成功。")
             # 捕获可能的异常
             except (ValueError, UnicodeDecodeError) as e:

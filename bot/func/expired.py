@@ -5,7 +5,7 @@ import logging
 from datetime import datetime, timedelta
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from _mysql import sqlhelper
-from bot.func import emby
+from bot.reply import emby
 from config import bot, owner
 
 

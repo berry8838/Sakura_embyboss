@@ -1,5 +1,15 @@
 # Sakura_embyboss（体验版）
-
+### 最新更新指南  
+更新了新的依赖，所以需要本地也更新，不然版本不兼容  
+```
+pip3 install -r requirements.txt
+```
+- 将已有的命令总结到readme，方便导入botfather。
+- 对config.json中open进行了更新，请之前已有config.json的，将新更新的config_example.json中的open字段替换自己的config.json。  
+- 对开注方式做了一部分更新，可能有bug。因为没有进行多人测试。谨慎使用吧。  
+- 优化了注册码查看
+- emby2 表格更新新字段lv，需要使用的可以手动仿照emby表内加上或备份好旧的emby2，导入新表后旧表覆盖上去。
+- 新增 /rmemby 命令。
 ## 项目说明
 
 本项目是**业余**写就，期间参考多位朋友的代码。结合一些我所认为优质的特点、元素。  
@@ -17,7 +27,7 @@
     - [ ] 重新启用签到?
 - [ ] 基本功能  
 已实现的基础功能请看使用帮助
-    - [x] 控制指定显示/隐藏某个库（nsfw）,已经实现，拉取代码时请不要忘了在你的config.json中检查有无block字段
+    - [x] 控制指定显示/隐藏某个库（nsfw）
     - [ ] 重新绑定账户/ 用于被tg注销时不丢失emby
     - [ ] 添加邀请功能
     - [ ] 支持docker部署
@@ -27,26 +37,31 @@
 - [部分效果图](https://telegra.ph/embyboss-05-29)
 - 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符多添加三种  
   即命令使用 ：`/start = .start = #start = !start = 。start`   快来试试吧，另外请给bot开好删除消息权限。
-- 用户到期检测为每两个小时询问一遍，如需更改请自行 cron 写法更换。
+- 为方便导入botfather，现将命令写就如下，可直接复制导入
 
 ```
-用户:
-    /start            - 开启面板 (私聊)
-                        包括：注册，重置密码，显示或隐藏内容，删除账号
-    /exchange [注册码] - 使用注册码 (私聊)
-    /myinfo           - 查看自己状态 (无限制)
-admins:
-    /kk            - 查看用户，含赠送注册、禁用账户、删除账户
-    /config        - 含查看日志，修改探针，购买按钮,emby_line，设置显示/隐藏库（nsfw）等
-    /create [name] - 创建非绑定tg的emby账户
-    /proadmin /revadmin [id] 或回复某人[命令] - 增加或移除admin成员
-    /prouser  /revuser  [id] 或回复某人[命令] - 增加或移除白名单成员
-    /score [tgid] [+\-分数] 或回复某人/score [+/-分数] - 对用户的积分调整
-    /renew [emby_name] [+/-天数] 或回复某人/renew [+/-天数] - 调整到期时间
-    /renewall [+/-天数] 一键派送天数给所有未封禁的用户
-    /restart 重启bot
-    /admin 仅限管理使用，会开启当前tg绑定的emby控制台，所以admin不要随便给
+start - [私聊]开启面板
+exchange - [私聊]使用注册码
+myinfo - [无限制]查看状态
+kk - [管理]查看用户
+prouser - [管理]增加白名单
+revuser - [管理]移除白名单
+score - [管理]积分调整
+renew - [管理]调整到期时间
+rmemby - [管理]删除emby用户
+admin - [管理]开启当前tg绑定的emby控制台
+proadmin - [owner]增加admin成员
+revadmin - [owner]移除admin成员
+renewall - [owner]一键派送天数给所有未封禁的用户
+restart - [owner]重启bot
+config - [owner]配置bot
+create - [owner] - 创建非绑定tg的emby账户
 ```
+说明：  
+start - 包括：注册，重置密码，显示或隐藏内容，删除账号  
+kk - 含赠送注册、禁用账户、删除账户  
+config - 含查看日志，修改探针，购买按钮,emby_line，设置显示/隐藏库（nsfw）等  
+其他命令具体使用可通过其回复方法查看。
 - 怎么无痛更新(按默认设置)，如有配置文件的更新请注意更新。
 
 ```shell

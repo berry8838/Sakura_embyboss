@@ -3,7 +3,7 @@ import json
 from pyromod import listen
 from pykeyboard import InlineButton, InlineKeyboard
 from pyrogram import Client, filters
-from pyrogram.errors import UserNotParticipant, ChatAdminRequired, BadRequest
+from pyrogram.errors import UserNotParticipant, ChatAdminRequired, BadRequest, Forbidden
 from pyromod.helpers import ikb, array_chunk
 
 
@@ -71,12 +71,8 @@ members_ikb = ikb([[('👑 - 创建账号', 'create'), ('🗑️ - 删除账号'
                    [('🎬 - 显示/隐藏', 'embyblock'), ('⭕ - 重置密码', 'reset')],
                    [('♻️ - 主界面', 'back_start')]])
 # -------------------------------------------
-gm_ikb_content = ikb([[('🎯 - 注册状态', 'open'), ('🎟️ - 生成注册', 'cr_link')],
+gm_ikb_content = ikb([[('🎯 - 注册状态', 'open-menu'), ('🎟️ - 生成注册', 'cr_link')],
                       [('🔎 - 查询注册', 'ch_link'), ('💊 - 邀请排行', 'iv_rank')], [('🌸 - 主界面', 'back_start')]])
-
-date_ikb = ikb([[('🌘 - 月', "register_mon"), ('🌗 - 季', "register_sea"),
-                 ('🌖 - 半年', "register_half")],
-                [('🌕 - 年', "register_year"), ('🎟️ - 已用', 'register_used')], [('🔙 - 返回', 'manage')]])
 
 
 # 消息自焚
@@ -148,10 +144,16 @@ async def buy_some(_, call):
 async def close_it(_, call):
     # print(call.message.chat.type)
     if str(call.message.chat.type) == "ChatType.PRIVATE":
-        await call.message.delete()
+        try:
+            await call.message.delete()
+        except Forbidden:
+            await call.answer("信息太久啦。Forbidden this")
     else:
         a = judge_user(call.from_user.id)
         if a == 1:
             await call.answer("请不要以下犯上 ok？", show_alert=True)
         if a == 3:
-            await bot.delete_messages(call.message.chat.id, call.message.id)
+            try:
+                await bot.delete_messages(call.message.chat.id, call.message.id)
+            except Forbidden:
+                await call.answer("信息太久啦。Forbidden this")

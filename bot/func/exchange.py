@@ -9,8 +9,8 @@ import pymysql
 from pyrogram import filters
 from pyromod.helpers import ikb
 from _mysql import sqlhelper
-from bot.func import emby
-from config import bot, prefixes, photo,send_msg_delete
+from bot.reply import emby
+from config import bot, prefixes, photo, send_msg_delete
 
 
 # 兑换注册码
@@ -29,7 +29,7 @@ async def rgs_code(_, msg):
         elif result[0] != 0:
             us = result[0]
             try:
-                embyid, ex = sqlhelper.select_one(f"select embyid,ex from emby where tg=%s",msg.from_user.id)
+                embyid, ex = sqlhelper.select_one(f"select embyid,ex from emby where tg=%s", msg.from_user.id)
             except TypeError:
                 await msg.reply("出错了，不确定您是否有资格使用，请先 /start")
                 return

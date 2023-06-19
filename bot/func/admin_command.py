@@ -7,9 +7,8 @@ import os
 import time
 from datetime import datetime, timedelta
 
-from pyrogram.errors import BadRequest
 from _mysql import sqlhelper
-from bot.func import emby
+from bot.reply import emby
 from config import *
 
 
@@ -36,7 +35,7 @@ async def score_user(_, msg):
             await msg.reply(
                 f"· 🎯管理员 {msg.from_user.first_name} 调节了 [{first.first_name}](tg://user?id={b}) 积分： {c}"
                 f"\n· 🎟️ 实时积分: **{us}**")
-            logging.info(f"【admin】[积分]：{msg.from_user.first_name} 对 {first.first_name}-{b}  {c}分  ")
+            logging.info(f"【admin】[积分]：管理员 {msg.from_user.first_name} 对 {first.first_name}-{b}  {c}分  ")
     else:
         try:
             uid = msg.reply_to_message.from_user.id
@@ -54,7 +53,7 @@ async def score_user(_, msg):
                 f"· 🎯管理员 {msg.from_user.first_name} 调节了 [{first.first_name}](tg://user?id={uid}) 积分： {b}"
                 f"\n· 🎟️ 实时积分: **{us}**")
             await msg.delete()
-            logging.info(f"【admin】[积分]：{msg.from_user.first_name} 对 {first.first_name}-{uid}  {b}分  ")
+            logging.info(f"【admin】[积分]：管理员 {msg.from_user.first_name} 对 {first.first_name}-{uid}  {b}分  ")
 
 
 @bot.on_message(filters.command('renew', prefixes) & filters.user(admins))
@@ -119,7 +118,7 @@ async def renew_user(_, msg):
                             await emby.ban_user(embyid, 1)
                         sqlhelper.update_one("update emby set ex=%s,lv=%s where name=%s", [ex_new, lv, b])
                         logging.info(
-                            f"【admin】[renew]：{msg.from_user.first_name} 对 emby账户{b} 调节 {c} 天，"
+                            f"【admin】[renew]：管理员 {msg.from_user.first_name} 对 emby账户{b} 调节 {c} 天，"
                             f"实时到期：{ex_new.strftime('%Y-%m-%d %H:%M:%S')}")
     else:
         try:
@@ -160,7 +159,7 @@ async def renew_user(_, msg):
                 sqlhelper.update_one("update emby set ex=%s,lv=%s where tg=%s", [ex_new, lv, uid])
                 await msg.delete()
                 logging.info(
-                    f"【admin】[renew]：{msg.from_user.first_name} 对 {first.first_name}({uid})-{name} 用户调节到期时间 {b} 天"
+                    f"【admin】[renew]：管理员 {msg.from_user.first_name} 对 {first.first_name}({uid})-{name} 用户调节到期时间 {b} 天"
                     f'  实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
             else:
                 await msg.reply(f"💢 [ta](tg://user?id={uid}) 还没有注册账户呢")
@@ -181,6 +180,7 @@ async def reload_admins(_, msg):
 # 小功能 - 给所有未被封禁的 emby 延长指定天数。
 @bot.on_message(filters.command('renewall', prefixes) & filters.user(owner))
 async def renewall(_, msg):
+    await msg.delete()
     try:
         a = int(msg.text.split()[1])
     except IndexError:
@@ -198,7 +198,7 @@ async def renewall(_, msg):
                 try:
                     sqlhelper.update_one("update emby set ex=%s where tg=%s", [ex_new, i[0]])
                     await bot.send_message(i[0],
-                                           f"🎯 管理员 {msg.from_user.first_name} 调节了您的 {i[2]} 到期时间：{a}天"
+                                           f"🎯 管理员 {msg.from_user.first_name} 调节了您的账户 {i[2]} 到期时间：{a}天"
                                            f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                 except:
                     continue
@@ -221,3 +221,65 @@ async def restart_bot(_, msg):
         f.close()
     # some code here
     os.execl('/bin/systemctl', 'systemctl', 'restart', 'embyboss')  # 用当前进程执行systemctl命令，重启embyboss服务
+
+
+# 删除账号命令
+@bot.on_message(filters.command('rmemby', prefixes) & filters.user(admins))
+async def renew_user(_, msg):
+    if msg.reply_to_message is None:
+        try:
+            b = msg.text.split()[1]  # name
+            first = await bot.get_chat(b)  # if tg_id
+            # print(b)
+        # except (IndexError, KeyError, BadRequest):
+        except (IndexError, KeyError):
+            send = await msg.reply(
+                "🔔 **使用格式：**/rmemby [tgid]或回复某人\n/rmemby [emby用户名亦可]")
+            asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+        except BadRequest:
+            try:
+                embyid = sqlhelper.select_one("select embyid from emby2 where name=%s", b)[0]
+                if embyid is not None:
+                    sqlhelper.delete_one("delete from emby2 WHERE embyid =%s", embyid)
+                    if await emby.emby_del(embyid) is True:
+                        await msg.reply(f'🎯 done，管理员{msg.from_user.first_name} 已将 账户 {b} 已完成删除。')
+                        logging.info(f"【admin】：{msg.from_user.first_name} 执行删除 emby2表 {b} 账户")
+            except TypeError:
+                try:
+                    tg, embyid, lv, ex = sqlhelper.select_one("select tg,embyid,lv,ex from emby where name=%s", b)
+                    first = await bot.get_chat(tg)
+                except TypeError:
+                    await msg.reply(f"♻️ 没有检索到 {b} 这个账户，请确认重试或手动检查。")
+                else:
+                    if embyid is not None:
+                        if await emby.emby_del(embyid) is True:
+                            sqlhelper.delete_one("delete from emby WHERE embyid =%s", embyid)
+                            await msg.reply(
+                                f'🎯 done，管理员{msg.from_user.first_name} 已将 [{first.first_name}](tg://user?id={tg}) 账户 {b} 删除。')
+                            await bot.send_message(tg,
+                                                   f'🎯 done，管理员{msg.from_user.first_name} 已将 您的账户 {b} 删除。')
+                            logging.info(
+                                f"【admin】：管理员 {msg.from_user.first_name} 执行删除 {first.first_name}-{tg} 账户{b} ")
+                    else:
+                        await msg.reply(f"💢 [ta](tg://user?id={b}) 还没有注册账户呢")
+    else:
+        uid = msg.reply_to_message.from_user.id
+        first = await bot.get_chat(uid)
+        try:
+            embyid, name, lv, ex = sqlhelper.select_one("select embyid,name,lv,ex from emby where tg=%s", uid)
+        except TypeError:
+            await msg.reply(f"♻️ 没有检索到 {first.first_name} 账户，请确认重试或手动检查。")
+        else:
+            if embyid is not None:
+                if await emby.emby_del(embyid) is True:
+                    sqlhelper.delete_one("delete from emby WHERE embyid =%s", embyid)
+                    await msg.reply(
+                        f'🎯 done，管理员 {msg.from_user.first_name} 已将 [{first.first_name}](tg://user?id={uid}) 账户 {name} '
+                        f'已完成删除。')
+                    await bot.send_message(uid,
+                                           f'🎯 done，管理员{msg.from_user.first_name} 已将 您的账户 {name} 删除。')
+                    await msg.delete()
+                    logging.info(
+                        f"【admin】：管理员 {msg.from_user.first_name} 执行删除 {first.first_name}-{uid} 账户 {name}")
+            else:
+                await msg.reply(f"💢 [ta](tg://user?id={uid}) 还没有注册账户呢")

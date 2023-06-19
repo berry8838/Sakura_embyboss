@@ -1,8 +1,8 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-# import uvloop
-#
-# uvloop.install()
+import uvloop
+
+uvloop.install()
 
 from bot import admin_panel, config_panel, member_panel, mylogger, sever_panel, start
 from bot.func import exchange, expired, kk, leave_unauth_chat, admin_command, user_permission

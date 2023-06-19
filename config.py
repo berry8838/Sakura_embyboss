@@ -1,5 +1,7 @@
 import asyncio
 import json
+
+from cacheout import Cache
 from pyromod import listen
 from pykeyboard import InlineButton, InlineKeyboard
 from pyrogram import Client, filters
@@ -119,10 +121,15 @@ async def judge_user_in_group(uid):
 
 '''购买注册'''
 
+cache = Cache()
 
+
+@cache.memoize(ttl=600)
 def buy_sth_ikb():
-    d = config["buy"]
+    d = config["buy"].copy()
     lines = array_chunk(d, 2)
+    # print(lines)
+    lines.append([["💫 - 回到首页", "back_start"]])
     keyboard = ikb(lines)
     return keyboard
 

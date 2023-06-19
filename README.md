@@ -1,15 +1,21 @@
 # Sakura_embyboss（体验版）
 ### 最新更新指南  
-更新了新的依赖，所以需要本地也更新，不然版本不兼容  
+更新了新的依赖，所以需要本地也更新，否则版本不兼容，无法启动  
 ```
 pip3 install -r requirements.txt
 ```
-- 将已有的命令总结到readme，方便导入botfather。
-- 对config.json中open进行了更新，请之前已有config.json的，将新更新的config_example.json中的open字段替换自己的config.json。  
-- 对开注方式做了一部分更新，可能有bug。因为没有进行多人测试。谨慎使用吧。  
-- 优化了注册码查看
-- emby2 表格更新新字段lv，需要使用的可以手动仿照emby表内加上或备份好旧的emby2，导入新表后旧表覆盖上去。
-- 新增 /rmemby 命令。
+- __将已有的命令总结到 #使用帮助，方便导入 [BotFather](https://t.me/BotFather)__  
+- **config配置更新**  
+对config.json中open进行了更新，请之前已有config.json的，将新更新的config_example.json中的open字段替换自己的config.json  
+- **数据表更新**  
+为适配 /rmemby 删除非tg绑定账户，emby2 表格新增字段lv，只tg用户可忽略  
+可手动仿照emby表内加上 或 备份好旧emby2，单独导入新emby2后旧表重覆盖
+- **功能更新**  
+多样化开注 - 因为没有进行多人测试，谨慎使用，及时反馈。  
+优化注册码 - 查看注册码方式，可控制已有账户无法使用开关  
+/rmemby  - 命令删除账户，使用方式见回复  
+账户到期删除 - 到期5天，自动删除并推送消息
+
 ## 项目说明
 
 本项目是**业余**写就，期间参考多位朋友的代码。结合一些我所认为优质的特点、元素。  

@@ -14,7 +14,8 @@
     "stat": "n",
     "all_user": 50,
     "timing": 0,
-    "tem": 0
+    "tem": 0,
+    "allow_code": "y"
   },
   "admins": [],
   "invite": "n",

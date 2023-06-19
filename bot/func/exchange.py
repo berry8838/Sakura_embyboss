@@ -10,7 +10,7 @@ from pyrogram import filters
 from pyromod.helpers import ikb
 from _mysql import sqlhelper
 from bot.reply import emby
-from config import bot, prefixes, photo, send_msg_delete
+from config import bot, prefixes, photo, send_msg_delete, config
 
 
 # 兑换注册码
@@ -34,6 +34,9 @@ async def rgs_code(_, msg):
                 await msg.reply("出错了，不确定您是否有资格使用，请先 /start")
                 return
             if embyid is not None:
+                if config["open"]["allow_code"] == 'n':
+                    await msg.reply("🔔 很遗憾，管理员已经将注册码续期关闭\n**已有账户成员**无法使用register_code，请悉知")
+                    return
                 # 此处需要写一个判断 now和ex的大小比较。进行日期加减。
                 ex_new = datetime.now()
                 if ex_new > ex:

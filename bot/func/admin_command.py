@@ -7,9 +7,13 @@ import os
 import time
 from datetime import datetime, timedelta
 
+import asyncio
+from pyrogram import filters
+from pyrogram.errors import BadRequest
+
 from _mysql import sqlhelper
 from bot.reply import emby
-from config import *
+from config import bot, prefixes, admins, send_msg_delete, owner, photo
 
 
 @bot.on_message(filters.command('score', prefixes=prefixes) & filters.user(admins))
@@ -137,7 +141,8 @@ async def renew_user(_, msg):
                 if ex_new > ex:
                     ex_new = ex_new + timedelta(days=b)
                     await msg.reply(
-                        f'🍒 __管理员 {msg.from_user.first_name} 已调整用户 [{first.first_name}](tg://user?id={uid}) - {name} 到期时间 {b}天 (以当前时间计)__'
+                        f'🍒 __管理员 {msg.from_user.first_name} 已调整用户 [{first.first_name}](tg://user?id={uid}) - '
+                        f'{name} 到期时间 {b}天 (以当前时间计)__'
                         f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
                     await bot.send_message(uid,
                                            f"🎯 管理员 {msg.from_user.first_name} 调节了您的到期时间：{b}天"
@@ -145,7 +150,8 @@ async def renew_user(_, msg):
                 elif ex_new < ex:
                     ex_new = ex + timedelta(days=b)
                     await msg.reply(
-                        f'🍒 __管理员 {msg.from_user.first_name} 已调整用户 [{first.first_name}](tg://user?id={uid}) - {name} 到期时间 {b}天__'
+                        f'🍒 __管理员 {msg.from_user.first_name} 已调整用户 [{first.first_name}](tg://user?id={uid}) - '
+                        f'{name} 到期时间 {b}天__'
                         f'\n📅 实时到期：{ex_new.strftime("%Y-%m-%d %H:%M:%S")} ')
                     await bot.send_message(uid,
                                            f"🎯 管理员 {msg.from_user.first_name} 调节了您的到期时间：{b}天"
@@ -255,7 +261,8 @@ async def renew_user(_, msg):
                         if await emby.emby_del(embyid) is True:
                             sqlhelper.delete_one("delete from emby WHERE embyid =%s", embyid)
                             await msg.reply(
-                                f'🎯 done，管理员{msg.from_user.first_name} 已将 [{first.first_name}](tg://user?id={tg}) 账户 {b} 删除。')
+                                f'🎯 done，管理员{msg.from_user.first_name} 已将 [{first.first_name}](tg://user?id={tg}) '
+                                f'账户 {b} 删除。')
                             await bot.send_message(tg,
                                                    f'🎯 done，管理员{msg.from_user.first_name} 已将 您的账户 {b} 删除。')
                             logging.info(

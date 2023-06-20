@@ -5,7 +5,7 @@
 from pyrogram import filters
 from pyrogram.errors import BadRequest
 from pyromod.helpers import ikb
-
+from datetime import datetime
 from _mysql import sqlhelper
 from bot.reply import nezha_res
 from config import bot, config
@@ -28,9 +28,10 @@ async def server(_, call):
         x = '**无权查看**'
     else:
         x = config["line"]
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     await bot.edit_message_caption(
         call.from_user.id,
         call.message.id,
-        caption=f'**▎⚡ 线路：**\n{x}\n\n**· 💌 用户密码 | ** `{pwd1}`\n\n' + sever + f'**· 🌏 - {call.message.date}**',
+        caption=f'**▎⚡ 线路：**\n{x}\n\n**· 💌 用户密码 | ** `{pwd1}`\n\n' + sever + f'**· 🌏  {now}**',
         reply_markup=ikb([[('🔙 - 用户', 'memembers'), ('❌ - 关闭', 'closeit')]]))
 

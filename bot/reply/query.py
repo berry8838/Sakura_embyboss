@@ -4,7 +4,7 @@ from cacheout import Cache
 
 from _mysql import sqlhelper
 from _mysql.sqlhelper import select_one, create_conn, close_conn
-from config import config,save_config
+from config import config, save_config
 
 cache = Cache()
 

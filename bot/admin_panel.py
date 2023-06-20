@@ -4,13 +4,19 @@
 """
 import logging
 import uuid
-# from datetime import timedelta
+
+import asyncio
+
+from pykeyboard import InlineKeyboard, InlineButton
+from pyrogram import filters
+from pyrogram.errors import BadRequest
+from pyromod.helpers import ikb, array_chunk
 from pyromod.listen.listen import ListenerTimeout
 
 from _mysql import sqlhelper
 from bot.reply import query
 from bot.reply.query import paginate_register
-from config import *
+from config import bot, gm_ikb_content, config, save_config, group, photo, BOT_NAME, send_msg_delete
 
 
 # admin键盘格式
@@ -69,8 +75,7 @@ async def open_stats(_, call):
                                            caption=f'**👮🏻‍♂️ 已经为您开启注册系统啦！\n当前人数：{emby_users}\n总数限制 {all_user_limit}**',
                                            reply_markup=ikb([[('🔙 返回', 'open-menu')]]))
             save_config()
-            # for i in group:
-            sur = all_user_limit - emby_users
+            sur = all_user_limit - emby_users  # for i in group可以多个群组用，但是现在不做
             send_i = await bot.send_photo(group[0], photo=photo,
                                           caption=f'🫧 管理员 {call.from_user.first_name} 已开启 **自由注册** 啦！\n\n'
                                                   f'⏳ 定时注册 | {timing}\n'

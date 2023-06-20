@@ -3,11 +3,12 @@
 import uvloop
 
 uvloop.install()
+from pyrogram.errors import BadRequest
 
 from bot import admin_panel, config_panel, member_panel, mylogger, sever_panel, start
 from bot.func import exchange, expired, kk, leave_unauth_chat, admin_command, user_permission
 from bot.extra import create
-from config import *
+from config import bot
 
 import threading
 import os

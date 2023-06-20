@@ -4,10 +4,12 @@
 
 import logging
 
+import asyncio
+from pyrogram import filters
 from pyrogram.errors import BadRequest
 
 from _mysql import sqlhelper
-from config import *
+from config import bot, prefixes, owner, send_msg_delete, config, save_config, admins
 
 
 # 新增管理名单

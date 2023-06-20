@@ -1,19 +1,19 @@
 """
 根据哪吒探针项目修改，只是图服务器界面好看。
 """
-
-import json
 import humanize as humanize
 import requests as r
-import datetime
 from config import tz, tz_api, tz_id
 
 
 def sever_info():
-    if tz == "": return "\n"
+    if tz == "":
+        return "\n"
     # 若是为填入数据则返回空
-    if tz_api == "": return "\n", print(" 探针api 未设置！！！")
-    if tz_id == "": return "\n", print(" 探针id 未设置！！！")
+    if tz_api == "":
+        return "\n", print(" 探针api 未设置！！！")
+    if tz_id == "":
+        return "\n", print(" 探针id 未设置！！！")
     # 请求头
     tz_headers = {
         'Authorization': tz_api  # 后台右上角下拉菜单获取 API Token
@@ -23,8 +23,8 @@ def sever_info():
     tz_url = f'{tz}/api/v1/server/details?id={tz_id}'
 
     # 获取当前日期
-    now = datetime.datetime.now()
-    day = now.day
+    # now = datetime.datetime.now()
+    # day = now.day
     # 发送GET请求，获取服务器流量信息
     res = r.get(tz_url, headers=tz_headers).json()
     # print(res)

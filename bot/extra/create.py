@@ -1,7 +1,10 @@
 import logging
 
+import asyncio
+from pyrogram import filters
+
 from bot.reply import emby
-from config import *
+from config import bot, prefixes, owner, send_msg_delete, config
 
 
 @bot.on_message(filters.command('create', prefixes) & filters.user(owner) & filters.private)
@@ -24,7 +27,7 @@ async def login_account(_, msg):
             logging.error("未知错误，检查数据库和emby状态")
         else:
             await bot.edit_message_text(msg.from_user.id, send.id,
-                                        f'**🎉 创建用户成功，更新用户策略完成！\n\n• 用户名称 | `{name}`\n• 用户密码 | `{pwd1[0]}`\n• 安全密码 | `{1234}` '
-                                        f'\n• 当前线路 | \n{config["line"]}\n\n• 到期时间 | {pwd1[1]}**')
+                                        f'**🎉 创建用户成功，更新用户策略完成！\n\n• 用户名称 | `{name}`\n'
+                                        f'• 用户密码 | `{pwd1[0]}`\n• 安全密码 | `{1234}`\n'
+                                        f'• 当前线路 | \n{config["line"]}\n\n• 到期时间 | {pwd1[1]}**')
             logging.info(f"【创建tg外账户】：{msg.from_user.id} - 建立了账户 {name} ")
-

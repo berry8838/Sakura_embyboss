@@ -2,7 +2,6 @@ import asyncio
 import json
 
 from cacheout import Cache
-from pyromod import listen
 from pykeyboard import InlineButton, InlineKeyboard
 from pyrogram import Client, filters
 from pyrogram.errors import UserNotParticipant, ChatAdminRequired, BadRequest, Forbidden

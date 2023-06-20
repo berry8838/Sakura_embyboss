@@ -5,11 +5,15 @@
 import logging
 from datetime import datetime
 
+import asyncio
+from pyrogram import filters
+from pyrogram.errors import BadRequest
+from pyromod.helpers import ikb
 from pyromod.listen.listen import ListenerTimeout
 
 from _mysql import sqlhelper
 from bot.reply import emby, query
-from config import *
+from config import bot, members_ikb, config, save_config, prefixes, send_msg_delete
 
 
 # 键盘中转
@@ -177,8 +181,8 @@ async def del_emby(_, call):
                                        caption='**🎯 get，正在删除ing。。。**')
     except BadRequest:
         return
-    id = sqlhelper.select_one("select embyid from emby where tg = %s", call.from_user.id)[0]
-    res = await emby.emby_del(id)
+    em_id = sqlhelper.select_one("select embyid from emby where tg = %s", call.from_user.id)[0]
+    res = await emby.emby_del(em_id)
     if res is True:
         await bot.edit_message_caption(
             call.from_user.id,

@@ -5,10 +5,13 @@
 
 """
 import logging
-from pyromod import listen
+
+import asyncio
+from pyrogram import filters
 from pyrogram.errors import BadRequest
-from pyromod.listen.listen import ListenerTypes, ListenerTimeout
-from config import *
+from pyromod.helpers import ikb, array_chunk
+from pyromod.listen.listen import ListenerTimeout  # ListenerTypes
+from config import config, bot, photo, prefixes, owner, send_msg_delete, save_config
 
 
 async def config_preparation(msg):
@@ -217,7 +220,7 @@ async def set_block(_, call):
     send = await call.message.reply(
         "🎬【设置需要显示/隐藏的库】\n对我发送库的名字，多个用空格隔开\n例: `电影 纪录片` 取消点击 /cancel")
     try:
-        txt = await call.message.chat.listen(filters=filters.text, timeout=120)
+        txt = await call.message.chat.listen(filters=filters.text, timeout=12)
     except ListenerTimeout:
         # 如果超时了，提示用户，并结束会话
         await send.delete()

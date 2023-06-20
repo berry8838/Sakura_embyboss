@@ -6,9 +6,16 @@ kk - 纯装x
 import logging
 from datetime import datetime
 
+import asyncio
+
+from pykeyboard import InlineKeyboard, InlineButton
+from pyrogram import filters
+from pyrogram.errors import BadRequest
+from pyromod.helpers import ikb
+
 from _mysql import sqlhelper
-from bot.reply import emby,query
-from config import *
+from bot.reply import emby, query
+from config import bot, prefixes, judge_user, send_msg_delete, photo, BOT_NAME
 
 
 # 管理用户
@@ -106,7 +113,8 @@ async def gift(_, call):
                 await emby.ban_user(embyid, 0)
                 sqlhelper.update_one("update emby set lv=%s where tg=%s", ['c', b])
                 await call.message.reply(
-                    f'🎯 管理员 {call.from_user.first_name} 已禁用[{first.first_name}](tg://user?id={b}) 账户 {name}\n此状态可在下次续期时刷新')
+                    f'🎯 管理员 {call.from_user.first_name} 已禁用[{first.first_name}](tg://user?id={b}) 账户 {name}\n'
+                    f'此状态可在下次续期时刷新')
                 await bot.send_message(b,
                                        f"🎯 管理员 {call.from_user.first_name} 已禁用 您的账户 {name}\n此状态可在下次续期时刷新")
                 logging.info(f"【admin】：管理员 {call.from_user.id} 完成禁用 {b} 账户 {name}")
@@ -161,7 +169,9 @@ async def close_emby(_, call):
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
         else:
             if await emby.emby_del(embyid) is True:
-                await call.message.reply(f'🎯 done，管理员 {call.from_user.first_name}\n等级：{lv} - [{first.first_name}](tg://user?id={b}) 账户 {name} 已完成删除。')
+                await call.message.reply(
+                    f'🎯 done，管理员 {call.from_user.first_name}\n等级：{lv} - [{first.first_name}](tg://user?id={b}) '
+                    f'账户 {name} 已完成删除。')
                 await bot.send_message(b,
                                        f"🎯 管理员 {call.from_user.first_name} 已删除 您 的账户 {name}")
                 logging.info(f"【admin】：{call.from_user.id} 完成删除 {b} 的账户 {name}")

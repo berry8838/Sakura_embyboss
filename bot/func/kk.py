@@ -21,7 +21,10 @@ from config import bot, prefixes, judge_user, send_msg_delete, photo, BOT_NAME
 # 管理用户
 @bot.on_message(filters.command('kk', prefixes))
 async def user_info(_, msg):
-    await msg.delete()
+    try:
+        await msg.delete()
+    except BadRequest:
+        await msg.reply("请先给我删除消息的权限~")
     a = judge_user(msg.from_user.id)
     if a == 1:
         pass

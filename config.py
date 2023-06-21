@@ -58,7 +58,7 @@ tz_api = config["tz_api"]
 tz_id = config["tz_id"]
 
 prefixes = ['/', '!', '.', '#', '。']
-
+bot_wlc = "**✨ 只有你想见我的时候我们的相遇才有意义**\n\n💫 __你好鸭__  "
 bot = Client(name=BOT_NAME,
              api_id=API_ID,
              api_hash=API_HASH,
@@ -144,6 +144,8 @@ async def buy_some(_, call):
             reply_markup=keyboard)
     except BadRequest:
         await call.message.reply('购买按钮设置错误，请咨询管理员设置是否正确。')
+    except Forbidden:
+        await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
 
 
 @bot.on_callback_query(filters.regex('closeit'))
@@ -153,7 +155,7 @@ async def close_it(_, call):
         try:
             await call.message.delete()
         except Forbidden:
-            await call.answer("信息太久啦。Forbidden this")
+            await call.answer("信息太久啦。Forbidden this", show_alert=True)
     else:
         a = judge_user(call.from_user.id)
         if a == 1:
@@ -162,4 +164,4 @@ async def close_it(_, call):
             try:
                 await bot.delete_messages(call.message.chat.id, call.message.id)
             except Forbidden:
-                await call.answer("信息太久啦。Forbidden this")
+                await call.answer("信息太久啦。Forbidden this", show_alert=True)

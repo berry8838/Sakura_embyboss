@@ -3,25 +3,30 @@
 更新了新的依赖，所以需要本地也更新，否则版本不兼容，无法启动  
 目前要求python3.8及以上！！！
 ```
-先去拉取代码在执行下面步骤 -> 详见下方使用帮助板块
+# 先去拉取代码在执行下面步骤 -> 详见下方使用帮助板块
 pip3 install -r requirements.txt
 ```
 - __将已有的命令总结到 #使用帮助，方便导入 [BotFather](https://t.me/BotFather)__  
 - **config配置更新**  
 对config.json中open进行了更新，请之前已有config.json的，将新更新的config_example.json中的open字段替换自己的config.json  
+为支持多服务器显示，需要修改config.json的tz_id字段，方法同上
 - **数据表更新**  
 为适配 /rmemby 删除非tg绑定账户，emby2 表格新增字段lv，只tg用户可忽略  
 可手动仿照emby表内加上 或 备份好旧emby2，单独导入新emby2后旧表重覆盖
 - **功能更新**  
+多服务器显示 - 需要/config 配置探针 
 多样化开注 - 因为没有进行多人测试，谨慎使用，及时反馈。  
 优化注册码 - 查看注册码方式，可控制已有账户无法使用开关  
-/rmemby  - 命令删除账户，使用方式见回复  
+/rmemby  - 优化命令删除账户，使用方式见回复  
 账户到期删除 - 到期5天，自动删除并推送消息
 
 ## 项目说明
 
-本项目是**业余**写就，期间参考多位朋友的代码。结合一些我所认为优质的特点、元素。  
-因为没有系统的学习代码，所以在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑hhh。
+- 本项目是 **业余选手** 写就，期间参考多位朋友的代码。结合一些我所认为优质的特点、元素  
+- 没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑
+- 推荐使用 Debian 11 搭建，比较兼容
+- 解决不了大的技术问题，如需要，请自行fork修改
+
 
 ## 待办
 
@@ -83,8 +88,7 @@ systemctl restart embyboss
 ```
 ## 配置说明
 
-- 写的有点乱。不懂可以来 [群里](https://t.me/Aaaaa_su) 问我hhhh，我还是很高兴有人能看上我的这个小玩意。
-- 我的鸡鸡是 Ubuntu 20.04系统，Debian应该也差别不大，那么接下来就是怎么配置启动了。
+- 写的有点乱。不懂可以来 [群里](https://t.me/Aaaaa_su) 问我hhhh，我还是很高兴有人能看上我的这个小玩意
 
 ### 1、拉取代码
 
@@ -119,13 +123,13 @@ systemctl enable docker
 - 在Sakura_embyboss目录运行命令`docker-compose up -d`。
 - 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，打开你的phpmyadmin 即 ip:
   port ,点开表 embyboss，点击导入刚刚下载的文件。  
-  ![如何导入](https://telegra.ph/file/3652396e27a3b72f708de.png)
+  ![如何导入](./image/mysql.png)
 
 #### 配置数据库（2）
 
 - 在你已经拥有宝塔面板前提下使用宝塔面板
 - 安装好mysql，phpmyadmin，新增加一个数据库，用户名密码也可以自己设置，但接下去的设置需要自己替换  
-  ![宝塔](https://telegra.ph/file/c1aa98b6205bebf88137c.png)
+  ![宝塔](./image/bt.png)
 - 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，直接在面板数据库中导入这份文件
 
 ------------------
@@ -168,7 +172,7 @@ systemctl enable docker
 "block":""      不填，确保有这个字段就行。等bot起来去里面设置
 "tz": "",       探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠
 "tz_api": "",
-"tz_id": ""     tz开头的三项是和nezha探针在一起的项目，没有哪吒探针就忽略。
+"tz_id": []     tz开头的三项是和nezha探针在一起的项目，没有哪吒探针就忽略。
 ```
 
 ------------
@@ -196,7 +200,7 @@ systemctl stop embyboss
 ```
 
 ## 感谢（排序不分先后）
-
+![bixin](./image/bixin.jpg)
 - [小宝的按钮风格](https://t.me/EmbyClubBot)
 - [MisakaF_Emby - 使用EMBY API的方法。](https://github.com/MisakaFxxk/MisakaF_Emby)
 - [xiaocao - service写法](https://github.com/xiaocao666tzh/EmbyBot)

@@ -9,7 +9,7 @@ import asyncio
 
 from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram import filters
-from pyrogram.errors import BadRequest
+from pyrogram.errors import BadRequest, Forbidden
 from pyromod.helpers import ikb, array_chunk
 from pyromod.listen.listen import ListenerTimeout
 
@@ -32,7 +32,9 @@ async def gm_ikb(_, call):
                                        caption=gm_text,
                                        reply_markup=gm_ikb_content)
     except BadRequest:
-        return
+        await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+    except Forbidden:
+        await call.answer("信息太久啦。Forbidden this", show_alert=True)
 
 
 # 开关注册
@@ -49,7 +51,9 @@ async def open_menu(_, call):
     try:
         await bot.edit_message_caption(call.from_user.id, call.message.id, text, reply_markup=open_menu_ikb)
     except BadRequest:
-        return
+        await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+    except Forbidden:
+        await call.answer("信息太久啦。Forbidden this", show_alert=True)
 
 
 @bot.on_callback_query(filters.regex('open_stat'))
@@ -65,6 +69,10 @@ async def open_stats(_, call):
             save_config()
             logging.info(f"【admin】：管理员 {call.from_user.first_name} 关闭了自由注册")
         except BadRequest:
+            await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+            return
+        except Forbidden:
+            await call.answer("信息太久啦。Forbidden this", show_alert=True)
             return
     elif open_stat == "n":
         config["open"]["stat"] = 'y'
@@ -88,7 +96,9 @@ async def open_stats(_, call):
             logging.info(f"【admin】：管理员 {call.from_user.first_name} 开启了自由注册，总人数限制 {all_user_limit}")
             asyncio.create_task(send_msg_delete(call.from_user.id, send.id))
         except BadRequest:
-            return
+            await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+        except Forbidden:
+            await call.answer("信息太久啦。Forbidden this", show_alert=True)
 
 
 @bot.on_callback_query(filters.regex('open_timing'))
@@ -100,8 +110,7 @@ async def open_timing(_, call):
         try:
             txt = await call.message.chat.listen(filters.text, timeout=120)
         except ListenerTimeout:
-            await send.delete()
-            send1 = await call.message.reply("⏲️ 超时，请重新点击设置")
+            send1 = await send.edit("⏲️ 超时，请重新点击设置")
             asyncio.create_task(send_msg_delete(send1.chat.id, send1.id))
         else:
             try:
@@ -110,12 +119,10 @@ async def open_timing(_, call):
                 config["open"]["timing"] = int(new_timing)
                 config["open"]["all_user"] = int(all_user)
             except ValueError:
-                await send.delete()
                 await txt.delete()
-                await txt.reply("请检查填写是否正确。\n`[时长min] [总人数]`")
+                await send.edit("请检查填写是否正确。\n`[时长min] [总人数]`")
             else:
                 save_config()
-                await send.delete()
                 await txt.delete()
                 # time_over = (call.message.date + timedelta(minutes=int(timing))).strftime("%Y-%m-%d %H:%M:%S")
                 sur = int(all_user) - emby_users
@@ -173,11 +180,18 @@ async def open_all_user_l(_, call):
 # 生成注册链接
 @bot.on_callback_query(filters.regex('cr_link'))
 async def cr_link(_, call):
-    await bot.edit_message_caption(
-        call.from_user.id,
-        call.message.id,
-        caption=f'🎟️ 请回复想要创建的【类型码】 【数量】\n  例`01 20` 记作 20条 30天的注册码。\n季-03，半年-06，年-12，两年-24 \n   '
-                f'__取消本次操作，请 /cancel__')
+    try:
+        await bot.edit_message_caption(
+            call.from_user.id,
+            call.message.id,
+            caption=f'🎟️ 请回复想要创建的【类型码】 【数量】\n  例`01 20` 记作 20条 30天的注册码。\n季-03，半年-06，年-12，两年-24 \n   '
+                    f'__取消本次操作，请 /cancel__')
+    except BadRequest:
+        await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+        return
+    except Forbidden:
+        await call.answer("信息太久啦。Forbidden this", show_alert=True)
+        return
     try:
         content = await call.message.chat.listen(filters=filters.text, timeout=120)
     except ListenerTimeout:
@@ -250,7 +264,7 @@ async def ch_link(_, call):
                                        caption=text,
                                        reply_markup=keyboard)
     except BadRequest:
-        return
+        pass
 
 
 @bot.on_callback_query(filters.regex('ch_admin_link'))
@@ -268,6 +282,8 @@ async def ch_admin_link(_, call):
                                        reply_markup=date_ikb)
     except BadRequest:
         return
+    except Forbidden:
+        await call.answer("信息太久啦。Forbidden this", show_alert=True)
 
 
 @bot.on_callback_query(
@@ -325,6 +341,11 @@ async def paginate_keyboard(_, call):
         a, b = await paginate_register(call.from_user.id, num)
         j = j - 1
         text = a[j]
-        await bot.edit_message_text(call.from_user.id, call.message.id,
-                                    text=f'🔎当前模式- **{num}**天，检索出以下 **{i}**页链接：\n\n' + text,
-                                    disable_web_page_preview=True, reply_markup=keyboard)
+        try:
+            await bot.edit_message_text(call.from_user.id, call.message.id,
+                                        text=f'🔎当前模式- **{num}**天，检索出以下 **{i}**页链接：\n\n' + text,
+                                        disable_web_page_preview=True, reply_markup=keyboard)
+        except BadRequest:
+            return
+        except Forbidden:
+            await call.answer("信息太久啦。Forbidden this", show_alert=True)

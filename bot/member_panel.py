@@ -7,7 +7,7 @@ from datetime import datetime
 
 import asyncio
 from pyrogram import filters
-from pyrogram.errors import BadRequest
+from pyrogram.errors import BadRequest, Forbidden
 from pyromod.helpers import ikb
 from pyromod.listen.listen import ListenerTimeout
 
@@ -29,17 +29,19 @@ async def members(_, call):
                                        caption=text,
                                        reply_markup=members_ikb)
     except BadRequest:
-        await call.message.reply("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai")
+        await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+    except Forbidden:
+        await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
 
 
 # 创建账户
 @bot.on_callback_query(filters.regex('create'))
-async def create(_, call, open_timing_task=None):
+async def create(_, call):
     embyid, us = sqlhelper.select_one("select embyid,us from emby where tg=%s", call.from_user.id)
     open_stat, all_user_limit, timing = await query.open_check()
     # open_stat, all_user_limit, timing, users, emby_users = await query.open_all()
     if embyid is not None:
-        await bot.answer_callback_query(call.id, '💦 你已经有账户啦！请勿重复注册。')
+        await bot.answer_callback_query(call.id, '💦 你已经有账户啦！请勿重复注册。', show_alert=True)
         return
     if open_stat == 'y':
         config["open"]["tem"] += 1
@@ -47,13 +49,14 @@ async def create(_, call, open_timing_task=None):
             config["open"]["stat"] = 'n'
             save_config()
             try:
-                await bot.answer_callback_query(call.id, f"⭕ 很抱歉，当前设定总数已达限制。")
+                await bot.answer_callback_query(call.id, f"⭕ 很抱歉，当前设定总数已达限制。", show_alert=True)
             except BadRequest:
                 return
         else:
             try:
                 await bot.answer_callback_query(call.id, f"🪙 开放注册，免除积分要求。")
             except BadRequest:
+                await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
                 return
             else:
                 await create_user(_, call, us=30, stats='y')
@@ -75,6 +78,10 @@ async def create_user(_, call, us, stats):
             caption='🤖**注意：您已进入注册状态:\n\n• 请在2min内输入 `用户名 4~6位安全码`\n• 举个例子🌰：`苏苏 1234`**\n\n• 用户名中不限制中/英文/emoji 不可有空格；'
                     '\n• 安全码为敏感操作时附加验证，请填入个人记得的数字；退出请点 /cancel')
     except BadRequest:
+        await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+        return
+    except Forbidden:
+        await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
         return
     try:
         name = await call.message.chat.listen(filters.text, timeout=120)
@@ -106,6 +113,21 @@ async def create_user(_, call, us, stats):
                     chat_id=call.from_user.id,
                     message_id=call.message.id,
                     caption=f'🆗 会话结束，收到设置\n\n用户名：**{emby_name}**  安全码：**{emby_pwd2}** \n\n__正在为您初始化账户，更新用户策略__......')
+                try:
+                    x = int(c[0])
+                except ValueError:
+                    pass
+                else:
+                    try:
+                        await bot.get_chat(x)
+                    except BadRequest:
+                        pass
+                    else:
+                        await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                                       "🚫 根据银河正义法，您创建的用户名不得与任何 tg_id 相同",
+                                                       reply_markup=ikb(
+                                                           [[('🍥 - 重新输入', 'create'), ('💫 - 用户主页', 'members')]]))
+                        return
                 await asyncio.sleep(1)
                 pwd1 = await emby.emby_create(call.from_user.id, emby_name, emby_pwd2, us, stats)
                 if pwd1 == 400:
@@ -143,6 +165,10 @@ async def del_me(_, call):
                                            caption='**🔰账户安全验证**：\n\n👮🏻验证是否本人进行敏感操作，请对我发送您设置的安全码。倒计时 120s\n'
                                                    '🛑 **停止请点 /cancel**')
         except BadRequest:
+            await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+            return
+        except Forbidden:
+            await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
             return
         try:
             m = await call.message.chat.listen(filters.text, timeout=120)
@@ -180,6 +206,10 @@ async def del_emby(_, call):
                                        call.message.id,
                                        caption='**🎯 get，正在删除ing。。。**')
     except BadRequest:
+        await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+        return
+    except Forbidden:
+        await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
         return
     em_id = sqlhelper.select_one("select embyid from emby where tg = %s", call.from_user.id)[0]
     res = await emby.emby_del(em_id)
@@ -211,6 +241,10 @@ async def reset(_, call):
                                            caption='**🔰账户安全验证**：\n\n 👮🏻验证是否本人进行敏感操作，请对我发送您设置的安全码。倒计时 120 s\n'
                                                    '🛑 **停止请点 /cancel**')
         except BadRequest:
+            await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+            return
+        except Forbidden:
+            await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
             return
         try:
             m = await call.message.chat.listen(filters.text, timeout=120)
@@ -296,8 +330,10 @@ async def embyblock(_, call):
     embyid, lv = sqlhelper.select_one("select embyid,lv from emby where tg = %s", call.from_user.id)
     if embyid is None:
         await bot.answer_callback_query(call.id, '未查询到账户，不许乱点！💢', show_alert=True)
+        return
     elif lv == "c":
         await bot.answer_callback_query(call.id, '账户到期，封禁中无法使用！💢', show_alert=True)
+        return
     elif config["block"] == "":
         try:
             await bot.edit_message_caption(call.from_user.id,
@@ -305,6 +341,10 @@ async def embyblock(_, call):
                                            caption='🎬 管理员未设置。。。',
                                            reply_markup=ikb([[('o(*////▽////*)q ', 'members')]]))
         except BadRequest:
+            await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+            return
+        except Forbidden:
+            await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
             return
     else:
         emby_block_ikb = ikb([[("🕹️ - 显示", f"emby-unblock-{embyid}"), ("🕶️ - 隐藏", f"emby-block-{embyid}")],
@@ -321,12 +361,15 @@ async def embyblock(_, call):
 @bot.on_callback_query(filters.regex('emby-block'))
 async def user_emby_block(_, call):
     embyid = call.data.split('-')[2]
-    # print(embyid)
     try:
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
                                        caption=f'🎬 正在为您关闭显示 {config["block"]}')
     except BadRequest:
+        await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+        return
+    except Forbidden:
+        await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
         return
     re = await emby.emby_block(embyid, 0)
     if re is True:
@@ -344,12 +387,15 @@ async def user_emby_block(_, call):
 @bot.on_callback_query(filters.regex('emby-unblock'))
 async def user_emby_unblock(_, call):
     embyid = call.data.split('-')[2]
-    # print(embyid)
     try:
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
                                        caption=f'🎬 正在为您开启显示')
     except BadRequest:
+        await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+        return
+    except Forbidden:
+        await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
         return
     re = await emby.emby_block(embyid, 1)
     if re is True:

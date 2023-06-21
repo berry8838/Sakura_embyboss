@@ -2,7 +2,7 @@ import logging
 
 import asyncio
 from pyrogram import filters
-
+from pyrogram.errors import BadRequest
 from bot.reply import emby
 from config import bot, prefixes, owner, send_msg_delete, config
 
@@ -17,6 +17,19 @@ async def login_account(_, msg):
     else:
         send = await msg.reply(
             f'🆗 收到设置\n\n用户名：**{name}**\n\n__正在为您初始化账户，更新用户策略__......')
+        try:
+            int(name)
+        except ValueError:
+            pass
+        else:
+            try:
+                await bot.get_chat(name)
+            except BadRequest:
+                pass
+            else:
+                await bot.edit_message_text(msg.from_user.id, send.id,
+                                            "🚫 根据银河正义法，您创建的用户名不得与任何 tg_id 相同")
+                return
         await asyncio.sleep(1)
         pwd1 = await emby.emby_create(5210, name, 1234, 30, 'o')
         if pwd1 == 400:

@@ -3,10 +3,9 @@
 """
 import humanize as humanize
 import requests as r
-from config import tz, tz_api, tz_id
 
 
-def sever_info():
+def sever_info(tz, tz_api, tz_id):
     if tz == "":
         return "\n"
     # 若是为填入数据则返回空
@@ -69,13 +68,13 @@ def sever_info():
                  f"**· 📶 内存 | {Mempercent}% [{MemUsed}/{MemTotal}]\n**" \
                  f"**· ⚡ 网速 | ↓{NetInSpeed}/s  ↑{NetOutSpeed}/s\n**" \
                  f"**· 🌊 流量 | ↓{NetInTransfer}  ↑{NetOutTransfer}\n**" \
-                 f"**· 🗓 在线 | {uptime} 天**\n\n"
+                 f"**· 📅 在线 | {uptime} 天**\n\n"
     # f"CPU {CPU}% [{detail['host']['Arch']}]\n" \
     # f"负载 {Load1} {Load5} {Load15}\n" \
     # f"交换 {Swapercent}% [{SwapUsed}/{SwapTotal}]\n" \
     # f"硬盘 {Diskpercent}% [{DiskUsed}/{DiskTotal}]\n" \
 
-    return status_msg
+    return detail['name'], status_msg
 
 # if __name__ == "__main__":
 # status_msg = sever_info()

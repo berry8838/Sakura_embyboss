@@ -9,7 +9,7 @@ from config import config, save_config
 cache = Cache()
 
 
-# @cache.memoize(ttl=60)
+@cache.memoize(ttl=60)
 async def members_info(id):
     name, lv, ex, us = select_one("select name,lv,ex,us from emby where tg=%s",
                                   id)
@@ -48,7 +48,7 @@ async def open_check():
     timing = config["open"]["timing"]
     # except:
     if timing != 0: timing = str(timing) + ' min'
-    if timing == 0: timing = '关'
+    if timing == 0: timing = 'Turn off'
     return open_stats, all_user_limit, timing
 
 

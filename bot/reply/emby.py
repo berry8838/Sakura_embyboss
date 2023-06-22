@@ -20,8 +20,9 @@ async def start_user(uid, us):
 
 # 创建并且更新密码与策略
 async def emby_create(tg, name, pwd2, us, stats):
-    # if us == 0: us = 3
-    # print(tg, name, pwd2, us, stats)
+    t = select_one("select count(embyid) from emby where %s", 1)[0]
+    if t >= int(config["open"]["all_user"]):
+        return 403
     now = datetime.now()
     ex = (now + timedelta(days=us))
     # ex = (now + timedelta(seconds=us))

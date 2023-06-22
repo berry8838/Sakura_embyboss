@@ -43,25 +43,22 @@ async def create(_, call):
     if embyid is not None:
         await bot.answer_callback_query(call.id, '💦 你已经有账户啦！请勿重复注册。', show_alert=True)
         return
+    if config["open"]["tem"] >= all_user_limit:
+        try:
+            await bot.answer_callback_query(call.id, f"⭕ 很抱歉，注册总数已达限制。", show_alert=True)
+        except BadRequest:
+            return
+        return
     if open_stat == 'y':
-        config["open"]["tem"] += 1
-        if config["open"]["tem"] > all_user_limit:
-            # config["open"]["stat"] = 'n'
-            save_config()
-            try:
-                await bot.answer_callback_query(call.id, f"⭕ 很抱歉，当前设定总数已达限制。", show_alert=True)
-            except BadRequest:
-                return
+        try:
+            await bot.answer_callback_query(call.id, f"🪙 开放注册，免除积分要求。")
+        except BadRequest:
+            await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+            return
         else:
-            try:
-                await bot.answer_callback_query(call.id, f"🪙 开放注册，免除积分要求。")
-            except BadRequest:
-                await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
-                return
-            else:
-                await create_user(_, call, us=30, stats='y')
+            await create_user(_, call, us=30, stats='y')
     elif open_stat == 'n' and int(us) < 30:
-        await bot.answer_callback_query(call.id, f'🤖 自助注册已关闭 / 积分{us}未达标 ', show_alert=True)
+        await bot.answer_callback_query(call.id, f'🤖 自助注册已关闭，等待开启。', show_alert=True)
     elif open_stat == 'n' and int(us) >= 30:
         await bot.answer_callback_query(call.id, f'🪙 积分满足要求，请稍后。')
         await create_user(_, call, us=us, stats='n')
@@ -135,18 +132,27 @@ async def create_user(_, call, us, stats):
                                                    '**❎ 已有此账户名，请重新输入  注册**',
                                                    reply_markup=ikb([[('🎯 重新注册',
                                                                        'create')]]))
+                elif pwd1 == 403:
+                    await name.delete()
+                    await bot.edit_message_caption(call.from_user.id,
+                                                   call.message.id,
+                                                   '**🚫 很抱歉，注册总数已达限制。**',
+                                                   reply_markup=ikb([[('❎ - 返回主页',
+                                                                       'members')]]))
                 elif pwd1 == 100:
                     await bot.send_message(call.from_user.id,
                                            '❔ __emby服务器未知错误！！！请联系闺蜜（管理）__ **会话已结束！**')
                     logging.error("未知错误，检查数据库和emby状态")
                 else:
                     await name.delete()
-                    await bot.edit_message_caption(
+                    send = await bot.edit_message_caption(
                         call.from_user.id,
                         call.message.id,
-                        f'**🎉 创建用户成功，更新用户策略完成！\n\n• 用户名称 | `{emby_name}`\n• 用户密码 | `{pwd1[0]}`\n• 安全密码 | `{emby_pwd2}`'
-                        f'（仅发送一次）\n• 到期时间 | `{pwd1[1]}`\n• 当前线路\n{config["line"]}**\n\n点击复制，妥善保存，查看密码请点【服务器】',
-                        reply_markup=ikb([[('🔙 - 返回', 'members')]]))
+                        f'**▎创建用户成功🎉**\n\n· 用户名称 | `{emby_name}`\n· 用户密码 | `{pwd1[0]}`\n· 安全密码 | `{emby_pwd2}`'
+                        f'（仅发送一次）\n· 到期时间 | `{pwd1[1]}`\n· 当前线路：\n{config["line"]}\n\n**·【服务器】 - 查看线路和密码**')
+                    # await send.pin() 不允许的
+                    config["open"]["tem"] += 1
+                    save_config()
                     logging.info(f"【创建账户】：{call.from_user.id} - 建立了 {emby_name} ")
 
 
@@ -332,11 +338,11 @@ async def embyblock(_, call):
     elif lv == "c":
         await bot.answer_callback_query(call.id, '账户到期，封禁中无法使用！💢', show_alert=True)
         return
-    elif config["block"] == "":
+    elif len(config["block"]) == 0:
         try:
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
-                                           caption='🎬 管理员未设置。。。',
+                                           caption='🎬 管理员未设置。。。 快催催',
                                            reply_markup=ikb([[('o(*////▽////*)q ', 'members')]]))
         except BadRequest:
             await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)

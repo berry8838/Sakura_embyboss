@@ -23,9 +23,9 @@ from config import bot, gm_ikb_content, config, save_config, group, photo, BOT_N
 @bot.on_callback_query(filters.regex('manage'))
 async def gm_ikb(_, call):
     open_stat, all_user_limit, timing, users, emby_users = await query.open_all()
-    # 🚀🪐🌈📀
-    gm_text = f'🫧 欢迎您，亲爱的管理员 {call.from_user.first_name}\n\n**🚀 自由注册 |** {open_stat}\n**⏳ 定时注册 |** {timing}\n' \
-              f'**🍥 总注册限制 |** {all_user_limit}\n**🎯 已注册人数 |** {emby_users}\n**🤖 bot使用人数 |** {users}'
+    open_stat = "True" if open_stat == 'y' else "False"
+    gm_text = f'🫧 欢迎您，亲爱的管理员 {call.from_user.first_name}\n\n®️ 注册状态 | **{open_stat}**\n⏳ 定时注册 | **{timing}**\n' \
+              f'🎫 总注册限制 | **{all_user_limit}**\n🎟️ 已注册人数 | **{emby_users}**\n🤖 bot使用人数 | {users}'
     try:
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
@@ -43,10 +43,11 @@ async def open_menu(_, call):
     # [开关，注册总数，定时注册] 此间只对emby表中tg用户进行统计。
     open_stat, all_user_limit, timing = await query.open_check()
     openstats = '✅' if open_stat == 'y' else '❎'  # 三元运算
-    text = f"⚙ **注册状态设置**：\n\n【自由注册 - {open_stat}】: 无条件开/关注册\n【定时注册 - {timing} 】: 条件内自由注册\n" \
-           f"【注册限制 - {all_user_limit} 】: 总人数限制\n请点击按钮具体设置👇"
+    timingstats = '❎' if config["open"]["timing"] == 0 else '✅'
+    text = f"⚙ **注册状态设置**：\n\n- 【自由注册】与【定时注册】\n自由注册即定量方式，定时注册既定时又定量，将自动转发消息至群组，再次点击按钮可提前结束并报告。\n" \
+           f"- **目前注册总人数限制 {all_user_limit}**"
     open_menu_ikb = ikb(
-        [[(f'{openstats} - 自由注册', 'open_stat'), ('⏳ - 定时注册', 'open_timing')],
+        [[(f'{openstats} - 自由注册', 'open_stat'), (f'{timingstats} - 定时注册', 'open_timing')],
          [('⭕ - 注册限制', 'all_user_limit')], [('🌟 - 返回上一级', 'manage')]])
     try:
         await bot.edit_message_caption(call.from_user.id, call.message.id, text, reply_markup=open_menu_ikb)
@@ -59,20 +60,23 @@ async def open_menu(_, call):
 @bot.on_callback_query(filters.regex('open_stat'))
 async def open_stats(_, call):
     open_stat, all_user_limit, timing, users, emby_users = await query.open_all()
+    # if timing != 'Turn off':
+    #     await call.answer("目前正在运行定时注册。\n无法调用", show_alert=True)
+    #     return
     if open_stat == "y":
         config["open"]["stat"] = "n"
         try:
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
-                                           caption='**👮🏻‍♂️ 已经为您关闭注册系统啦！**',
+                                           caption=f'**👮🏻‍♂️【关闭自由注册】\n\n已注册人数：{emby_users}\n总注册限制：{all_user_limit}**',
                                            reply_markup=ikb([[('🔙 返回', 'open-menu')]]))
             save_config()
             sur = all_user_limit - emby_users
-            await bot.send_photo(group[0], photo=photo,
-                                 caption=f'🫧 管理员 {call.from_user.first_name} 已关闭 **自由注册**\n\n'
-                                         f'⏳ 定时注册 | {timing}\n'
-                                         f'🍥 总注册限制 | {all_user_limit}\n🍉 已注册人数 | {emby_users}\n'
-                                         f'🎭 剩余可注册 | {sur}\n🤖 bot使用人数 | {users}')
+            send_i = await bot.send_photo(group[0], photo=photo,
+                                          caption=f'🫧 管理员 {call.from_user.first_name} 已关闭 **自由注册**\n\n'
+                                                  f'🎫 总注册限制 | {all_user_limit}\n🎟️ 已注册人数 | {emby_users}\n'
+                                                  f'🎭 剩余可注册 | **{sur}**\n🤖 bot使用人数 | {users}')
+            # await send_i.forward(call.from_user.id)
             logging.info(f"【admin】：管理员 {call.from_user.first_name} 关闭了自由注册")
         except BadRequest:
             await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
@@ -86,19 +90,18 @@ async def open_stats(_, call):
             config["open"]["tem"] = int(emby_users)
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
-                                           caption=f'**👮🏻‍♂️ 已经为您开启注册系统啦！\n当前人数：{emby_users}\n总数限制 {all_user_limit}**',
+                                           caption=f'**👮🏻‍♂️【开启自由注册】\n\n已注册人数：{emby_users}\n总注册限制：{all_user_limit}**',
                                            reply_markup=ikb([[('🔙 返回', 'open-menu')]]))
             save_config()
             sur = all_user_limit - emby_users  # for i in group可以多个群组用，但是现在不做
             send_i = await bot.send_photo(group[0], photo=photo,
-                                          caption=f'🫧 管理员 {call.from_user.first_name} 已开启 **自由注册** 啦！\n\n'
-                                                  f'⏳ 定时注册 | {timing}\n'
-                                                  f'🍥 总注册限制 | {all_user_limit}\n🍉 已注册人数 | {emby_users}\n'
-                                                  f'🎭 剩余可注册 | {sur}\n🤖 bot使用人数 | {users}',
+                                          caption=f'🫧 管理员 {call.from_user.first_name} 已开启 **自由注册**\n\n'
+                                                  f'🎫 总注册限制 | {all_user_limit}\n🎟️ 已注册人数 | {emby_users}\n'
+                                                  f'🎭 剩余可注册 | **{sur}**\n🤖 bot使用人数 | {users}',
                                           reply_markup=ikb(
                                               [[('( •̀ ω •́ )y 点这里去注册', f't.me/{BOT_NAME}', 'url')]]))
             # pined =  await send_i.pin()
-            await send_i.forward(call.from_user.id)
+            # await send_i.forward(call.from_user.id)
             logging.info(f"【admin】：管理员 {call.from_user.first_name} 开启了自由注册，总人数限制 {all_user_limit}")
         except BadRequest:
             await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
@@ -109,60 +112,64 @@ async def open_stats(_, call):
 @bot.on_callback_query(filters.regex('open_timing'))
 async def open_timing(_, call):
     open_stat, all_user_limit, timing, users, emby_users = await query.open_all()
-    if timing == '关':
-        send = await call.message.reply(
-            "🦄 请在 120s 内发送定时开注的时长 总人数\n\n形如：`30 50` 即30min，总人数限制50。注册额满自动关闭注册\n退出 /cancel")
+    # if open_stat != 'n':
+    #     await call.answer("目前正在运行自由注册。\n无法调用", show_alert=True)
+    #     return
+    if timing == 'Turn off':
+        send = await call.message.edit(
+            "🦄【定时注册】 \n\n- 请在 120s 内发送定时开注的时长 总人数\n- 形如：`30 50` 即30min，总人数限制50\n"
+            "- 设置好之后将发送置顶消息\n- 退出 /cancel")
         try:
             txt = await call.message.chat.listen(filters.text, timeout=120)
         except ListenerTimeout:
-            send1 = await send.edit("⏲️ 超时，请重新点击设置")
-            asyncio.create_task(send_msg_delete(send1.chat.id, send1.id))
+            await send.edit("❌ 超时，请重新点击设置", reply_markup=ikb([[('🪪 - 注册状态 ', 'open-menu')]]))
         else:
             if txt.text == '/cancel':
                 await txt.delete()
-                await send.delete()
+                await send.edit("🚥 您已取消对话，返回到 **注册状态** 吧~👇",
+                                reply_markup=ikb([[('🪪 - 注册状态', 'open-menu')]]))
                 return
             try:
                 new_timing, all_user = txt.text.split()
                 config["open"]["stat"] = 'y'
                 config["open"]["timing"] = int(new_timing)
                 config["open"]["all_user"] = int(all_user)
+                save_config()
             except ValueError:
                 await txt.delete()
-                await send.edit("请检查填写是否正确。\n`[时长min] [总人数]`")
+                await send.edit("🚫 请检查填写是否正确。\n`[时长min] [总人数]`",
+                                reply_markup=ikb([[('🔙 返回', 'open-menu')]]))
             else:
-                save_config()
                 await txt.delete()
-                await send.delete()
                 # time_over = (call.message.date + timedelta(minutes=int(timing))).strftime("%Y-%m-%d %H:%M:%S")
                 sur = int(all_user) - emby_users
-                send = await bot.send_photo(group[0], photo=photo,
-                                            caption=f'🫧 管理员 {call.from_user.first_name} 已开启 **定时注册** 啦！\n\n'
-                                                    f'⏳ 持续时间 | {new_timing}\n'
-                                                    f'🍥 总注册限制 | {all_user}\n🚀 已注册人数 | {emby_users}\n'
-                                                    f'🎭 剩余可注册 | {sur}\n🤖 bot使用人数 | {users}',
-                                            reply_markup=ikb(
-                                                [[('( •̀ ω •́ )y 点这里去注册', f't.me/{BOT_NAME}', 'url')]]))
-                await send.forward(call.from_user.id)
-                await bot.pin_chat_message(group[0], send.id)
+                send_i = await bot.send_photo(group[0], photo=photo,
+                                              caption=f'🫧 管理员 {call.from_user.first_name} 已开启 **定时注册**\n\n'
+                                                      f'⏳ 可持续时间 | **{new_timing}** min\n'
+                                                      f'🎫 总注册限制 | {all_user}\n🎟️ 已注册人数 | {emby_users}\n'
+                                                      f'🎭 剩余可注册 | **{sur}**\n🤖 bot使用人数 | {users}',
+                                              reply_markup=ikb(
+                                                  [[('( •̀ ω •́ )y 点这里去注册', f't.me/{BOT_NAME}', 'url')]]))
+                # await send.forward(call.from_user.id)
+                await bot.pin_chat_message(group[0], send_i.id)
                 logging.info(
-                    f"【admin】-定时注册：管理员 {call.from_user.first_name} 开启了定时注册 {timing}min，{all_user}人数限制")
-
+                    f"【admin】-定时注册：管理员 {call.from_user.first_name} 开启了定时注册 {new_timing}min，{sur}人数限制")
+                await send.edit(f"®️ 好，已设置**定时注册 {new_timing}min 总限额{all_user}**",
+                                reply_markup=ikb([[('🔙 - 回到上一级', 'open-menu')]]))
                 # 创建一个异步任务并保存为变量，并给它一个名字
                 change_for_timing_task = asyncio.create_task(
-                    change_for_timing(config["open"]["timing"], call.from_user.id, send.id), name='change_for_timing')
+                    change_for_timing(config["open"]["timing"], call.from_user.id, send_i.id), name='change_for_timing')
     else:
-        await call.answer("定时任务运行中")
-        send = await call.message.reply("Ⓜ️ 如需停止请使用 /stop\n如啥都不干 /cancel")
+        send = await call.message.edit("Ⓜ️【定时任务运行中】\n\n/stop - 停止运行定时注册\n/cancel - 退出当前会话")
         try:
             txt = await call.message.chat.listen(filters.text, timeout=120)
         except ListenerTimeout:
-            send1 = await send.edit("⏲️ 超时，请重新点击设置")
-            asyncio.create_task(send_msg_delete(send1.chat.id, send1.id))
+            await send.edit("❌ 超时，请重新点击", reply_markup=ikb([[('🪪 - 注册状态 ', 'open-menu')]]))
         else:
             if txt.text == "/cancel":
                 await txt.delete()
-                await send.delete()
+                await send.edit("🔘 您已取消对话，返回到 **注册状态** 吧~👇",
+                                reply_markup=ikb([[('🪪 - 注册状态', 'open-menu')]]))
                 return
             elif txt.text == "/stop":
                 # 遍历所有的异步任务，找到名字为 'change_for_timing' 的那个
@@ -172,14 +179,13 @@ async def open_timing(_, call):
                         break
                 # 取消之前创建的异步任务
                 change_for_timing_task.cancel()
-                config["open"]["timing"] = 0
-                save_config()
                 await txt.delete()
-                await send.delete()
+                await send.edit("®️ 已**关闭**定时注册，返回到 **注册状态** 吧~👇",
+                                reply_markup=ikb([[('🪪 - 注册状态', 'open-menu')]]))
             else:
                 await txt.delete()
-                send1 = await send.edit("🚫 错误的类型")
-                asyncio.create_task(send_msg_delete(send1.chat.id, send1.id))
+                await send.edit("🚫 错误的类型",
+                                reply_markup=ikb([[('🪪 - 注册状态', 'open-menu')]]))
 
 
 async def change_for_timing(timing, tgid, send1):

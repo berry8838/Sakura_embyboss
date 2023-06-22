@@ -65,7 +65,7 @@ def sever_info(tz, tz_api, tz_id):
 
     status_msg = f"**· 🌐 服务器 | {detail['name']}**\n" \
                  f"**· 💫 CPU | {CPU}% \n**" \
-                 f"**· 📶 内存 | {Mempercent}% [{MemUsed}/{MemTotal}]\n**" \
+                 f"**· 🌩️ 内存 | {Mempercent}% [{MemUsed}/{MemTotal}]\n**" \
                  f"**· ⚡ 网速 | ↓{NetInSpeed}/s  ↑{NetOutSpeed}/s\n**" \
                  f"**· 🌊 流量 | ↓{NetInTransfer}  ↑{NetOutTransfer}\n**" \
                  f"**· 📅 在线 | {uptime} 天**\n\n"

@@ -168,10 +168,15 @@ async def renew_user(_, msg):
 async def reload_admins(_, msg):
     await msg.delete()
     embyid = sqlhelper.select_one("select embyid from emby where tg=%s", msg.from_user.id)[0]
-    await emby.re_admin(embyid)
-    send = await msg.reply("👮🏻 授权完成。已开启emby后台")
-    logging.info(f"{msg.from_user.first_name} - {msg.from_user.id} 开启了 emby 后台")
-    asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+    if embyid is not None:
+        await emby.re_admin(embyid)
+        send = await msg.reply("👮🏻 授权完成。已开启emby后台")
+        logging.info(f"{msg.from_user.first_name} - {msg.from_user.id} 开启了 emby 后台")
+        asyncio.create_task(send_msg_delete(send.chat.id, send.id))
+    else:
+        send = await msg.reply("👮🏻 授权失败。未查询到绑定账户")
+        logging.info(f"{msg.from_user.first_name} - {msg.from_user.id} 开启 emby 后台失败")
+        asyncio.create_task(send_msg_delete(send.chat.id, send.id))
 
 
 # 小功能 - 给所有未被封禁的 emby 延长指定天数。

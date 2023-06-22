@@ -67,6 +67,12 @@ async def open_stats(_, call):
                                            caption='**👮🏻‍♂️ 已经为您关闭注册系统啦！**',
                                            reply_markup=ikb([[('🔙 返回', 'open-menu')]]))
             save_config()
+            sur = all_user_limit - emby_users
+            await bot.send_photo(group[0], photo=photo,
+                                 caption=f'🫧 管理员 {call.from_user.first_name} 已关闭 **自由注册**\n\n'
+                                         f'⏳ 定时注册 | {timing}\n'
+                                         f'🍥 总注册限制 | {all_user_limit}\n🍉 已注册人数 | {emby_users}\n'
+                                         f'🎭 剩余可注册 | {sur}\n🤖 bot使用人数 | {users}')
             logging.info(f"【admin】：管理员 {call.from_user.first_name} 关闭了自由注册")
         except BadRequest:
             await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
@@ -91,10 +97,9 @@ async def open_stats(_, call):
                                                   f'🎭 剩余可注册 | {sur}\n🤖 bot使用人数 | {users}',
                                           reply_markup=ikb(
                                               [[('( •̀ ω •́ )y 点这里去注册', f't.me/{BOT_NAME}', 'url')]]))
-            await send_i.pin()
-            send = await send_i.forward(call.from_user.id)
+            # pined =  await send_i.pin()
+            await send_i.forward(call.from_user.id)
             logging.info(f"【admin】：管理员 {call.from_user.first_name} 开启了自由注册，总人数限制 {all_user_limit}")
-            asyncio.create_task(send_msg_delete(call.from_user.id, send.id))
         except BadRequest:
             await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
         except Forbidden:
@@ -106,13 +111,17 @@ async def open_timing(_, call):
     open_stat, all_user_limit, timing, users, emby_users = await query.open_all()
     if timing == '关':
         send = await call.message.reply(
-            "🦄 请在 120s 内发送定时开注的时长 总人数\n\n形如：`30 50` 即30min，总人数限制50。注册额满自动关闭注册")
+            "🦄 请在 120s 内发送定时开注的时长 总人数\n\n形如：`30 50` 即30min，总人数限制50。注册额满自动关闭注册\n退出 /cancel")
         try:
             txt = await call.message.chat.listen(filters.text, timeout=120)
         except ListenerTimeout:
             send1 = await send.edit("⏲️ 超时，请重新点击设置")
             asyncio.create_task(send_msg_delete(send1.chat.id, send1.id))
         else:
+            if txt.text == '/cancel':
+                await txt.delete()
+                await send.delete()
+                return
             try:
                 new_timing, all_user = txt.text.split()
                 config["open"]["stat"] = 'y'
@@ -124,6 +133,7 @@ async def open_timing(_, call):
             else:
                 save_config()
                 await txt.delete()
+                await send.delete()
                 # time_over = (call.message.date + timedelta(minutes=int(timing))).strftime("%Y-%m-%d %H:%M:%S")
                 sur = int(all_user) - emby_users
                 send = await bot.send_photo(group[0], photo=photo,
@@ -137,26 +147,64 @@ async def open_timing(_, call):
                 await bot.pin_chat_message(group[0], send.id)
                 logging.info(
                     f"【admin】-定时注册：管理员 {call.from_user.first_name} 开启了定时注册 {timing}min，{all_user}人数限制")
-                asyncio.create_task(change_for_timing(config["open"]["timing"], call.from_user.id, send.id))
+
+                # 创建一个异步任务并保存为变量，并给它一个名字
+                change_for_timing_task = asyncio.create_task(
+                    change_for_timing(config["open"]["timing"], call.from_user.id, send.id), name='change_for_timing')
     else:
         await call.answer("定时任务运行中")
+        send = await call.message.reply("Ⓜ️ 如需停止请使用 /stop\n如啥都不干 /cancel")
+        try:
+            txt = await call.message.chat.listen(filters.text, timeout=120)
+        except ListenerTimeout:
+            send1 = await send.edit("⏲️ 超时，请重新点击设置")
+            asyncio.create_task(send_msg_delete(send1.chat.id, send1.id))
+        else:
+            if txt.text == "/cancel":
+                await txt.delete()
+                await send.delete()
+                return
+            elif txt.text == "/stop":
+                # 遍历所有的异步任务，找到名字为 'change_for_timing' 的那个
+                for task in asyncio.all_tasks():
+                    if task.get_name() == 'change_for_timing':
+                        change_for_timing_task = task
+                        break
+                # 取消之前创建的异步任务
+                change_for_timing_task.cancel()
+                config["open"]["timing"] = 0
+                save_config()
+                await txt.delete()
+                await send.delete()
+            else:
+                await txt.delete()
+                send1 = await send.edit("🚫 错误的类型")
+                asyncio.create_task(send_msg_delete(send1.chat.id, send1.id))
 
 
 async def change_for_timing(timing, tgid, send1):
     a = config["open"]["tem"]
     timing = timing * 60
-    await asyncio.sleep(timing)
-    config["open"]["timing"] = 0
-    config["open"]["tem"] = sqlhelper.select_one("select count(embyid) from emby where %s", 1)[0]
-    config["open"]["stat"] = 'n'
-    save_config()
-    b = config["open"]["tem"] - a
-    s = config["open"]["all_user"] - config["open"]["tem"]
-    text = f'⏳** 注册结束**：\n\n🍉 目前席位：{config["open"]["tem"]}\n🥝 新增席位：{b}\n🍋 剩余席位：{s}'
-    await bot.unpin_chat_message(group[0], send1)
-    send = await bot.send_photo(group[0], photo=photo, caption=text)
-    await send.forward(tgid)
-    logging.info(f'【admin】-定时注册：运行结束，本次注册 目前席位：{config["open"]["tem"]}  新增席位:{b}  剩余席位：{s}')
+    try:
+        await asyncio.sleep(timing)
+    except asyncio.CancelledError:
+        # print('task canceled1')
+        pass
+    finally:
+        config["open"]["timing"] = 0
+        config["open"]["tem"] = sqlhelper.select_one("select count(embyid) from emby where %s", 1)[0]
+        config["open"]["stat"] = 'n'
+        save_config()
+        b = config["open"]["tem"] - a
+        s = config["open"]["all_user"] - config["open"]["tem"]
+        text = f'⏳** 注册结束**：\n\n🍉 目前席位：{config["open"]["tem"]}\n🥝 新增席位：{b}\n🍋 剩余席位：{s}'
+        try:
+            await bot.unpin_chat_message(group[0], send1)
+        except BadRequest:
+            pass
+        send = await bot.send_photo(group[0], photo=photo, caption=text)
+        await send.forward(tgid)
+        logging.info(f'【admin】-定时注册：运行结束，本次注册 目前席位：{config["open"]["tem"]}  新增席位:{b}  剩余席位：{s}')
 
 
 @bot.on_callback_query(filters.regex('all_user_limit'))

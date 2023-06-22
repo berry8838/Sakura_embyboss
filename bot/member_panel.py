@@ -46,8 +46,8 @@ async def create(_, call):
     if open_stat == 'y':
         config["open"]["tem"] += 1
         if config["open"]["tem"] > all_user_limit:
-            config["open"]["stat"] = 'n'
-            save_config()
+            # config["open"]["stat"] = 'n'
+            # save_config()
             try:
                 await bot.answer_callback_query(call.id, f"⭕ 很抱歉，当前设定总数已达限制。", show_alert=True)
             except BadRequest:
@@ -61,7 +61,7 @@ async def create(_, call):
             else:
                 await create_user(_, call, us=30, stats='y')
     elif open_stat == 'n' and int(us) < 30:
-        await bot.answer_callback_query(call.id, f'🤖 自助注册尚未开启 / 积分{us}未达标 ', show_alert=True)
+        await bot.answer_callback_query(call.id, f'🤖 自助注册已关闭 / 积分{us}未达标 ', show_alert=True)
     elif open_stat == 'n' and int(us) >= 30:
         await bot.answer_callback_query(call.id, f'🪙 积分满足要求，请稍后。')
         await create_user(_, call, us=us, stats='n')

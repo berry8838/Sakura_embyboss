@@ -9,7 +9,8 @@ from config import config, save_config
 cache = Cache()
 
 
-@cache.memoize(ttl=60)
+# 人少，就暂时不缓存了。
+# @cache.memoize(ttl=60)
 async def members_info(id):
     name, lv, ex, us = select_one("select name,lv,ex,us from emby where tg=%s",
                                   id)
@@ -142,9 +143,9 @@ async def paginate_register(tg_id, us):
             e = d + 1
         for link in result:
             if us == 0:
-                c = f'{e}. `' + f'{link[1]}`' + f'\n👮🏻: **{link[0]}**\n🏷️user: `{link[2]}`\n📅 __{link[3]}__\n'
+                c = f'{e}. `' + f'{link[1]}`' + f'\n  🏷️user: `{link[2]}`\n  📅 __{link[3]}__\n'
             else:
-                c = f'{e}. `' + f'{link[1]}`\n\n'
+                c = f'{e}. `' + f'{link[1]}`\n'
             x += c
             e += 1
         a.append(x)

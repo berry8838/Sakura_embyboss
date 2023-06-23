@@ -78,7 +78,6 @@ gm_ikb_content = ikb([[('⭕ - 注册状态', 'open-menu'), ('🎟️ - 生成�
 
 # 消息自焚
 async def send_msg_delete(chat, msgid):
-    # print(chat, msgid)
     await asyncio.sleep(60)
     await bot.delete_messages(chat, msgid)
 

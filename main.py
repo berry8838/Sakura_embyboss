@@ -5,14 +5,21 @@ import uvloop
 uvloop.install()
 from pyrogram.errors import BadRequest
 
-from bot import admin_panel, config_panel, member_panel, mylogger, sever_panel, start
-from bot.func import exchange, expired, kk, leave_unauth_chat, admin_command, user_permission
-from bot.extra import create
 from config import bot
 
 import threading
 import os
 import logging
+
+
+def main():
+    from bot import admin_panel, config_panel, member_panel, mylogger, sever_panel, start
+    from bot.func import exchange, expired, kk, leave_unauth_chat, admin_command, user_permission
+    from bot.extra import create
+    # 创建一个 Timer 对象, 对重启命令
+    timer = threading.Timer(3, check_restart)
+    # 启动 Timer
+    timer.start()
 
 
 # 定义一个检查函数
@@ -42,9 +49,4 @@ def check_restart():
         pass
 
 
-# 创建一个 Timer 对象
-timer = threading.Timer(3, check_restart)
-# 启动 Timer
-timer.start()
-
-bot.run()
+bot.run(main())

@@ -43,7 +43,7 @@ async def create(_, call):
     if embyid is not None:
         await bot.answer_callback_query(call.id, '💦 你已经有账户啦！请勿重复注册。', show_alert=True)
         return
-    if config["open"]["tem"] >= all_user_limit:
+    if config["open"]["tem"] >= int(all_user_limit):
         try:
             await bot.answer_callback_query(call.id, f"⭕ 很抱歉，注册总数已达限制。", show_alert=True)
         except BadRequest:
@@ -151,9 +151,11 @@ async def create_user(_, call, us, stats):
                         f'**▎创建用户成功🎉**\n\n· 用户名称 | `{emby_name}`\n· 用户密码 | `{pwd1[0]}`\n· 安全密码 | `{emby_pwd2}`'
                         f'（仅发送一次）\n· 到期时间 | `{pwd1[1]}`\n· 当前线路：\n{config["line"]}\n\n**·【服务器】 - 查看线路和密码**')
                     # await send.pin() 不允许的
-                    config["open"]["tem"] += 1
-                    save_config()
                     logging.info(f"【创建账户】：{call.from_user.id} - 建立了 {emby_name} ")
+                    config["open"]["tem"] += 1
+                    if config["open"]["tem"] >= config["open"]["all_user"]:
+                        config["open"]["stat"] = 'n'
+                    save_config()
 
 
 # 自鲨！！

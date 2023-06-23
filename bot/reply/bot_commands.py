@@ -95,6 +95,7 @@ async def set_commands():
 
     # 群组
     for i in group:
+        await bot.set_bot_commands(user_p, scope=BotCommandScopeChat(chat_id=i))
         for admin_id in admins:
             if admin_id == owner:
                 await bot.set_bot_commands(owner_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=admin_id))

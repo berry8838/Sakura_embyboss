@@ -62,9 +62,9 @@ async def server(_, call):
     # 服务器此前运行，当前带宽，（探针
     embyid, pwd1, lv = sqlhelper.select_one("select embyid,pwd,lv from emby where tg=%s", call.from_user.id)
     if lv == "d" or lv == "c" or lv == "e":
-        x = '**   无权查看**'
+        x = '\n**无权查看**'
     else:
-        x = config["line"]
+        x = '\n' + config["line"]
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     try:
         await bot.edit_message_caption(

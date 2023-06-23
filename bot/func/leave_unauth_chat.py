@@ -9,6 +9,9 @@ from pyromod.helpers import ikb
 
 from config import bot, group, owner
 
+# 定义一个集合来存储已经处理过的群组的 id
+processed_groups = set()
+
 
 # 定义一个异步函数来踢出bot
 async def leave_bot(chat_id):
@@ -25,7 +28,13 @@ async def leave_bot(chat_id):
 
 @bot.on_message(~filters.chat(group) & filters.group)
 async def anti_use_bot(_, msg):
-    # print(msg)
+    # 如果群组的 id 已经在集合中
+    if msg.chat.id in processed_groups:
+        # 直接返回，不执行后面的代码
+        return
+    # 否则，把群组的 id 添加到集合中
+    else:
+        processed_groups.add(msg.chat.id)
     keyword = ikb([[("🈺 ╰(￣ω￣ｏ)", "t.me/Aaaaa_su", "url")]])
     if msg.from_user is not None:
         try:

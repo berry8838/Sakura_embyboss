@@ -9,7 +9,7 @@ from bot.reply import emby
 from config import bot, owner, group
 
 
-async def job():
+async def check_expired():
     now = datetime.now()
     # 询问 到期时间的用户，判断有无积分，有则续期，无就禁用
     result = sqlhelper.select_all(
@@ -86,7 +86,7 @@ async def job():
 # 创建一个AsyncIOScheduler对象
 scheduler = AsyncIOScheduler()
 # 添加一个cron任务，每2小时执行一次job函数
-scheduler.add_job(job, 'cron', hour='*/4', timezone="Asia/Shanghai")
+scheduler.add_job(check_expired, 'cron', hour='*/4', timezone="Asia/Shanghai")
 # scheduler.add_job(job, 'cron', minute='*/1', timezone="Asia/Shanghai")
 # 启动调度器
 scheduler.start()

@@ -7,9 +7,11 @@ import logging
 import asyncio
 from pyrogram import filters
 from pyrogram.errors import BadRequest
+from pyrogram.types import BotCommandScopeChat, BotCommandScopeChatMember
 
 from _mysql import sqlhelper
-from config import bot, prefixes, owner, send_msg_delete, config, save_config, admins
+from bot.reply.bot_commands import user_p, admin_p
+from config import bot, prefixes, owner, send_msg_delete, config, save_config, admins, group
 
 
 # 新增管理名单
@@ -27,9 +29,13 @@ async def pro_admin(_, msg):
             if uid not in config["admins"]:
                 config["admins"].append(uid)
                 save_config()
-            send = await msg.reply(f'👮🏻 新更新 管理员\n#{first.first_name}-{uid}，当前admins：\n{config["admins"]}')
+            send = await msg.reply(
+                f'👮🏻 新更新管理员 #{first.first_name} | `{uid}`\n**当前admins**\n{config["admins"]}')
             await msg.delete()
             logging.info(f"【admin】：{msg.from_user.id} 新更新 管理 {first.first_name}-{uid}")
+            await bot.set_bot_commands(admin_p, scope=BotCommandScopeChat(chat_id=uid))
+            for i in group:
+                await bot.set_bot_commands(admin_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=uid))
             asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
     else:
         uid = msg.reply_to_message.from_user.id
@@ -37,9 +43,12 @@ async def pro_admin(_, msg):
         if uid not in config["admins"]:
             config["admins"].append(uid)
             save_config()
-        send = await msg.reply(f'👮🏻 新更新 管理员\n#{first.first_name}-{uid}，当前admins：\n{config["admins"]}')
+        send = await msg.reply(f'👮🏻 新更新管理员 #{first.first_name} | `{uid}`\n**当前admins**\n{config["admins"]}')
         await msg.delete()
         logging.info(f"【admin】：{msg.from_user.id} 新更新 管理 {first.first_name}-{uid}")
+        await bot.set_bot_commands(admin_p, scope=BotCommandScopeChat(chat_id=uid))
+        for i in group:
+            await bot.set_bot_commands(admin_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=uid))
         asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
 
 
@@ -56,7 +65,8 @@ async def pro_user(_, msg):
             await msg.delete()
         else:
             sqlhelper.update_one("update emby set lv=%s where tg=%s", ['a', uid])
-            send = await msg.reply(f"🎉 恭喜 [{first.first_name}](tg://{uid}) 获得{msg.from_user.first_name}签出的白名单.")
+            send = await msg.reply(
+                f"🎉 恭喜 [{first.first_name}](tg://{uid}) 获得 {msg.from_user.first_name} 签出的白名单.")
             await msg.delete()
             logging.info(f"【admin】：{msg.from_user.id} 新更新 白名单 {first.first_name}-{uid}")
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
@@ -64,7 +74,7 @@ async def pro_user(_, msg):
         uid = msg.reply_to_message.from_user.id
         first = await bot.get_chat(uid)
         sqlhelper.update_one("update emby set lv=%s where tg=%s", ['a', uid])
-        send = await msg.reply(f"🎉 恭喜 [{first.first_name}](tg://{uid}) 获得{msg.from_user.first_name}签出的白名单.")
+        send = await msg.reply(f"🎉 恭喜 [{first.first_name}](tg://{uid}) 获得 {msg.from_user.first_name} 签出的白名单.")
         await msg.delete()
         logging.info(f"【admin】：{msg.from_user.id} 新更新 白名单 {first.first_name}-{uid}")
         asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
@@ -85,19 +95,26 @@ async def del_admin(_, msg):
             if uid in config["admins"]:
                 config["admins"].remove(uid)
                 save_config()
-            send = await msg.reply(f'👮🏻 已减少 管理员\n#{first.first_name}-{uid}，当前admins：\n{config["admins"]}')
+            send = await msg.reply(f'👮🏻 已减少管理员 #{first.first_name} | `{uid}`\n**当前admins**\n{config["admins"]}')
             await msg.delete()
             logging.info(f"【admin】：{msg.from_user.id} 新减少 管理 {first.first_name}-{uid}")
+            await bot.set_bot_commands(user_p, scope=BotCommandScopeChat(chat_id=uid))
+            for i in group:
+                await bot.set_bot_commands(user_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=uid))
             asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
+
     else:
         uid = msg.reply_to_message.from_user.id
         first = await bot.get_chat(uid)
         if uid in config["admins"]:
             config["admins"].remove(uid)
             save_config()
-        send = await msg.reply(f'👮🏻 已减少 管理员\n#{first.first_name}-{uid}，当前admins：\n{config["admins"]}')
+        send = await msg.reply(f'👮🏻 已减少管理员 #{first.first_name} | `{uid}`\n**当前admins**\n{config["admins"]}')
         await msg.delete()
         logging.info(f"【admin】：{msg.from_user.id} 新减少 管理 {first.first_name}-{uid}")
+        await bot.set_bot_commands(user_p, scope=BotCommandScopeChat(chat_id=uid))
+        for i in group:
+            await bot.set_bot_commands(user_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=uid))
         asyncio.create_task(send_msg_delete(msg.chat.id, send.id))
 
 
@@ -114,7 +131,8 @@ async def pro_user(_, msg):
             await msg.delete()
         else:
             sqlhelper.update_one("update emby set lv=%s where tg=%s", ['b', uid])
-            send = await msg.reply(f"🤖 很遗憾 [{first.first_name}](tg://{uid}) 被{msg.from_user.first_name}移出白名单.")
+            send = await msg.reply(
+                f"🤖 很遗憾 [{first.first_name}](tg://{uid}) 被 {msg.from_user.first_name} 移出白名单.")
             await msg.delete()
             logging.info(f"【admin】：{msg.from_user.id} 新移除 白名单 {first.first_name}-{uid}")
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
@@ -122,7 +140,7 @@ async def pro_user(_, msg):
         uid = msg.reply_to_message.from_user.id
         first = await bot.get_chat(uid)
         sqlhelper.update_one("update emby set lv=%s where tg=%s", ['b', uid])
-        send = await msg.reply(f"🤖 很遗憾 [{first.first_name}](tg://{uid}) 被{msg.from_user.first_name}移出白名单.")
+        send = await msg.reply(f"🤖 很遗憾 [{first.first_name}](tg://{uid}) 被 {msg.from_user.first_name} 移出白名单.")
         await msg.delete()
         logging.info(f"【admin】：{msg.from_user.id} 新移除 白名单 {first.first_name}-{uid}")
         asyncio.create_task(send_msg_delete(msg.chat.id, send.id))

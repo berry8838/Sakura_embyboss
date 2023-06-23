@@ -15,7 +15,7 @@ from config import bot, prefixes, BOT_NAME, photo, judge_group_ikb, group, send_
 @bot.on_message((filters.command('start', prefixes) | filters.command('exchange', prefixes)) & filters.chat(group))
 async def gun_sb(_, msg):
     await msg.delete()
-    send = await msg.reply(f"🤖 亲爱的 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 这是一条私聊命令 👇",
+    send = await msg.reply(f"🤖 亲爱的 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 这是一条私聊命令",
                            reply_markup=ikb([[('点击我 ༼ つ ◕_◕ ༽つ', f't.me/{BOT_NAME}', 'url')]]))
     asyncio.create_task(send_msg_delete(send.chat.id, send.id))
 

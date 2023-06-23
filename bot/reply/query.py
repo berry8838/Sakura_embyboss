@@ -27,6 +27,19 @@ async def members_info(id):
     return name, lv, ex, us
 
 
+# 非tg搜索
+@cache.memoize(ttl=2)
+async def uu_info(n):
+    try:
+        name, cr, ex, expired = select_one("select name,cr,ex,expired from emby2 where name=%s", n)
+    except TypeError:
+        return False
+    else:
+        if name is not None:
+            expired = '🟢 有效' if expired == 0 else '🔴 到期封禁'
+        return name, cr, ex, expired
+
+
 # 服务器查询（人数，
 # @cache.memoize(ttl=60)
 async def count_user():

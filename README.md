@@ -6,16 +6,23 @@
 # 先去拉取代码在执行下面步骤 -> 详见下方使用帮助板块
 pip3 install -r requirements.txt
 ```
-- __将已有的命令总结到 #使用帮助，方便导入 [BotFather](https://t.me/BotFather)__  
+- ~~将已有的命令总结到 #使用帮助，方便导入 [BotFather](https://t.me/BotFather)~~  
+Sakura已经是一个成熟的bot了，它会自动加载命令，不用手动加了
+
+
 - **config配置更新**  
 对config.json中open进行了更新，请之前已有config.json的，将新更新的config_example.json中的open字段替换自己的config.json  
 为支持多服务器显示，需要修改config.json的tz_id字段，方法同上
+
+
 - **数据表更新**  
 为适配 /rmemby 删除非tg绑定账户，emby2 表格新增字段lv，只tg用户可忽略  
-可手动仿照emby表内加上 或 备份好旧emby2，单独导入新emby2后旧表重覆盖
+可手动仿照emby表内加上 或 备份好旧emby2，单独导入新emby2后旧表重覆盖   
+
+
 - **功能更新**  
-多服务器显示 - 需要/config 配置探针 
-多样化开注 - 因为没有进行多人测试，谨慎使用，及时反馈。  
+多服务器显示 - 需要/config 配置探针  
+多样化开注 - 我确定已经比较成熟了，有事请反馈  
 优化注册码 - 查看注册码方式，可控制已有账户无法使用开关  
 /rmemby  - 优化命令删除账户，使用方式见回复  
 账户到期删除 - 到期5天，自动删除并推送消息
@@ -50,7 +57,7 @@ pip3 install -r requirements.txt
 - [部分效果图](https://telegra.ph/embyboss-05-29)
 - 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符多添加三种  
   即命令使用 ：`/start = .start = #start = !start = 。start`   快来试试吧，另外请给bot开好删除消息权限。
-- 为方便导入botfather，现将命令写就如下，可直接复制导入
+- ~~为方便导入botfather，现将命令写就如下，可直接复制导入~~ 已实现初始化命令加载，无需手动
 
 ```
 start - [私聊]开启面板
@@ -63,12 +70,13 @@ score - [管理]积分调整
 renew - [管理]调整到期时间
 rmemby - [管理]删除emby用户
 admin - [管理]开启当前tg绑定的emby控制台
+create - [管理]创建非绑定tg的emby账户
+uuinfo - [管理]查看非tg的emby用户信息
 proadmin - [owner]增加admin成员
 revadmin - [owner]移除admin成员
 renewall - [owner]一键派送天数给所有未封禁的用户
 restart - [owner]重启bot
 config - [owner]配置bot
-create - [owner] - 创建非绑定tg的emby账户
 ```
 说明：  
 start - 包括：注册，重置密码，显示或隐藏内容，删除账号  

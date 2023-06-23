@@ -262,7 +262,7 @@ async def open_allow_code(_, call):
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
                                            caption='**👮🏻‍♂️ 您已调整 注册码续期 Falese**',
-                                           reply_markup=ikb([[('✅ 返回', 'back_config')]]))
+                                           reply_markup=ikb([[('❎ 返回', 'back_config')]]))
             save_config()
             logging.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 注册码续期 Falese")
         except BadRequest:
@@ -277,7 +277,7 @@ async def open_allow_code(_, call):
             await bot.edit_message_caption(call.from_user.id,
                                            call.message.id,
                                            caption=f'**👮🏻‍♂️ 您已调整 注册码续期 True**',
-                                           reply_markup=ikb([[('❎ 返回', 'back_config')]]))
+                                           reply_markup=ikb([[('✅ 返回', 'back_config')]]))
             save_config()
             logging.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 注册码续期 True")
         except BadRequest:

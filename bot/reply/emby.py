@@ -37,7 +37,10 @@ async def emby_create(tg, name, pwd2, us, stats):
         try:
             id1 = re.findall(r'\"(.*?)\"', new_user.text)
             id = id1[9]
-            pwd = await pwd_create(8)
+            if stats == 'o':
+                pwd = 5210
+            else:
+                pwd = await pwd_create(8)
             pwd_data = {
                 "Id": f"{id}",
                 "NewPw": f"{pwd}",

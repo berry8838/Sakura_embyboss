@@ -1,5 +1,6 @@
 import asyncio
 import json
+import logging
 
 from cacheout import Cache
 from pykeyboard import InlineButton, InlineKeyboard
@@ -111,7 +112,7 @@ async def judge_user_in_group(uid):
                      'ChatMemberStatus.RESTRICTED']:
                 return True
         except (UserNotParticipant, ChatAdminRequired) as e:
-            print(e)
+            logging.error(f"bot不能在 {i} 中工作，请检查bot是否在群组及其权限设置")
         else:
             continue  # go next group
     return False  # user is not in any group

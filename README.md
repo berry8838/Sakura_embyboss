@@ -1,39 +1,42 @@
 # Sakura_embyboss（体验版）
-### 最新更新指南  
+
+### 最新更新指南
+
 更新了新的依赖，所以需要本地也更新，否则版本不兼容，无法启动  
 目前要求python3.8及以上！！！
+
 ```
 # 先去拉取代码在执行下面步骤 -> 详见下方使用帮助板块
 pip3 install -r requirements.txt
 ```
+
 - ~~将已有的命令总结到 #使用帮助，方便导入 [BotFather](https://t.me/BotFather)~~  
-Sakura已经是一个成熟的bot了，它会自动加载命令，不用手动加了
+  Sakura已经是一个成熟的bot了，它会自动加载命令，不用手动加了
 
 
 - **config配置更新**  
-对config.json中open进行了更新，请之前已有config.json的，将新更新的config_example.json中的open字段替换自己的config.json  
-为支持多服务器显示，需要修改config.json的tz_id字段，方法同上
+  对config.json中open进行了更新，请之前已有config.json的，将新更新的config_example.json中的open字段替换自己的config.json  
+  为支持多服务器显示，需要修改config.json的tz_id字段，方法同上
 
 
 - **数据表更新**  
-为适配 /rmemby 删除非tg绑定账户，emby2 表格新增字段lv，只tg用户可忽略  
-可手动仿照emby表内加上 或 备份好旧emby2，单独导入新emby2后旧表重覆盖   
+  为适配 /rmemby 删除非tg绑定账户，emby2 表格新增字段lv，只tg用户可忽略  
+  可手动仿照emby表内加上 或 备份好旧emby2，单独导入新emby2后旧表重覆盖
 
 
 - **功能更新**  
-多服务器显示 - 需要/config 配置探针  
-多样化开注 - 我确定已经比较成熟了，有事请反馈  
-优化注册码 - 查看注册码方式，可控制已有账户无法使用开关  
-/rmemby  - 优化命令删除账户，使用方式见回复  
-账户到期删除 - 到期5天，自动删除并推送消息
+  多服务器显示 - 需要/config 配置探针  
+  多样化开注 - 我确定已经比较成熟了，有事请反馈  
+  优化注册码 - 查看注册码方式，可控制已有账户无法使用开关  
+  /rmemby - 优化命令删除账户，使用方式见回复  
+  账户到期删除 - 到期5天，自动删除并推送消息
 
 ## 项目说明
 
-- 本项目是 **业余选手** 写就，期间参考多位朋友的代码。结合一些我所认为优质的特点、元素  
+- 本项目是 **业余选手** 写就，期间参考多位朋友的代码。结合一些我所认为优质的特点、元素，截至目前已有三个面板，若干命令
 - 没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑
 - 推荐使用 Debian 11 搭建，比较兼容
 - 解决不了大的技术问题，如需要，请自行fork修改
-
 
 ## 待办
 
@@ -46,8 +49,7 @@ Sakura已经是一个成熟的bot了，它会自动加载命令，不用手动�
     - [ ] 公告功能(群发信息)
     - [ ] 重新启用签到?
 - [ ] 基本功能  
-已实现的基础功能请看使用帮助
-    - [x] 控制指定显示/隐藏某个库（nsfw）
+  已实现的基础功能请看使用帮助
     - [ ] 重新绑定账户/ 用于被tg注销时不丢失emby
     - [ ] 添加邀请功能
     - [ ] 支持docker部署
@@ -78,12 +80,14 @@ renewall - [owner]一键派送天数给所有未封禁的用户
 restart - [owner]重启bot
 config - [owner]配置bot
 ```
+
 说明：  
 start - 包括：注册，重置密码，显示或隐藏内容，删除账号  
 kk - 含赠送注册、禁用账户、删除账户  
 config - 含查看日志，修改探针，购买按钮,emby_line，设置显示/隐藏库（nsfw）等  
 其他命令具体使用可通过其回复方法查看。
-- 怎么无痛更新(按默认设置)，如有配置文件的更新请注意更新。
+
+- 只要没有配置文件的更新，无痛更新(按默认设置)如下
 
 ```shell
 # 拉取代码
@@ -94,6 +98,7 @@ git pull origin master
 # 启动命令
 systemctl restart embyboss
 ```
+
 ## 配置说明
 
 - 写的有点乱。不懂可以来 [群里](https://t.me/Aaaaa_su) 问我hhhh，我还是很高兴有人能看上我的这个小玩意
@@ -112,6 +117,7 @@ git clone https://github.com/berry8838/Sakura_embyboss.git && cd Sakura_embyboss
 ### 2、配置数据库
 
 - 有两种方式配置数据库。分别说，任选一种
+- 使用以下数据库管理软件均布置在 vps 上，若本地有管理软件可替代，就不用搭建了。
 
 #### 配置数据库 (1)
 
@@ -132,13 +138,15 @@ systemctl enable docker
 - 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，打开你的phpmyadmin 即 ip:
   port ,点开表 embyboss，点击导入刚刚下载的文件。  
   ![如何导入](./image/mysql.png)
+- 搭建完成之后，用 `ip:端口` 访问、管理
 
 #### 配置数据库（2）
 
 - 在你已经拥有宝塔面板前提下使用宝塔面板
-- 安装好mysql，phpmyadmin，新增加一个数据库，用户名密码也可以自己设置，但接下去的设置需要自己替换  
+- 在宝塔中，安装好mysql，phpmyadmin，进入`数据库` 新增加一个数据库，用户名密码设置，进行相应的替换，访问点击 `phpmyadmin`  
   ![宝塔](./image/bt.png)
 - 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，直接在面板数据库中导入这份文件
+  ![如何导入](./image/mysql.png)
 
 ------------------
 
@@ -154,30 +162,37 @@ systemctl enable docker
 "owner_api": ""   你的api  https://my.telegram.org/auth
 "owner_hash": ""  你的hash  https://my.telegram.org/auth
 "owner": ""       拥有者的tgid
-"group": []       授权群组id (带-号的)，未授权的群组拉bot会自动退出。不在群组的成员会提示先加入群组
-"main_group": ""  你群组的用户名或者你私密群组的邀请链接  
+
+"group": []       授权群组id (如 -1001869392674)，未授权的群组拉bot会自动退出。不在群组的成员会提示先加入群组
+
+"main_group":     你群组的用户名或者你私密群组的邀请链接，没有的话就随便填个 Google.com 吧  
                   如 https://t.me/+7ZL9MbJd8h44Zjc1 中的 "+7ZL9MbJd8h44Zjc1"
-"chanel": ""      你频道username，没有的话就随便填个 Google.com 吧
-"bot_photo": "https://telegra.ph/file/1437f7f348c6c71f0b9ab.png",
-                  bot发送消息时的图片。必填
-"user_buy": "n"   开启购买按钮，建议默认关闭，后续可以在bot里自行配置
-"open": "n",      是否开启自由注册。
+                  
+"chanel": ""      你频道username (不加@)，没有的话就随便填个 Google.com 吧
+
+"bot_photo":     "https://telegra.ph/file/1437f7f348c6c71f0b9ab.png",
+                  bot发送消息时的图，必要
+                  
 "admins": []      拥有管理权限的id，记得要填入owner里的tgid，其他添加id要用英文逗号隔开
+
 "emby_api": ""    emby的api，在后台自己创建一个
 "emby_url": ""    建议ip，http://255.255.255.36:8096 最后不带斜杠，是发送给enby的网址，填域名请保证反代不会挂
 "line": ""        展示给用户的emby地址
+
 "db_host": ""     如上，数据库的ip 如：255.255.255.36 不需要3306端口，默认的
 "db_user": "susu" 数据库用户名
 "db_pwd": "1234"  密码
-"db": "embyboss"  表名
+"db": "embyboss"  库名
 ```
 
 • 不填项目
 
 ```
+"user_buy": "n" 开启购买按钮，建议默认关闭，可在bot里自行配置
+"open": "n",    是否开启自由注册。
 "buy": [],      购买按钮的样式，不填，等bot起来去里面设置。报错很麻烦
 "invite": "n",  没写好，可以忽略
-"block":""      不填，确保有这个字段就行。等bot起来去里面设置
+"block":[]      不填，确保有这个字段就行。等bot起来去里面设置
 "tz": "",       探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠
 "tz_api": "",
 "tz_id": []     tz开头的三项是和nezha探针在一起的项目，没有哪吒探针就忽略。
@@ -189,7 +204,7 @@ systemctl enable docker
 
 - 在`embyboss.service`
   里面编辑我中文标注的3行,默认可以分别填入`embyboss`，`/root/Sakura_embyboss/` ,`/root/Sakura_embyboss/main.py`
-- 若有修改请按照自己的修改填写
+- 若有修改路径请按照自己的修改填写
 - 保存后运行 `mv embyboss.service /usr/lib/systemd/system`
 - 以下是控制命令
 
@@ -208,8 +223,11 @@ systemctl stop embyboss
 ```
 
 ## 感谢（排序不分先后）
+- [Pyrogram • 一个现代、优雅和异步的MTProto API框架](https://github.com/pyrogram/pyrogram)
+- [Nezha探针 • 自托管、轻量级、服务器和网站监控运维工具](https://github.com/naiba/nezha)
+- [小宝 • 按钮风格](https://t.me/EmbyClubBot)
+- [MisakaF_Emby • 使用EMBY API的方法](https://github.com/MisakaFxxk/MisakaF_Emby)
+- [xiaocao • service写法](https://github.com/xiaocao666tzh/EmbyBot)
+- [待定 Nolovenodie • 海报推送](https://github.com/Nolovenodie/EmbyTools)
+
 ![bixin](./image/bixin.jpg)
-- [小宝的按钮风格](https://t.me/EmbyClubBot)
-- [MisakaF_Emby - 使用EMBY API的方法。](https://github.com/MisakaFxxk/MisakaF_Emby)
-- [xiaocao - service写法](https://github.com/xiaocao666tzh/EmbyBot)
-- [待定 Nolovenodie - 海报推送](https://github.com/Nolovenodie/EmbyTools)  

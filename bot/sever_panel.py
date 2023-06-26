@@ -16,42 +16,18 @@ cache = Cache()
 
 @bot.on_callback_query(filters.regex('server'))
 async def server(_, call):
-    # print(call.data)
+    await call.answer('🌐查询中...ο(=•ω＜=)ρ⌒☆ 发送bibo电波~bibo~')
     try:
         j = call.data.split(':')[1]
     except IndexError:
         if len(config["tz_id"]) == 0:
-            try:
-                await bot.edit_message_caption(
-                    call.from_user.id,
-                    call.message.id,
-                    caption="**▎🌐查询中...\n\nο(=•ω＜=)ρ⌒☆ 发送bibo电波~bibo~ \n⚡ 卡住请等待即可.**")
-            except BadRequest:
-                await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
-                return
-            except Forbidden:
-                await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
-                return
-            else:
-                sever = ''
-                keyboard = ikb([[('🔙 - 用户', 'members'), ('❌ - 关闭', 'closeit')]])
+            sever = ''
+            keyboard = ikb([[('🔙 - 用户', 'members'), ('❌ - 关闭', 'closeit')]])
         elif len(config["tz_id"]) == 1:
-            try:
-                await bot.edit_message_caption(
-                    call.from_user.id,
-                    call.message.id,
-                    caption="**▎🌐查询中...\n\nο(=•ω＜=)ρ⌒☆ 发送bibo电波~bibo~ \n⚡ 卡住请等待即可.**")
-                j = config["tz_id"][0]
-                keyboard, sever = await cr_page_server()
-                sever = sever[j]
-            except BadRequest:
-                await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
-                return
-            except Forbidden:
-                await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
-                return
-            else:
-                keyboard = ikb([[('🔙 - 用户', 'members'), ('❌ - 关闭', 'closeit')]])
+            j = config["tz_id"][0]
+            keyboard, sever = await cr_page_server()
+            sever = sever[j]
+            keyboard = ikb([[('🔙 - 用户', 'members'), ('❌ - 关闭', 'closeit')]])
         else:
             j = config["tz_id"][0]
             keyboard, sever = await cr_page_server()
@@ -74,8 +50,6 @@ async def server(_, call):
             reply_markup=keyboard)
     except BadRequest:
         await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
-    except Forbidden:
-        await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
 
 
 @cache.memoize(ttl=120)

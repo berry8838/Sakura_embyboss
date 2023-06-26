@@ -1,4 +1,3 @@
-import json
 from config import host, user, pwd, db
 import pymysql
 from dbutils.pooled_db import PooledDB

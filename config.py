@@ -59,7 +59,6 @@ tz_api = config["tz_api"]
 tz_id = config["tz_id"]
 
 prefixes = ['/', '!', '.', '#', '。']
-bot_wlc = "**✨ 只有你想见我的时候我们的相遇才有意义**\n\n💫 __你好鸭__  "
 bot = Client(name=BOT_NAME,
              api_id=API_ID,
              api_hash=API_HASH,
@@ -135,6 +134,7 @@ def buy_sth_ikb():
 
 @bot.on_callback_query(filters.regex('buy_account'))
 async def buy_some(_, call):
+    await call.answer(f'🎏 进入购买')
     keyboard = buy_sth_ikb()
     try:
         await bot.edit_message_caption(
@@ -150,10 +150,10 @@ async def buy_some(_, call):
 
 @bot.on_callback_query(filters.regex('closeit'))
 async def close_it(_, call):
-    # print(call.message.chat.type)
     if str(call.message.chat.type) == "ChatType.PRIVATE":
         try:
             await call.message.delete()
+            await call.answer("⭕ done！")
         except Forbidden:
             await call.answer("信息太久啦。Forbidden this", show_alert=True)
     else:
@@ -163,5 +163,6 @@ async def close_it(_, call):
         if a == 3:
             try:
                 await bot.delete_messages(call.message.chat.id, call.message.id)
+                await call.answer("⭕ done！")
             except Forbidden:
                 await call.answer("信息太久啦。Forbidden this", show_alert=True)

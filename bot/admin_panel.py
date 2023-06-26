@@ -22,12 +22,13 @@ from config import bot, gm_ikb_content, config, save_config, group, photo, BOT_N
 # admin键盘格式
 @bot.on_callback_query(filters.regex('manage'))
 async def gm_ikb(_, call):
+    await call.answer('✔️ manage面板')
     open_stat, all_user_limit, timing, users, emby_users = await query.open_all()
     open_stat = "True" if open_stat == 'y' else "False"
     allow_code = 'True' if config["open"]["allow_code"] == "y" else 'False'
-    gm_text = f'⚙️ 欢迎您，亲爱的管理员 {call.from_user.first_name}\n\n®️ 注册状态 | **{open_stat}**\n⏳ 定时注册 | **{timing}**\n' \
-              f'🔖 注册码续期 | **{allow_code}**\n' \
-              f'🎫 总注册限制 | **{all_user_limit}**\n🎟️ 已注册人数 | **{emby_users}**\n🤖 bot使用人数 | {users}'
+    gm_text = f'⚙️ 欢迎您，亲爱的管理员 {call.from_user.first_name}\n\n· ®️ 注册状态 | **{open_stat}**\n· ⏳ 定时注册 | **{timing}**\n' \
+              f'· 🔖 注册码续期 | **{allow_code}**\n' \
+              f'· 🎫 总注册限制 | **{all_user_limit}**\n· 🎟️ 已注册人数 | **{emby_users}**\n· 🤖 bot使用人数 | {users}'
     try:
         await bot.edit_message_caption(call.from_user.id,
                                        call.message.id,
@@ -42,6 +43,7 @@ async def gm_ikb(_, call):
 # 开关注册
 @bot.on_callback_query(filters.regex('open-menu'))
 async def open_menu(_, call):
+    await call.answer('®️ register面板')
     # [开关，注册总数，定时注册] 此间只对emby表中tg用户进行统计。
     open_stat, all_user_limit, timing = await query.open_check()
     openstats = '✅' if open_stat == 'y' else '❎'  # 三元运算
@@ -95,8 +97,9 @@ async def open_stats(_, call):
                                                   f'🎫 总注册限制 | {all_user_limit}\n🎟️ 已注册人数 | {emby_users}\n'
                                                   f'🎭 剩余可注册 | **{sur}**\n🤖 bot使用人数 | {users}',
                                           reply_markup=ikb(
-                                              [[('( •̀ ω •́ )y 点这里去注册', f't.me/{BOT_NAME}', 'url')]]))
-            await send_i.forward(call.from_user.id)
+                                              [[('( •̀ ω •́ )y 点这里去注册', f't.me/{BOT_NAME}', 'url')]]),
+                                          protect_content=True)
+            # await send_i.forward(call.from_user.id)
             await open_menu(_, call)
             logging.info(f"【admin】：管理员 {call.from_user.first_name} 开启了自由注册，总人数限制 {all_user_limit}")
         except BadRequest:
@@ -116,10 +119,14 @@ async def open_timing(_, call):
     #     await call.answer("目前正在运行自由注册。\n无法调用", show_alert=True)
     #     return
     if timing == 'Turn off':
-        send = await call.message.edit(
-            "🦄【定时注册】 \n\n- 请在 120s 内发送定时开注的时长 总人数\n- 形如：`30 50` 即30min，总人数限制50\n"
-            "- 如需要关闭定时注册，再次点击【定时注册】"
-            "- 设置好之后将发送置顶消息注意权限\n- 退出 /cancel")
+        await call.answer('⭕ 定时设置')
+        try:
+            send = await call.message.edit(
+                "🦄【定时注册】 \n\n- 请在 120s 内发送定时开注的时长 总人数\n- 形如：`30 50` 即30min，总人数限制50\n"
+                "- 如需要关闭定时注册，再次点击【定时注册】"
+                "- 设置好之后将发送置顶消息注意权限\n- 退出 /cancel")
+        except BadRequest:
+            return
         try:
             txt = await call.message.chat.listen(filters.text, timeout=120)
         except ListenerTimeout:
@@ -150,7 +157,8 @@ async def open_timing(_, call):
                                                       f'🎫 总注册限制 | {all_user}\n🎟️ 已注册人数 | {emby_users}\n'
                                                       f'🎭 剩余可注册 | **{sur}**\n🤖 bot使用人数 | {users}',
                                               reply_markup=ikb(
-                                                  [[('( •̀ ω •́ )y 点这里去注册', f't.me/{BOT_NAME}', 'url')]]))
+                                                  [[('( •̀ ω •́ )y 点这里去注册', f't.me/{BOT_NAME}', 'url')]]),
+                                              protect_content=True)
                 # await send.forward(call.from_user.id)
                 try:
                     await bot.pin_chat_message(group[0], send_i.id)
@@ -206,6 +214,7 @@ async def change_for_timing(timing, tgid, send1):
 
 @bot.on_callback_query(filters.regex('all_user_limit'))
 async def open_all_user_l(_, call):
+    await call.answer('⭕ 限制人数')
     send = await call.message.edit(
         "🦄 请在 120s 内发送开注总人数，本次修改不会对注册状态改动，如需要开注册请点击打开自由注册\n**注**：总人数满自动关闭注册 取消 /cancel")
     try:
@@ -233,6 +242,7 @@ async def open_all_user_l(_, call):
 # 生成注册链接
 @bot.on_callback_query(filters.regex('cr_link'))
 async def cr_link(_, call):
+    await call.answer('🔖 创建注册码')
     try:
         await bot.edit_message_caption(
             call.from_user.id,
@@ -298,6 +308,7 @@ async def cr_link(_, call):
 # 开始检索
 @bot.on_callback_query(filters.regex('ch_link'))
 async def ch_link(_, call):
+    await call.answer('🎏 查看管理们注册码')
     a, b, c, d, f = await query.count_sum_code()
     text = f'**🎫 code总数：\n• 已使用 - {a}\n• 月码 - {b}   | • 季码 - {c} \n• 半年码 - {d}  | • 年码 - {f}**'
     ls = []
@@ -323,6 +334,7 @@ async def ch_link(_, call):
 @bot.on_callback_query(filters.regex('ch_admin_link'))
 async def ch_admin_link(_, call):
     i = call.data.split('-')[1]
+    await call.answer(f'💫 管理员 {i} 的注册码')
     a, b, c, d, f = await query.count_admin_code(i)
     text = f'**🎫 [admin-{i}](tg://user?id={i})：\n• 已使用 - {a}\n• 月码 - {b}   | • 季码 - {c} \n• 半年码 - {d}  | • 年码 - {f}**'
     date_ikb = ikb([[('🌘 - 月', f'register_mon-{i}'), ('🌗 - 季', f'register_sea-{i}'),
@@ -343,6 +355,7 @@ async def ch_admin_link(_, call):
     filters.regex('register_mon') | filters.regex('register_sea')
     | filters.regex('register_half') | filters.regex('register_year') | filters.regex('register_used'))
 async def buy_mon(_, call):
+    await call.answer('✅ 显示注册码')
     cd, u = call.data.split('-')
     if cd == 'register_mon':
         n = 30

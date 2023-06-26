@@ -25,6 +25,7 @@ admin_p = user_p + [
     BotCommand("rmemby", "删除用户[包括非tg] [管理]"),
     BotCommand("prouser", "增加白名单 [管理]"),
     BotCommand("revuser", "减少白名单 [管理]"),
+    BotCommand("syncemby", "消灭不在群的人 [管理]"),
     BotCommand("admin", "开启emby控制台权限 [管理]"),
     BotCommand("create", "私聊创建非tg的emby用户 [管理]"),
     BotCommand("uuinfo", "查看非tg的emby用户 [管理]"),
@@ -111,4 +112,4 @@ async def set_commands():
 
 # 使用loop.call_later来延迟执行协程函数
 loop = asyncio.get_event_loop()
-loop.call_later(3, lambda: loop.create_task(set_commands()))  # 初始化命令
+loop.call_later(5, lambda: loop.create_task(set_commands()))  # 初始化命令

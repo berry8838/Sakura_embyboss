@@ -13,7 +13,7 @@ from pyrogram.errors import BadRequest
 
 from _mysql import sqlhelper
 from bot.reply import emby
-from config import bot, prefixes, admins, send_msg_delete, owner, photo
+from config import bot, prefixes, admins, send_msg_delete, owner, photo, judge_user_in_group, group
 
 
 @bot.on_message(filters.command('score', prefixes=prefixes) & filters.user(admins))
@@ -39,7 +39,7 @@ async def score_user(_, msg):
             uid = msg.reply_to_message.from_user.id
             first = await bot.get_chat(uid)
             b = int(msg.command[1])
-        except (IndexError,ValueError):
+        except (IndexError, ValueError):
             send = await msg.reply(
                 "🔔 **使用格式：**/score [id] [加减分数]\n\n或回复某人[命令符]score [+/-分数]")
             asyncio.create_task(send_msg_delete(send.chat.id, send.id))
@@ -282,7 +282,7 @@ async def renew_user(_, msg):
                     if await emby.emby_del(embyid) is True:
                         sqlhelper.delete_one("delete from emby WHERE embyid =%s", embyid)
                         await reply.edit(
-                            f'🎯 done，管理员 {msg.from_user.first_name} 已将 [{first.first_name}](tg://user?id={b}) 账户 {name} '
+                            f'🎯 done，管理员 {msg.from_user.first_name}\n[{first.first_name}](tg://user?id={b}) 账户 {name} '
                             f'已完成删除。')
                         await bot.send_message(b,
                                                f'🎯 done，管理员{msg.from_user.first_name} 已将 您的账户 {name} 删除。')
@@ -304,7 +304,7 @@ async def renew_user(_, msg):
                 if await emby.emby_del(embyid) is True:
                     sqlhelper.delete_one("delete from emby WHERE embyid =%s", embyid)
                     await reply.edit(
-                        f'🎯 done，管理员 {msg.from_user.first_name} 已将 [{first.first_name}](tg://user?id={uid}) 账户 {name} '
+                        f'🎯 done，管理员 {msg.from_user.first_name}\n[{first.first_name}](tg://user?id={uid}) 账户 {name} '
                         f'已完成删除。')
                     await bot.send_message(uid,
                                            f'🎯 done，管理员{msg.from_user.first_name} 已将 您的账户 {name} 删除。')
@@ -313,3 +313,48 @@ async def renew_user(_, msg):
                         f"【admin】：管理员 {msg.from_user.first_name} 执行删除 {first.first_name}-{uid} 账户 {name}")
             else:
                 await reply.edit(f"💢 [ta](tg://user?id={uid}) 还没有注册账户呢")
+
+
+@bot.on_message(filters.command('syncemby', prefixes) & filters.user(admins))
+async def sync_emby_group(_, msg):
+    send = await bot.send_photo(msg.chat.id, photo=photo, caption="⚡【同步任务】\n  **正在开启中...消灭未在群组的账户**")
+    logging.info(
+        f"【同步任务开启】 - {msg.from_user.first_name} - {msg.from_user.id}")
+    try:
+        await send.pin()
+        await msg.delete()
+    except BadRequest:
+        await send.edit("🔴 置顶/删除群消息失败，检查权限，继续运行ing")
+    result = sqlhelper.select_all(
+        "select tg,embyid,ex,us,name from emby where %s", 1)
+    b = 0
+    start = time.perf_counter()
+    for r in result:
+        if r[1] is None:
+            continue
+        else:
+            first = await bot.get_chat(r[0])
+            if await judge_user_in_group(r[0]) is False:
+                if await emby.emby_del(r[1]) is True:
+                    sqlhelper.delete_one("delete from emby WHERE embyid =%s", r[1])
+                    await bot.send_message(group[0],
+                                           f'🎯 【未在群组封禁】 #id{r[0]}\n已将 [{first.first_name}](tg://user?id={r[0]}) 账户 {r[4]} '
+                                           f'完成删除。')
+                else:
+                    await send.reply(f'🎯 【未在群组封禁】 #id{r[0]}\n[{first.first_name}](tg://user?id={r[0]}) 账户 {r[4]} '
+                                     f'删除错误')
+        b += 1
+    end = time.perf_counter()
+    times = end - start
+    try:
+        await send.unpin()
+    except BadRequest:
+        pass
+    if b != 0:
+        await send.edit(f"⚡【同步任务】\n  共检索 {b} 个账户，耗时：{times:.3f}s\n**任务结束**")
+        logging.info(
+            f"【同步任务结束】 - {msg.from_user.id} 共检索 {b} 个账户，耗时：{times:.3f}s")
+    else:
+        await send.edit("⚡【同步任务】\n\n结束，没有一个有号的。")
+        logging.info(
+            f"【同步任务结束】 - {msg.from_user.id} 共检索 {b} 个账户，耗时：{times:.3f}s")

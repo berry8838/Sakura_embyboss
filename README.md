@@ -1,36 +1,5 @@
 # Sakura_embyboss（体验版）
-
-### 最新更新指南
-
-更新了新的依赖，所以需要本地也更新，否则版本不兼容，无法启动  
-目前要求python3.8及以上！！！
-
-```
-# 先去拉取代码在执行下面步骤 -> 详见下方使用帮助板块
-pip3 install -r requirements.txt
-```
-
-- ~~将已有的命令总结到 #使用帮助，方便导入 [BotFather](https://t.me/BotFather)~~  
-  Sakura已经是一个成熟的bot了，它会自动加载命令，不用手动加了
-
-
-- **config配置更新**  
-  对config.json中open进行了更新，请之前已有config.json的，将新更新的config_example.json中的open字段替换自己的config.json  
-  为支持多服务器显示，需要修改config.json的tz_id字段，方法同上
-
-
-- **数据表更新**  
-  为适配 /rmemby 删除非tg绑定账户，emby2 表格新增字段lv，只tg用户可忽略  
-  可手动仿照emby表内加上 或 备份好旧emby2，单独导入新emby2后旧表重覆盖
-
-
-- **功能更新**  
-  多服务器显示 - 需要/config 配置探针  
-  多样化开注 - 我确定已经比较成熟了，有事请反馈  
-  优化注册码 - 查看注册码方式，可控制已有账户无法使用开关  
-  /rmemby - 优化命令删除账户，使用方式见回复  
-  账户到期删除 - 到期5天，自动删除并推送消息
-
+![Sakura](./image/bot_logo.png)
 ## 项目说明
 
 - 本项目是 **业余选手** 写就，期间参考多位朋友的代码。结合一些我所认为优质的特点、元素，截至目前已有三个面板，若干命令
@@ -56,30 +25,10 @@ pip3 install -r requirements.txt
 
 ## 使用帮助
 
-- [部分效果图](https://telegra.ph/embyboss-05-29)
+- [部分效果图和命令大全看这里](https://telegra.ph/embyboss-05-29)
 - 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符多添加三种  
   即命令使用 ：`/start = .start = #start = !start = 。start`   快来试试吧，另外请给bot开好删除消息权限。
-- ~~为方便导入botfather，现将命令写就如下，可直接复制导入~~ 已实现初始化命令加载，无需手动
-
-```
-start - [私聊]开启面板
-exchange - [私聊]使用注册码
-myinfo - [无限制]查看状态
-kk - [管理]查看用户
-prouser - [管理]增加白名单
-revuser - [管理]移除白名单
-score - [管理]积分调整
-renew - [管理]调整到期时间
-rmemby - [管理]删除emby用户
-admin - [管理]开启当前tg绑定的emby控制台
-create - [管理]创建非绑定tg的emby账户
-uuinfo - [管理]查看非tg的emby用户信息
-proadmin - [owner]增加admin成员
-revadmin - [owner]移除admin成员
-renewall - [owner]一键派送天数给所有未封禁的用户
-restart - [owner]重启bot
-config - [owner]配置bot
-```
+- 已实现初始化命令加载，无需手动添加
 
 说明：  
 start - 包括：注册，重置密码，显示或隐藏内容，删除账号  
@@ -95,13 +44,15 @@ cd /root/Sakura_embyboss
 git fetch --all
 git reset --hard origin/master
 git pull origin master
+# 更新依赖
+pip3 install -r requirements.txt
 # 启动命令
 systemctl restart embyboss
 ```
 
 ## 配置说明
 
-- 写的有点乱。不懂可以来 [群里](https://t.me/Aaaaa_su) 问我hhhh，我还是很高兴有人能看上我的这个小玩意
+- 写的有点乱，慢慢看。不解释。
 
 ### 1、拉取代码
 
@@ -161,11 +112,11 @@ systemctl enable docker
 "bot_token": ""   bot的API token
 "owner_api": ""   你的api  https://my.telegram.org/auth
 "owner_hash": ""  你的hash  https://my.telegram.org/auth
-"owner": ""       拥有者的tgid
+"owner":          拥有者的tgid
 
 "group": []       授权群组id (如 -1001869392674)，未授权的群组拉bot会自动退出。不在群组的成员会提示先加入群组
 
-"main_group":     你群组的用户名或者你私密群组的邀请链接，没有的话就随便填个 Google.com 吧  
+"main_group":""   你群组的用户名或者你私密群组的邀请链接，没有的话就随便填个 Google.com 吧  
                   如 https://t.me/+7ZL9MbJd8h44Zjc1 中的 "+7ZL9MbJd8h44Zjc1"
                   
 "chanel": ""      你频道username (不加@)，没有的话就随便填个 Google.com 吧
@@ -173,7 +124,7 @@ systemctl enable docker
 "bot_photo":     "https://telegra.ph/file/1437f7f348c6c71f0b9ab.png",
                   bot发送消息时的图，必要
                   
-"admins": []      拥有管理权限的id，记得要填入owner里的tgid，其他添加id要用英文逗号隔开
+"admins": []      拥有管理权限的id 1661037800 记得要填入owner里的tgid，其他添加id要用英文逗号隔开
 
 "emby_api": ""    emby的api，在后台自己创建一个
 "emby_url": ""    建议ip，http://255.255.255.36:8096 最后不带斜杠，是发送给enby的网址，填域名请保证反代不会挂
@@ -185,7 +136,7 @@ systemctl enable docker
 "db": "embyboss"  库名
 ```
 
-• 不填项目
+- 不填项目
 
 ```
 "user_buy": "n" 开启购买按钮，建议默认关闭，可在bot里自行配置
@@ -195,9 +146,10 @@ systemctl enable docker
 "block":[]      不填，确保有这个字段就行。等bot起来去里面设置
 "tz": "",       探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠
 "tz_api": "",
-"tz_id": []     tz开头的三项是和nezha探针在一起的项目，没有哪吒探针就忽略。
+"tz_id": []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。
 ```
-
+- 额外的：如果你希望你的【服务器】可以显示多机器的话，探针就有用了，api生成在nezha的管理后台，id也是
+![tz](./image/fwq.png)
 ------------
 
 ### 4、启动bot

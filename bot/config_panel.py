@@ -42,6 +42,7 @@ async def config_p_set(_, msg):
 async def config_p_re(_, call):
     msg = call.message
     keyboard = await config_preparation(msg)
+    await call.answer("✅ config")
     await call.message.edit("🌸 欢迎回来！\n\n👇点击你要修改的内容。",
                             reply_markup=keyboard)
 
@@ -49,6 +50,7 @@ async def config_p_re(_, call):
 @bot.on_callback_query(filters.regex("log_out") & filters.user(owner))
 async def log_out(_, call):
     try:
+        await call.answer('🌐查询中...')
         await bot.send_document(call.from_user.id, document="log/log.txt", file_name="log.txt",
                                 caption="📂 **导出日志成功！**",
                                 reply_markup=ikb([[("❎ - 清除消息", "closeit")]]))
@@ -61,8 +63,12 @@ async def log_out(_, call):
 
 @bot.on_callback_query(filters.regex("set_tz") & filters.user(owner))
 async def set_tz(_, call):
-    send = await call.message.edit(
-        "【设置探针】\n\n请依次输入探针地址，api_token，设置的检测多个id 如：\n**【地址】http://tz.susuyyds.xyz\n【api_token】xxxxxx\n【数字】1 2 3**\n取消点击 /cancel")
+    try:
+        await call.answer('📌 设置探针')
+        send = await call.message.edit(
+            "【设置探针】\n\n请依次输入探针地址，api_token，设置的检测多个id 如：\n**【地址】http://tz.susuyyds.xyz\n【api_token】xxxxxx\n【数字】1 2 3**\n取消点击 /cancel")
+    except BadRequest:
+        return
     try:
         txt = await call.message.chat.listen(filters.text, timeout=120)
     except ListenerTimeout:
@@ -183,8 +189,12 @@ async def set_buy(_, call):
 # 设置 emby 线路
 @bot.on_callback_query(filters.regex('set_line') & filters.user(owner))
 async def set_emby_line(_, call):
-    send = await call.message.edit(
-        "💘【设置线路】\n\n对我发送向emby用户展示的emby地址吧\n取消点击 /cancel")
+    try:
+        await call.answer('📌 设置emby线路')
+        send = await call.message.edit(
+            "💘【设置线路】\n\n对我发送向emby用户展示的emby地址吧\n取消点击 /cancel")
+    except BadRequest:
+        return
     try:
         txt = await call.message.chat.listen(filters.text, timeout=120)
     except ListenerTimeout:
@@ -212,8 +222,12 @@ async def set_block(_, call):
     #         "🎬【设置需要显示/隐藏的库】\n对我发送库的名字，多个用空格隔开\n例: `电影 纪录片` 取消点击 /cancel",
     #         filters=filters.text,
     #         timeout=120)
-    send = await call.message.edit(
-        "🎬**【设置需要显示/隐藏的库】**\n\n对我发送库的名字，多个用空格隔开\n例: `电影 纪录片` 取消点击 /cancel")
+    try:
+        await call.answer('📺 设置显隐媒体库')
+        send = await call.message.edit(
+            "🎬**【设置需要显示/隐藏的库】**\n\n对我发送库的名字，多个用空格隔开\n例: `电影 纪录片` 取消点击 /cancel")
+    except BadRequest:
+        return
     try:
         txt = await call.message.chat.listen(filters=filters.text, timeout=120)
     except ListenerTimeout:

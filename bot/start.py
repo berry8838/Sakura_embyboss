@@ -9,12 +9,34 @@ from pyromod.helpers import ikb
 
 from bot.reply import emby
 from config import bot, prefixes, BOT_NAME, photo, judge_group_ikb, group, send_msg_delete, judge_user, judge_start_ikb, \
-    judge_user_in_group, bot_wlc
+    judge_user_in_group
+from bot.reply.query import get_bot_wlc
+
+# 定义一个全局变量来保存blc的值
+global_blc = None
+
+
+# 定义一个异步函数，每分钟执行一次get_bot_wlc()函数，并更新全局变量
+async def update_blc():
+    global global_blc  # 使用全局变量
+    while True:
+        # 等待get_bot_wlc()函数的结果，并赋值给global_blc
+        global_blc = get_bot_wlc()
+        # 等待一分钟
+        await asyncio.sleep(60)
+
+
+# 使用loop.call_later来延迟执行协程函数
+loop = asyncio.get_event_loop()
+loop.call_later(3, lambda: loop.create_task(update_blc()))  # 初始化命令
 
 
 @bot.on_message((filters.command('start', prefixes) | filters.command('exchange', prefixes)) & filters.chat(group))
 async def gun_sb(_, msg):
-    await msg.delete()
+    try:
+        await msg.delete()
+    except Forbidden:
+        await msg.reply("🚫 请先给我删除消息的权限~")
     send = await msg.reply(f"🤖 亲爱的 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 这是一条私聊命令",
                            reply_markup=ikb([[('点击我 ༼ つ ◕_◕ ༽つ', f't.me/{BOT_NAME}', 'url')]]))
     asyncio.create_task(send_msg_delete(send.chat.id, send.id))
@@ -23,7 +45,8 @@ async def gun_sb(_, msg):
 # 开启面板
 @bot.on_message(filters.command('start', prefixes) & filters.private)
 async def _start(_, msg):
-    welcome = f"{bot_wlc}[{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) "
+    bot_wlc = global_blc
+    welcome = f"{bot_wlc}\n\n🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 请选择功能__👇"
     if judge_user(msg.from_user.id) == 3:
         gm_menu = judge_start_ikb(3)
         await bot.send_photo(chat_id=msg.from_user.id,
@@ -47,7 +70,9 @@ async def _start(_, msg):
 
 @bot.on_callback_query(filters.regex('back_start'))
 async def start(_, call):
-    welcome = f"{bot_wlc}[{call.from_user.first_name}](tg://user?id={call.from_user.id}) "
+    await call.answer("💫 初始面板")
+    bot_wlc = global_blc
+    welcome = f"{bot_wlc}\n\n🍉__你好鸭 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 请选择功能__👇"
     if judge_user(call.from_user.id) == 3:
         gm_menu = judge_start_ikb(3)
         try:

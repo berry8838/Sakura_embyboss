@@ -165,3 +165,51 @@ async def paginate_register(tg_id, us):
         b += 1
     # a 是数量，i是页数
     return a, i
+
+
+import grequests
+import requests
+
+
+# 请求每日诗词
+def get_bot_wlc():
+    # 定义一个回调函数，处理响应结果
+    def handle_response(response, **kwargs):
+        nonlocal blc  # 使用外部变量blc
+        try:
+            # 检查响应状态码是否正常
+            response.raise_for_status()
+            # 获取响应的json数据
+            data = response.json()
+            if len(data) >= 2:
+                # 根据不同的url返回的数据结构，获取相应的字段
+                if response.url == 'https://v1.jinrishici.com/all.json':
+                    ju, nm, au = data["content"], data["origin"], data["author"]
+                elif response.url == 'https://v1.hitokoto.cn/?c=i':
+                    ju, nm, au = data["hitokoto"], data["from"], data["from_who"]
+                else:
+                    ju, nm, au = data["content"], data["source"], None
+                # 如果没有作者信息，就不显示
+                if au:
+                    blc = f'**▎诗词推送\n\n__{ju}**\n         {au}《{nm}》__'
+                else:
+                    blc = f'**▎诗词推送\n\n__{ju}**\n         {nm}__'
+            # else:
+            #     ju, fr = data["content"], data["source"]
+            #     blc = f'**▎诗词推送**\n\n__**{ju}**\n  ——{fr}__'
+        except requests.exceptions.RequestException as e:
+            print(f"网络请求错误：{e}")
+            return blc
+
+    # 定义一个默认值
+    blc = "**✨ 只有你想见我的时候我们的相遇才有意义**"
+    # 定义三个url
+    urls = ['https://v1.jinrishici.com/all.json', 'https://v1.hitokoto.cn/?c=i',
+            'http://yijuzhan.com/api/word.php?m=json']
+    # 创建一个请求列表
+    reqs = [grequests.get(url, hooks={'response': handle_response}) for url in urls]
+    # 并发发送请求，并等待结果
+    grequests.map(reqs)
+    # 返回结果
+    # print(blc)
+    return blc

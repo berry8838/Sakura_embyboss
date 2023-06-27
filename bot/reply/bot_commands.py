@@ -103,8 +103,8 @@ async def set_commands():
                     await bot.set_bot_commands(owner_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=admin_id))
                 else:
                     await bot.set_bot_commands(admin_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=admin_id))
-        except NotAcceptable:
-            logging.info(f"————错误，请检查bot是否在群 {i}————")
+        except (BadRequest, NotAcceptable):
+            logging.info(f"————错误，请检查bot是否在群 {i} 或相应权限————")
         continue
 
     logging.info("————初始化 命令显示 done————")

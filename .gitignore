@@ -9,3 +9,4 @@ gen
 !/keaiji.session
 !/keaiji_bot.session
 !/keaiji_bot.session-journal
+__pycache__

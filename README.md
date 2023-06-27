@@ -48,7 +48,7 @@ config - 含查看日志，修改探针，购买按钮,emby_line，设置显示/
 
 ```
 sudo apt install python3-pip
-git clone https://github.com/berry8838/Sakura_embyboss.git && cd Sakura_embyboss && chmod +x main.py && pip3 install -r requirements.txt
+git clone https://github.com/berry8838/Sakura_embyboss.git && cd Sakura_embyboss && chmod +x main.py
 ```
 
 ---------------------
@@ -153,6 +153,9 @@ docker run -it --name sakura_embyboss -d --restart=always -v ./config.json:/app/
 ```
 
 #### 二、普通
+
+- 依赖
+  `pip3 install -r requirements.txt`
 
 - 在`embyboss.service`
   里面编辑我中文标注的3行,默认可以分别填入`embyboss`，`/root/Sakura_embyboss/` ,`/root/Sakura_embyboss/main.py`

@@ -226,8 +226,12 @@ async def restart_bot(_, msg):
     with open(".restartmsg", "w") as f:
         f.write(f"{msg.chat.id} {send.id}\n")
         f.close()
-    # some code here
-    os.execl('/bin/systemctl', 'systemctl', 'restart', 'embyboss')  # 用当前进程执行systemctl命令，重启embyboss服务
+    try:
+        # some code here
+        logging.info("————重启————")
+        os.execl('/bin/systemctl', 'systemctl', 'restart', 'embyboss')  # 用当前进程执行systemctl命令，重启embyboss服务
+    except FileNotFoundError:
+        exit(1)
 
 
 # 删除账号命令

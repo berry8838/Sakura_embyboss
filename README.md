@@ -1,5 +1,7 @@
 # Sakura_embyboss（体验版）
-![Sakura](./image/bot_logo.png)
+
+![Sakura](./image/sakura.png)
+
 ## 项目说明
 
 - 本项目是 **业余选手** 写就，期间参考多位朋友的代码。结合一些我所认为优质的特点、元素，截至目前已有三个面板，若干命令
@@ -21,7 +23,7 @@
   已实现的基础功能请看使用帮助
     - [ ] 重新绑定账户/ 用于被tg注销时不丢失emby
     - [ ] 添加邀请功能
-    - [ ] 支持docker部署
+    - [x] 支持docker部署
 
 ## 使用帮助
 
@@ -35,20 +37,6 @@ start - 包括：注册，重置密码，显示或隐藏内容，删除账号
 kk - 含赠送注册、禁用账户、删除账户  
 config - 含查看日志，修改探针，购买按钮,emby_line，设置显示/隐藏库（nsfw）等  
 其他命令具体使用可通过其回复方法查看。
-
-- 只要没有配置文件的更新，无痛更新(按默认设置)如下
-
-```shell
-# 拉取代码
-cd /root/Sakura_embyboss
-git fetch --all
-git reset --hard origin/master
-git pull origin master
-# 更新依赖
-pip3 install -r requirements.txt
-# 启动命令
-systemctl restart embyboss
-```
 
 ## 配置说明
 
@@ -148,11 +136,23 @@ systemctl enable docker
 "tz_api": "",
 "tz_id": []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。
 ```
+
 - 额外的：如果你希望你的【服务器】可以显示多机器的话，探针就有用了，api生成在nezha的管理后台，id也是
-![tz](./image/fwq.png)
+  ![tz](./image/fwq.png)
+
 ------------
 
-### 4、启动bot
+### 4、启动bot (两种方式)
+
+#### 一、docker
+
+- cd（切换） 到 文件目录 Sakura_embyboss，运行下面
+
+```shell
+docker run -it --name sakura_embyboss -d --restart=always -v ./config.json:/app/config.json -v ./log:/app/log jingwei520/sakura_embyboss:latest
+```
+
+#### 二、普通
 
 - 在`embyboss.service`
   里面编辑我中文标注的3行,默认可以分别填入`embyboss`，`/root/Sakura_embyboss/` ,`/root/Sakura_embyboss/main.py`
@@ -175,6 +175,7 @@ systemctl stop embyboss
 ```
 
 ## 感谢（排序不分先后）
+
 - [Pyrogram • 一个现代、优雅和异步的MTProto API框架](https://github.com/pyrogram/pyrogram)
 - [Nezha探针 • 自托管、轻量级、服务器和网站监控运维工具](https://github.com/naiba/nezha)
 - [小宝 • 按钮风格](https://t.me/EmbyClubBot)

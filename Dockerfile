@@ -1,11 +1,11 @@
-FROM python:3.10.11-slim
+FROM python:3.10.11-alpine
 WORKDIR /app
+ENV TZ=Asia/Shanghai
 COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
-COPY *.py .
+RUN pip install --no-cache-dir -r requirements.txt
 COPY _mysql ./_mysql
 COPY bot ./bot
-COPY image ./image
 RUN mkdir ./log
+COPY *.py ./
 ENTRYPOINT [ "python3" ]
 CMD [ "main.py" ]

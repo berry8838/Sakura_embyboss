@@ -7,7 +7,7 @@ import logging
 
 import asyncio
 from pyrogram import enums
-from pyrogram.errors import BadRequest,NotAcceptable
+from pyrogram.errors import BadRequest, NotAcceptable
 from config import owner, admins, bot, group
 from pyrogram.types import BotCommand, BotCommandScopeChatMember, BotCommandScopeChat, BotCommandScopeAllPrivateChats
 
@@ -103,9 +103,9 @@ async def set_commands():
                     await bot.set_bot_commands(owner_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=admin_id))
                 else:
                     await bot.set_bot_commands(admin_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=admin_id))
-        except (BadRequest,NotAcceptable):
-            logging.info(f"————错误，请检查bot是否在群 {i} 内并给予管理员【删除消息，置顶】————")
-            continue
+        except NotAcceptable:
+            logging.info(f"————错误，请检查bot是否在群 {i}————")
+        continue
 
     logging.info("————初始化 命令显示 done————")
 

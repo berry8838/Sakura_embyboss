@@ -87,8 +87,9 @@ async def week_ranks():
 
 # 创建一个AsyncIOScheduler对象
 scheduler = AsyncIOScheduler()
-# 添加一个cron任务，每天18点30分执行日榜推送
+# 添加一个cron任务，每天18点00分执行日榜推送
 scheduler.add_job(day_ranks, 'cron', hour=18, minute=0, timezone="Asia/Shanghai")
+# 添加一个cron任务，每周日12点00分执行周榜推送
 scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=12, minute=0, timezone="Asia/Shanghai")
 # 启动调度器
 scheduler.start()

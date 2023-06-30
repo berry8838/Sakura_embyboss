@@ -9,17 +9,20 @@ from datetime import datetime
 from bot.reply import emby
 
 """
-Misty 周榜海报样式
+日榜周榜海报样式
 你可以根据你的需求自行封装或更改为你自己的周榜海报样式！
 """
 
 
 class RanksDraw:
 
-    def __init__(self):
+    def __init__(self, name=None, weekly = False):
         # 绘图文件路径初始化
         bg_path = os.path.join('bot','ranks', "resource", "bg")
-        mask_path = os.path.join('bot','ranks', "resource", "day_ranks_mask.png")
+        if weekly:
+            mask_path = os.path.join('bot','ranks', "resource", "week_ranks_mask.png")
+        else:
+            mask_path = os.path.join('bot','ranks', "resource", "day_ranks_mask.png")
         font_path = os.path.join('bot','ranks', "resource", "PingFang Bold.ttf")
         # 随机调取背景, 路径: res/ranks/bg/...
         bg_list = os.listdir(bg_path)
@@ -32,17 +35,18 @@ class RanksDraw:
         self.font = ImageFont.truetype(font_path, 18)
         self.font_small = ImageFont.truetype(font_path, 14)
         self.font_count = ImageFont.truetype(font_path, 12)
+        self.font_logo = ImageFont.truetype(font_path, 70)
+        self.name = name
 
-    def draw(self, movies=[], tvshows=[], show_count=False):
+    async def draw(self, movies=[], tvshows=[], show_count=False):
         # 合并绘制
         index = 0
         font_offset_y = 190
         for i in movies[:5]:
             # 榜单项数据
             user_id, item_id, item_type, name, count, duarion = tuple(i)
-            print(item_type, item_id, name, count)
             # 封面图像获取
-            success, data = emby.primary(item_id)
+            success, data = await emby.primary(item_id)
             if not success:
                 exit(data)
             # 名称显示偏移
@@ -66,15 +70,14 @@ class RanksDraw:
         for i in tvshows[:5]:
             # 榜单项数据
             user_id, item_id, item_type, name, count, duarion = tuple(i)
-            print(item_type, item_id, name, count)
             # 图片获取，剧集主封面获取
             # 获取剧ID
-            success, data = emby.items(user_id, item_id)
+            success, data = await emby.items(user_id, item_id)
             if not success:
                 exit(data)
             item_id = data["SeriesId"]
             # 封面图像获取
-            success, data = emby.primary(item_id)
+            success, data = await emby.primary(item_id)
             if not success:
                 exit(data)
             temp_font = self.font
@@ -90,8 +93,12 @@ class RanksDraw:
                 draw_text_psd_style(text, (770 + 130, 990 - (232 * index)), str(count), self.font_count, 126)
                 draw_text_psd_style(text, (770, 990 + font_offset_y - (232 * index)), name, temp_font, 126)
             index += 1
+        if self.name:
+            text= text = ImageDraw.Draw(self.bg)
+            draw_text_psd_style(text, (50, 1185), self.name, self.font_logo, 126)
 
-    def save(self, save_path=os.path.join('bot',"ranks", "result", datetime.now(pytz.timezone("Asia/Shanghai")).strftime("%Y-%m-%d.jpg"))):
+    def save(self, save_path=os.path.join('log', datetime.now(pytz.timezone("Asia/Shanghai")).strftime("%Y-%m-%d.jpg"))):
+        if self.bg.mode in ("RGBA", "P"): self.bg = self.bg.convert("RGB")
         self.bg.save(save_path)
         return save_path
     def test(self, movies = [], tvshows=[], show_count=False):
@@ -174,6 +181,7 @@ def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, **kwargs
             x += w + (tracking / 1000) * font_size
         y += leading
         x = xy[0]
-draw = RanksDraw()
-draw.test()
-draw.save()
+# if __name__ == "__main__":
+#     draw = RanksDraw()
+#     draw.test()
+#     draw.save()

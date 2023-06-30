@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import requests as r
 from _mysql.sqlhelper import update_one, select_one, create_conn, close_conn
 from bot.reply.mima import pwd_create
@@ -193,8 +193,8 @@ async def re_admin(id):
         return False
 async def items(user_id, item_id):
     try:
-        _url = f"{url}/emby/Users/{user_id}/Items/{item_id}"
-        resp = requests.get(_url, headers=headers, params=params, timeout=10)
+        _url = f"{url}emby/Users/{user_id}/Items/{item_id}"
+        resp = r.get(_url, headers=headers, params=params, timeout=10)
         if resp.status_code != 204 and resp.status_code != 200:
             return False, {'error':"🤕Emby 服务器连接失败!"}
         return True, resp.json()
@@ -202,14 +202,14 @@ async def items(user_id, item_id):
         return False, {'error': e}
 async def primary(item_id, width=200, height=300, quality=90):
     try:
-        _url = f"{url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
-        resp = requests.get(url, headers=headers, params=params, timeout=10)
+        _url = f"{url}emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
+        resp = r.get(_url, headers=headers, params=params, timeout=10)
         if resp.status_code != 204 and resp.status_code != 200:
             return False, {'error': "🤕Emby 服务器连接失败!"}
         return True, resp.content
     except Exception as e:
         return False, {'error': e}
-async def get_emby_report(self, types='Movie', user_id=None, days=7, end_date=datetime.datetime.now(pytz.timezone("Asia/Shanghai")), limit=10):
+async def get_emby_report(types='Movie', user_id=None, days=7, end_date=datetime.now(timezone(timedelta(hours=8))), limit=10):
     try:
         sub_date = end_date - timedelta(days=days)
         start_time = sub_date.strftime("%Y-%m-%d 00:00:00")
@@ -230,12 +230,12 @@ async def get_emby_report(self, types='Movie', user_id=None, days=7, end_date=da
         sql += "GROUP BY name "
         sql += "ORDER BY play_count DESC "
         sql += "LIMIT " + str(limit)
-        _url = f'{url}/emby/user_usage_stats/submit_custom_query'
+        _url = f'{url}emby/user_usage_stats/submit_custom_query'
         data = {
             "CustomQueryString": sql,
             "ReplaceUserId": False
         }
-        resp = requests.post(_url, headers=headers, params=params, json=data, timeout=10)
+        resp = r.post(_url, headers=headers, params=params, json=data, timeout=10)
         if resp.status_code != 204 and resp.status_code != 200:
             return False, {'error': "🤕Emby 服务器连接失败!"}
         ret = resp.json()

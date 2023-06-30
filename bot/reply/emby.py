@@ -191,7 +191,59 @@ async def re_admin(id):
         return True
     except:
         return False
-
+async def items(user_id, item_id):
+    try:
+        _url = f"{url}/emby/Users/{user_id}/Items/{item_id}"
+        resp = requests.get(_url, headers=headers, params=params, timeout=10)
+        if resp.status_code != 204 and resp.status_code != 200:
+            return False, {'error':"🤕Emby 服务器连接失败!"}
+        return True, resp.json()
+    except Exception as e:
+        return False, {'error': e}
+async def primary(item_id, width=200, height=300, quality=90):
+    try:
+        _url = f"{url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
+        resp = requests.get(url, headers=headers, params=params, timeout=10)
+        if resp.status_code != 204 and resp.status_code != 200:
+            return False, {'error': "🤕Emby 服务器连接失败!"}
+        return True, resp.content
+    except Exception as e:
+        return False, {'error': e}
+async def get_emby_report(self, types='Movie', user_id=None, days=7, end_date=datetime.datetime.now(pytz.timezone("Asia/Shanghai")), limit=10):
+    try:
+        sub_date = end_date - timedelta(days=days)
+        start_time = sub_date.strftime("%Y-%m-%d 00:00:00")
+        end_time = end_date.strftime("%Y-%m-%d 23:59:59")
+        sql = "SELECT UserId, ItemId, ItemType, "
+        if types == 'Episode':
+            sql += " substr(ItemName,0, instr(ItemName, ' - ')) AS name, "
+        else:
+            sql += "ItemName AS name, "
+        sql += "COUNT(1) AS play_count, "
+        sql += "SUM(PlayDuration - PauseDuration) AS total_duarion "
+        sql += "FROM PlaybackActivity "
+        sql += f"WHERE ItemType = '{types}' "
+        sql += f"AND DateCreated >= '{start_time}' AND DateCreated <= '{end_time}' "
+        sql += "AND UserId not IN (select UserId from UserList) "
+        if user_id:
+            sql += f"AND UserId = '{user_id}' "
+        sql += "GROUP BY name "
+        sql += "ORDER BY play_count DESC "
+        sql += "LIMIT " + str(limit)
+        _url = f'{url}/emby/user_usage_stats/submit_custom_query'
+        data = {
+            "CustomQueryString": sql,
+            "ReplaceUserId": False
+        }
+        resp = requests.post(_url, headers=headers, params=params, json=data, timeout=10)
+        if resp.status_code != 204 and resp.status_code != 200:
+            return False, {'error': "🤕Emby 服务器连接失败!"}
+        ret = resp.json()
+        if len(ret["colums"]) == 0:
+            return False, ret["message"]
+        return True, ret["results"]
+    except Exception as e:
+        return False, {'error': e}
 
 '''
 代码片段杂货，没用的东西：

@@ -1,6 +1,7 @@
 """
 定时推送日榜和周榜
 """
+from pyrogram import enums
 from datetime import date
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from bot.reply import emby
@@ -42,7 +43,7 @@ async def day_ranks():
         payload += tmp
     payload = f"*【播放日榜】*\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime(
         '%Y-%m-%d')
-    message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload)
+    message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload, parse_mode = enums.ParseMode.MARKDOWN)
     await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id)
     print("#定时任务\n推送日榜完成")
 async def week_ranks():
@@ -80,7 +81,7 @@ async def week_ranks():
         payload += tmp
     payload = f"*【播放周榜】*\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime(
         '%Y-%m-%d')
-    message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload)
+    message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload,parse_mode = enums.ParseMode.MARKDOWN)
     await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id)
     print("#定时任务\n推送周榜完成")
 
@@ -88,7 +89,7 @@ async def week_ranks():
 # 创建一个AsyncIOScheduler对象
 scheduler = AsyncIOScheduler()
 # 添加一个cron任务，每天18点00分执行日榜推送
-scheduler.add_job(day_ranks, 'cron', hour=18, minute=0, timezone="Asia/Shanghai")
+scheduler.add_job(day_ranks, 'cron', hour=18, minute=13, timezone="Asia/Shanghai")
 # 添加一个cron任务，每周日12点00分执行周榜推送
 scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=12, minute=0, timezone="Asia/Shanghai")
 # 启动调度器

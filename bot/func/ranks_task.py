@@ -7,6 +7,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from bot.reply import emby
 from bot.ranks import ranks_draw
 from config import bot, group
+import asyncio
 
 async def day_ranks():
     draw = ranks_draw.RanksDraw('SAKURA')
@@ -85,12 +86,15 @@ async def week_ranks():
     await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id)
     print("#定时任务\n推送周榜完成")
 
-
-# 创建一个AsyncIOScheduler对象
-scheduler = AsyncIOScheduler()
-# 添加一个cron任务，每天18点00分执行日榜推送
-scheduler.add_job(day_ranks, 'cron', hour=18, minute=13, timezone="Asia/Shanghai")
-# 添加一个cron任务，每周日12点00分执行周榜推送
-scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=12, minute=0, timezone="Asia/Shanghai")
-# 启动调度器
-scheduler.start()
+async def BotTask():
+    # 创建一个AsyncIOScheduler对象
+    scheduler = AsyncIOScheduler()
+    # 添加一个cron任务，每天18点00分执行日榜推送
+    scheduler.add_job(day_ranks, 'cron', hour=18, minute=0, timezone="Asia/Shanghai")
+    # 添加一个cron任务，每周日12点00分执行周榜推送
+    scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=12, minute=0, timezone="Asia/Shanghai")
+    # 启动调度器
+    scheduler.start()
+# 使用loop.call_later来延迟执行协程函数
+loop = asyncio.get_event_loop()
+loop.call_later(5, lambda: loop.create_task(BotTask()))  # 初始化命令

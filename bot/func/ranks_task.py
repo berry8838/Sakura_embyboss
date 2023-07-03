@@ -34,11 +34,11 @@ async def day_ranks():
     print("#定时任务\n正在推送日榜")
     success, movies = await emby.get_emby_report(types='Movie', days = 1)
     if not success:
-        print('推送日榜失败，没有获取到Movies数据!')
+        print('推送日榜失败，获取Movies数据失败!')
         return
     success, tvs = await emby.get_emby_report(types='Episode', days = 1)
     if not success:
-        print('推送日榜失败，没有获取到Episode数据!')
+        print('推送日榜失败，获取Episode数据失败!')
         return
     # 绘制海报
     await draw.draw(movies, tvs, False)

@@ -16,7 +16,7 @@ from bot.reply import emby
 
 class RanksDraw:
 
-    def __init__(self, name=None, weekly = False):
+    def __init__(self, embyname=None, weekly = False):
         # 绘图文件路径初始化
         bg_path = os.path.join('bot','ranks', "resource", "bg")
         if weekly:
@@ -36,9 +36,10 @@ class RanksDraw:
         self.font_small = ImageFont.truetype(font_path, 14)
         self.font_count = ImageFont.truetype(font_path, 12)
         self.font_logo = ImageFont.truetype(font_path, 70)
-        self.name = name
+        self.embyname = embyname
 
     async def draw(self, movies=[], tvshows=[], show_count=False):
+        text = ImageDraw.Draw(self.bg)
         # 合并绘制
         index = 0
         font_offset_y = 190
@@ -46,20 +47,23 @@ class RanksDraw:
             # 榜单项数据
             user_id, item_id, item_type, name, count, duarion = tuple(i)
             # 封面图像获取
-            success, data = await emby.primary(item_id)
-            if not success:
-                exit(data)
+            prisuccess, data = await emby.primary(item_id)
+            if not prisuccess:
+                print('获取封面图失败', item_id, name)
             # 名称显示偏移
             temp_font = self.font
             # 名称超出长度缩小省略
             name = name[:7]
             # 绘制封面
-            cover = Image.open(BytesIO(data))
-            cover = cover.resize((144, 210))
-            self.bg.paste(cover, (601, 162 + 230 * index))
+            if prisuccess:
+                cover = Image.open(BytesIO(data))
+                cover = cover.resize((144, 210))
+                self.bg.paste(cover, (601, 162 + 230 * index))
+            else:
+                # 如果没有封面图，使用name来代替
+                draw_text_psd_style(text, (601, 162 + 230 * index), name, temp_font, 126)
             # 绘制 播放次数、影片名称
             if show_count:
-                text = ImageDraw.Draw(self.bg)
                 draw_text_psd_style(text, (601 + 130, 163 + (230 * index)), str(count), self.font_count, 126)
                 draw_text_psd_style(text, (601, 163 + font_offset_y + (230 * index)), name, temp_font, 126)
             index += 1
@@ -74,28 +78,31 @@ class RanksDraw:
             # 获取剧ID
             success, data = await emby.items(user_id, item_id)
             if not success:
-                exit(data)
+                print('获取剧集ID失败', item_id, name)
             item_id = data["SeriesId"]
             # 封面图像获取
-            success, data = await emby.primary(item_id)
-            if not success:
-                exit(data)
+            prisuccess, data = await emby.primary(item_id)
+            if not prisuccess:
+                print('获取封面图失败', item_id, name)
             temp_font = self.font
             # 名称超出长度缩小省略
             name = name[:7]
             # 绘制封面
-            cover = Image.open(BytesIO(data))
-            cover = cover.resize((145, 211))
-            self.bg.paste(cover, (770, 990 - 232 * index))
+            if prisuccess:
+                cover = Image.open(BytesIO(data))
+                cover = cover.resize((145, 211))
+                self.bg.paste(cover, (770, 990 - 232 * index))
+            else:
+                # 如果没有封面图，使用name来代替
+                draw_text_psd_style(text, (770, 990 - 232 * index), name, temp_font, 126)
             # 绘制 播放次数、影片名称
             if show_count:
-                text = ImageDraw.Draw(self.bg)
                 draw_text_psd_style(text, (770 + 130, 990 - (232 * index)), str(count), self.font_count, 126)
                 draw_text_psd_style(text, (770, 990 + font_offset_y - (232 * index)), name, temp_font, 126)
             index += 1
-        if self.name:
-            text= text = ImageDraw.Draw(self.bg)
-            draw_text_psd_style(text, (50, 1185), self.name, self.font_logo, 126)
+        # 绘制Logo名字
+        if self.embyname:
+            draw_text_psd_style(text, (50, 1185), self.embyname, self.font_logo, 126)
 
     def save(self, save_path=os.path.join('log', datetime.now(pytz.timezone("Asia/Shanghai")).strftime("%Y-%m-%d.jpg"))):
         if self.bg.mode in ("RGBA", "P"): self.bg = self.bg.convert("RGB")

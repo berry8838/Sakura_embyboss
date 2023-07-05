@@ -209,6 +209,15 @@ async def primary(item_id, width=200, height=300, quality=90):
         return True, resp.content
     except Exception as e:
         return False, {'error': e}
+async def backdrop(item_id, width=300, quality=90):
+    try:
+        _url = f"{url}/emby/Items/{item_id}/Images/Backdrop?maxWidth={width}&quality={quality}"
+        resp = r.get(_url, headers=headers, params=params, timeout=10)
+        if resp.status_code != 204 and resp.status_code != 200:
+            return False, {'error': "🤕Emby 服务器连接失败!"}
+        return True, resp.content
+    except Exception as e:
+        return False, {'error': e}
 async def get_emby_report(types='Movie', user_id=None, days=7, end_date=datetime.now(timezone(timedelta(hours=8))), limit=10):
     try:
         sub_date = end_date - timedelta(days=days)

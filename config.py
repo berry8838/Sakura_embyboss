@@ -57,6 +57,14 @@ db = config["db"]
 tz = config["tz"]
 tz_api = config["tz_api"]
 tz_id = config["tz_id"]
+try:
+    ranks = config["ranks"]
+except Exception as e:
+    ranks = {
+      "logo": "SAKURA",
+      "backdrop": False
+    }
+    print('没有读取到播放榜单配置，使用默认值', ranks)
 
 prefixes = ['/', '!', '.', '#', '。']
 bot = Client(name=BOT_NAME,

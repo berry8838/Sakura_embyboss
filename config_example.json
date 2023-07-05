@@ -29,5 +29,9 @@
   "db": "",
   "tz": "",
   "tz_api": "",
-  "tz_id": []
+  "tz_id": [],
+  "ranks": {
+    "logo": "SAKURA",
+    "backdrop": false
+  }
 }

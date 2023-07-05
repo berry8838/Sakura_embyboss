@@ -37,8 +37,9 @@ class RanksDraw:
         self.font_count = ImageFont.truetype(font_path, 12)
         self.font_logo = ImageFont.truetype(font_path, 70)
         self.embyname = embyname
-
-    async def draw(self, movies=[], tvshows=[], show_count=False):
+    # backdrop_image 使用横版封面图绘制
+    # draw_text 绘制item_name和播放次数
+    async def draw(self, movies=[], tvshows=[], backdrop_image = False, draw_text=False):
         text = ImageDraw.Draw(self.bg)
         # 合并绘制
         index = 0
@@ -47,7 +48,10 @@ class RanksDraw:
             # 榜单项数据
             user_id, item_id, item_type, name, count, duarion = tuple(i)
             # 封面图像获取
-            prisuccess, data = await emby.primary(item_id)
+            if backdrop_image:
+                prisuccess, data = await emby.backdrop(item_id)
+            else:
+                prisuccess, data = await emby.primary(item_id)
             if not prisuccess:
                 print('获取封面图失败', item_id, name)
             # 名称显示偏移
@@ -57,13 +61,17 @@ class RanksDraw:
             # 绘制封面
             if prisuccess:
                 cover = Image.open(BytesIO(data))
-                cover = cover.resize((144, 210))
-                self.bg.paste(cover, (601, 162 + 230 * index))
+                if backdrop_image:
+                    cover = cover.resize((180, 100))
+                    self.bg.paste(cover, (601, 210 + 230 * index))
+                else:
+                    cover = cover.resize((144, 210))
+                    self.bg.paste(cover, (601, 162 + 230 * index))
             else:
                 # 如果没有封面图，使用name来代替
                 draw_text_psd_style(text, (601, 162 + 230 * index), name, temp_font, 126)
             # 绘制 播放次数、影片名称
-            if show_count:
+            if draw_text:
                 draw_text_psd_style(text, (601 + 130, 163 + (230 * index)), str(count), self.font_count, 126)
                 draw_text_psd_style(text, (601, 163 + font_offset_y + (230 * index)), name, temp_font, 126)
             index += 1
@@ -81,7 +89,10 @@ class RanksDraw:
                 print('获取剧集ID失败', item_id, name)
             item_id = data["SeriesId"]
             # 封面图像获取
-            prisuccess, data = await emby.primary(item_id)
+            if backdrop_image:
+                prisuccess, data = await emby.backdrop(item_id)
+            else:
+                prisuccess, data = await emby.primary(item_id)
             if not prisuccess:
                 print('获取封面图失败', item_id, name)
             temp_font = self.font
@@ -90,13 +101,17 @@ class RanksDraw:
             # 绘制封面
             if prisuccess:
                 cover = Image.open(BytesIO(data))
-                cover = cover.resize((145, 211))
-                self.bg.paste(cover, (770, 990 - 232 * index))
+                if backdrop_image:
+                    cover = cover.resize((180, 100))
+                    self.bg.paste(cover, (735, 1015 - 232 * index))
+                else:
+                    cover = cover.resize((144, 210))
+                    self.bg.paste(cover, (770, 990 - 232 * index))
             else:
                 # 如果没有封面图，使用name来代替
                 draw_text_psd_style(text, (770, 990 - 232 * index), name, temp_font, 126)
             # 绘制 播放次数、影片名称
-            if show_count:
+            if draw_text:
                 draw_text_psd_style(text, (770 + 130, 990 - (232 * index)), str(count), self.font_count, 126)
                 draw_text_psd_style(text, (770, 990 + font_offset_y - (232 * index)), name, temp_font, 126)
             index += 1
@@ -109,6 +124,7 @@ class RanksDraw:
         self.bg.save(save_path)
         return save_path
     def test(self, movies = [], tvshows=[], show_count=False):
+        text = ImageDraw.Draw(self.bg)
         movies = [ ['8b734342caba4fc5ad0a20e4ede7e355', '264398', 'Movie', '目击者之追凶', '1', '159'], ['36b3a8e7ef584505bc04f508b0ea1e44', '587042', 'Movie', '毒液：屠杀开始', '1', '26'], ['818c49504587451fa6c1ce31ca60b120', '598910', 'Movie', '惊天营救2', '1', '4767'], ['0e29b51ac6e544a39f3331342822efb4', '586588', 'Movie', '催眠', '1', '198']]
         tvshows = [['aca8c847cf674fe4b07ba44af7007cd1', '591980', 'Episode', '斗罗大陆', '42', '14834'], ['7ed08d20dc044586aa8d4ac41d991e24', '599964', 'Episode', '冰海战记', '17', '246'], ['2ecdc455ebf54af09404570237021a91', '547211', 'Episode', '火凤燎原', '14', '11919'], ['c3b7524b43a046ae86de886bf4ab149e', '587029', 'Episode', '猎犬', '11', '2959'], ['3503e261944f49029865e049eba16558', '554106', 'Episode', '小鸟之翼', '11', '1068'], ['bd8fead9a07f4f2b9a4bc8221d7f0caf', '599433', 'Episode', '古相思曲', '10', '0'], ['d128b00f17d848a98637eef6cd845119', '598182', 'Episode', '梦魇绝镇', '9', '17780'], ['b614e1ba597c482c827eec9ff778c16b', '599280', 'Episode', '神女杂货铺', '8', '2713']]
         # 合并绘制
@@ -128,7 +144,6 @@ class RanksDraw:
             self.bg.paste(cover, (601, 162 + 230 * index))
             # 绘制 播放次数、影片名称
             if show_count:
-                text = ImageDraw.Draw(self.bg)
                 draw_text_psd_style(text, (601 + 130, 163 + (230 * index)), str(count), self.font_count, 126)
                 draw_text_psd_style(text, (601, 163 + font_offset_y + (230 * index)), name, temp_font, 126)
             index += 1
@@ -149,10 +164,12 @@ class RanksDraw:
             self.bg.paste(cover, (770, 987 - 232 * index))
             # 绘制 播放次数、影片名称
             if show_count:
-                text = ImageDraw.Draw(self.bg)
                 draw_text_psd_style(text, (770 + 130, 990 - (232 * index)), str(count), self.font_count, 126)
                 draw_text_psd_style(text, (770, 990 + font_offset_y - (232 * index)), name, temp_font, 126)
             index += 1
+        # 绘制Logo名字
+        if self.embyname:
+            draw_text_psd_style(text, (50, 1185), self.embyname, self.font_logo, 126)
 
 def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, **kwargs):
     """
@@ -189,6 +206,6 @@ def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, **kwargs
         y += leading
         x = xy[0]
 # if __name__ == "__main__":
-#     draw = RanksDraw()
+#     draw = RanksDraw(embyname='Sakura')
 #     draw.test()
 #     draw.save()

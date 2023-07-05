@@ -6,7 +6,7 @@ from datetime import date
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from bot.reply import emby
 from bot.ranks import ranks_draw
-from config import bot, group
+from config import bot, group, ranks
 import json
 import os
 # 记录推送日榜和周榜的消息id
@@ -30,7 +30,7 @@ def get_data():
             save_data(variable)
         return variable
 async def day_ranks():
-    draw = ranks_draw.RanksDraw('SAKURA')
+    draw = ranks_draw.RanksDraw(ranks['logo'])
     print("#定时任务\n正在推送日榜")
     success, movies = await emby.get_emby_report(types='Movie', days = 1)
     if not success:
@@ -41,7 +41,7 @@ async def day_ranks():
         print('推送日榜失败，获取Episode数据失败!')
         return
     # 绘制海报
-    await draw.draw(movies, tvs, False)
+    await draw.draw(movies, tvs, backdrop_image = ranks['backdrop'])
     path = draw.save()
 
     try:
@@ -73,7 +73,7 @@ async def day_ranks():
     save_data(data)
     print("#定时任务\n推送日榜完成")
 async def week_ranks():
-    draw = ranks_draw.RanksDraw('SAKURA', weekly = True)
+    draw = ranks_draw.RanksDraw(ranks['logo'], weekly = True)
     print("#定时任务\n正在推送周榜")
     success, movies = await emby.get_emby_report(types='Movie', days = 7)
     if not success:
@@ -84,7 +84,7 @@ async def week_ranks():
         print('推送周榜失败，没有获取到Episode数据!')
         return
     # 绘制海报
-    await draw.draw(movies, tvs, False)
+    await draw.draw(movies, tvs, backdrop_image = ranks['backdrop'])
     path = draw.save()
 
     try:
@@ -125,3 +125,7 @@ scheduler.add_job(day_ranks, 'cron', hour=18, minute=0, timezone="Asia/Shanghai"
 scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=12, minute=0, timezone="Asia/Shanghai")
 # 启动调度器
 scheduler.start()
+# # 使用loop.call_later来延迟执行协程函数
+# import asyncio
+# loop = asyncio.get_event_loop()
+# loop.call_later(5, lambda: loop.create_task(day_ranks()))  # 初始化命令

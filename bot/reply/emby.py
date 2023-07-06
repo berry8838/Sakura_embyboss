@@ -220,7 +220,8 @@ async def backdrop(item_id, width=300, quality=90):
         return False, {'error': e}
 async def get_emby_report(types='Movie', user_id=None, days=7, end_date=None, limit=10):
     try:
-        end_date = datetime.now(timezone(timedelta(hours=8)))
+        if not end_date:
+            end_date = datetime.now(timezone(timedelta(hours=8)))
         sub_date = end_date - timedelta(days=days)
         start_time = sub_date.strftime("%Y-%m-%d 23:59:59")
         end_time = end_date.strftime("%Y-%m-%d 23:59:59")

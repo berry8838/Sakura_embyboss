@@ -135,6 +135,10 @@ systemctl enable docker
 "tz": "",       探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠
 "tz_api": "",
 "tz_id": []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。
+"ranks": {
+    "logo": "SAKURA",  日榜/周榜推送榜单图片中的LOGO文字
+    "backdrop": true   是否使用backdrop作为推送榜单的封面图
+}
 ```
 
 - 额外的：如果你希望你的【服务器】可以显示多机器的话，探针就有用了，api生成在nezha的管理后台，id也是
@@ -185,5 +189,6 @@ systemctl stop embyboss
 - [MisakaF_Emby • 使用EMBY API的方法](https://github.com/MisakaFxxk/MisakaF_Emby)
 - [xiaocao • service写法](https://github.com/xiaocao666tzh/EmbyBot)
 - [待定 Nolovenodie • 海报推送](https://github.com/Nolovenodie/EmbyTools)
+- [折花 • 日榜周榜推送设计图](https://github.com/U41ovo)
 
 ![bixin](./image/bixin.jpg)

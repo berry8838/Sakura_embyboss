@@ -1,6 +1,7 @@
 import os
 import pytz
 import random
+import logging
 from io import BytesIO
 from PIL import Image
 from PIL import ImageFont
@@ -16,13 +17,19 @@ from bot.reply import emby
 
 class RanksDraw:
 
-    def __init__(self, embyname=None, weekly = False):
+    def __init__(self, embyname=None, weekly = False, backdrop = False):
         # 绘图文件路径初始化
         bg_path = os.path.join('bot','ranks', "resource", "bg")
         if weekly:
-            mask_path = os.path.join('bot','ranks', "resource", "week_ranks_mask.png")
+            if backdrop:
+                mask_path = os.path.join('bot','ranks', "resource", "week_ranks_mask_backdrop.png")
+            else:
+                mask_path = os.path.join('bot','ranks', "resource", "week_ranks_mask.png")
         else:
-            mask_path = os.path.join('bot','ranks', "resource", "day_ranks_mask.png")
+            if backdrop:
+                mask_path = os.path.join('bot','ranks', "resource", "day_ranks_mask_backdrop.png")
+            else:
+                mask_path = os.path.join('bot','ranks', "resource", "day_ranks_mask.png")
         font_path = os.path.join('bot','ranks', "resource", "PingFang Bold.ttf")
         # 随机调取背景, 路径: res/ranks/bg/...
         bg_list = os.listdir(bg_path)
@@ -37,9 +44,10 @@ class RanksDraw:
         self.font_count = ImageFont.truetype(font_path, 12)
         self.font_logo = ImageFont.truetype(font_path, 70)
         self.embyname = embyname
+        self.backdrop = backdrop
     # backdrop_image 使用横版封面图绘制
     # draw_text 绘制item_name和播放次数
-    async def draw(self, movies=[], tvshows=[], backdrop_image = False, draw_text=False):
+    async def draw(self, movies=[], tvshows=[], draw_text=False):
         text = ImageDraw.Draw(self.bg)
         # 合并绘制
         index = 0
@@ -48,12 +56,12 @@ class RanksDraw:
             # 榜单项数据
             user_id, item_id, item_type, name, count, duarion = tuple(i)
             # 封面图像获取
-            if backdrop_image:
+            if self.backdrop:
                 prisuccess, data = await emby.backdrop(item_id)
             else:
                 prisuccess, data = await emby.primary(item_id)
             if not prisuccess:
-                print('获取封面图失败', item_id, name)
+                logging.error(f'【ranks_draw】获取封面图失败 {item_id} {name}')
             # 名称显示偏移
             temp_font = self.font
             # 名称超出长度缩小省略
@@ -61,9 +69,9 @@ class RanksDraw:
             # 绘制封面
             if prisuccess:
                 cover = Image.open(BytesIO(data))
-                if backdrop_image:
-                    cover = cover.resize((180, 100))
-                    self.bg.paste(cover, (601, 210 + 230 * index))
+                if self.backdrop:
+                    cover = cover.resize((242, 160))
+                    self.bg.paste(cover, (103 + 302 * index, 140))
                 else:
                     cover = cover.resize((144, 210))
                     self.bg.paste(cover, (601, 162 + 230 * index))
@@ -86,27 +94,27 @@ class RanksDraw:
             # 获取剧ID
             success, data = await emby.items(user_id, item_id)
             if not success:
-                print('获取剧集ID失败', item_id, name)
+                logging.error(f'【ranks_draw】获取剧集ID失败 {item_id} {name}')
             item_id = data["SeriesId"]
             # 封面图像获取
-            if backdrop_image:
+            if self.backdrop:
                 prisuccess, data = await emby.backdrop(item_id)
             else:
                 prisuccess, data = await emby.primary(item_id)
             if not prisuccess:
-                print('获取封面图失败', item_id, name)
+                logging.error(f'【ranks_draw】获取剧集ID失败 {item_id} {name}')
             temp_font = self.font
             # 名称超出长度缩小省略
             name = name[:7]
             # 绘制封面
             if prisuccess:
                 cover = Image.open(BytesIO(data))
-                if backdrop_image:
-                    cover = cover.resize((180, 100))
-                    self.bg.paste(cover, (735, 1015 - 232 * index))
+                if self.backdrop:
+                    cover = cover.resize((242, 160))
+                    self.bg.paste(cover, (408 + 302 * index,  444))
                 else:
                     cover = cover.resize((144, 210))
-                    self.bg.paste(cover, (770, 990 - 232 * index))
+                    self.bg.paste(cover, (770, 985 - 232 * index))
             else:
                 # 如果没有封面图，使用name来代替
                 draw_text_psd_style(text, (770, 990 - 232 * index), name, temp_font, 126)
@@ -117,7 +125,10 @@ class RanksDraw:
             index += 1
         # 绘制Logo名字
         if self.embyname:
-            draw_text_psd_style(text, (50, 1185), self.embyname, self.font_logo, 126)
+            if self.backdrop:
+                draw_text_psd_style(text, (1470, 880), self.embyname, self.font_logo, 126)
+            else:
+                draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126)
 
     def save(self, save_path=os.path.join('log', datetime.now(pytz.timezone("Asia/Shanghai")).strftime("%Y-%m-%d.jpg"))):
         if self.bg.mode in ("RGBA", "P"): self.bg = self.bg.convert("RGB")
@@ -133,15 +144,19 @@ class RanksDraw:
         for i in movies[:5]:
             # 榜单项数据
             user_id, item_id, item_type, name, count, duarion = tuple(i)
-            print(item_type, item_id, name, count)
+            print(f'{item_type} {item_id} {name} {count}')
             # 名称显示偏移
             temp_font = self.font
             # 名称超出长度缩小省略
             name = name[:7]
             # 绘制封面
             cover = Image.open(os.path.join('bot',"ranks", "resource", "test.png"))
-            cover = cover.resize((144, 210))
-            self.bg.paste(cover, (601, 162 + 230 * index))
+            if self.backdrop:
+                cover = cover.resize((242, 160))
+                self.bg.paste(cover, (103 + 302 * index, 140))
+            else:
+                cover = cover.resize((144, 210))
+                self.bg.paste(cover, (601, 162 + 230 * index))
             # 绘制 播放次数、影片名称
             if show_count:
                 draw_text_psd_style(text, (601 + 130, 163 + (230 * index)), str(count), self.font_count, 126)
@@ -154,14 +169,18 @@ class RanksDraw:
         for i in tvshows[:5]:
             # 榜单项数据
             user_id, item_id, item_type, name, count, duarion = tuple(i)
-            print(item_type, item_id, name, count)
+            print(f'{item_type} {item_id} {name} {count}')
             temp_font = self.font
             # 名称超出长度缩小省略
             name = name[:7]
             # 绘制封面
             cover = Image.open(os.path.join('bot',"ranks", "resource", "test1.png"))
-            cover = cover.resize((145, 212))
-            self.bg.paste(cover, (770, 987 - 232 * index))
+            if self.backdrop:
+                cover = cover.resize((242, 160))
+                self.bg.paste(cover, (408 + 302 * index,  444))
+            else:
+                cover = cover.resize((144, 210))
+                self.bg.paste(cover, (770, 985 - 232 * index))
             # 绘制 播放次数、影片名称
             if show_count:
                 draw_text_psd_style(text, (770 + 130, 990 - (232 * index)), str(count), self.font_count, 126)
@@ -169,7 +188,10 @@ class RanksDraw:
             index += 1
         # 绘制Logo名字
         if self.embyname:
-            draw_text_psd_style(text, (50, 1185), self.embyname, self.font_logo, 126)
+            if self.backdrop:
+                draw_text_psd_style(text, (1470, 880), self.embyname, self.font_logo, 126)
+            else:
+                draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126)
 
 def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, **kwargs):
     """
@@ -206,6 +228,6 @@ def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, **kwargs
         y += leading
         x = xy[0]
 # if __name__ == "__main__":
-#     draw = RanksDraw(embyname='Sakura')
+#     draw = RanksDraw(embyname='Sakura', weekly = True, backdrop = True)
 #     draw.test()
 #     draw.save()

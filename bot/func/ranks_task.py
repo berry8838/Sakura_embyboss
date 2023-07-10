@@ -1,14 +1,16 @@
 """
 定时推送日榜和周榜
 """
+import json
+import os
+import logging
 from pyrogram import enums
 from datetime import date
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from bot.reply import emby
 from bot.ranks import ranks_draw
 from config import bot, group, ranks
-import json
-import os
+
 # 记录推送日榜和周榜的消息id
 rank_log_file_path = os.path.join('log','rank.json')
 # 保存变量到文件
@@ -30,18 +32,18 @@ def get_data():
             save_data(variable)
         return variable
 async def day_ranks():
-    draw = ranks_draw.RanksDraw(ranks['logo'])
-    print("#定时任务\n正在推送日榜")
+    draw = ranks_draw.RanksDraw(ranks['logo'], backdrop=ranks['backdrop'])
+    logging.info("【ranks_task】定时任务 正在推送日榜")
     success, movies = await emby.get_emby_report(types='Movie', days = 1)
     if not success:
-        print('推送日榜失败，获取Movies数据失败!')
+        logging.error('【ranks_task】推送日榜失败，获取Movies数据失败!')
         return
     success, tvs = await emby.get_emby_report(types='Episode', days = 1)
     if not success:
-        print('推送日榜失败，获取Episode数据失败!')
+        logging.error('【ranks_task】推送日榜失败，获取Episode数据失败!')
         return
     # 绘制海报
-    await draw.draw(movies, tvs, backdrop_image = ranks['backdrop'])
+    await draw.draw(movies, tvs)
     path = draw.save()
 
     try:
@@ -49,7 +51,7 @@ async def day_ranks():
         message_id = json['day_ranks_message_id']
         await bot.unpin_chat_message(chat_id=group[0], message_id=int(message_id))
     except Exception as e:
-        print('unpin day_ranks_message exception', e)
+        logging.warning(f'【ranks_task】unpin day_ranks_message exception {e}')
         pass
     payload = ""
     if movies:
@@ -71,20 +73,20 @@ async def day_ranks():
     data = get_data()
     data['day_ranks_message_id'] = message_info.id
     save_data(data)
-    print("#定时任务\n推送日榜完成")
+    logging.info("【ranks_task】定时任务 推送日榜完成")
 async def week_ranks():
-    draw = ranks_draw.RanksDraw(ranks['logo'], weekly = True)
-    print("#定时任务\n正在推送周榜")
+    draw = ranks_draw.RanksDraw(ranks['logo'], weekly = True, backdrop=ranks['backdrop'])
+    logging.info("【ranks_task】定时任务 正在推送周榜")
     success, movies = await emby.get_emby_report(types='Movie', days = 7)
     if not success:
-        print('推送周榜失败，没有获取到Movies数据!')
+        logging.warning('【ranks_task】推送周榜失败，没有获取到Movies数据!')
         return
     success, tvs = await emby.get_emby_report(types='Episode', days = 7)
     if not success:
-        print('推送周榜失败，没有获取到Episode数据!')
+        logging.error('【ranks_task】推送周榜失败，没有获取到Episode数据!')
         return
     # 绘制海报
-    await draw.draw(movies, tvs, backdrop_image = ranks['backdrop'])
+    await draw.draw(movies, tvs)
     path = draw.save()
 
     try:
@@ -92,7 +94,7 @@ async def week_ranks():
         message_id = json['week_ranks_message_id']
         await bot.unpin_chat_message(chat_id=group[0], message_id=int(message_id))
     except Exception as e:
-        print('unpin day_ranks_message exception', e)
+        logging.warning(f'【ranks_task】unpin day_ranks_message exception {e}')
         pass
     payload = ""
     if movies:
@@ -114,7 +116,7 @@ async def week_ranks():
     data = get_data()
     data['week_ranks_message_id'] = message_info.id
     save_data(data)
-    print("#定时任务\n推送周榜完成")
+    logging.info("【ranks_task】定时任务 推送周榜完成")
 
 # async def BotTask():
 # 创建一个AsyncIOScheduler对象
@@ -125,7 +127,7 @@ scheduler.add_job(day_ranks, 'cron', hour=18, minute=0, timezone="Asia/Shanghai"
 scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=12, minute=0, timezone="Asia/Shanghai")
 # 启动调度器
 scheduler.start()
-# # 使用loop.call_later来延迟执行协程函数
+# 使用loop.call_later来延迟执行协程函数
 # import asyncio
 # loop = asyncio.get_event_loop()
 # loop.call_later(5, lambda: loop.create_task(day_ranks()))  # 初始化命令

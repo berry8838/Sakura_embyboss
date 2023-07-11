@@ -30,8 +30,9 @@ class RanksDraw:
                 mask_path = os.path.join('bot','ranks', "resource", "day_ranks_mask_backdrop.png")
             else:
                 mask_path = os.path.join('bot','ranks', "resource", "day_ranks_mask.png")
-        font_path = os.path.join('bot','ranks', "resource", "PingFang Bold.ttf")
-        # 随机调取背景, 路径: res/ranks/bg/...
+        font_path = os.path.join('bot','ranks', "resource",'font', "PingFang Bold.ttf")
+        logo_font_path = os.path.join('bot','ranks', 'resource','font', 'Provicali.otf')
+        # 随机调取背景
         bg_list = os.listdir(bg_path)
         bg_path = os.path.join(bg_path, random.choice(bg_list))
         # 初始绘图对象
@@ -42,7 +43,7 @@ class RanksDraw:
         self.font = ImageFont.truetype(font_path, 18)
         self.font_small = ImageFont.truetype(font_path, 14)
         self.font_count = ImageFont.truetype(font_path, 12)
-        self.font_logo = ImageFont.truetype(font_path, 70)
+        self.font_logo = ImageFont.truetype(logo_font_path, 100)
         self.embyname = embyname
         self.backdrop = backdrop
     # backdrop_image 使用横版封面图绘制
@@ -126,7 +127,7 @@ class RanksDraw:
         # 绘制Logo名字
         if self.embyname:
             if self.backdrop:
-                draw_text_psd_style(text, (1470, 880), self.embyname, self.font_logo, 126)
+                draw_text_psd_style(text, (1470, 830), self.embyname, self.font_logo, 126)
             else:
                 draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126)
 
@@ -189,7 +190,7 @@ class RanksDraw:
         # 绘制Logo名字
         if self.embyname:
             if self.backdrop:
-                draw_text_psd_style(text, (1470, 880), self.embyname, self.font_logo, 126)
+                draw_text_psd_style(text, (1470, 830), self.embyname, self.font_logo, 126)
             else:
                 draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126)
 
@@ -228,6 +229,6 @@ def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, **kwargs
         y += leading
         x = xy[0]
 # if __name__ == "__main__":
-#     draw = RanksDraw(embyname='Sakura', weekly = True, backdrop = True)
+#     draw = RanksDraw(embyname='SAKURA', weekly = True, backdrop = True)
 #     draw.test()
 #     draw.save()

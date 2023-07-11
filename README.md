@@ -137,7 +137,7 @@ systemctl enable docker
 "tz_id": []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。
 "ranks": {
     "logo": "SAKURA",  日榜/周榜推送榜单图片中的LOGO文字
-    "backdrop": true   是否使用backdrop作为推送榜单的封面图
+    "backdrop": false   是否使用backdrop作为推送榜单的封面图
 }
 ```
 

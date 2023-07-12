@@ -12,7 +12,7 @@
 ## 待办
 
 - [ ] 推送相关
-    - [ ] 添加排行榜推送[EmbyTools](https://github.com/Nolovenodie/EmbyTools)
+    - [x] 添加排行榜推送[EmbyTools](https://github.com/Nolovenodie/EmbyTools)
     - [ ] 添加Emby中的更新推送
     - [ ] 添加收藏影片推送?
 - [ ] 趣味功能
@@ -21,7 +21,7 @@
     - [ ] 重新启用签到?
 - [ ] 基本功能  
   已实现的基础功能请看使用帮助
-    - [ ] 重新绑定账户/ 用于被tg注销时不丢失emby
+    - [x] 重新绑定账户/ 用于被tg注销时不丢失emby
     - [ ] 添加邀请功能
     - [x] 支持docker部署
 

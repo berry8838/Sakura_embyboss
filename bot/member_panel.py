@@ -205,6 +205,98 @@ async def del_me(_, call):
                                                    caption='**💢 验证不通过，安全码错误。**',
                                                    reply_markup=ikb(
                                                        [[('♻️ - 重试', 'delme')], [('🔙 - 返回', 'members')]]))
+# 换绑tg
+@bot.on_callback_query(filters.regex('changetg'))
+async def change_tg(_, call):
+    embyid, pwd2 = sqlhelper.select_one("select embyid,pwd2 from emby where tg = %s", call.from_user.id)
+    if embyid:
+        await bot.answer_callback_query(call.id, '当前TG已绑定有emby账号，不允许更换💢', show_alert=True)
+        return
+    else:
+        try:
+            await call.answer("🔴 请输入旧账户的TG id")
+            await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                           caption='**🔰请输入旧账户的TG id**：\n\n倒计时 120s\n'
+                                                   '🛑 **如需取消操作，请点击 /cancel**')
+        except BadRequest:
+            await call.answer("慢速模式开启，切勿多点\n慢一点，慢一点，生活更有趣 - zztai", show_alert=True)
+            return
+        except Forbidden:
+            await call.answer("Forbidden - 时间太久远，请重新召唤面板！", show_alert=True)
+            return
+        try:
+            m = await call.message.chat.listen(filters.text, timeout=120)
+        except ListenerTimeout:
+            await bot.edit_message_caption(call.from_user.id,
+                                           call.message.id,
+                                           caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
+                                           reply_markup=ikb([[('🎗️ 返回', 'members')]]))
+        else:
+            if m.text == '/cancel':
+                await m.delete()
+                await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                               caption='__您已经取消输入__ **会话已结束！**',
+                                               reply_markup=ikb([[('💨 - 返回', 'members')]]))
+                pass
+            else:
+                if m.text.isdigit():
+                    oldtgid = m.text
+                    try:
+                        res = sqlhelper.select_one("select embyid, name, pwd2 from emby where tg = %s", oldtgid)
+                        oldembyid,name, oldpwd2 = res
+                    except:
+                        pass
+                    if res is None or oldembyid is None:
+                        await m.delete()
+                        await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                                    caption='**💢 未查询到此tgid下的emby账户，不允许更换，请重新操作！。**',
+                                                    reply_markup=ikb(
+                                                        [[('♻️ - 重试', 'changetg')], [('🔙 - 返回', 'members')]]))
+                    else:
+                        await m.delete()
+                        await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                        caption='**🔰账户安全验证**：\n\n👮🏻验证是否本人进行敏感操作，请对我发送此TGid所设置的安全码。倒计时 120s\n'
+                                                '🛑 **停止请点 /cancel**')
+                    try:
+                        m = await call.message.chat.listen(filters.text, timeout=120)
+                    except ListenerTimeout:
+                        await bot.edit_message_caption(call.from_user.id,
+                                                    call.message.id,
+                                                    caption='💦 __没有获取到您的输入__ **会话状态自动取消！**',
+                                                    reply_markup=ikb([[('🎗️ 返回', 'members')]]))
+                    else:
+                        if m.text == '/cancel':
+                            await m.delete()
+                            await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                                        caption='__您已经取消输入__ **会话已结束！**',
+                                                        reply_markup=ikb([[('💨 - 返回', 'members')]]))
+                            pass
+                        else:
+                            if m.text == oldpwd2:
+                                await m.delete()
+                                try:
+                                    sqlhelper.delete_one("delete from emby WHERE tg =%s", call.from_user.id)
+                                    sqlhelper.update_one("update emby set tg = %s where tg = %s", [call.from_user.id, oldtgid])
+                                    await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                                            caption=f'**⚠️ 您的emby账户`{name}`由tgid:`{oldtgid}`已更换为tgid:`{call.from_user.id}`\n'
+                                                                    f'原tgid:`{oldtgid}`账户记录已删除。\n**',
+                                                            reply_markup=ikb([[('🔙 返回', 'members')]]))
+                                    logging.info(f"【更换TG绑定】：emby账户{name}由tgid:{oldtgid}已更换为tgid:{call.from_user.id}")
+                                except Exception as e:
+                                    logging.error(e, f"【更换TG绑定】出错：emby账户{name}由tgid:{oldtgid}已更换为tgid:{call.from_user.id}")
+                                    await call.answer("更换tg绑定出错，请联系闺蜜（管理）！", show_alert=True)
+                            else:
+                                await m.delete()
+                                await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                                            caption='**💢 验证不通过，安全码错误。**',
+                                                            reply_markup=ikb(
+                                                                [[('♻️ - 重试', 'changetg')], [('🔙 - 返回', 'members')]]))
+                else:
+                    await m.delete()
+                    await bot.edit_message_caption(call.from_user.id, call.message.id,
+                                                   caption='**💢 请输入正确的tgid。**',
+                                                   reply_markup=ikb(
+                                                       [[('♻️ - 重试', 'changetg')], [('🔙 - 返回', 'members')]]))
 
 
 @bot.on_callback_query(filters.regex('delemby'))

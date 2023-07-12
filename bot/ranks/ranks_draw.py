@@ -53,14 +53,24 @@ class RanksDraw:
         # 合并绘制
         index = 0
         font_offset_y = 190
+        resize = (0, 0)
+        xy = (0,0)
         for i in movies[:5]:
             # 榜单项数据
             user_id, item_id, item_type, name, count, duarion = tuple(i)
             # 封面图像获取
             if self.backdrop:
+                resize = (242, 160)
+                xy = (103 + 302 * index, 140)
                 prisuccess, data = await emby.backdrop(item_id)
+                if not prisuccess:
+                    prisuccess, data = await emby.primary(item_id)
+                    resize = (110, 160)
+                    xy = (169 + 302 * index,  140)
             else:
                 prisuccess, data = await emby.primary(item_id)
+                resize = (144, 210)
+                xy = (601, 162 + 230 * index)
             if not prisuccess:
                 logging.error(f'【ranks_draw】获取封面图失败 {item_id} {name}')
             # 名称显示偏移
@@ -70,15 +80,14 @@ class RanksDraw:
             # 绘制封面
             if prisuccess:
                 cover = Image.open(BytesIO(data))
-                if self.backdrop:
-                    cover = cover.resize((242, 160))
-                    self.bg.paste(cover, (103 + 302 * index, 140))
-                else:
-                    cover = cover.resize((144, 210))
-                    self.bg.paste(cover, (601, 162 + 230 * index))
+                cover = cover.resize(resize)
+                self.bg.paste(cover, xy)
             else:
                 # 如果没有封面图，使用name来代替
-                draw_text_psd_style(text, (601, 162 + 230 * index), name, temp_font, 126)
+                if self.backdrop:
+                    draw_text_psd_style(text, (123 + 302 * index, 140), name, temp_font, 126)
+                else:
+                    draw_text_psd_style(text, (601, 162 + 230 * index), name, temp_font, 126)
             # 绘制 播放次数、影片名称
             if draw_text:
                 draw_text_psd_style(text, (601 + 130, 163 + (230 * index)), str(count), self.font_count, 126)
@@ -100,8 +109,16 @@ class RanksDraw:
             # 封面图像获取
             if self.backdrop:
                 prisuccess, data = await emby.backdrop(item_id)
+                resize = (242, 160)
+                xy = (408 + 302 * index,  444)
+                if not prisuccess:
+                    prisuccess, data = await emby.primary(item_id)
+                    resize = (110, 160)
+                    xy = (474 + 302 * index,  444)
             else:
                 prisuccess, data = await emby.primary(item_id)
+                resize = (144, 210)
+                xy = (770, 985 - 232 * index)
             if not prisuccess:
                 logging.error(f'【ranks_draw】获取剧集ID失败 {item_id} {name}')
             temp_font = self.font
@@ -110,15 +127,14 @@ class RanksDraw:
             # 绘制封面
             if prisuccess:
                 cover = Image.open(BytesIO(data))
-                if self.backdrop:
-                    cover = cover.resize((242, 160))
-                    self.bg.paste(cover, (408 + 302 * index,  444))
-                else:
-                    cover = cover.resize((144, 210))
-                    self.bg.paste(cover, (770, 985 - 232 * index))
+                cover = cover.resize(resize)
+                self.bg.paste(cover, xy)
             else:
                 # 如果没有封面图，使用name来代替
-                draw_text_psd_style(text, (770, 990 - 232 * index), name, temp_font, 126)
+                if self.backdrop:
+                    draw_text_psd_style(text, (428 + 302 * index,  444), name, temp_font, 126)
+                else:
+                    draw_text_psd_style(text, (770, 990 - 232 * index), name, temp_font, 126)
             # 绘制 播放次数、影片名称
             if draw_text:
                 draw_text_psd_style(text, (770 + 130, 990 - (232 * index)), str(count), self.font_count, 126)

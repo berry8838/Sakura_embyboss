@@ -12,7 +12,7 @@
 ## 待办
 
 - [ ] 推送相关
-    - [x] 添加排行榜推送[EmbyTools](https://github.com/Nolovenodie/EmbyTools)
+    - [x] 添加排行榜推送[EmbyTools](https://github.com/Nolovenodie/EmbyTools), ps: 需要安装 `playback_reporting` 插件
     - [ ] 添加Emby中的更新推送
     - [ ] 添加收藏影片推送?
 - [ ] 趣味功能

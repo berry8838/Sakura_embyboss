@@ -194,7 +194,7 @@ async def re_admin(id):
 async def items(user_id, item_id):
     try:
         _url = f"{url}/emby/Users/{user_id}/Items/{item_id}"
-        resp = r.get(_url, headers=headers, params=params, timeout=30)
+        resp = r.get(_url, headers=headers, params=params)
         if resp.status_code != 204 and resp.status_code != 200:
             return False, {'error':"🤕Emby 服务器连接失败!"}
         return True, resp.json()
@@ -203,7 +203,7 @@ async def items(user_id, item_id):
 async def primary(item_id, width=200, height=300, quality=90):
     try:
         _url = f"{url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
-        resp = r.get(_url, headers=headers, params=params, timeout=30)
+        resp = r.get(_url, headers=headers, params=params)
         if resp.status_code != 204 and resp.status_code != 200:
             return False, {'error': "🤕Emby 服务器连接失败!"}
         return True, resp.content
@@ -212,7 +212,7 @@ async def primary(item_id, width=200, height=300, quality=90):
 async def backdrop(item_id, width=300, quality=90):
     try:
         _url = f"{url}/emby/Items/{item_id}/Images/Backdrop?maxWidth={width}&quality={quality}"
-        resp = r.get(_url, headers=headers, params=params, timeout=30)
+        resp = r.get(_url, headers=headers, params=params)
         if resp.status_code != 204 and resp.status_code != 200:
             return False, {'error': "🤕Emby 服务器连接失败!"}
         return True, resp.content
@@ -223,8 +223,8 @@ async def get_emby_report(types='Movie', user_id=None, days=7, end_date=None, li
         if not end_date:
             end_date = datetime.now(timezone(timedelta(hours=8)))
         sub_date = end_date - timedelta(days=days)
-        start_time = sub_date.strftime("%Y-%m-%d 23:59:59")
-        end_time = end_date.strftime("%Y-%m-%d 23:59:59")
+        start_time = sub_date.strftime('%Y-%m-%d %H:%M:%S')
+        end_time = end_date.strftime('%Y-%m-%d %H:%M:%S')
         sql = "SELECT UserId, ItemId, ItemType, "
         if types == 'Episode':
             sql += " substr(ItemName,0, instr(ItemName, ' - ')) AS name, "
@@ -246,7 +246,7 @@ async def get_emby_report(types='Movie', user_id=None, days=7, end_date=None, li
             "CustomQueryString": sql,
             "ReplaceUserId": False
         }
-        resp = r.post(_url, headers=headers, params=params, json=data, timeout=30)
+        resp = r.post(_url, headers=headers, params=params, json=data)
         if resp.status_code != 204 and resp.status_code != 200:
             return False, {'error': "🤕Emby 服务器连接失败!"}
         ret = resp.json()

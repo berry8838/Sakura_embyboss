@@ -122,9 +122,9 @@ async def week_ranks():
 # 创建一个AsyncIOScheduler对象
 scheduler = AsyncIOScheduler()
 # 添加一个cron任务，每天18点00分执行日榜推送
-scheduler.add_job(day_ranks, 'cron', hour=18, minute=0, timezone="Asia/Shanghai")
+scheduler.add_job(day_ranks, 'cron', hour=18, minute=0, timezone="Asia/Shanghai", misfire_grace_time = 60)
 # 添加一个cron任务，每周一12点00分执行周榜推送
-scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=12, minute=0, timezone="Asia/Shanghai")
+scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=12, minute=0, timezone="Asia/Shanghai", misfire_grace_time = 60)
 # 启动调度器
 scheduler.start()
 # 使用loop.call_later来延迟执行协程函数

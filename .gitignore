@@ -10,3 +10,4 @@ gen
 !/keaiji_bot.session
 !/keaiji_bot.session-journal
 __pycache__
+log

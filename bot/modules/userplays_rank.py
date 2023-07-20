@@ -44,7 +44,7 @@ async def user_plays_rank(days=7):
 
 scheduler = Scheduler()
 scheduler.add_job(user_plays_rank, 'cron', day_of_week=0, hour=23, minute=30)
-scheduler.add_job(user_plays_rank, 'cron', hour=20, minute=0)
+# scheduler.add_job(user_plays_rank, 'cron', hour=20, minute=0)
 
 
 # scheduler.add_job(user_plays_rank, 'cron', minute='*/1')
@@ -55,4 +55,4 @@ async def shou_dong_uplayrank(_, msg):
         days = int(msg.command[1])
         await user_plays_rank(days=days)
     except (IndexError, ValueError):
-        await msg.reply(f"🔔 user榜每天20点，若未成功执行，请再加参数 user_ranks+天数，否则勿动以免影响{sakura_b}的结算")
+        await msg.reply(f"🔔 user榜每周23点半，若未成功执行，请再加参数 user_ranks+天数，否则勿动以免影响{sakura_b}的结算")

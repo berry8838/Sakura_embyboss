@@ -13,7 +13,7 @@ from bot.ranks_helper import ranks_draw
 from bot import bot, group, ranks, LOGGER, prefixes
 
 # 记录推送日榜和周榜的消息id
-rank_log_file_path = os.path.join('../log', 'rank.json')
+rank_log_file_path = os.path.join('log', 'rank.json')
 
 
 # 保存变量到文件
@@ -140,8 +140,10 @@ scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=23, minute=59)
 @bot.on_message(filters.command('days_ranks', prefixes) & admins_on_filter)
 async def day_r_ranks(_, msg):
     await day_ranks()
+    await msg.delete()
 
 
 @bot.on_message(filters.command('week_ranks', prefixes) & admins_on_filter)
 async def week_r_ranks(_, msg):
     await week_ranks()
+    await msg.delete()

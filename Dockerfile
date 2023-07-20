@@ -5,5 +5,6 @@ COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 COPY bot ./bot
 RUN mkdir ./log
+COPY *.py ./
 ENTRYPOINT [ "python3" ]
-CMD [ "bot/main.py" ]
+CMD [ "main.py" ]

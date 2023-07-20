@@ -48,7 +48,7 @@ import logging
 LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
 
 # 创建一个文件处理器，用来将日志信息输出到文件，并设置它的输出级别为 logging.INFO
-file_handler = logging.FileHandler(f"../log/log_{Now:%Y%m%d}.txt", encoding='utf-8')
+file_handler = logging.FileHandler(f"log/log_{Now:%Y%m%d}.txt", encoding='utf-8')
 file_handler.setLevel(logging.INFO)
 # 设置文件处理器的输出格式，使用通用的日志输出格式
 file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
@@ -76,13 +76,13 @@ import json
 
 
 def load_config():
-    with open("../config.json", "r", encoding="utf-8") as f:
+    with open("config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
         return config
 
 
 def save_config():
-    with open("../config.json", "w", encoding="utf-8") as f:
+    with open("config.json", "w", encoding="utf-8") as f:
         json.dump(config, f, indent=4, ensure_ascii=False, separators=(",", ": "))
 
 

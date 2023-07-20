@@ -21,19 +21,19 @@ class RanksDraw:
         # 绘图文件路径初始化
         # wokr_p = os.getcwd()
         # print(wokr_p)
-        bg_path = os.path.join('ranks_helper', "resource", "bg")
+        bg_path = os.path.join('bot', 'ranks_helper', "resource", "bg")
         if weekly:
             if backdrop:
-                mask_path = os.path.join('ranks_helper', "resource", "week_ranks_mask_backdrop.png")
+                mask_path = os.path.join('bot', 'ranks_helper', "resource", "week_ranks_mask_backdrop.png")
             else:
-                mask_path = os.path.join('ranks_helper', "resource", "week_ranks_mask.png")
+                mask_path = os.path.join('bot', 'ranks_helper', "resource", "week_ranks_mask.png")
         else:
             if backdrop:
-                mask_path = os.path.join('ranks_helper', "resource", "day_ranks_mask_backdrop.png")
+                mask_path = os.path.join('bot', 'ranks_helper', "resource", "day_ranks_mask_backdrop.png")
             else:
-                mask_path = os.path.join('ranks_helper', "resource", "day_ranks_mask.png")
-        font_path = os.path.join('ranks_helper', "resource", 'font', "PingFang Bold.ttf")
-        logo_font_path = os.path.join('ranks_helper', 'resource', 'font', 'Provicali.otf')
+                mask_path = os.path.join('bot', 'ranks_helper', "resource", "day_ranks_mask.png")
+        font_path = os.path.join('bot', 'ranks_helper', "resource", 'font', "PingFang Bold.ttf")
+        logo_font_path = os.path.join('bot', 'ranks_helper', 'resource', 'font', 'Provicali.otf')
         # 随机调取背景
         bg_list = os.listdir(bg_path)
         bg_path = os.path.join(bg_path, random.choice(bg_list))
@@ -151,7 +151,7 @@ class RanksDraw:
                 draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126)
 
     def save(self,
-             save_path=os.path.join('image', datetime.now(pytz.timezone("Asia/Shanghai")).strftime("%Y-%m-%d.jpg"))):
+             save_path=os.path.join('log', datetime.now(pytz.timezone("Asia/Shanghai")).strftime("%Y-%m-%d.jpg"))):
         if self.bg.mode in ("RGBA", "P"): self.bg = self.bg.convert("RGB")
         self.bg.save(save_path)
         return save_path
@@ -262,7 +262,9 @@ def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, **kwargs
             x += w + (tracking / 1000) * font_size
         y += leading
         x = xy[0]
+#
+#
 # if __name__ == "__main__":
-#     draw = RanksDraw(embyname='SAKURA', weekly = True, backdrop = True)
+#     draw = RanksDraw(embyname='SAKURA', weekly=True, backdrop=True)
 #     draw.test()
 #     draw.save()

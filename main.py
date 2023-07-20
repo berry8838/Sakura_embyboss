@@ -1,9 +1,9 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
 
-# import uvloop
-#
-# uvloop.install()
+import uvloop
+
+uvloop.install()
 from bot import bot
 
 

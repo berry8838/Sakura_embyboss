@@ -1,33 +1,55 @@
 {
-  "bot_name": "",
-  "bot_token": "",
-  "owner_api": "",
+  "bot_name": "xxxbot",
+  "bot_token": "5701:AAEvAHzsg30",
+  "owner_api": 73711,
   "owner_hash": "",
-  "owner": "",
-  "group": [],
-  "main_group": "",
-  "chanel": "",
+  "owner": 1661,
+  "group": [
+    -100
+  ],
+  "main_group": "Aaaaa_su",
+  "chanel": "su_yxfy",
   "bot_photo": "https://telegra.ph/file/1437f7f348c6c71f0b9ab.png",
-  "user_buy": "n",
-  "buy": [],
+  "user_buy": {
+    "stat": "n",
+    "text": "**🛒请选择购买对应时长的套餐：**网页付款后会发邀请码连接，点击跳转到bot开始注册和续期程式。",
+    "button": [
+      [
+        "Google",
+        "Google.com",
+        "url"
+      ]
+    ]
+  },
   "open": {
     "stat": "n",
-    "all_user": 50,
+    "all_user": 100,
     "timing": 0,
     "tem": 0,
     "allow_code": "y"
   },
   "admins": [],
   "invite": "n",
+  "money": "花币",
   "emby_api": "",
-  "emby_url": "",
-  "line": "",
-  "block": "",
-  "db_host": "",
+  "emby_url": "http://255.255.255.255:8096",
+  "emby_line": "susuyyds.com",
+  "emby_block": [
+    "电影",
+    "纪录片"
+  ],
+  "db_host": "255.255.255.255",
   "db_user": "",
   "db_pwd": "",
-  "db": "",
-  "tz": "",
-  "tz_api": "",
-  "tz_id": []
+  "db_name": "",
+  "tz_ad": "https://tz.susuyyds.xyz",
+  "tz_api": "BD8riRr",
+  "tz_id": [
+    "1",
+    "2"
+  ],
+  "ranks": {
+    "logo": "SAKURA",
+    "backdrop": false
+  }
 }

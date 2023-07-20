@@ -6,8 +6,8 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=此处填写你在服务器上存放Bot的目录
-ExecStart=python3 /你/放/Bot/的/目录/main.py
+WorkingDirectory=此处填写你在服务器上存放Bot的目录/bot
+ExecStart=python3 /你/放/Bot/的/目录/bot/main.py
 Restart=on-abnormal
 PrivateTmp=True
 RestartSec=5s

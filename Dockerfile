@@ -3,9 +3,7 @@ WORKDIR /app
 ENV TZ=Asia/Shanghai
 COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
-COPY _mysql ./_mysql
 COPY bot ./bot
 RUN mkdir ./log
-COPY *.py ./
 ENTRYPOINT [ "python3" ]
-CMD [ "main.py" ]
+CMD [ "bot/main.py" ]

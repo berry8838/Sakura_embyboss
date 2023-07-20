@@ -12,16 +12,15 @@
 ## 待办
 
 - [ ] 推送相关
-    - [ ] 添加排行榜推送[EmbyTools](https://github.com/Nolovenodie/EmbyTools)
+    - [x] 添加排行榜推送[EmbyTools](https://github.com/Nolovenodie/EmbyTools)
     - [ ] 添加Emby中的更新推送
     - [ ] 添加收藏影片推送?
 - [ ] 趣味功能
-    - [ ] 积分红包
     - [ ] 公告功能(群发信息)
     - [ ] 重新启用签到?
 - [ ] 基本功能  
   已实现的基础功能请看使用帮助
-    - [ ] 重新绑定账户/ 用于被tg注销时不丢失emby
+    - [x] 重新绑定账户/ 用于被tg注销时不丢失emby
     - [ ] 添加邀请功能
     - [x] 支持docker部署
 
@@ -55,8 +54,9 @@ git clone https://github.com/berry8838/Sakura_embyboss.git && cd Sakura_embyboss
 
 ### 2、配置数据库
 
-- 有两种方式配置数据库。分别说，任选一种
-- 使用以下数据库管理软件均布置在 vps 上，若本地有管理软件可替代，就不用搭建了。
+- ~~有两种方式配置数据库。分别说，任选一种~~
+- 已实现自动创建，请确保安装好数据库、能联通即可
+- 以下数据库管理软件均布置在 vps 上
 
 #### 配置数据库 (1)
 
@@ -74,9 +74,6 @@ systemctl enable docker
 
 - 接着在Sakura_embyboss目录下面找到文件`docker-compose.yml`，修改成自己的设置后保存。
 - 在Sakura_embyboss目录运行命令`docker-compose up -d`。
-- 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，打开你的phpmyadmin 即 ip:
-  port ,点开表 embyboss，点击导入刚刚下载的文件。  
-  ![如何导入](./image/mysql.png)
 - 搭建完成之后，用 `ip:端口` 访问、管理
 
 #### 配置数据库（2）
@@ -84,9 +81,6 @@ systemctl enable docker
 - 在你已经拥有宝塔面板前提下使用宝塔面板
 - 在宝塔中，安装好mysql，phpmyadmin，进入`数据库` 新增加一个数据库，用户名密码设置，进行相应的替换，访问点击 `phpmyadmin`  
   ![宝塔](./image/bt.png)
-- 下载[此处文件](https://github.com/berry8838/Sakura_embyboss/blob/master/_mysql/embyboss.sql)，直接在面板数据库中导入这份文件
-  ![如何导入](./image/mysql.png)
-
 ------------------
 
 ### 3、配置文件填写

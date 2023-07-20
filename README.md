@@ -1,15 +1,17 @@
 # Sakura_embyboss（体验版）
 
 ![Sakura](./image/sakura.png)
+# 最近更新说明
+明天再说，emmmmmm，暂时别动
 
 ## 项目说明
 
-- 本项目是 **业余选手** 写就，期间参考多位朋友的代码。结合一些我所认为优质的特点、元素，截至目前已有三个面板，若干命令
+- 本项目是 **业余选手** 写就，结合一些我所认为优质的特点、元素，截至目前我自己都不知道有什么了
 - 没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑
 - 推荐使用 Debian 11 搭建，比较兼容
 - 解决不了大的技术问题，如需要，请自行fork修改
 
-## 待办
+## 功能一览
 
 - [ ] 推送相关
     - [x] 添加排行榜推送[EmbyTools](https://github.com/Nolovenodie/EmbyTools)
@@ -38,8 +40,6 @@ config - 含查看日志，修改探针，购买按钮,emby_line，设置显示/
 其他命令具体使用可通过其回复方法查看。
 
 ## 配置说明
-
-- 写的有点乱，慢慢看。不解释。
 
 ### 1、拉取代码
 
@@ -152,7 +152,7 @@ docker run -it --name sakura_embyboss -d --restart=always -v ./config.json:/app/
   `pip3 install -r requirements.txt`
 
 - 在`embyboss.service`
-  里面编辑我中文标注的3行,默认可以分别填入`embyboss`，`/root/Sakura_embyboss/` ,`/root/Sakura_embyboss/main.py`
+  里面编辑我中文标注的3行,默认可以分别填入`embyboss`，`/root/Sakura_embyboss/bot` ,`/root/Sakura_embyboss/bot/main.py`
 - 若有修改路径请按照自己的修改填写
 - 保存后运行 `mv embyboss.service /usr/lib/systemd/system`
 - 以下是控制命令

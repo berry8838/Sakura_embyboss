@@ -104,7 +104,8 @@ async def gift(_, call):
     first = await bot.get_chat(b)
     e = sql_get_emby(tg=b)
     if e.embyid is None:
-        if not sql_update_emby(Emby.tg == b, us=30):
+        us = e.us + 30
+        if not sql_update_emby(Emby.tg == b, us=us):
             return await editMessage(call, '⚠️ 数据库写入错误，请检查')
 
         await editMessage(call, f"🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n"

@@ -11,6 +11,7 @@ from bot.func_helper.scheduler import Scheduler
 from bot.func_helper.emby import emby
 from bot.ranks_helper import ranks_draw
 from bot import bot, group, ranks, LOGGER, prefixes
+from bot.func_helper.msg_utils import deleteMessage
 
 # 记录推送日榜和周榜的消息id
 rank_log_file_path = os.path.join('log', 'rank.json')
@@ -72,7 +73,7 @@ async def day_ranks():
             user_id, item_id, item_type, name, count, duarion = tuple(tv)
             tmp += str(i + 1) + "." + name + "-" + str(count) + "\n"
         payload += tmp
-    payload = f"**【播放日榜】**\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime(
+    payload = f"**【{ranks['logo']} 播放日榜】**\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime(
         '%Y-%m-%d')
     message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload,
                                         parse_mode=enums.ParseMode.MARKDOWN)
@@ -118,7 +119,7 @@ async def week_ranks():
             user_id, item_id, item_type, name, count, duarion = tuple(tv)
             tmp += str(i + 1) + "." + name + "-" + str(count) + "\n"
         payload += tmp
-    payload = f"**【播放周榜】**\n\n" + payload + "\n#WeekRanks" + "  " + date.today().strftime(
+    payload = f"**【{ranks['logo']} 播放周榜】**\n\n" + payload + "\n#WeekRanks" + "  " + date.today().strftime(
         '%Y-%m-%d')
     message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload,
                                         parse_mode=enums.ParseMode.MARKDOWN)
@@ -139,11 +140,15 @@ scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=23, minute=59)
 
 @bot.on_message(filters.command('days_ranks', prefixes) & admins_on_filter)
 async def day_r_ranks(_, msg):
+    await deleteMessage(msg)
+    reply = await msg.reply(msg, '加载中。。。')
     await day_ranks()
-    await msg.delete()
+    await reply.delete()
 
 
 @bot.on_message(filters.command('week_ranks', prefixes) & admins_on_filter)
 async def week_r_ranks(_, msg):
+    await deleteMessage(msg)
+    reply = await msg.reply(msg, '加载中。。。')
     await week_ranks()
-    await msg.delete()
+    await reply.delete()

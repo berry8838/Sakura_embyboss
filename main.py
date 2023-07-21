@@ -15,7 +15,7 @@ def main():
     # 面板
     from bot.modules.panel import admin_panel, config_panel, member_panel, server_panel, user_buy
     # 细化
-    from bot.modules.commands import admin, close_it, conmands, exchange, kk, myinfo, pro_rev, renew, restart, renewall, \
+    from bot.modules.commands import admin, close_it, rmemby, exchange, kk, myinfo, pro_rev, renew, restart, renewall, \
         score, start, sync_group
 
 

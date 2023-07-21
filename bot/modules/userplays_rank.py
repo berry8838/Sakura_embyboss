@@ -1,10 +1,11 @@
 from pyrogram import filters
 
-from bot import bot, bot_photo, Now, group, sakura_b, LOGGER, prefixes
+from bot import bot, bot_photo, Now, group, sakura_b, LOGGER, prefixes, ranks
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_embys
 from bot.func_helper.scheduler import Scheduler
+from bot.func_helper.msg_utils import deleteMessage
 
 
 async def user_plays_rank(days=7):
@@ -13,7 +14,7 @@ async def user_plays_rank(days=7):
         return await bot.send_photo(chat_id=group[0], photo=bot_photo,
                                     caption=f'🍥 获取过去{days}天UserPlays失败了嘤嘤嘤 ~ 手动重试 ')
     else:
-        txt = f'**▎过去{days}天看片榜 - user**\n\n'
+        txt = f'**▎{ranks["logo"]}过去{days}天看片榜**\n\n'
         xu = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩']
         n = 0
         ls = []
@@ -44,6 +45,8 @@ async def user_plays_rank(days=7):
 
 scheduler = Scheduler()
 scheduler.add_job(user_plays_rank, 'cron', day_of_week=0, hour=23, minute=30)
+
+
 # scheduler.add_job(user_plays_rank, 'cron', hour=20, minute=0)
 
 
@@ -51,6 +54,7 @@ scheduler.add_job(user_plays_rank, 'cron', day_of_week=0, hour=23, minute=30)
 
 @bot.on_message(filters.command('user_ranks', prefixes) & admins_on_filter)
 async def shou_dong_uplayrank(_, msg):
+    await deleteMessage(msg)
     try:
         days = int(msg.command[1])
         await user_plays_rank(days=days)

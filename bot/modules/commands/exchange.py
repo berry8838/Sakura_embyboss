@@ -42,7 +42,7 @@ async def rgs_code(_, msg):
             used = r.used
             if used is not None:
                 return await sendMessage(msg,
-                                         f'此 `{register_code}` \n注册码已被使用,是[{used}](tg://user?id={used})的形状了喔')
+                                         f'此 `{register_code}` \n邀请码已被使用,是[这个家伙](tg://user?id={used})的形状了喔')
             first = await bot.get_chat(tg1)
             # 此处需要写一个判断 now和ex的大小比较。进行日期加减。
             ex_new = Now
@@ -62,10 +62,8 @@ async def rgs_code(_, msg):
                 await sendMessage(msg, f'🎊 少年郎，恭喜你，已收到 [{first.first_name}](tg://user?id={tg1}) 的{us1}天🎁\n'
                                        f' __自动转换成 {us1} 积分，当前：{x}__')
             sql_update_code(code=register_code, used=msg.from_user.id, usedtime=Now)
-            # new_code = "-".join(register_code.split("-")[:2]) + "-" + "█" * 7 + register_code.split("-")[2][7:]
-            new_code = register_code[:-7] + "█" * 7
             await sendMessage(msg,
-                              f'【注册码码使用】- [{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {new_code}，可延长{us1}天，将会在到期时自动抵扣',
+                              f'【注册码码使用】：[{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {register_code}',
                               send=True)
             LOGGER.info(f"【注册码】：{msg.chat.id} 使用了 {register_code}")
 
@@ -81,7 +79,7 @@ async def rgs_code(_, msg):
             used = r.used
             if used is not None:
                 return await sendMessage(msg,
-                                         f'此 `{register_code}` \n注册码已被使用,是 [{used}](tg://user?id={used}) 的形状了喔')
+                                         f'此 `{register_code}` \n邀请码已被使用,是 [这个家伙](tg://user?id={used}) 的形状了喔')
 
             first = await bot.get_chat(tg1)
             x = data.us + us1
@@ -90,9 +88,7 @@ async def rgs_code(_, msg):
             await sendPhoto(msg, photo=bot_photo,
                             caption=f'🎊 少年郎，恭喜你，已经收到了 [{first.first_name}](tg://user?id={tg1}) 发送的邀请注册资格\n\n请选择你的选项~',
                             buttons=register_code_ikb)
-            # new_code = "-".join(register_code.split("-")[:2]) + "-" + "█" * 7 + register_code.split("-")[2][7:]
-            new_code = register_code[:-7] + "█" * 7
             await sendMessage(msg,
-                              f'【注册码使用】- [{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {new_code} 可以创建{us1}天账户咯~',
+                              f'【兑换码使用】：[{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {register_code}',
                               send=True)
-            LOGGER.info(f"【注册码】：{msg.chat.id} 使用了 {register_code}")
+            LOGGER.info(f"【兑换码】：{msg.chat.id} 使用了 {register_code}")

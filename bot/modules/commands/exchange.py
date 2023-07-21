@@ -37,7 +37,6 @@ async def rgs_code(_, msg):
         if r is None:
             return await sendMessage(msg, "⛔ **你输入了一个错误的注册码。\n\n正确用法:** `/exchange [注册码]`")
         else:
-            # code, tg1, us1, used = r
             tg1 = r.tg
             us1 = r.us
             used = r.used
@@ -49,7 +48,7 @@ async def rgs_code(_, msg):
             ex_new = Now
             if ex_new > ex:
                 ex_new = ex_new + timedelta(days=us1)
-                await emby.emby_change_policy(id=embyid, admin=False)
+                await emby.emby_change_policy(id=embyid, method=False)
                 if lv == 'c':
                     sql_update_emby(Emby.tg == msg.from_user.id, ex=ex_new, lv='b')
                 else:
@@ -58,9 +57,10 @@ async def rgs_code(_, msg):
                                        f'__已解封账户并延长到期时间至(以当前时间计)__\n{ex_new.strftime("%Y-%m-%d %H:%M:%S")}')
             elif ex_new < ex:
                 # ex_new = ex + timedelta(days=us)
-                sql_update_emby(Emby.tg == msg.from_user.id, us=us1)
+                x = data.us + us1
+                sql_update_emby(Emby.tg == msg.from_user.id, us=x)
                 await sendMessage(msg, f'🎊 少年郎，恭喜你，已收到 [{first.first_name}](tg://user?id={tg1}) 的{us1}天🎁\n'
-                                       f' __自动转换成 {us1} 积分__')
+                                       f' __自动转换成 {us1} 积分，当前：{x}__')
             sql_update_code(code=register_code, used=msg.from_user.id, usedtime=Now)
             await sendMessage(msg,
                               f'【注册码码使用】：[{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {register_code}',
@@ -80,13 +80,15 @@ async def rgs_code(_, msg):
             if used is not None:
                 return await sendMessage(msg,
                                          f'此 `{register_code}` \n邀请码已被使用,是 [这个家伙](tg://user?id={used}) 的形状了喔')
+
             first = await bot.get_chat(tg1)
-        sql_update_emby(Emby.tg == msg.from_user.id, us=us1)
-        sql_update_code(code=register_code, used=msg.from_user.id, usedtime=Now)
-        await sendPhoto(msg, photo=bot_photo,
-                        caption=f'🎊 少年郎，恭喜你，已经收到了 [{first.first_name}](tg://user?id={tg1}) 发送的邀请注册资格\n\n请选择你的选项~',
-                        buttons=register_code_ikb)
-        await sendMessage(msg,
-                          f'【兑换码使用】：[{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {register_code}',
-                          send=True)
-        LOGGER.info(f"【兑换码】：{msg.chat.id} 使用了 {register_code}")
+            x = data.us + us1
+            sql_update_emby(Emby.tg == msg.from_user.id, us=x)
+            sql_update_code(code=register_code, used=msg.from_user.id, usedtime=Now)
+            await sendPhoto(msg, photo=bot_photo,
+                            caption=f'🎊 少年郎，恭喜你，已经收到了 [{first.first_name}](tg://user?id={tg1}) 发送的邀请注册资格\n\n请选择你的选项~',
+                            buttons=register_code_ikb)
+            await sendMessage(msg,
+                              f'【兑换码使用】：[{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {register_code}',
+                              send=True)
+            LOGGER.info(f"【兑换码】：{msg.chat.id} 使用了 {register_code}")

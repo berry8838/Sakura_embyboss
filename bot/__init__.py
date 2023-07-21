@@ -105,7 +105,7 @@ admins = config["admins"]
 invite = config["invite"]
 sakura_b = config["money"]
 try:
-    ranks = config["ranks_helper"]
+    ranks = config["ranks"]
 except Exception as e:
     ranks = {
         "logo": "SAKURA",

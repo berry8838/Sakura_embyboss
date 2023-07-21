@@ -134,7 +134,7 @@ systemctl enable docker
 "chanel": ""      你频道username (不加@)，没有的话就随便填个 Google.com 吧
 "bot_photo":     "https://telegra.ph/file/1437f7f348c6c71f0b9ab.png",
                   bot发送消息时的图，必要                  
-"admins": []      拥有管理权限的id 1661037800 记得要填入owner里的tgid，其他添加id要用英文逗号隔开  
+"admins": []      拥有管理权限的id，其他添加id要用英文逗号隔开，已和owner分割了 
 "money": "花币"    未来新功能货币的名称
 "emby_api": ""    emby的api，在后台自己创建一个
 "emby_url": ""    建议ip，http://255.255.255.36:8096 最后不带斜杠，是发送给enby的网址，填域名请保证反代不会挂

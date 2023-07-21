@@ -1,4 +1,4 @@
-from bot import _open, save_config, owner, admins, bot_name
+from bot import _open, save_config, owner, admins, bot_name, ranks
 from bot.sql_helper.sql_code import sql_add_code
 from bot.sql_helper.sql_emby import sql_get_emby
 
@@ -101,17 +101,17 @@ async def cr_link_one(tg: int, times, count, days: int, method: str):
     if method == 'code':
         while i <= count:
             p = await pwd_create(10)
-            uid = f'OvO-{times}-{p}'
+            uid = f'{ranks["logo"]}-{times}-{p}'
             code_list.append(uid)
-            link = f'{i}. `' + uid + '`\n'
+            link = f'`{uid}`\n'
             links += link
             i += 1
     elif method == 'link':
         while i <= count:
             p = await pwd_create(10)
-            uid = f'OvO-{times}-{p}'
+            uid = f'{ranks["logo"]}-{times}-{p}'
             code_list.append(uid)
-            link = f'{i}. t.me/{bot_name}?start=' + uid + '\n'
+            link = f't.me/{bot_name}?start={uid}\n'
             links += link
             i += 1
     if sql_add_code(code_list, tg, days) is False:

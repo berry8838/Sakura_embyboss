@@ -17,6 +17,8 @@ services:
       - /root/Sakura_embyboss/db:/var/lib/mysql
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
     ports:
       - 8080:80  #映射端口可以自己改的
     environment:

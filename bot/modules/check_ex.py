@@ -77,7 +77,7 @@ async def check_expired():
             delta = c.ex + timedelta(days=5)
             if Now < delta:
                 await bot.send_message(c.tg,
-                                       f'#id{c.tg} #删除账户 [{c.name}](tg://user?id={c.tg})\n已到期，将为您封存账户5天，请及时续期')
+                                       f'#id{c.tg} #删除账户 [{c.name}](tg://user?id={c.tg})\n已到期，将为您封存账户至{delta.strftime("%Y-%m-%d %H:%M:%S")}，请及时续期')
             elif Now > delta:
                 if await emby.emby_del(c.embyid):
                     try:
@@ -116,6 +116,6 @@ scheduler.add_job(check_expired, 'cron', hour=0, minute=30)
 
 @bot.on_message(filters.command('check_ex', prefixes) & admins_on_filter)
 async def check_ex_admin(_, msg):
-    send = msg.reply("🍥 正在运行 【到期检测】。。。")
+    send = await msg.reply("🍥 正在运行 【到期检测】。。。")
     await check_expired()
     await send.edit("✅ 【到期检测结束】")

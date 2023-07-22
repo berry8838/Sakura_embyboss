@@ -30,7 +30,7 @@ async def server(_, call):
         keyboard, sever = await cr_page_server()
         # print(keyboard, sever)
         if len(tz_id) > 1:
-            sever = sever["1"]
+            sever = sever[tz_id[0]]
     else:
         keyboard, sever = await cr_page_server()
         sever = sever[j]

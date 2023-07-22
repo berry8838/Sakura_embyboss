@@ -104,7 +104,7 @@ async def cr_page_server():
     if len(tz_id) == 0:
         return ikb([[('🔙 - 用户', 'members'), ('❌ - 关闭', 'closeit')]]), ''
     elif len(tz_id) == 1:
-        return ikb([[('🔙 - 用户', 'members'), ('❌ - 关闭', 'closeit')]]), a["1"]
+        return ikb([[('🔙 - 用户', 'members'), ('❌ - 关闭', 'closeit')]]), a[tz_id[0]]
     else:
         lines = array_chunk(b, 3)
         lines.append([['🔙 - 用户', 'members'], ['❌ - 关闭', 'closeit']])

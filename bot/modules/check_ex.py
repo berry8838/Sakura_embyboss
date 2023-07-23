@@ -3,6 +3,7 @@
 """
 from datetime import timedelta
 
+import asyncio
 from pyrogram import filters
 from sqlalchemy import and_
 
@@ -118,4 +119,4 @@ scheduler.add_job(check_expired, 'cron', hour=0, minute=30)
 async def check_ex_admin(_, msg):
     send = await msg.reply("🍥 正在运行 【到期检测】。。。")
     await check_expired()
-    await send.edit("✅ 【到期检测结束】")
+    await asyncio.gather(msg.delete(), send.edit("✅ 【到期检测结束】"))

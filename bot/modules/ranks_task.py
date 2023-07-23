@@ -1,6 +1,7 @@
 """
 定时推送日榜和周榜
 """
+import asyncio
 import json
 import os
 from pyrogram import enums, filters
@@ -140,15 +141,9 @@ scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=23, minute=59)
 
 @bot.on_message(filters.command('days_ranks', prefixes) & admins_on_filter)
 async def day_r_ranks(_, msg):
-    await deleteMessage(msg)
-    reply = await msg.reply(msg, '加载中。。。')
-    await day_ranks()
-    await reply.delete()
+    await asyncio.gather(msg.delete(), day_ranks())
 
 
 @bot.on_message(filters.command('week_ranks', prefixes) & admins_on_filter)
 async def week_r_ranks(_, msg):
-    await deleteMessage(msg)
-    reply = await msg.reply(msg, '加载中。。。')
-    await week_ranks()
-    await reply.delete()
+    await asyncio.gather(msg.delete(), week_ranks())

@@ -28,7 +28,7 @@ async def config_p_re(_, call):
 async def log_out(_, call):
     await callAnswer(call, '🌐查询中...')
     # file位置以main.py为准
-    send = await sendFile(call, file=f"log/log_{Now:%Y%m%d}.txt", file_name=f'log_{Now:%Y-%m-%d}',
+    send = await sendFile(call, file=f"log/log_{Now:%Y%m%d}.txt", file_name=f'log_{Now:%Y-%m-%d}.txt',
                           caption="📂 **导出日志成功！**", buttons=close_it_ikb)
     if send is not True:
         return LOGGER.info(f"【admin】：{call.from_user.id} - 导出日志失败！")

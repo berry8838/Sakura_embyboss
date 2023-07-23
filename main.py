@@ -17,6 +17,7 @@ def main():
     # 细化
     from bot.modules.commands import admin, close_it, rmemby, exchange, kk, myinfo, pro_rev, renew, restart, renewall, \
         score, start, sync_group
+    from bot.modules.extra import create
 
 
 bot.run(main())

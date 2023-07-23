@@ -120,7 +120,7 @@ class Embyservice:
         if new_user.status_code == 200 or 204:
             try:
                 id = new_user.json()["Id"]
-                pwd = await pwd_create(8)
+                pwd = await pwd_create(8) if stats != 'o' else 5210
                 pwd_data = pwd_policy(id, new=pwd)
                 _pwd = r.post(f'{self.url}/emby/Users/{id}/Password',
                               headers=self.headers,
@@ -139,7 +139,7 @@ class Embyservice:
                         sql_update_emby(Emby.tg == tg, embyid=id, name=name, pwd=pwd, pwd2=pwd2, lv='b', cr=Now, ex=ex,
                                         us=0)
                     elif stats == 'o':
-                        sql_add_emby2(id, name, Now, ex)
+                        sql_add_emby2(embyid=id, name=name, cr=Now, ex=ex)
                     return pwd, ex.strftime("%Y-%m-%d %H:%M:%S")
         elif new_user.status_code == 400:
             return 400

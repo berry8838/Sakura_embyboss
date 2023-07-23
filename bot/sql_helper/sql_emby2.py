@@ -21,13 +21,13 @@ class Emby2(Base):
 Emby2.__table__.create(bind=engine, checkfirst=True)
 
 
-def sql_add_emby2(embyid, name, cr, ex, pwd=5210, pwd2=1234, lv='b', expired=0):
+def sql_add_emby2(embyid, name, cr, ex, pwd='5210', pwd2='1234', lv='b', expired=0):
     """
     添加一条emby记录，如果tg已存在则忽略
     """
     with Session() as session:
         try:
-            emby = Emby2(embyid=embyid, name=name, cr=cr, ex=ex)
+            emby = Emby2(embyid=embyid, name=name, pwd=pwd, pwd2=pwd2, lv=lv, cr=cr, ex=ex, expired=expired)
             session.add(emby)
             session.commit()
         except:

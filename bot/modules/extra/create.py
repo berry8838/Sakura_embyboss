@@ -17,8 +17,9 @@ async def login_account(_, msg):
     await deleteMessage(msg)
     try:
         name = msg.command[1]
-    except IndexError:
-        return await sendMessage(msg, "🔍 **无效的值。\n\n正确用法:** `/create [用户名]`", timer=60)
+        days = int(msg.command[2])
+    except (IndexError, ValueError, KeyError):
+        return await sendMessage(msg, "🔍 **无效的值。\n\n正确用法:** `/create [用户名] [使用天数]`", timer=60)
     else:
         send = await msg.reply(
             f'🆗 收到设置\n\n用户名：**{name}**\n\n__正在为您初始化账户，更新用户策略__......')
@@ -35,7 +36,7 @@ async def login_account(_, msg):
                 await send.edit("🚫 根据银河正义法，您创建的用户名不得与任何 tg_id 相同")
                 return
         await asyncio.sleep(1)
-        pwd1 = await emby.emby_create(5210, name, 1234, 30, 'o')
+        pwd1 = await emby.emby_create(5210, name, 1234, days, 'o')
         if pwd1 == 100:
             await send.edit(
                 '**❎ 已有此账户名，请重新输入注册**\n或 ❔ __emby服务器未知错误！！！请联系闺蜜（管理）__ **会话已结束！**')

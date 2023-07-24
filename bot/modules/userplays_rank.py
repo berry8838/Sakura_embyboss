@@ -43,8 +43,8 @@ async def user_plays_rank(days=7):
             LOGGER.error(f'【userplayrank】：-？失败 数据库执行批量操作{ls}')
 
 
-scheduler = Scheduler()
-scheduler.add_job(user_plays_rank, 'cron', day_of_week=0, hour=23, minute=30)
+# scheduler = Scheduler()
+# scheduler.add_job(user_plays_rank, 'cron', day_of_week=0, hour=23, minute=30)
 
 
 # scheduler.add_job(user_plays_rank, 'cron', hour=20, minute=0)

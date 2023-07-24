@@ -45,29 +45,12 @@ Now = datetime.datetime.now()
 import logging
 
 # 定义一个通用的日志输出格式
-LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
+LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 
-# 创建一个文件处理器，用来将日志信息输出到文件，并设置它的输出级别为 logging.INFO
-file_handler = logging.FileHandler(f"log/log_{Now:%Y%m%d}.txt", encoding='utf-8')
-file_handler.setLevel(logging.INFO)
-# 设置文件处理器的输出格式，使用通用的日志输出格式
-file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
-
-# 创建一个控制台处理器，用来将日志信息输出到控制台，并设置它的输出级别为 logging.INFO
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-# 设置控制台处理器的输出格式，使用通用的日志输出格式
-console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
-
-# 获取一个以当前模块名命名的日志器，并设置它的输出级别为 logging.INFO
-logger = logging.getLogger()  # __name__ 日志命名
-logger.setLevel(logging.INFO)
-# 将文件处理器和控制台处理器添加到日志器的 handlers 列表中
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-
-# 将logger对象赋值给一个全局变量LOGGER
-LOGGER = logger
+# 使用 basicConfig() 方法来配置根日志器的输出格式、处理器和级别
+logging.basicConfig(format=LOG_FORMAT, handlers=[logging.FileHandler(f"log/log_{Now:%Y%m%d}.txt", encoding='utf-8'),
+                                                 logging.StreamHandler()], level=logging.INFO)
+LOGGER = logging.getLogger(__name__)  # __name__
 
 # 设置 pyrogram 的日志输出级别为 logging.WARNING
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
@@ -83,7 +66,7 @@ def load_config():
 
 def save_config():
     with open("config.json", "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=4, ensure_ascii=False, separators=(",", ": "))
+        json.dump(config, f, indent=4, ensure_ascii=False)
 
 
 config = load_config()
@@ -135,7 +118,7 @@ from pyrogram import Client, enums
 from pyromod import listen
 
 bot = Client(bot_name, api_id=owner_api, api_hash=owner_hash, bot_token=bot_token,
-             workers=100,
+             workers=1000,
              max_concurrent_transmissions=1000, parse_mode=enums.ParseMode.MARKDOWN)
 
 LOGGER.info("Clinet 客户端准备")

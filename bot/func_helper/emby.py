@@ -231,13 +231,14 @@ class Embyservice:
         """
         response = r.get(f"{self.url}/emby/Sessions", headers=self.headers)
         sessions = response.json()
+        # print(sessions)
         count = 0
         for session in sessions:
             try:
                 if session["NowPlayingItem"] is not None:
                     count += 1
             except KeyError:
-                return 0
+                pass
         # print(count)
         return count
 

@@ -279,8 +279,8 @@ class Embyservice:
         sql = ''
         if method == 'sp':
             sql += "SELECT UserId, SUM(PlayDuration - PauseDuration) AS WatchTime FROM PlaybackActivity "
-            sql += f"WHERE DateCreated > '{start_time}' AND DateCreated < '{end_time}' GROUP BY UserId ORDER BY WatchTime DESC LIMIT 10"
-        if user_id is not None:
+            sql += f"WHERE DateCreated >= '{start_time}' AND DateCreated < '{end_time}' GROUP BY UserId ORDER BY WatchTime DESC LIMIT 10"
+        else:
             sql += "SELECT MAX(DateCreated) AS LastLogin,SUM(PlayDuration - PauseDuration) / 60 AS WatchTime FROM PlaybackActivity "
             sql += f"WHERE UserId = '{user_id}' AND DateCreated >= '{start_time}' AND DateCreated < '{end_time}' GROUP BY UserId"
         data = {"CustomQueryString": sql, "ReplaceUserId": True}  # user_name

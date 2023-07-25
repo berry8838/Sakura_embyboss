@@ -10,7 +10,7 @@ from bot.func_helper.msg_utils import deleteMessage, sendMessage
 from bot.sql_helper.sql_emby import sql_get_emby
 
 
-@bot.on_message(filters.command('admin', prefixes) & admins_on_filter)
+@bot.on_message(filters.command('embyadmin', prefixes) & admins_on_filter)
 async def reload_admins(_, msg):
     await deleteMessage(msg)
     e = sql_get_emby(tg=msg.from_user.id)

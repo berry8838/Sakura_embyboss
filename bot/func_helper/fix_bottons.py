@@ -18,7 +18,7 @@ def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
     :param uid:
     :return:
     """
-    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'], ['🏪 自助商店', 'store_all']]
+    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server']]  # ['🏪 自助商店', 'store_all']
     if user_buy["stat"] == "y":
         d.append(['💰 点击购买', 'buy_account'])
     lines = array_chunk(d, 2)
@@ -58,11 +58,13 @@ def members_ikb(emby=False) -> InlineKeyboardMarkup:
     :return:
     """
     if emby is True:
-        return ikb([[('💱 续期账户', 'renew_emby'), ('🗑️ 删除账号', 'delme')],
+        return ikb([[('💱 码子续期', 'exchange'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
                     [('♻️ 主界面', 'back_start')]])
     else:
-        return ikb([[('👑 创建账户', 'create'), ('⭕ 改/绑账户', 'changetg')], [('♻️ 主界面', 'back_start')]])
+        return ikb(
+            [[('👑 创建账户', 'create'), ('⭕ 改/绑账户', 'changetg')], [('🎟️ 使用注册码', 'exchange')],
+             [('♻️ 主界面', 'back_start')]])
 
 
 back_start_ikb = ikb([[('💫 回到首页', 'back_start')]])
@@ -71,6 +73,7 @@ re_create_ikb = ikb([[('🍥 重新输入', 'create'), ('💫 用户主页', 'me
 re_changetg_ikb = ikb([[('✨ 重新输入', 'changetg'), ('💫 用户主页', 'members')]])
 re_delme_ikb = ikb([[('♻️ 重试', 'delme')], [('🔙 返回', 'members')]])
 re_reset_ikb = ikb([[('♻️ 重试', 'reset')], [('🔙 返回', 'members')]])
+re_exchange_b_ikb = ikb([[('♻️ 重试', 'exchange')], [('🔙 返回', 'members')]])
 
 
 def del_me_ikb(embyid) -> InlineKeyboardMarkup:

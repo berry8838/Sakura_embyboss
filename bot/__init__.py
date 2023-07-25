@@ -5,10 +5,9 @@ from pyrogram.types import BotCommand
 '''定义不同等级的人使用不同命令'''
 user_p = [
     BotCommand("start", "[私聊] 开启用户面板"),
-    BotCommand("exchange", "[私聊] 使用注册码"),
     BotCommand("myinfo", "[用户] 查看状态")
 ]
-
+# 取消 BotCommand("exchange", "[私聊] 使用注册码")
 admin_p = user_p + [
     BotCommand("kk", "管理用户 [管理]"),
     BotCommand("score", "加/减积分 [管理]"),
@@ -21,7 +20,7 @@ admin_p = user_p + [
     BotCommand("days_ranks", "召唤days日榜，失效时用 [管理]"),
     BotCommand("week_ranks", "召唤week榜，失效时用 [管理]"),
     BotCommand("check_ex", "手动运行到期检测 [管理]"),
-    BotCommand("admin", "开启emby控制台权限 [管理]"),
+    BotCommand("embyadmin", "开启emby控制台权限 [管理]"),
     BotCommand("create", "私聊创建非tg的emby用户 [管理]"),
     BotCommand("uuinfo", "查看非tg的emby用户 [管理]"),
 ]

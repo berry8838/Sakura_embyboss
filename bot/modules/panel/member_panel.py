@@ -9,13 +9,15 @@ import asyncio
 
 from pyrogram.errors import BadRequest
 
-from bot import bot, LOGGER, _open, emby_line, emby_block, sakura_b
+from bot import bot, LOGGER, _open, emby_line, emby_block, sakura_b, ranks
 from pyrogram import filters
 from bot.func_helper.emby import emby
+from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.utils import members_info, tem_alluser
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
-    re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb
+    re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage
+from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_emby import sql_get_emby
 
 
@@ -74,7 +76,7 @@ async def create_user(_, call, us, stats):
 
 
 # 键盘中转
-@bot.on_callback_query(filters.regex('members'))
+@bot.on_callback_query(filters.regex('members') & user_in_group_on_filter)
 async def members(_, call):
     data = await members_info(tg=call.from_user.id)
     if data is None:
@@ -95,7 +97,7 @@ async def members(_, call):
 
 
 # 创建账户
-@bot.on_callback_query(filters.regex('create'))
+@bot.on_callback_query(filters.regex('create') & user_in_group_on_filter)
 async def create(_, call):
     data = await members_info(tg=call.from_user.id)
     if data is None:
@@ -123,8 +125,11 @@ async def create(_, call):
 
 
 # 换绑tg
-@bot.on_callback_query(filters.regex('changetg'))
+@bot.on_callback_query(filters.regex('changetg') & user_in_group_on_filter)
 async def change_tg(_, call):
+    data = await members_info(tg=call.from_user.id)
+    if data is None:
+        return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
     await callAnswer(call, '⚖️ 绑定TG')
     send = await editMessage(call,
                              '🔰 **【改绑功能介绍】**：\n\n- 两种: 换绑 | 绑定\n'
@@ -203,7 +208,7 @@ async def change_tg(_, call):
 
 
 # kill yourself
-@bot.on_callback_query(filters.regex('delme'))
+@bot.on_callback_query(filters.regex('delme') & user_in_group_on_filter)
 async def del_me(_, call):
     data = await members_info(tg=call.from_user.id)
     if data is None:
@@ -236,7 +241,7 @@ async def del_me(_, call):
                 await editMessage(call, '**💢 验证不通过，安全码错误。**', re_delme_ikb)
 
 
-@bot.on_callback_query(filters.regex('delemby'))
+@bot.on_callback_query(filters.regex('delemby') & user_in_group_on_filter)
 async def del_emby(_, call):
     send = await callAnswer(call, "🎯 get，正在删除ing。。。")
     if send is False:
@@ -257,7 +262,7 @@ async def del_emby(_, call):
 
 
 # 重置密码为空密码
-@bot.on_callback_query(filters.regex('reset'))
+@bot.on_callback_query(filters.regex('reset') & user_in_group_on_filter)
 async def reset(_, call):
     data = await members_info(tg=call.from_user.id)
     if data is None:
@@ -315,7 +320,7 @@ async def reset(_, call):
 
 
 # 显示/隐藏某些库
-@bot.on_callback_query(filters.regex('embyblock'))
+@bot.on_callback_query(filters.regex('embyblock') & user_in_group_on_filter)
 async def embyblock(_, call):
     data = await members_info(tg=call.from_user.id)
     if data is None:
@@ -337,7 +342,7 @@ async def embyblock(_, call):
 
 
 # 隐藏
-@bot.on_callback_query(filters.regex('emby_block'))
+@bot.on_callback_query(filters.regex('emby_block') & user_in_group_on_filter)
 async def user_emby_block(_, call):
     embyid = call.data.split('-')[1]
     send = await callAnswer(call, f'🎬 正在为您关闭显示ing')
@@ -355,7 +360,7 @@ async def user_emby_block(_, call):
 
 
 # 显示
-@bot.on_callback_query(filters.regex('emby_unblock'))
+@bot.on_callback_query(filters.regex('emby_unblock') & user_in_group_on_filter)
 async def user_emby_unblock(_, call):
     embyid = call.data.split('-')[1]
     send = await callAnswer(call, f'🎬 正在为您开启显示ing')
@@ -372,8 +377,21 @@ async def user_emby_unblock(_, call):
         await editMessage(call, f'🎬 Error!\n 显示失败，请上报管理检查设置', buttons=back_members_ikb)
 
 
-@bot.on_callback_query(filters.regex('exchange'))
+@bot.on_callback_query(filters.regex('exchange') & user_in_group_on_filter)
 async def call_exchange(_, call):
-    data = await members_info(tg=call.from_user.id)
-    if data is None:
-        return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
+    await callAnswer(call, '🔋 使用注册码')
+    send = await editMessage(call,
+                             '🔋 **【使用注册码】**：\n\n'
+                             f'- 请在120s内对我发送你的注册码，形如\n`{ranks["logo"]}-xx-xxxx`\n退出点 /cancel')
+    if send is False:
+        return
+
+    msg = await callListen(call, 120, buttons=re_exchange_b_ikb)
+    if msg is False:
+        return
+    elif msg.text == '/cancel':
+        await msg.delete()
+        await editMessage(call, '__您已经取消输入__ **会话已结束！**', re_exchange_b_ikb)
+    else:
+        await send.delete()
+        await rgs_code(_, msg)

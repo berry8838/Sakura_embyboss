@@ -59,4 +59,5 @@ async def shou_dong_uplayrank(_, msg):
         days = int(msg.command[1])
         await user_plays_rank(days=days)
     except (IndexError, ValueError):
-        await msg.reply(f"🔔 user榜每周23点半，若未成功执行，请再加参数 user_ranks+天数，否则勿动以免影响{sakura_b}的结算")
+        await msg.reply(
+            f"🔔 请手动加参数 user_ranks+天数，目前未加入定时任务管理，**手动运行user_ranks注意使用**，以免影响{sakura_b}的结算")

@@ -3,11 +3,8 @@
 """
 from datetime import timedelta
 
-from pyrogram import filters
-
-from bot import bot, prefixes, _open, Now, LOGGER, bot_photo
+from bot import bot, _open, Now, LOGGER, bot_photo
 from bot.func_helper.emby import emby
-from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.fix_bottons import register_code_ikb
 from bot.func_helper.msg_utils import sendMessage, sendPhoto
 from bot.sql_helper.sql_code import sql_get_code, sql_update_code
@@ -36,7 +33,7 @@ async def rgs_code(_, msg):
 
         r = sql_get_code(register_code)
         if r is None:
-            return await sendMessage(msg, "⛔ **你输入了一个错误**", timer=60)
+            return await sendMessage(msg, "⛔ **你输入了一个错误de注册码，请确认好重试。**", timer=60)
         else:
             tg1 = r.tg
             us1 = r.us
@@ -66,7 +63,7 @@ async def rgs_code(_, msg):
             # new_code = "-".join(register_code.split("-")[:2]) + "-" + "█" * 7 + register_code.split("-")[2][7:]
             new_code = register_code[:-7] + "█" * 7
             await sendMessage(msg,
-                              f'【注册码码使用】- [{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {new_code}\n实时到期：{ex_new}',
+                              f'【注册码使用】- [{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {new_code}\n实时到期：{ex_new}',
                               send=True)
             LOGGER.info(f"【注册码】：{msg.chat.id} 使用了 {register_code}")
 
@@ -74,7 +71,7 @@ async def rgs_code(_, msg):
         # sql_add_emby(msg.from_user.id)
         r = sql_get_code(register_code)
         if r is None:
-            return await sendMessage(msg, "⛔ **你输入了一个错误的注册码。**")
+            return await sendMessage(msg, "⛔ **你输入了一个错误de注册码，请确认好重试。**")
         else:
             # code, tg1, us1, used = r
             tg1 = r.tg

@@ -393,4 +393,5 @@ async def call_exchange(_, call):
         await msg.delete()
         await editMessage(call, '__您已经取消输入__ **会话已结束！**', re_exchange_b_ikb)
     else:
+        await editMessage(call, f'验证注册码 {msg.text} ing。。。')
         await rgs_code(_, msg)

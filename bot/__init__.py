@@ -1,39 +1,8 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
-from pyrogram.types import BotCommand
 
-'''定义不同等级的人使用不同命令'''
-user_p = [
-    BotCommand("start", "[私聊] 开启用户面板"),
-    BotCommand("myinfo", "[用户] 查看状态")
-]
-# 取消 BotCommand("exchange", "[私聊] 使用注册码")
-admin_p = user_p + [
-    BotCommand("kk", "管理用户 [管理]"),
-    BotCommand("score", "加/减积分 [管理]"),
-    BotCommand("renew", "调整到期时间 [管理]"),
-    BotCommand("rmemby", "删除用户[包括非tg] [管理]"),
-    BotCommand("prouser", "增加白名单 [管理]"),
-    BotCommand("revuser", "减少白名单 [管理]"),
-    BotCommand("syncgroupm", "消灭不在群的人 [管理]"),
-    BotCommand("user_ranks", "召唤user日榜，失效时用 [管理]"),
-    BotCommand("days_ranks", "召唤days日榜，失效时用 [管理]"),
-    BotCommand("week_ranks", "召唤week榜，失效时用 [管理]"),
-    BotCommand("check_ex", "手动运行到期检测 [管理]"),
-    BotCommand("embyadmin", "开启emby控制台权限 [管理]"),
-    BotCommand("create", "私聊创建非tg的emby用户 [管理]"),
-    BotCommand("uuinfo", "查看非tg的emby用户 [管理]"),
-]
 
-owner_p = admin_p + [
-    BotCommand("proadmin", "添加bot管理 [owner]"),
-    BotCommand("revadmin", "移除bot管理 [owner]"),
-    BotCommand("renewall", "一键派送天数给所有未封禁的用户 [owner]"),
-    BotCommand("restart", "重启bot [owner]"),
-    BotCommand("config", "开启bot高级控制面板 [owner]")
-]
-
-'''log的设置，输出到控制台和log文件'''
+# log的设置，输出到控制台和log文件
 import datetime
 
 # 转换为亚洲上海时区
@@ -112,12 +81,45 @@ tz_api = config["tz_api"]
 tz_id = config["tz_id"]
 
 LOGGER.info("配置文件加载完毕")
+from pyrogram.types import BotCommand
+
+'''定义不同等级的人使用不同命令'''
+user_p = [
+    BotCommand("start", "[私聊] 开启用户面板"),
+    BotCommand("myinfo", "[用户] 查看状态")
+]
+# 取消 BotCommand("exchange", "[私聊] 使用注册码")
+admin_p = user_p + [
+    BotCommand("kk", "管理用户 [管理]"),
+    BotCommand("score", "加/减积分 [管理]"),
+    BotCommand("coins", f"加/减{sakura_b} [管理]"),
+    BotCommand("renew", "调整到期时间 [管理]"),
+    BotCommand("rmemby", "删除用户[包括非tg] [管理]"),
+    BotCommand("prouser", "增加白名单 [管理]"),
+    BotCommand("revuser", "减少白名单 [管理]"),
+    BotCommand("syncgroupm", "消灭不在群的人 [管理]"),
+    BotCommand("user_ranks", "召唤user日榜，失效时用 [管理]"),
+    BotCommand("days_ranks", "召唤days日榜，失效时用 [管理]"),
+    BotCommand("week_ranks", "召唤week榜，失效时用 [管理]"),
+    BotCommand("check_ex", "手动运行到期检测 [管理]"),
+    BotCommand("embyadmin", "开启emby控制台权限 [管理]"),
+    BotCommand("create", "私聊创建非tg的emby用户 [管理]"),
+    BotCommand("uuinfo", "查看非tg的emby用户 [管理]"),
+]
+
+owner_p = admin_p + [
+    BotCommand("proadmin", "添加bot管理 [owner]"),
+    BotCommand("revadmin", "移除bot管理 [owner]"),
+    BotCommand("renewall", "一键派送天数给所有未封禁的用户 [owner]"),
+    BotCommand("restart", "重启bot [owner]"),
+    BotCommand("config", "开启bot高级控制面板 [owner]")
+]
 
 from pyrogram import Client, enums
 from pyromod import listen
 
 bot = Client(bot_name, api_id=owner_api, api_hash=owner_hash, bot_token=bot_token,
-             workers=1000,
+             workers=300,
              max_concurrent_transmissions=1000, parse_mode=enums.ParseMode.MARKDOWN)
 
 LOGGER.info("Clinet 客户端准备")

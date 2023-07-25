@@ -32,7 +32,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/sakura_embyboss:latest

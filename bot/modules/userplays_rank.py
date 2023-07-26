@@ -9,7 +9,7 @@ from bot.func_helper.msg_utils import deleteMessage
 
 
 async def user_plays_rank(days=7):
-    results = await emby.emby_cust_commit(days, method='sp')
+    results = await emby.emby_cust_commit(user_id=None, days=days, method='sp')
     if results is None:
         return await bot.send_photo(chat_id=group[0], photo=bot_photo,
                                     caption=f'🍥 获取过去{days}天UserPlays失败了嘤嘤嘤 ~ 手动重试 ')

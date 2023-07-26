@@ -272,7 +272,7 @@ class Embyservice:
                 return pwd2
         return False
 
-    async def emby_cust_commit(self, user_id=None, days=3, method=None):
+    async def emby_cust_commit(self, user_id=None, days=7, method=None):
         _url = f'{self.url}/emby/user_usage_stats/submit_custom_query'
         start_time = (Now - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
         end_time = Now.strftime("%Y-%m-%d %H:%M:%S")
@@ -280,7 +280,7 @@ class Embyservice:
         if method == 'sp':
             sql += "SELECT UserId, SUM(PlayDuration - PauseDuration) AS WatchTime FROM PlaybackActivity "
             sql += f"WHERE DateCreated >= '{start_time}' AND DateCreated < '{end_time}' GROUP BY UserId ORDER BY WatchTime DESC LIMIT 10"
-        else:
+        elif user_id != 'None':
             sql += "SELECT MAX(DateCreated) AS LastLogin,SUM(PlayDuration - PauseDuration) / 60 AS WatchTime FROM PlaybackActivity "
             sql += f"WHERE UserId = '{user_id}' AND DateCreated >= '{start_time}' AND DateCreated < '{end_time}' GROUP BY UserId"
         data = {"CustomQueryString": sql, "ReplaceUserId": True}  # user_name

@@ -202,7 +202,7 @@ async def cr_kk_ikb(uid, first):
             ban = "🌟 解除禁用" if lv == "已禁用" else '💢 禁用账户'
             keyboard.add(InlineButton(ban, f'user_ban-{uid}'), InlineButton('⚠️ 删除账户', f'closeemby-{uid}'))
             try:
-                rst = await emby.emby_cust_commit(user_id=embyid)
+                rst = await emby.emby_cust_commit(user_id=embyid, days=7)
                 last_time = rst[0][0]
                 toltime = rst[0][1]
                 text1 = f"**· 🔋 上次活动** | {last_time.split('.')[0]}\n" \

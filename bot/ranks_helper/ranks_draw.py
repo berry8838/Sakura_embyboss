@@ -80,12 +80,17 @@ class RanksDraw:
             temp_font = self.font
             # 名称超出长度缩小省略
             name = name[:7]
-            # 绘制封面
-            if prisuccess:
-                cover = Image.open(BytesIO(data))
-                cover = cover.resize(resize)
-                self.bg.paste(cover, xy)
-            else:
+            try:
+                # 绘制封面
+                if prisuccess:
+                    cover = Image.open(BytesIO(data))
+                    cover = cover.resize(resize)
+                    self.bg.paste(cover, xy)
+            except Exception as e:
+                prisuccess = False
+                logging.error(f'【ranks_draw】绘制封面图失败 {item_id} {name} {e}')
+                pass
+            if not prisuccess:
                 # 如果没有封面图，使用name来代替
                 if self.backdrop:
                     draw_text_psd_style(text, (123 + 302 * index, 140), name, temp_font, 126)
@@ -127,12 +132,17 @@ class RanksDraw:
             temp_font = self.font
             # 名称超出长度缩小省略
             name = name[:7]
-            # 绘制封面
-            if prisuccess:
-                cover = Image.open(BytesIO(data))
-                cover = cover.resize(resize)
-                self.bg.paste(cover, xy)
-            else:
+            try:
+                # 绘制封面
+                if prisuccess:
+                    cover = Image.open(BytesIO(data))
+                    cover = cover.resize(resize)
+                    self.bg.paste(cover, xy)
+            except Exception as e:
+                prisuccess = False
+                logging.error(f'【ranks_draw】绘制封面图失败 {item_id} {name} {e}')
+                pass
+            if not prisuccess:
                 # 如果没有封面图，使用name来代替
                 if self.backdrop:
                     draw_text_psd_style(text, (428 + 302 * index, 444), name, temp_font, 126)

@@ -292,6 +292,25 @@ class Embyservice:
         else:
             return None
 
+    async def users(self):
+        """
+        Asynchronously retrieves the list of users from the Emby server.
+
+        Returns:
+            - If the request is successful, returns a tuple with the first element as True and the second element as a dictionary containing the response JSON.
+            - If the request is unsuccessful, returns a tuple with the first element as False and the second element as a dictionary containing an 'error' key with an error message.
+
+        Raises:
+            - Any exception that occurs during the request.
+        """
+        try:
+            _url = f"{self.url}/emby/Users"
+            resp = r.get(_url, headers=self.headers)
+            if resp.status_code != 204 and resp.status_code != 200:
+                return False, {'error': "🤕Emby 服务器连接失败!"}
+            return True, resp.json()
+        except Exception as e:
+            return False, {'error': e}
     async def items(self, user_id, item_id):
         try:
             _url = f"{self.url}/emby/Users/{user_id}/Items/{item_id}"

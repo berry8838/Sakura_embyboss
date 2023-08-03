@@ -207,7 +207,7 @@ async def cr_kk_ikb(uid, first):
                 toltime = rst[0][1]
                 text1 = f"**· 🔋 上次活动** | {last_time.split('.')[0]}\n" \
                         f"**· 📅 过去七天** | {toltime} min"
-            except (IndexError, ValueError):
+            except (TypeError, IndexError, ValueError):
                 text1 = f"**· 📅 过去七天未有记录**"
         else:
             keyboard.add(InlineButton('✨ 赠送资格', f'gift-{uid}'))

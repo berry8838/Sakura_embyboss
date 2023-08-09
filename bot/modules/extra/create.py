@@ -14,7 +14,7 @@ from bot.sql_helper.sql_emby2 import sql_get_emby2
 
 @bot.on_message(filters.command('create', prefixes) & admins_on_filter & filters.private)
 async def login_account(_, msg):
-    await deleteMessage(msg)
+    # await deleteMessage(msg)
     try:
         name = msg.command[1]
         days = int(msg.command[2])
@@ -45,13 +45,13 @@ async def login_account(_, msg):
             await send.edit('**🚫 很抱歉，注册总数已达限制**\n【admin】——>【注册状态】中可调节')
         else:
             await send.edit(
-                f'**🎉 创建用户成功，更新用户策略完成！\n\n• 用户名称 | `{name}`\n'
+                f'**🎉 成功创建有效期{days}天 #{name}\n\n• 用户名称 | `{name}`\n'
                 f'• 用户密码 | `{pwd1[0]}`\n• 安全密码 | `{1234}`\n'
                 f'• 当前线路 | \n{emby_line}\n\n• 到期时间 | {pwd1[1]}**')
 
             await bot.send_message(owner,
-                                   f"®️ 您的管理员 {msg.from_user.first_name} - `{msg.from_user.id}` 已经创建了一个非tg绑定用户 {name}")
-            LOGGER.info(f"【创建tg外账户】：{msg.from_user.id} - 建立了账户 {name} ")
+                                   f"®️ 您的管理员 {msg.from_user.first_name} - `{msg.from_user.id}` 已经创建了一个非tg绑定用户 #{name} 有效期**{days}**天")
+            LOGGER.info(f"【创建tg外账户】：{msg.from_user.id} - 建立了账户 {name}，有效期{days}天 ")
 
 
 @bot.on_message(filters.command('uuinfo', prefixes) & admins_on_filter)

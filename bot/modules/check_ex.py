@@ -58,7 +58,7 @@ async def check_expired():
         if c.us >= 30:
             c_us = c.us - 30
             ex = (Now + timedelta(days=30))
-            if emby.emby_change_policy(id=c.embyid, method=False):
+            if await emby.emby_change_policy(id=c.embyid, method=False):
                 if sql_update_emby(Emby.tg == c.tg, lv='b', ex=ex, us=c_us):
                     try:
                         await bot.send_message(c.tg,
@@ -96,7 +96,8 @@ async def check_expired():
     if rseired is None:
         return LOGGER.info(f'【封禁检测】- emby2 无数据，跳过')
     for e in rseired:
-        if emby.emby_change_policy(e.embyid):
+        # print(e.name, e.embyid, e.ex)
+        if await emby.emby_change_policy(id=e.embyid, method=True):
             if sql_update_emby2(Emby2.embyid == e.embyid, expired=1):
                 try:
                     LOGGER.info(f"【封禁检测】- emby2 {e.embyid} 封印非TG账户{e.naem} Done！")

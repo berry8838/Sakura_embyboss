@@ -24,11 +24,11 @@ class BotCommands:
             await client.set_bot_commands(self.user_p, scope=BotCommandScopeAllPrivateChats())
             for admin_id in admins:
                 await client.set_bot_commands(self.admin_p, scope=BotCommandScopeChat(chat_id=admin_id))
+            await client.set_bot_commands(self.owner_p, scope=BotCommandScopeChat(chat_id=owner))
 
             # 群组
-            await client.delete_bot_commands(scope=BotCommandScopeAllGroupChats())
-            await client.set_bot_commands(self.user_p, scope=BotCommandScopeAllGroupChats())
             for i in group:
+                await client.delete_bot_commands(scope=BotCommandScopeChat(chat_id=i))
                 try:
                     for admin_id in admins:
                         await client.set_bot_commands(self.admin_p,
@@ -37,9 +37,7 @@ class BotCommands:
                                                   scope=BotCommandScopeChatMember(chat_id=i, user_id=owner))
                 except (BadRequest, NotAcceptable):
                     LOGGER.info(f"————错误，请检查bot是否在群 {i} 或相应权限————")
-                continue
-            await client.set_bot_commands(self.owner_p, scope=BotCommandScopeChat(chat_id=owner))
-
+            await client.set_bot_commands(self.user_p, scope=BotCommandScopeAllGroupChats())
             LOGGER.info("————初始化 命令显示 done————")
         except ConnectionError:
             pass

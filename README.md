@@ -1,23 +1,13 @@
-# Sakura_embyboss（体验版）
-
 ![Sakura](./image/sakura.png)
 
-# 最近更新说明
+# Sakura_embyboss（体验版）
 
--
-    1. 本次更新主要是优化代码，新功能还在路上
--
-    2. 如果你之前已经部署过了，请按照以下说明：
-
-    - 本项目更新管理数据库方法，请先备份当前的数据库
-    - 接着手动在旧`emby`表末尾加一个字段`ch`，默认为`NULL`，类型为`datetime`
-    - 其他内容：为了适配新功能，将原有的数据表`invite`改名`Rcode`，新Rcode表会由程序自动生成所以无需其他操作
-    - `config.json`文件中的字段名字有所更改，请下翻结合 配置文件填写、`config_example.json`进行更改
-    - 拉取代码更新即可
--
-    3. 如果之前没有部署过，请照下面步骤创建即可
+___
+![stars](https://img.shields.io/github/stars/berry8838/Sakura_embyboss) ![forks](https://img.shields.io/github/forks/berry8838/Sakura_embyboss) ![issue](https://img.shields.io/github/issues/berry8838/Sakura_embyboss) ![license](https://img.shields.io/github/license/berry8838/Sakura_embyboss) [![docker](https://img.shields.io/docker/v/jingwei520/sakura_embyboss/latest?logo=docker)](https://hub.docker.com/r/jingwei520/sakura_embyboss) ![plat](https://img.shields.io/badge/platform-amd64-pink)
 
 ## 项目说明
+
+___
 
 - 本项目是 **业余选手** 写就，结合一些我所认为优质的特点、元素，截至目前我自己都不知道有什么了
 - 没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑
@@ -28,13 +18,15 @@
 
 ## 功能一览
 
+___
+
 - [x] 用户面板
     - [x] 创建账户
     - [x] 绑定未登记账户、换绑TG
     - [x] 兑换注册码
     - [x] 重置密码
     - [x] 删除账户
-    - [x] 显示隐藏媒体库（默认不显示 `播放列表`和`合集`）
+    - [x] 显示隐藏媒体库（默认不显示 `播放列表`）
 - [x] **服务器**
     - [x] 查看服务器信息网速负载等 显示emby线路，密码，播放人数
     - [x] 支持多服务器查看
@@ -65,12 +57,16 @@
 
 ## 使用帮助
 
+___
+
 - [部分效果图和命令大全看这里](https://telegra.ph/embyboss-05-29)
 - 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符多添加三种  
   即命令使用 ：`/start = .start = #start = !start = 。start`
 - 请给bot打开 删除消息、置顶消息，踢出成员权限
 
 ## 配置说明
+
+___
 
 ### 1、拉取代码
 
@@ -80,8 +76,6 @@
 sudo apt install python3-pip
 git clone https://github.com/berry8838/Sakura_embyboss.git && cd Sakura_embyboss && chmod +x main.py
 ```
-
----------------------
 
 ### 2、安装数据库
 
@@ -114,9 +108,9 @@ systemctl enable docker
 - 在宝塔中，安装好mysql，phpmyadmin，进入`数据库` 新增加一个数据库，用户名密码设置，进行相应的替换，访问点击 `phpmyadmin`  
   ![宝塔](./image/bt.png)
 
-------------------
-
 ### 3、配置文件填写
+
+___
 
 - 打开文件`config_example.json`，参考下列说明填写自己的内容（bot，数据库，emby等等）
 - 填写完整以后改名成`config.json`
@@ -173,12 +167,11 @@ systemctl enable docker
 "tz_id": []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。
 ```
 
-- 额外的：如果你希望你的【服务器】可以显示多机器的话，探针就有用了，api生成在nezha的管理后台，id也是
-  ![tz](./image/fwq.png)
-
-------------
+- 额外的：如果你希望你的【服务器】可以显示多机器的话，探针就有用了，api生成在nezha的管理后台，id也是，[如图](./image/fwq.png)
 
 ### 4、启动bot (两种方式)
+
+___
 
 #### 一、docker
 

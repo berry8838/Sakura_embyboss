@@ -1,9 +1,13 @@
-![Sakura](./image/sakura.png)
-
-# Sakura_embyboss（体验版）
-
-___
-![stars](https://img.shields.io/github/stars/berry8838/Sakura_embyboss) ![forks](https://img.shields.io/github/forks/berry8838/Sakura_embyboss) ![issue](https://img.shields.io/github/issues/berry8838/Sakura_embyboss) ![license](https://img.shields.io/github/license/berry8838/Sakura_embyboss) [![docker](https://img.shields.io/docker/v/jingwei520/sakura_embyboss/latest?logo=docker)](https://hub.docker.com/r/jingwei520/sakura_embyboss) ![plat](https://img.shields.io/badge/platform-amd64-pink)
+# sakura_embyboss体验版
+![bot](/image/bot_logo.png)
+<p align="center">
+<a href="https://github.com/berry8838/Sakura_embyboss/stargazers"><img src=" https://img.shields.io/github/stars/berry8838/Sakura_embyboss" alt="stars"></a> 
+<a href="https://github.com/berry8838/Sakura_embyboss/forks"><img src="https://img.shields.io/github/forks/berry8838/Sakura_embyboss" alt="forks"></a> 
+<a href="https://github.com/berry8838/Sakura_embyboss/issues"><img src="https://img.shields.io/github/issues/berry8838/Sakura_embyboss" alt="issue"></a>  
+<a href="https://github.com/berry8838/Sakura_embyboss/blob/master/LICENSE"><img src="https://img.shields.io/github/license/berry8838/Sakura_embyboss" alt="license"></a> 
+<a href="https://hub.docker.com/r/jingwei520/sakura_embyboss" ><img src="https://img.shields.io/docker/v/jingwei520/sakura_embyboss/latest?logo=docker" alt="docker"></a>
+<a href="" ><img src="https://img.shields.io/badge/platform-amd64-pink" alt="plat"></a>
+</p>
 
 ## 项目说明
 

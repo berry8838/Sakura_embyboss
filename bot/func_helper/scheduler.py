@@ -22,6 +22,14 @@ class Scheduler:
         except Exception as e:
             logging.error(f"Failed to add a job: {e}")
 
+    def remove_job(self, job_id=None, jobstore=None):
+        # 调用调度器的remove_job方法，移除一个定时任务
+        try:
+            self.SCHEDULER.remove_job(job_id, jobstore)
+            logging.info(f"Removed a job: {job_id} from {jobstore}.")
+        except Exception as e:
+            logging.error(f"Failed to remove a job: {e}")
+
     def shutdown(self):
         # 调用调度器的shutdown方法，关闭调度器
         try:

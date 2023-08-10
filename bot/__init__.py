@@ -64,6 +64,13 @@ except Exception as e:
     }
     print('没有读取到播放榜单配置，使用默认值', ranks)
 prefixes = ['/', '!', '.', '#', '。']
+try:
+    schedall = config["schedall"]
+except:
+    schedall = {"dayrank": True, "weekrank": True, "dayplayrank": False, "weekplayrank": False, "check_ex": True}
+    config["schedall"] = schedall
+    save_config()
+
 # emby设置
 emby_api = config["emby_api"]
 emby_param = (('api_key', emby_api),)
@@ -97,6 +104,7 @@ admin_p = user_p + [
     BotCommand("rmemby", "删除用户[包括非tg] [管理]"),
     BotCommand("prouser", "增加白名单 [管理]"),
     BotCommand("revuser", "减少白名单 [管理]"),
+    BotCommand("schedall", "定时任务面板 [管理]"),
     BotCommand("syncgroupm", "消灭不在群的人 [管理]"),
     BotCommand("syncunbound", "消灭未绑定bot的emby账户 [管理]"),
     BotCommand("user_ranks", "召唤user日榜，失效时用 [管理]"),

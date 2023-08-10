@@ -2,7 +2,7 @@ from cacheout import Cache
 from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
-from bot import chanel, main_group, bot_name, tz_id, tz_ad, tz_api, _open, user_buy, Now, sakura_b
+from bot import chanel, main_group, bot_name, tz_id, tz_ad, tz_api, _open, user_buy, Now, sakura_b, schedall
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import judge_admins, members_info
@@ -221,3 +221,23 @@ async def cr_kk_ikb(uid, first):
         text += text1
     keyboard.row(InlineButton('🚫 踢出并封禁', f'fuckoff-{uid}'), InlineButton('❌ 删除消息', f'closeit'))
     return text, keyboard
+
+
+""" sched_panel ↓"""
+
+
+def sched_buttons():
+    dayrank = '✅' if schedall["dayrank"] is True else '❎'
+    weekrank = '✅' if schedall["weekrank"] is True else '❎'
+    dayplayrank = '✅' if schedall["dayplayrank"] is True else '❎'
+    weekplayrank = '✅' if schedall["weekplayrank"] is True else '❎'
+    check_ex = '✅' if schedall["check_ex"] is True else '❎'
+    keyboard = InlineKeyboard(row_width=2)
+    keyboard.add(InlineButton(f'{dayrank} 日榜推送', f'sched-dayrank'),
+                 InlineButton(f'{weekrank} 周榜推送', f'sched-weekrank'),
+                 InlineButton(f'{dayplayrank} 播放日榜', f'sched-dayplayrank'),
+                 InlineButton(f'{weekplayrank} 播放周榜', f'sched-weekplayrank'),
+                 InlineButton(f'{check_ex} 到期检测', f'sched-check_ex'),
+                 InlineButton(f'❌ 关闭消息', 'closeit')
+                 )
+    return keyboard

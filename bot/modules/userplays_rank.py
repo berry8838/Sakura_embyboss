@@ -4,7 +4,6 @@ from bot import bot, bot_photo, Now, group, sakura_b, LOGGER, prefixes, ranks
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_embys
-from bot.func_helper.scheduler import Scheduler
 from bot.func_helper.msg_utils import deleteMessage
 
 
@@ -43,14 +42,13 @@ async def user_plays_rank(days=7):
             LOGGER.error(f'【userplayrank】：-？失败 数据库执行批量操作{ls}')
 
 
-# scheduler = Scheduler()
-# scheduler.add_job(user_plays_rank, 'cron', day_of_week=0, hour=23, minute=30)
+async def user_day_plays():
+    await user_plays_rank(1)
 
 
-# scheduler.add_job(user_plays_rank, 'cron', hour=20, minute=0)
+async def user_week_plays():
+    await user_plays_rank(7)
 
-
-# scheduler.add_job(user_plays_rank, 'cron', minute='*/1')
 
 @bot.on_message(filters.command('user_ranks', prefixes) & admins_on_filter)
 async def shou_dong_uplayrank(_, msg):
@@ -60,4 +58,4 @@ async def shou_dong_uplayrank(_, msg):
         await user_plays_rank(days=days)
     except (IndexError, ValueError):
         await msg.reply(
-            f"🔔 请手动加参数 user_ranks+天数，目前未加入定时任务管理，**手动运行user_ranks注意使用**，以免影响{sakura_b}的结算")
+            f"🔔 请手动加参数 user_ranks+天数，已加入定时任务管理面板，**手动运行user_ranks注意使用**，以免影响{sakura_b}的结算")

@@ -131,12 +131,12 @@ async def week_ranks():
     LOGGER.info("【ranks_task】定时任务 推送周榜完成")
 
 
-scheduler = Scheduler()
-# 添加一个cron任务，每天18点30分执行日榜推送
-scheduler.add_job(day_ranks, 'cron', hour=18, minute=30)
-# scheduler.add_job(day_ranks, 'cron', minute='*/1')
-# 添加一个cron任务，每周日23点59分执行周榜推送
-scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=23, minute=59)
+# scheduler = Scheduler()
+# # 添加一个cron任务，每天18点30分执行日榜推送
+# scheduler.add_job(day_ranks, 'cron', hour=18, minute=30)
+# # scheduler.add_job(day_ranks, 'cron', minute='*/1')
+# # 添加一个cron任务，每周日23点59分执行周榜推送
+# scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=23, minute=59)
 
 
 @bot.on_message(filters.command('days_ranks', prefixes) & admins_on_filter)

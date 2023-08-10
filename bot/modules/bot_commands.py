@@ -26,6 +26,7 @@ class BotCommands:
                 await client.set_bot_commands(self.admin_p, scope=BotCommandScopeChat(chat_id=admin_id))
 
             # 群组
+            await client.delete_bot_commands(scope=BotCommandScopeAllGroupChats())
             await client.set_bot_commands(self.user_p, scope=BotCommandScopeAllGroupChats())
             for i in group:
                 try:

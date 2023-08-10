@@ -10,7 +10,6 @@ from sqlalchemy import and_
 from bot import bot, owner, group, Now, LOGGER, prefixes
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
-from bot.func_helper.scheduler import Scheduler
 from bot.sql_helper.sql_emby import Emby, get_all_emby, sql_update_emby
 from bot.sql_helper.sql_emby2 import get_all_emby2, Emby2, sql_update_emby2
 
@@ -108,10 +107,6 @@ async def check_expired():
                 await bot.send_message(owner, f'✨**自动任务：**\n  到期封印非TG账户：`{e.name}` 数据库更改失败')
         else:
             await bot.send_message(owner, f'✨**自动任务：**\n  到期封印非TG账户：`{e.name}` embyapi操作失败，请手动')
-
-
-scheduler = Scheduler()
-scheduler.add_job(check_expired, 'cron', hour=0, minute=30)
 
 
 # scheduler.add_job(check_expired, 'cron', minute='*/1')

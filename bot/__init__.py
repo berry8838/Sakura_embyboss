@@ -104,8 +104,8 @@ admin_p = user_p + [
     BotCommand("week_ranks", "召唤week榜，失效时用 [管理]"),
     BotCommand("check_ex", "手动运行到期检测 [管理]"),
     BotCommand("embyadmin", "开启emby控制台权限 [管理]"),
-    BotCommand("create", "私聊创建非tg的emby用户 [管理]"),
-    BotCommand("uuinfo", "查看非tg的emby2用户 [管理]"),
+    BotCommand("ucr", "私聊创建非tg的emby用户 [管理]"),
+    BotCommand("uinfo", "查看非tg的emby2用户 [管理]"),
     BotCommand("urm", "删除非tg的emby2用户 [管理]"),
 ]
 

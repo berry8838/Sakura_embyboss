@@ -248,7 +248,7 @@ async def del_emby(_, call):
         return
 
     embyid = call.data.split('-')[1]
-    if await emby.emby_del(embyid) is True:
+    if await emby.emby_del(embyid):
         send1 = await editMessage(call, '🗑️ 好了，已经为您删除...\n愿来日各自安好，山高水长，我们有缘再见！',
                                   buttons=back_members_ikb)
         if send1 is False:

@@ -152,7 +152,7 @@ class Embyservice:
         """
         res = r.delete(f'{self.url}/emby/Users/{id}', headers=self.headers)
         if res.status_code == 200 or 204:
-            if stats == 'None':
+            if stats is None:
                 if sql_update_emby(Emby.embyid == id, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
                                    ex=None):
                     return True

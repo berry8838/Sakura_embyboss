@@ -11,14 +11,14 @@ from bot.func_helper.msg_utils import sendMessage
 from bot.sql_helper.sql_emby2 import sql_get_emby2
 
 
-@bot.on_message(filters.command('create', prefixes) & admins_on_filter & filters.private)
+@bot.on_message(filters.command('ucr', prefixes) & admins_on_filter & filters.private)
 async def login_account(_, msg):
     # await deleteMessage(msg)
     try:
         name = msg.command[1]
         days = int(msg.command[2])
     except (IndexError, ValueError, KeyError):
-        return await sendMessage(msg, "🔍 **无效的值。\n\n正确用法:** `/create [用户名] [使用天数]`", timer=60)
+        return await sendMessage(msg, "🔍 **无效的值。\n\n正确用法:** `/ucr [用户名] [使用天数]`", timer=60)
     else:
         send = await msg.reply(
             f'🆗 收到设置\n\n用户名：**{name}**\n\n__正在为您初始化账户，更新用户策略__......')
@@ -53,12 +53,12 @@ async def login_account(_, msg):
             LOGGER.info(f"【创建tg外账户】：{msg.from_user.id} - 建立了账户 {name}，有效期{days}天 ")
 
 
-@bot.on_message(filters.command('uuinfo', prefixes) & admins_on_filter)
+@bot.on_message(filters.command('uinfo', prefixes) & admins_on_filter)
 async def uun_info(_, msg):
     try:
         n = msg.command[1]
     except IndexError:
-        return await asyncio.gather(msg.delete(), sendMessage(msg, "⭕ 用法：/uuinfo + emby名称，仅限非tg用户"))
+        return await asyncio.gather(msg.delete(), sendMessage(msg, "⭕ 用法：/uinfo + emby名称，仅限非tg用户"))
 
     else:
         text = ''

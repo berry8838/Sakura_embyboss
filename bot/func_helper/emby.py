@@ -9,7 +9,7 @@ from cacheout import Cache
 import requests as r
 from bot import emby_url, emby_api, Now, _open, emby_block
 from bot.sql_helper.sql_emby import sql_update_emby, sql_delete_emby, sql_change_emby, Emby
-from bot.sql_helper.sql_emby2 import sql_add_emby2
+from bot.sql_helper.sql_emby2 import sql_add_emby2, sql_delete_emby2
 from bot.func_helper.utils import pwd_create
 
 cache = Cache()
@@ -144,7 +144,7 @@ class Embyservice:
         elif new_user.status_code == 400:
             return 400
 
-    async def emby_del(self, id):
+    async def emby_del(self, id, stats=None):
         """
         删除账户
         :param id: emby_id
@@ -152,11 +152,17 @@ class Embyservice:
         """
         res = r.delete(f'{self.url}/emby/Users/{id}', headers=self.headers)
         if res.status_code == 200 or 204:
-            if sql_update_emby(Emby.embyid == id, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
-                               ex=None) is True:
-                return True
+            if stats == 'None':
+                if sql_update_emby(Emby.embyid == id, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
+                                   ex=None):
+                    return True
+                else:
+                    return False
             else:
-                return False
+                if sql_delete_emby2(embyid=id):
+                    return True
+                else:
+                    return False
         else:
             return False
 
@@ -311,6 +317,7 @@ class Embyservice:
             return True, resp.json()
         except Exception as e:
             return False, {'error': e}
+
     async def items(self, user_id, item_id):
         try:
             _url = f"{self.url}/emby/Users/{user_id}/Items/{item_id}"

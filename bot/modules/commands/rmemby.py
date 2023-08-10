@@ -10,7 +10,7 @@ from bot.sql_helper.sql_emby import sql_get_emby
 
 # 删除账号命令
 @bot.on_message(filters.command('rmemby', prefixes) & admins_on_filter)
-async def renew_user(_, msg):
+async def rmemby_user(_, msg):
     await deleteMessage(msg)
     reply = await msg.reply("🍉 正在处理ing....")
     if msg.reply_to_message is None:

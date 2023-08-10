@@ -78,19 +78,27 @@ def sql_update_emby2(condition, **kwargs):
             return False
 
 
-def sql_delete_emby2(embyid, name=None):
+def sql_delete_emby2(embyid):
     """
     根据tg删除一条emby记录
     """
     with Session() as session:
         try:
-            emby = session.query(Emby2).filter_by(
-                or_(Emby2.embyid == embyid, Emby2.name == name)).with_for_update().first()
+            emby = session.query(Emby2).filter_by(embyid=embyid).first()
             if emby:
                 session.delete(emby)
-                session.commit()
-                return True
+                try:
+                    session.commit()
+                    return True
+                except Exception as e:
+                    # 记录错误信息
+                    print(e)
+                    # 回滚事务
+                    session.rollback()
+                    return False
             else:
                 return None
-        except:
+        except Exception as e:
+            # 记录错误信息
+            print(e)
             return False

@@ -16,6 +16,6 @@ from bot.modules.panel import admin_panel, config_panel, member_panel, server_pa
 # 细化
 from bot.modules.commands import admin, close_it, rmemby, kk, myinfo, pro_rev, renew, restart, renewall, \
     score, start, sync_group, sync_unbound, coins
-from bot.modules.extra import create
+from bot.modules.extra import create, urm
 
 bot.run()

@@ -4,11 +4,10 @@ from datetime import datetime
 from pyrogram import filters
 from pyrogram.errors import BadRequest
 
-from bot import bot, prefixes, admins, LOGGER, emby_line, owner, bot_photo
+from bot import bot, prefixes, LOGGER, emby_line, owner, bot_photo
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
-from bot.func_helper.msg_utils import deleteMessage, sendMessage
-from bot.func_helper.utils import members_info
+from bot.func_helper.msg_utils import sendMessage
 from bot.sql_helper.sql_emby2 import sql_get_emby2
 
 

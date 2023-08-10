@@ -4,9 +4,10 @@ from pyrogram import filters
 
 from bot import bot, prefixes, bot_photo, LOGGER, Now
 from bot.func_helper.emby import emby
-from bot.func_helper.filters import admins_on_filter, judge_uid_ingroup
-from bot.sql_helper.sql_emby import get_all_emby, sql_get_emby_by_embyid, Emby
+from bot.func_helper.filters import admins_on_filter
+from bot.sql_helper.sql_emby import sql_get_emby
 from bot.func_helper.msg_utils import deleteMessage
+from bot.sql_helper.sql_emby2 import sql_get_emby2
 
 
 @bot.on_message(filters.command('syncunbound', prefixes) & admins_on_filter)
@@ -15,7 +16,7 @@ async def sync_emby_unbound(_, msg):
     send = await bot.send_photo(msg.chat.id, photo=bot_photo,
                                 caption="⚡#同步任务\n  **正在开启中...消灭未绑定bot的emby账户**")
     LOGGER.info(
-        f"【同步任务开启】 - {msg.from_user.first_name} - {msg.from_user.id}")
+        f"【同步任务开启 - 消灭未绑定bot的emby账户】 - {msg.from_user.first_name} - {msg.from_user.id}")
     b = 0
     text = ''
     start = time.perf_counter()
@@ -30,17 +31,19 @@ async def sync_emby_unbound(_, msg):
                 if v['Policy'] and not bool(v['Policy']['IsAdministrator']):
                     embyid = v['Id']
                     # 查询无异常，并且无sql记录
-                    success, e = sql_get_emby_by_embyid(embyid)
-                    if success and e is None:
-                        await emby.emby_del(embyid)
-                        text += f"🎯#未绑定bot的emby账户封禁 {b} #name {v['Name']}\n已将 账户 {v['Name']} 完成删除\n"
+                    e = sql_get_emby(embyid)
+                    if e is None:
+                        e1 = sql_get_emby2(name=embyid)
+                        if e1 is None:
+                            await emby.emby_del(embyid)
+                            text += f"🎯#删除未绑定botemby账户 {b} #{v['Name']}\n已将 账户 {v['Name']} 完成删除\n"
             except:
                 continue
         # 防止触发 MESSAGE_TOO_LONG 异常
         n = 1000
-        chunks = [text[i:i+n] for i in range(0, len(text), n)]
+        chunks = [text[i:i + n] for i in range(0, len(text), n)]
         for c in chunks:
-            await send.reply(c + f'#{Now}')
+            await send.reply(c + f'\n**{Now.strftime("%Y-%m-%d %H:%M:%S")}**')
     end = time.perf_counter()
     times = end - start
     if b != 0:

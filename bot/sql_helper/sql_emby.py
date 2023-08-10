@@ -95,24 +95,26 @@ def sql_get_emby(tg):
             return emby
         except:
             return None
-def sql_get_emby_by_embyid(embyid):
-    """
-    Retrieve an Emby object from the database based on the provided Emby ID.
 
-    Parameters:
-        embyid : The Emby ID used to identify the Emby object.
 
-    Returns:
-        tuple: A tuple containing a boolean value indicating whether the retrieval was successful 
-               and the retrieved Emby object. If the retrieval was unsuccessful, the boolean value
-               will be False and the Emby object will be None.
-    """
-    with Session() as session:
-        try:
-            emby = session.query(Emby).filter((Emby.embyid == embyid)).first()
-            return True, emby
-        except Exception as e:
-            return False, None
+# def sql_get_emby_by_embyid(embyid):
+#     """
+#     Retrieve an Emby object from the database based on the provided Emby ID.
+#
+#     Parameters:
+#         embyid : The Emby ID used to identify the Emby object.
+#
+#     Returns:
+#         tuple: A tuple containing a boolean value indicating whether the retrieval was successful
+#                and the retrieved Emby object. If the retrieval was unsuccessful, the boolean value
+#                will be False and the Emby object will be None.
+#     """
+#     with Session() as session:
+#         try:
+#             emby = session.query(Emby).filter((Emby.embyid == embyid)).first()
+#             return True, emby
+#         except Exception as e:
+#             return False, None
 
 
 def get_all_emby(condition):

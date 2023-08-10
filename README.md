@@ -1,7 +1,8 @@
 # sakura_embyboss体验版
+
 ![bot](/image/bot_logo.png)
 <p align="center">
-<a href="https://github.com/berry8838/Sakura_embyboss/stargazers"><img src=" https://img.shields.io/github/stars/berry8838/Sakura_embyboss" alt="stars"></a> 
+<a href="https://github.com/berry8838/Sakura_embyboss/stargazers"><img src="https://img.shields.io/github/stars/berry8838/Sakura_embyboss" alt="stars"></a> 
 <a href="https://github.com/berry8838/Sakura_embyboss/forks"><img src="https://img.shields.io/github/forks/berry8838/Sakura_embyboss" alt="forks"></a> 
 <a href="https://github.com/berry8838/Sakura_embyboss/issues"><img src="https://img.shields.io/github/issues/berry8838/Sakura_embyboss" alt="issue"></a>  
 <a href="https://github.com/berry8838/Sakura_embyboss/blob/master/LICENSE"><img src="https://img.shields.io/github/license/berry8838/Sakura_embyboss" alt="license"></a> 

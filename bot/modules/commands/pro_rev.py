@@ -20,7 +20,7 @@ async def pro_admin(_, msg):
             first = await bot.get_chat(uid)
         except (IndexError, KeyError, BadRequest):
             await deleteMessage(msg)
-            return await sendMessage(msg, '**请先给我一个正确的id！**\n输入格式为：/proadmin [tgid]或回复使用', timer=60)
+            return await sendMessage(msg, '**请先给我一个正确的id！**\n输入格式为：/proadmin [tgid]或**命令回复想要授权的人**', timer=60)
     else:
         uid = msg.reply_to_message.from_user.id
         first = await bot.get_chat(uid)
@@ -31,7 +31,7 @@ async def pro_admin(_, msg):
     await bot_commands.pro_commands(_, uid)
     LOGGER.info(f"【admin】：{msg.from_user.id} 新更新 管理 {first.first_name}-{uid}")
     await sendMessage(msg,
-                      f'👮🏻 新更新管理员 #{first.first_name} | `{uid}`\n**当前admins**\n{admins}', timer=60)
+                      f'👮🏻 新更新管理员 #[{first.first_name}](tg://user?id={uid}) | `{uid}`\n**当前admins**\n{admins}', timer=60)
     # await bot.set_bot_commands(admin_p, scope=BotCommandScopeChat(chat_id=uid))
 
 
@@ -44,13 +44,13 @@ async def pro_user(_, msg):
             first = await bot.get_chat(uid)
         except (IndexError, KeyError, BadRequest):
             await deleteMessage(msg)
-            return await sendMessage(msg, '**请先给我一个正确的id！**\n输入格式为：/prouser [tgid]或回复某人', timer=60)
+            return await sendMessage(msg, '**请先给我一个正确的id！**\n输入格式为：/prouser [tgid]或**命令回复想要授权的人**', timer=60)
     else:
         uid = msg.reply_to_message.from_user.id
         first = await bot.get_chat(uid)
     if sql_update_emby(Emby.tg == uid, lv='a'):
         await sendMessage(msg,
-                          f"🎉 恭喜 [{first.first_name}](tg://{uid}) 获得 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 签出的白名单.")
+                          f"🎉 恭喜 [{first.first_name}](tg://user?id={uid}) 获得 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 签出的白名单.")
     else:
         return await sendMessage(msg, '⚠️ 数据库执行错误')
     await deleteMessage(msg)
@@ -66,7 +66,7 @@ async def del_admin(_, msg):
             first = await bot.get_chat(uid)
         except (IndexError, KeyError, BadRequest):
             await deleteMessage(msg)
-            return await sendMessage(msg, '**请先给我一个正确的id！**\n输入格式为：/revadmin [tgid]或回复某人', timer=60)
+            return await sendMessage(msg, '**请先给我一个正确的id！**\n输入格式为：/revadmin [tgid]或**命令回复想要取消授权的人**', timer=60)
 
     else:
         uid = msg.reply_to_message.from_user.id
@@ -77,7 +77,7 @@ async def del_admin(_, msg):
     await deleteMessage(msg)
     LOGGER.info(f"【admin】：{msg.from_user.id} 新减少 管理 {first.first_name}-{uid}")
     await bot_commands.rev_commands(_, uid)
-    await sendMessage(msg, f'👮🏻 已减少管理员 #{first.first_name} | `{uid}`\n**当前admins**\n{admins}')
+    await sendMessage(msg, f'👮🏻 已减少管理员 #[{first.first_name}](tg://user?id={uid}) | `{uid}`\n**当前admins**\n{admins}')
 
 
 # 减少白名单
@@ -89,14 +89,14 @@ async def rev_user(_, msg):
             first = await bot.get_chat(uid)
         except (IndexError, KeyError, BadRequest):
             await deleteMessage(msg)
-            return await msg.reply('**请先给我一个正确的id！**\n输入格式为：/revuser [tgid]或回复某人')
+            return await msg.reply('**请先给我一个正确的id！**\n输入格式为：/revuser [tgid]或**命令回复想要取消授权的人**')
 
     else:
         uid = msg.reply_to_message.from_user.id
         first = await bot.get_chat(uid)
     if sql_update_emby(Emby.tg == uid, lv='b'):
         await sendMessage(msg,
-                          f"🤖 很遗憾 [{first.first_name}](tg://{uid}) 被 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 移出白名单.")
+                          f"🤖 很遗憾 [{first.first_name}](tg://user?id={uid}) 被 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 移出白名单.")
     else:
         return await sendMessage(msg, '⚠️ 数据库执行错误')
     await deleteMessage(msg)

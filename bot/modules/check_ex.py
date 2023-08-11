@@ -76,8 +76,9 @@ async def check_expired():
         else:
             delta = c.ex + timedelta(days=5)
             if Now < delta:
-                await bot.send_message(c.tg,
-                                       f'#id{c.tg} #删除账户 [{c.name}](tg://user?id={c.tg})\n已到期，将为您封存账户至{delta.strftime("%Y-%m-%d %H:%M:%S")}，请及时续期')
+                continue
+                # await bot.send_message(c.tg,
+                #                        f'#id{c.tg} #删除账户 [{c.name}](tg://user?id={c.tg})\n已到期，将为您封存账户至{delta.strftime("%Y-%m-%d %H:%M:%S")}，请及时续期')
             elif Now > delta:
                 if await emby.emby_del(c.embyid):
                     try:

@@ -18,7 +18,8 @@ def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
     :param uid:
     :return:
     """
-    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server']]  # ['🏪 自助商店', 'store_all']
+    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'],
+         [f'🎯 签到(开发中)', 'checkin']]  # ['🏪 商店', 'store_all']
     if user_buy["stat"] == "y":
         d.append(['💰 点击购买', 'buy_account'])
     lines = array_chunk(d, 2)

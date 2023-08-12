@@ -3,7 +3,7 @@
 """
 from datetime import timedelta
 
-from bot import bot, _open, Now, LOGGER, bot_photo
+from bot import bot, _open, Now, LOGGER, bot_photo, user_buy
 from bot.func_helper.emby import emby
 from bot.func_helper.fix_bottons import register_code_ikb
 from bot.func_helper.msg_utils import sendMessage, sendPhoto
@@ -62,10 +62,11 @@ async def rgs_code(_, msg):
             sql_update_code(code=register_code, used=msg.from_user.id, usedtime=Now)
             # new_code = "-".join(register_code.split("-")[:2]) + "-" + "█" * 7 + register_code.split("-")[2][7:]
             new_code = register_code[:-7] + "█" * 7
-            await sendMessage(msg,
-                              f'【注册码使用】- [{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {new_code}\n实时到期：{ex_new}',
-                              send=True)
-            LOGGER.info(f"【注册码】：{msg.chat.id} 使用了 {register_code}")
+            if user_buy["stat"] != 'y':
+                await sendMessage(msg,
+                                  f'· 🎟️ 注册码使用 - [{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {new_code}\n· 📅 实时到期 - {ex_new}',
+                                  send=True)
+            LOGGER.info(f"【注册码】：{msg.chat.id} 使用了 {register_code}，到期时间：{ex_new}")
 
     else:
         # sql_add_emby(msg.from_user.id)
@@ -90,10 +91,11 @@ async def rgs_code(_, msg):
                             buttons=register_code_ikb)
             # new_code = "-".join(register_code.split("-")[:2]) + "-" + "█" * 7 + register_code.split("-")[2][7:]
             new_code = register_code[:-7] + "█" * 7
-            await sendMessage(msg,
-                              f'【注册码使用】- [{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {new_code} 可以创建{us1}天账户咯~',
-                              send=True)
-            LOGGER.info(f"【注册码】：{msg.chat.id} 使用了 {register_code}")
+            if user_buy["stat"] != 'y':
+                await sendMessage(msg,
+                                  f'· 🎟️ 注册码使用 - [{msg.from_user.id}](tg://user?id={msg.chat.id}) 使用了 {new_code} 可以创建{us1}天账户咯~',
+                                  send=True)
+            LOGGER.info(f"【注册码】：{msg.chat.id} 使用了 {register_code} - 可创建 {us1}天账户")
 
 # @bot.on_message(filters.regex('exchange') & filters.private & user_in_group_on_filter)
 # async def exchange_buttons(_, call):

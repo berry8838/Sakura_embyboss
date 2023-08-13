@@ -8,11 +8,9 @@ from pyrogram import enums, filters
 from datetime import date
 
 from bot.func_helper.filters import admins_on_filter
-from bot.func_helper.scheduler import Scheduler
 from bot.func_helper.emby import emby
 from bot.ranks_helper import ranks_draw
 from bot import bot, group, ranks, LOGGER, prefixes
-from bot.func_helper.msg_utils import deleteMessage
 
 # 记录推送日榜和周榜的消息id
 rank_log_file_path = os.path.join('log', 'rank.json')

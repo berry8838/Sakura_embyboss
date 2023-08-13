@@ -20,9 +20,9 @@ if schedall["weekrank"]:
     # 添加一个cron任务，每周日23点59分执行周榜推送
     scheduler.add_job(week_ranks, 'cron', day_of_week="sun", hour=23, minute=59)
 if schedall["dayplayrank"]:
-    scheduler.add_job(user_day_plays, 'cron', hour=23, minute=0, args=(1,))
+    scheduler.add_job(user_day_plays, 'cron', hour=23, minute=0)  # args=(1,)
 if schedall["weekplayrank"]:
-    scheduler.add_job(user_week_plays, 'cron', day_of_week="sun", hour=23, minute=1)
+    scheduler.add_job(user_week_plays, 'cron', day_of_week="sun", hour=23, minute=0)
 if schedall["check_ex"]:
     scheduler.add_job(check_expired, 'cron', hour=0, minute=30)
 

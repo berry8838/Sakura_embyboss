@@ -3,7 +3,7 @@
 """
 emby的api操作方法
 """
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 from cacheout import Cache
 import requests as r
@@ -351,7 +351,7 @@ class Embyservice:
     async def get_emby_report(self, types='Movie', user_id=None, days=7, end_date=None, limit=10):
         try:
             if not end_date:
-                end_date = Now + timedelta(days=1)
+                end_date = datetime.now(timezone(timedelta(hours=8)))
             sub_date = end_date - timedelta(days=days)
             start_time = sub_date.strftime('%Y-%m-%d %H:%M:%S')
             end_time = end_date.strftime('%Y-%m-%d %H:%M:%S')

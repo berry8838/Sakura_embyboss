@@ -24,8 +24,8 @@ from bot.sql_helper.sql_emby import sql_get_emby
 # 创号函数
 async def create_user(_, call, us, stats):
     same = await editMessage(call,
-                             text='🤖**注意：您已进入注册状态:\n\n• 请在2min内输入 `用户名 4~6位安全码`\n• 举个例子🌰：`苏苏 1234`**\n\n• 用户名中不限制中/英文/emoji，🚫**特殊字符**'
-                                  '\n• 安全码为敏感操作时附加验证，请填入个人记得的数字；退出请点 /cancel')
+                             text='🤖**注意：您已进入注册状态:\n\n• 请在2min内输入 `[用户名][空格][安全码]`\n• 举个例子🌰：`苏苏 1234`**\n\n• 用户名中不限制中/英文/emoji，🚫**特殊字符**'
+                                  '\n• 安全码为敏感操作时附加验证，请填入最熟悉的数字4~6位；退出请点 /cancel')
     if same is False:
         return
 

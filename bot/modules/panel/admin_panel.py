@@ -84,7 +84,8 @@ async def open_stats(_, call):
         try:
             await send_i.pin()
         except BadRequest:
-            await send_i.reply("🔴 置顶群消息失败，检查权限")
+            # await send_i.reply("🔴 置顶群消息失败，检查权限")
+            pass
         # await send_i.forward(call.from_user.id)
         await open_menu(_, call)
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 开启了自由注册，总人数限制 {all_user}")
@@ -158,7 +159,8 @@ async def change_for_timing(timing, tgid, send_i):
     try:
         await send_i.pin()
     except BadRequest:
-        await send_i.reply("🔴 置顶群消息失败，检查权限")
+        # await send_i.reply("🔴 置顶群消息失败，检查权限")
+        pass
     a = _open["tem"]
     timing = timing * 60
     try:

@@ -76,7 +76,7 @@ async def day_ranks():
         '%Y-%m-%d')
     message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload,
                                         parse_mode=enums.ParseMode.MARKDOWN)
-    await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id)
+    await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id, disable_notification=True)
     data = get_data()
     data['day_ranks_message_id'] = message_info.id
     save_data(data)
@@ -122,7 +122,7 @@ async def week_ranks():
         '%Y-%m-%d')
     message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload,
                                         parse_mode=enums.ParseMode.MARKDOWN)
-    await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id)
+    await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id, disable_notification=True)
     data = get_data()
     data['week_ranks_message_id'] = message_info.id
     save_data(data)

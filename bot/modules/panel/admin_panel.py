@@ -229,7 +229,10 @@ async def cr_link(_, call):
         await content.delete()
         times, count, method = content.text.split()
         count = int(count)
-        days = int(times) * 30
+        if times == "12":
+            days = 365
+        else:
+            days = int(times) * 30
         if method != 'code' and method != 'link':
             return editMessage(call, '⭕ 输入的method参数有误', buttons=re_cr_link_ikb)
     except (ValueError, IndexError):
@@ -294,7 +297,7 @@ async def buy_mon(_, call):
     elif cd == 'register_used':
         n = 0
     else:
-        n = 360
+        n = 365
     a, i = sql_count_p_code(u, n)
     if a is None:
         x = '**空**'

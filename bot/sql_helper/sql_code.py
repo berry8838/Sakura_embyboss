@@ -66,7 +66,7 @@ def sql_count_code(tg: int = None):
                 # 查询used不为空的数量
                 used_count = session.query(func.count()).filter(Code.used != None).scalar()
                 # 查询used为空时，us=30，90，180，360的数量
-                us_list = [30, 90, 180, 360]  # 创建一个列表，存储us的值
+                us_list = [30, 90, 180, 365]  # 创建一个列表，存储us的值
                 tg_mon, tg_sea, tg_half, tg_year = [
                     session.query(func.count()).filter(Code.used == None).filter(Code.us == us).scalar() for us in
                     us_list]  # 用一个列表推导式来查询数量
@@ -77,7 +77,7 @@ def sql_count_code(tg: int = None):
         else:
             try:
                 used_count = session.query(func.count()).filter(Code.used != None).filter(Code.tg == tg).scalar()
-                us_list = [30, 90, 180, 360]
+                us_list = [30, 90, 180, 365]
                 tg_mon, tg_sea, tg_half, tg_year = [
                     session.query(func.count()).filter(Code.used == None).filter(Code.us == us).filter(
                         Code.tg == tg).scalar() for us in

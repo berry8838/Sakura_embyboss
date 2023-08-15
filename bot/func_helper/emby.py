@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 from cacheout import Cache
 import requests as r
-from bot import emby_url, emby_api, Now, _open, emby_block
+from bot import emby_url, emby_api, _open, emby_block
 from bot.sql_helper.sql_emby import sql_update_emby, sql_delete_emby, sql_change_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_add_emby2, sql_delete_emby2
 from bot.func_helper.utils import pwd_create
@@ -112,7 +112,7 @@ class Embyservice:
         if _open["tem"] >= int(_open["all_user"]):
             return 403
         # name = escape_html_special_chars(name)
-        ex = (Now + timedelta(days=us))
+        ex = (datetime.now() + timedelta(days=us))
         name_data = ({"Name": name})
         new_user = r.post(f'{self.url}/emby/Users/New',
                           headers=self.headers,
@@ -134,12 +134,14 @@ class Embyservice:
                                  json=policy)  # .encode('utf-8')
                 if _policy.status_code == 200 or 204:
                     if stats == 'y':
-                        sql_update_emby(Emby.tg == tg, embyid=id, name=name, pwd=pwd, pwd2=pwd2, lv='b', cr=Now, ex=ex)
+                        sql_update_emby(Emby.tg == tg, embyid=id, name=name, pwd=pwd, pwd2=pwd2, lv='b',
+                                        cr=datetime.now(), ex=ex)
                     elif stats == 'n':
-                        sql_update_emby(Emby.tg == tg, embyid=id, name=name, pwd=pwd, pwd2=pwd2, lv='b', cr=Now, ex=ex,
+                        sql_update_emby(Emby.tg == tg, embyid=id, name=name, pwd=pwd, pwd2=pwd2, lv='b',
+                                        cr=datetime.now(), ex=ex,
                                         us=0)
                     elif stats == 'o':
-                        sql_add_emby2(embyid=id, name=name, cr=Now, ex=ex)
+                        sql_add_emby2(embyid=id, name=name, cr=datetime.now(), ex=ex)
                     return pwd, ex.strftime("%Y-%m-%d %H:%M:%S")
         elif new_user.status_code == 400:
             return 400
@@ -270,9 +272,9 @@ class Embyservice:
         res = r.post(self.url + '/emby/Users/AuthenticateByName', headers=self.headers, json=data)
         if res.status_code == 200:
             embyid = res.json()["User"]["Id"]
-            ex = (Now + timedelta(days=30))
+            ex = (datetime.now() + timedelta(days=30))
             pwd2 = await pwd_create(4)
-            if sql_update_emby(Emby.tg == tg, embyid=embyid, name=username, pwd=password, pwd2=pwd2, lv='b', cr=Now,
+            if sql_update_emby(Emby.tg == tg, embyid=embyid, name=username, pwd=password, pwd2=pwd2, lv='b', cr=ex,
                                ex=ex):
                 if password == "None": sql_update_emby(Emby.tg == tg, pwd=None)
                 return pwd2
@@ -280,8 +282,8 @@ class Embyservice:
 
     async def emby_cust_commit(self, user_id=None, days=7, method=None):
         _url = f'{self.url}/emby/user_usage_stats/submit_custom_query'
-        start_time = (Now - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
-        end_time = (Now + timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")
+        start_time = (datetime.now(timezone(timedelta(hours=8))) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+        end_time = (datetime.now(timezone(timedelta(hours=8)))).strftime("%Y-%m-%d %H:%M:%S")
         sql = ''
         if method == 'sp':
             sql += "SELECT UserId, SUM(PlayDuration - PauseDuration) AS WatchTime FROM PlaybackActivity "

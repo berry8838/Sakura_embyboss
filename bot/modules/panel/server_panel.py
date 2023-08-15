@@ -2,8 +2,10 @@
 服务器讯息打印
 
 """
+from datetime import datetime, timezone, timedelta
+
 from pyrogram import filters
-from bot import bot, Now, emby_line, tz_id
+from bot import bot, emby_line, tz_id
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import user_in_group_on_filter
 from bot.sql_helper.sql_emby import sql_get_emby
@@ -46,5 +48,5 @@ async def server(_, call):
     else:
         x = f'{emby_line}'
     online = emby.get_current_playing_count()
-    text = f'**▎目前线路 & 用户密码 `{pwd}`**\n\n{x}\n\n{sever}· 🎬 在线 | **{online}** 人\n\n **· 🌏 [{Now.strftime("%Y-%m-%d %H:%M:%S")}]**'
+    text = f'**▎目前线路 & 用户密码 `{pwd}`**\n\n{x}\n\n{sever}· 🎬 在线 | **{online}** 人\n\n **· 🌏 [{(datetime.now(timezone(timedelta(hours=8)))).strftime("%Y-%m-%d %H:%M:%S")}]**'
     await editMessage(call, text, buttons=keyboard)

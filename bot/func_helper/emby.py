@@ -282,8 +282,8 @@ class Embyservice:
 
     async def emby_cust_commit(self, user_id=None, days=7, method=None):
         _url = f'{self.url}/emby/user_usage_stats/submit_custom_query'
-        start_time = (datetime.now(timezone(timedelta(hours=8))) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
-        end_time = (datetime.now(timezone(timedelta(hours=8)))).strftime("%Y-%m-%d %H:%M:%S")
+        start_time = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        end_time = (datetime.now(timezone.utc)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         sql = ''
         if method == 'sp':
             sql += "SELECT UserId, SUM(PlayDuration - PauseDuration) AS WatchTime FROM PlaybackActivity "
@@ -292,6 +292,7 @@ class Embyservice:
             sql += "SELECT MAX(DateCreated) AS LastLogin,SUM(PlayDuration - PauseDuration) / 60 AS WatchTime FROM PlaybackActivity "
             sql += f"WHERE UserId = '{user_id}' AND DateCreated >= '{start_time}' AND DateCreated < '{end_time}' GROUP BY UserId"
         data = {"CustomQueryString": sql, "ReplaceUserId": True}  # user_name
+        # print(sql)
         resp = r.post(_url, headers=self.headers, json=data, timeout=30)
         if resp.status_code == 200:
             # print(resp.json())
@@ -353,10 +354,10 @@ class Embyservice:
     async def get_emby_report(self, types='Movie', user_id=None, days=7, end_date=None, limit=10):
         try:
             if not end_date:
-                end_date = datetime.now(timezone(timedelta(hours=8)))
+                end_date = datetime.now(timezone.utc)
             sub_date = end_date - timedelta(days=days)
-            start_time = sub_date.strftime('%Y-%m-%d %H:%M:%S')
-            end_time = end_date.strftime('%Y-%m-%d %H:%M:%S')
+            start_time = sub_date.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            end_time = end_date.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
             sql = "SELECT UserId, ItemId, ItemType, "
             if types == 'Episode':
                 sql += " substr(ItemName,0, instr(ItemName, ' - ')) AS name, "
@@ -378,6 +379,7 @@ class Embyservice:
                 "CustomQueryString": sql,
                 "ReplaceUserId": False
             }
+            # print(sql)
             resp = r.post(_url, headers=self.headers, json=data)
             if resp.status_code != 204 and resp.status_code != 200:
                 return False, {'error': "🤕Emby 服务器连接失败!"}

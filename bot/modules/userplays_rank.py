@@ -1,6 +1,8 @@
+from datetime import datetime, timezone, timedelta
+
 from pyrogram import filters
 
-from bot import bot, bot_photo, Now, group, sakura_b, LOGGER, prefixes, ranks
+from bot import bot, bot_photo, group, sakura_b, LOGGER, prefixes, ranks
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_embys
@@ -32,7 +34,7 @@ async def user_plays_rank(days=7):
                 ls.append([tg, em.iv + minutes])
             txt += f'**{xu[n]} - **[{emby_name}](tg://user?id={tg}) : **{minutes}** min\n'
             n += 1
-        txt += f'\n#UPlaysRank {Now.strftime("%Y-%m-%d")}'
+        txt += f'\n#UPlaysRank {datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")}'
         send = await bot.send_photo(chat_id=group[0], photo=bot_photo, caption=txt)
         if sql_update_embys(some_list=ls, method='iv'):
             await send.reply(f'**自动将观看时长转换为{sakura_b}\n请已上榜用户检查是否到账**')

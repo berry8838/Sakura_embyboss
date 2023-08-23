@@ -100,7 +100,7 @@ async def check_expired():
         if await emby.emby_change_policy(id=e.embyid, method=True):
             if sql_update_emby2(Emby2.embyid == e.embyid, expired=1):
                 try:
-                    LOGGER.info(f"【封禁检测】- emby2 {e.embyid} 封印非TG账户{e.naem} Done！")
+                    LOGGER.info(f"【封禁检测】- emby2 {e.embyid} 封印非TG账户{e.name} Done！")
                     send = await bot.send_message(owner, f'✨**自动任务：**\n  到期封印非TG账户：`{e.name}` Done！')
                 except:
                     continue

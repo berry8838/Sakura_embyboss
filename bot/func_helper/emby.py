@@ -282,7 +282,7 @@ class Embyservice:
 
     async def emby_cust_commit(self, user_id=None, days=7, method=None):
         _url = f'{self.url}/emby/user_usage_stats/submit_custom_query'
-        start_time = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        start_time = ((datetime.now(timezone(timedelta(hours=-4)))) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
         end_time = (datetime.now(timezone.utc)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         sql = ''
         if method == 'sp':
@@ -355,8 +355,7 @@ class Embyservice:
         try:
             if not end_date:
                 end_date = datetime.now(timezone.utc)
-            sub_date = end_date - timedelta(days=days)
-            start_time = sub_date.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+            start_time = ((datetime.now(timezone(timedelta(hours=-4)))) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
             end_time = end_date.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
             sql = "SELECT UserId, ItemId, ItemType, "
             if types == 'Episode':

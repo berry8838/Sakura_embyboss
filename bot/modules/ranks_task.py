@@ -64,13 +64,13 @@ async def day_ranks():
         tmp = "**▎电影:**\n\n"
         for i, movie in enumerate(movies[:10]):
             user_id, item_id, item_type, name, count, duarion = tuple(movie)
-            tmp += str(i + 1) + "." + name + "-" + str(count) + "\n"
+            tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
         payload = tmp
     if tvs:
         tmp = "\n**▎电视剧:**\n\n"
         for i, tv in enumerate(tvs[:10]):
             user_id, item_id, item_type, name, count, duarion = tuple(tv)
-            tmp += str(i + 1) + "." + name + "-" + str(count) + "\n"
+            tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
         payload += tmp
     payload = f"**【{ranks['logo']} 播放日榜】**\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime(
         '%Y-%m-%d')
@@ -110,13 +110,13 @@ async def week_ranks():
         tmp = "**▎电影:**\n\n"
         for i, movie in enumerate(movies[:10]):
             user_id, item_id, item_type, name, count, duarion = tuple(movie)
-            tmp += str(i + 1) + "." + name + "-" + str(count) + "\n"
+            tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
         payload = tmp
     if tvs:
         tmp = "\n**▎电视剧:**\n\n"
         for i, tv in enumerate(tvs[:10]):
             user_id, item_id, item_type, name, count, duarion = tuple(tv)
-            tmp += str(i + 1) + "." + name + "-" + str(count) + "\n"
+            tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
         payload += tmp
     payload = f"**【{ranks['logo']} 播放周榜】**\n\n" + payload + "\n#WeekRanks" + "  " + date.today().strftime(
         '%Y-%m-%d')

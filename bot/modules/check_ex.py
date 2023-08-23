@@ -1,13 +1,13 @@
 """
 定时检测账户有无过期
 """
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import asyncio
 from pyrogram import filters
 from sqlalchemy import and_
 
-from bot import bot, owner, group, Now, LOGGER, prefixes
+from bot import bot, owner, group, LOGGER, prefixes
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.sql_helper.sql_emby import Emby, get_all_emby, sql_update_emby
@@ -16,14 +16,14 @@ from bot.sql_helper.sql_emby2 import get_all_emby2, Emby2, sql_update_emby2
 
 async def check_expired():
     # 询问 到期时间的用户，判断有无积分，有则续期，无就禁用
-    rst = get_all_emby(and_(Emby.ex < Now, Emby.lv == 'b'))
+    rst = get_all_emby(and_(Emby.ex < datetime.now(), Emby.lv == 'b'))
     if rst is None:
         return LOGGER.info('【到期检测】- 等级 b 无到期用户，跳过')
 
     for r in rst:
         if r.us >= 30:
             b = r.us - 30
-            ext = (Now + timedelta(days=30))
+            ext = (datetime.now() + timedelta(days=30))
             if sql_update_emby(Emby.tg == r.tg, ex=ext, us=b):
                 try:
                     await bot.send_message(r.tg,
@@ -50,13 +50,13 @@ async def check_expired():
                 await bot.send_message(group[0],
                                        f'#id{r.tg} #账户到期禁用 [{r.name}](tg://user?id={r.tg}) embyapi操作失败')
 
-    rsc = get_all_emby(and_(Emby.ex < Now, Emby.lv == 'c'))
+    rsc = get_all_emby(and_(Emby.ex < datetime.now(), Emby.lv == 'c'))
     if rsc is None:
         return LOGGER.info('【到期检测】- 等级 c 无到期用户，跳过')
     for c in rsc:
         if c.us >= 30:
             c_us = c.us - 30
-            ex = (Now + timedelta(days=30))
+            ex = (datetime.now() + timedelta(days=30))
             if await emby.emby_change_policy(id=c.embyid, method=False):
                 if sql_update_emby(Emby.tg == c.tg, lv='b', ex=ex, us=c_us):
                     try:
@@ -75,11 +75,11 @@ async def check_expired():
 
         else:
             delta = c.ex + timedelta(days=5)
-            if Now < delta:
+            if datetime.now() < delta:
                 continue
                 # await bot.send_message(c.tg,
                 #                        f'#id{c.tg} #删除账户 [{c.name}](tg://user?id={c.tg})\n已到期，将为您封存账户至{delta.strftime("%Y-%m-%d %H:%M:%S")}，请及时续期')
-            elif Now > delta:
+            elif datetime.now() > delta:
                 if await emby.emby_del(c.embyid):
                     try:
                         send = await bot.send_message(c.tg,
@@ -92,7 +92,7 @@ async def check_expired():
                     await bot.send_message(group[0],
                                            f'#id{c.tg} #删除账户 [{c.name}](tg://user?id={c.tg})\n到期删除失败，请手动')
 
-    rseired = get_all_emby2(and_(Emby2.expired == 0, Emby2.ex < Now))
+    rseired = get_all_emby2(and_(Emby2.expired == 0, Emby2.ex < datetime.now()))
     if rseired is None:
         return LOGGER.info(f'【封禁检测】- emby2 无数据，跳过')
     for e in rseired:

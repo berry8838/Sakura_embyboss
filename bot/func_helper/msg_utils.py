@@ -205,6 +205,14 @@ async def callListen(callbackquery, timer: int = 120, buttons=None):
         return False
 
 
+async def call_dice_Listen(callbackquery, timer: int = 120, buttons=None):
+    try:
+        return await callbackquery.message.chat.listen(filters.dice, timeout=timer)
+    except ListenerTimeout:
+        await editMessage(callbackquery, '💦 __没有获取到您的输入__ **会话状态自动取消！**', buttons=buttons)
+        return False
+
+
 async def callAsk(callbackquery, text, timer: int = 120, button=None):
     # 使用ask方法发送一条消息，并等待用户的回复，最多120秒，只接受文本类型的消息
     try:

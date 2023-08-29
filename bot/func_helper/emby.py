@@ -20,14 +20,14 @@ def create_policy(admin=False, disable=False, limit: int = 2, block: list = None
     :param admin: bool 是否开启管理员
     :param disable: bool 是否禁用
     :param limit: int 同时播放流的默认值，修改2 -> 3 any都可以
-    :param block: list 默认将 播放列表 和 合集 屏蔽
+    :param block: list 默认将 播放列表 屏蔽
     :return: plocy 用户策略
     """
     if block is None:
-        block = ['播放列表', '合集']
+        block = ['播放列表']
     else:
         block = block.copy()
-        block.extend(['播放列表', '合集'])
+        block.extend(['播放列表'])
     policy = {
         "IsAdministrator": admin,
         "IsHidden": True,
@@ -282,8 +282,9 @@ class Embyservice:
 
     async def emby_cust_commit(self, user_id=None, days=7, method=None):
         _url = f'{self.url}/emby/user_usage_stats/submit_custom_query'
-        start_time = ((datetime.now(timezone(timedelta(hours=-4)))) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
-        end_time = (datetime.now(timezone.utc)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        sub_time = datetime.now(timezone(timedelta(hours=8)))
+        start_time = (sub_time - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+        end_time = sub_time.strftime("%Y-%m-%d %H:%M:%S")
         sql = ''
         if method == 'sp':
             sql += "SELECT UserId, SUM(PlayDuration - PauseDuration) AS WatchTime FROM PlaybackActivity "
@@ -354,9 +355,9 @@ class Embyservice:
     async def get_emby_report(self, types='Movie', user_id=None, days=7, end_date=None, limit=10):
         try:
             if not end_date:
-                end_date = datetime.now(timezone.utc)
-            start_time = ((datetime.now(timezone(timedelta(hours=-4)))) - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
-            end_time = end_date.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+                end_date = datetime.now(timezone(timedelta(hours=8)))
+            start_time = (end_date - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+            end_time = end_date.strftime('%Y-%m-%d %H:%M:%S')
             sql = "SELECT UserId, ItemId, ItemType, "
             if types == 'Episode':
                 sql += " substr(ItemName,0, instr(ItemName, ' - ')) AS name, "

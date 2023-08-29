@@ -110,7 +110,7 @@ def sql_count_p_code(tg_id, us):
                         Code.tg == tg_id).filter(Code.used == None).order_by(Code.tg.asc(), Code.usedtime.desc()).limit(
                         30).offset(d).all()
                 else:
-                    result = session.query(Code.tg, Code.code, Code.used, Code.usedtime).filter(
+                    result = session.query(Code.tg, Code.code, Code.used, Code.usedtime, Code.us).filter(
                         Code.used != None).filter(
                         Code.tg == tg_id).order_by(Code.tg.asc(), Code.usedtime.desc()).limit(30).offset(d).all()
                 x = ''
@@ -121,7 +121,7 @@ def sql_count_p_code(tg_id, us):
                     e = d + 1
                 for link in result:
                     if us == 0:
-                        c = f'{e}. `' + f'{link[1]}`' + f'\n  🏷️user: `{link[2]}`\n  📅 __{link[3]}__\n'
+                        c = f'{e}. `' + f'{link[1]}`' + f'\n🏷️{link[4]}d - [{link[2]}](tg://user?id={link[0]})(__{link[3]}__)\n'
                     else:
                         c = f'{e}. `' + f'{link[1]}`\n'
                     x += c

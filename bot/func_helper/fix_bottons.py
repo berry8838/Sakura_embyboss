@@ -2,7 +2,7 @@ from cacheout import Cache
 from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
-from bot import chanel, main_group, bot_name, tz_id, tz_ad, tz_api, _open, user_buy, Now, sakura_b, schedall
+from bot import chanel, main_group, bot_name, tz_id, tz_ad, tz_api, _open, user_buy, sakura_b, schedall
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import judge_admins, members_info
@@ -19,7 +19,7 @@ def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
     :return:
     """
     d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'],
-         [f'🎯 签到(开发中)', 'checkin']]  # ['🏪 商店', 'store_all']
+         [f'🎯 签到', 'checkin']]  # ['🏪 商店', 'store_all']
     if user_buy["stat"] == "y":
         d.append(['💰 点击购买', 'buy_account'])
     lines = array_chunk(d, 2)
@@ -120,7 +120,8 @@ async def cr_page_server():
 """admins ↓"""
 
 gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 生成注册', 'cr_link')],
-                      [('💊 查询注册', 'ch_link'), ('🏬 商店设置', 'iv_rank')], [('🕹️ 主界面', 'back_start')]])
+                      [('💊 查询注册', 'ch_link'), ('🏬 续期设置', 'set_renew')],
+                      [('🌏 定时', 'schedall'), ('🕹️ 主界面', 'back_start'), ('控制 🪟', 'back_config')]])
 
 
 def open_menu_ikb(openstats, timingstats) -> InlineKeyboardMarkup:
@@ -168,7 +169,7 @@ def config_preparation() -> InlineKeyboardMarkup:
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
          [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
          [(f'{code} 注册码续期', 'open_allow_code'), (f'{buy_stat} 开关购买', 'set_buy')],
-         [('💨 - 清除消息', 'closeit')]])
+         [('🔙 返回', 'manage')]])
     return keyboard
 
 
@@ -203,13 +204,13 @@ async def cr_kk_ikb(uid, first):
             ban = "🌟 解除禁用" if lv == "已禁用" else '💢 禁用账户'
             keyboard.add(InlineButton(ban, f'user_ban-{uid}'), InlineButton('⚠️ 删除账户', f'closeemby-{uid}'))
             try:
-                rst = await emby.emby_cust_commit(user_id=embyid, days=7)
+                rst = await emby.emby_cust_commit(user_id=embyid, days=30)
                 last_time = rst[0][0]
                 toltime = rst[0][1]
                 text1 = f"**· 🔋 上次活动** | {last_time.split('.')[0]}\n" \
-                        f"**· 📅 过去七天** | {toltime} min"
+                        f"**· 📅 过去30天** | {toltime} min"
             except (TypeError, IndexError, ValueError):
-                text1 = f"**· 📅 过去七天未有记录**"
+                text1 = f"**· 📅 过去30天未有记录**"
         else:
             keyboard.add(InlineButton('✨ 赠送资格', f'gift-{uid}'))
         # if ex != '无账户信息' and ex != '+ ∞': ex = (ex - Now).days + '天'
@@ -228,17 +229,35 @@ async def cr_kk_ikb(uid, first):
 
 
 def sched_buttons():
-    dayrank = '✅' if schedall["dayrank"] is True else '❎'
-    weekrank = '✅' if schedall["weekrank"] is True else '❎'
-    dayplayrank = '✅' if schedall["dayplayrank"] is True else '❎'
-    weekplayrank = '✅' if schedall["weekplayrank"] is True else '❎'
-    check_ex = '✅' if schedall["check_ex"] is True else '❎'
+    dayrank = '✅' if schedall["dayrank"] else '❎'
+    weekrank = '✅' if schedall["weekrank"] else '❎'
+    dayplayrank = '✅' if schedall["dayplayrank"] else '❎'
+    weekplayrank = '✅' if schedall["weekplayrank"] else '❎'
+    check_ex = '✅' if schedall["check_ex"] else '❎'
+    activity = '✅' if schedall["low_activity"] else '❎'
     keyboard = InlineKeyboard(row_width=2)
-    keyboard.add(InlineButton(f'{dayrank} 日榜推送', f'sched-dayrank'),
-                 InlineButton(f'{weekrank} 周榜推送', f'sched-weekrank'),
-                 InlineButton(f'{dayplayrank} 播放日榜', f'sched-dayplayrank'),
-                 InlineButton(f'{weekplayrank} 播放周榜', f'sched-weekplayrank'),
+    keyboard.add(InlineButton(f'{dayrank} 播放日榜', f'sched-dayrank'),
+                 InlineButton(f'{weekrank} 播放周榜', f'sched-weekrank'),
+                 InlineButton(f'{dayplayrank} 看片日榜', f'sched-dayplayrank'),
+                 InlineButton(f'{weekplayrank} 看片周榜', f'sched-weekplayrank'),
                  InlineButton(f'{check_ex} 到期检测', f'sched-check_ex'),
-                 InlineButton(f'❌ 关闭消息', 'closeit')
+                 InlineButton(f'{activity} 不活跃检测', f'sched-activity')
                  )
+    keyboard.row(InlineButton(f'🫧 返回', 'manage'))
     return keyboard
+
+
+""" checkin 按钮↓"""
+
+
+def shici_button(ls: list):
+    shici = []
+    for l in ls:
+        l = [l, f'checkin-{l}']
+        shici.append(l)
+    # print(shici)
+    lines = array_chunk(shici, 4)
+    return ikb(lines)
+
+
+checkin_button = ikb([[('🔋 重新签到', 'checkin'), ('🎮 返回主页', 'back_start')]])

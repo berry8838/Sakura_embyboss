@@ -22,7 +22,7 @@ from bot.func_helper.utils import open_check, cr_link_one
 async def gm_ikb(_, call):
     await callAnswer(call, '✔️ manage面板')
     stat, all_user, tem, timing, allow_code = await open_check()
-    stat = "True" if stat == 'y' else "False"
+    stat = "True" if stat else "False"
     allow_code = 'True' if allow_code == "y" else 'False'
     timing = 'Turn off' if timing == 0 else str(timing) + ' min'
     tg, emby, white = sql_count_emby()
@@ -40,7 +40,7 @@ async def open_menu(_, call):
     # [开关，注册总数，定时注册] 此间只对emby表中tg用户进行统计
     stat, all_user, tem, timing, allow_code = await open_check()
     tg, emby, white = sql_count_emby()
-    openstats = '✅' if stat == 'y' else '❎'  # 三元运算
+    openstats = '✅' if stat else '❎'  # 三元运算
     timingstats = '❎' if timing == 0 else '✅'
     text = f'⚙ **注册状态设置**：\n\n- 自由注册即定量方式，定时注册既定时又定量，将自动转发消息至群组，再次点击按钮可提前结束并报告。\n' \
            f'- **注册总人数限制 {all_user}**'
@@ -57,8 +57,8 @@ async def open_stats(_, call):
         return await callAnswer(call, "🔴 目前正在运行定时注册。\n无法调用", True)
 
     tg, emby, white = sql_count_emby()
-    if stat == "y":
-        _open["stat"] = "n"
+    if stat:
+        _open["stat"] = False
         save_config()
         await callAnswer(call, "🟢【自由注册】\n\n已结束", True)
         sur = all_user - tem
@@ -70,8 +70,8 @@ async def open_stats(_, call):
         await editMessage(call, text, buttons=back_free_ikb)
         # await open_menu(_, call)
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 关闭了自由注册")
-    elif stat == "n":
-        _open["stat"] = 'y'
+    elif not stat:
+        _open["stat"] = True
         save_config()
         await callAnswer(call, "🟡【自由注册】\n\n已开启", True)
         sur = all_user - tem  # for i in group可以多个群组用，但是现在不做
@@ -115,9 +115,9 @@ async def open_timing(_, call):
 
         try:
             new_timing, new_all_user = txt.text.split()
-            _open["stat"] = 'y'
             _open["timing"] = int(new_timing)
             _open["all_user"] = int(new_all_user)
+            _open["stat"] = True
             save_config()
         except ValueError:
             await editMessage(call, "🚫 请检查数字填写是否正确。\n`[时长min] [总人数]`", buttons=back_open_menu_ikb)
@@ -170,7 +170,7 @@ async def change_for_timing(timing, tgid, send_i):
         pass
     finally:
         _open["timing"] = 0
-        _open["stat"] = 'n'
+        _open["stat"] = False
         save_config()
         b = _open["tem"] - a
         s = _open["all_user"] - _open["tem"]
@@ -215,10 +215,10 @@ async def open_all_user_l(_, call):
 async def cr_link(_, call):
     await callAnswer(call, '✔️ 创建注册码')
     send = await editMessage(call,
-                             f'🎟️ 请回复创建 [类型码] [数量] [模式]\n\n'
-                             f'**类型码**：月01，季03，半年06，年12\n'
+                             f'🎟️ 请回复创建 [天数] [数量] [模式]\n\n'
+                             f'**天数**：月30，季90，半年180，年365\n'
                              f'**模式**： link -深链接 | code -码\n'
-                             f'**示例**：`01 20 code` 记作 1月的 注册码 20条\n'
+                             f'**示例**：`1 20 link` 记作 20条 1天注册码链接\n'
                              f'__取消本次操作，请 /cancel__')
     if send is False:
         return
@@ -231,10 +231,7 @@ async def cr_link(_, call):
         await content.delete()
         times, count, method = content.text.split()
         count = int(count)
-        if times == "12":
-            days = 365
-        else:
-            days = int(times) * 30
+        days = int(times)
         if method != 'code' and method != 'link':
             return editMessage(call, '⭕ 输入的method参数有误', buttons=re_cr_link_ikb)
     except (ValueError, IndexError):
@@ -256,7 +253,7 @@ async def cr_link(_, call):
 async def ch_link(_, call):
     await callAnswer(call, '🔍 查看管理们注册码...时长会久一点', True)
     a, b, c, d, f = sql_count_code()
-    text = f'**🎫 code总数：\n• 已使用 - {a}\n• 月码 - {b}   | • 季码 - {c} \n• 半年码 - {d}  | • 年码 - {f}**'
+    text = f'**🎫 常用code数据：\n• 已使用 - {a}\n• 月码 - {b}   | • 季码 - {c} \n• 半年码 - {d}  | • 年码 - {f}**'
     ls = []
     admins.append(owner)
     for i in admins:
@@ -327,3 +324,7 @@ async def paginate_keyboard(_, call):
         j = j - 1
         text = a[j]
         await editMessage(call, f'🔎当前模式- **{num}**天，检索出以下 **{i}**页链接：\n\n{text}', keyboard)
+
+
+# @bot.on_callback_query(filters.regex('set_renew'))
+# async def set_renew(_, call):

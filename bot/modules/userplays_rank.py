@@ -5,7 +5,8 @@ from pyrogram import filters
 from bot import bot, bot_photo, group, sakura_b, LOGGER, prefixes, ranks
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
-from bot.sql_helper.sql_emby import sql_get_emby, sql_update_embys
+from bot.func_helper.utils import convert_to_beijing_time
+from bot.sql_helper.sql_emby import sql_get_emby, sql_update_embys, Emby, sql_update_emby
 from bot.func_helper.msg_utils import deleteMessage
 
 
@@ -61,3 +62,42 @@ async def shou_dong_uplayrank(_, msg):
     except (IndexError, ValueError):
         await msg.reply(
             f"🔔 请手动加参数 user_ranks+天数，已加入定时任务管理面板，**手动运行user_ranks注意使用**，以免影响{sakura_b}的结算")
+
+
+async def check_low_activity():
+    now = datetime.now(timezone(timedelta(hours=8)))
+    success, users = await emby.users()
+    if success is False:
+        return await bot.send_message(chat_id=group[0], text='⭕ 调用emby api失败')
+
+    # print(users)
+    for user in users:
+        # 数据库先找
+        e = sql_get_emby(tg=user["Name"])
+        if e is None or e.lv != 'b':
+            continue
+
+        elif e.lv == 'b':
+            try:
+                ac_date = convert_to_beijing_time(user["LastActivityDate"])
+                # print(e.name, ac_date, now)
+                if ac_date + timedelta(days=30) < now:
+                    await emby.emby_change_policy(id=user["Id"], method=True)
+                    sql_update_emby(Emby.embyid == user["Id"], lv='c')
+                    await bot.send_message(chat_id=group[0],
+                                           text=f"**🔋#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n30天未活跃，禁用")
+                    LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：30天未活跃")
+            except KeyError:
+                await emby.emby_change_policy(id=user["Id"], method=True)
+                sql_update_emby(Emby.embyid == user["Id"], lv='c')
+                await bot.send_message(chat_id=group[0],
+                                       text=f"**🔋#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n注册后未活跃，禁用")
+                LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：30天未活跃")
+
+
+@bot.on_message(filters.command('low_activity', prefixes) & admins_on_filter)
+async def run_low_ac(_, msg):
+    await deleteMessage(msg)
+    send = await msg.reply(f"⭕ 不活跃检测运行ing···")
+    await check_low_activity()
+    await send.delete()

@@ -3,10 +3,11 @@ import os
 
 from pyrogram import filters
 
-from bot import bot, prefixes, owner, LOGGER
+from bot import bot, prefixes, LOGGER
+from bot.func_helper.filters import admins_on_filter
 
 
-@bot.on_message(filters.command('restart', prefixes) & filters.user(owner))
+@bot.on_message(filters.command('restart', prefixes) & admins_on_filter)
 async def restart_bot(_, msg):
     send = await msg.reply("Restarting，等待几秒钟。")
     with open(".restartmsg", "w") as f:

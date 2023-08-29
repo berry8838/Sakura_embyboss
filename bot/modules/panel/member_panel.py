@@ -64,7 +64,8 @@ async def create_user(_, call, us, stats):
             if pwd1 == 403:
                 await editMessage(call, '**🚫 很抱歉，注册总数已达限制。**', back_members_ikb)
             elif pwd1 == 100:
-                await editMessage(call, '**- ❎ 已有此账户名，请重新输入注册\n- ❎ 或检查有无特殊字符\n- ❎ 或emby服务器连接不通，会话已结束！**',
+                await editMessage(call,
+                                  '**- ❎ 已有此账户名，请重新输入注册\n- ❎ 或检查有无特殊字符\n- ❎ 或emby服务器连接不通，会话已结束！**',
                                   re_create_ikb)
                 LOGGER.error("【创建账户】：重复账户 or 未知错误！")
             else:
@@ -108,15 +109,15 @@ async def create(_, call):
             await callAnswer(call, '💦 你已经有账户啦！请勿重复注册。', True)
         elif _open["tem"] >= int(_open["all_user"]):
             await callAnswer(call, f"⭕ 很抱歉，注册总数已达限制。", True)
-        elif _open["stat"] == 'y':
+        elif _open["stat"]:
             send = await callAnswer(call, f"🪙 开放注册，免除积分要求。", True)
             if send is False:
                 return
             else:
                 await create_user(_, call, us=30, stats='y')
-        elif _open["stat"] == 'n' and int(e.us) < 30:
-            await callAnswer(call, f'🤖 自助注册已关闭，等待开启。', True)
-        elif _open["stat"] == 'n' and int(e.us) >= 30:
+        # elif _open["stat"] is False and int(e.us) < 30:
+        #     await callAnswer(call, f'🤖 自助注册已关闭，等待开启。', True)
+        elif _open["stat"] is False and int(e.us) > 0:
             send = await callAnswer(call, f'🪙 积分满足要求，请稍后。', True)
             if send is False:
                 return

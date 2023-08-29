@@ -33,7 +33,7 @@ async def p_start(_, msg):
         u = msg.command[1]
         await msg.delete()
         return await rgs_code(_, msg)
-    except IndexError:
+    except (IndexError, TypeError):
         if await user_in_group_filter(_, msg):
             await asyncio.gather(deleteMessage(msg),
                                  sendPhoto(msg, bot_photo,

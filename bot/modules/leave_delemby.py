@@ -16,26 +16,23 @@ async def leave_del_emby(_, event: ChatMemberUpdated):
         user_fname = event.old_chat_member.user.first_name
         if not event.old_chat_member.is_member:
             try:
-                await bot.ban_chat_member(chat_id=chat_id, user_id=user_id)
                 e = sql_get_emby(tg=user_id)
-                if e is None:
+                if e is None or e.embyid is None:
                     return await bot.send_message(chat_id=chat_id,
                                                   text=f'✅ [{user_fname}](tg://user?id={user_id}) 已经离开了群组')
 
-                if e.embyid is None:
-                    return await bot.send_message(chat_id=chat_id,
-                                                  text=f'✅ [{user_fname}](tg://user?id={user_id}) 已经离开了群组')
                 if await emby.emby_del(id=e.embyid):
                     LOGGER.info(f'【退群删号】- {user_fname}-{user_id} 已经离开了群组，咕噜噜，ta的账户被吃掉啦！')
-                    return await bot.send_message(chat_id=chat_id,
-                                                  text=f'✅ [{user_fname}](tg://user?id={user_id}) 已经离开了群组，咕噜噜，ta的账户被吃掉啦！')
+                    await bot.send_message(chat_id=chat_id,
+                                           text=f'✅ [{user_fname}](tg://user?id={user_id}) 已经离开了群组，咕噜噜，ta的账户被吃掉啦！')
                 else:
                     LOGGER.error(
                         f'【退群删号】- {user_fname}-{user_id} 已经离开了群组，但是没能吃掉ta的账户，请管理员检查！')
-                    return await bot.send_message(chat_id=chat_id,
-                                                  text=f'❎ [{user_fname}](tg://user?id={user_id}) 已经离开了群组，但是没能吃掉ta的账户，请管理员检查！')
+                    await bot.send_message(chat_id=chat_id,
+                                           text=f'❎ [{user_fname}](tg://user?id={user_id}) 已经离开了群组，但是没能吃掉ta的账户，请管理员检查！')
+                await bot.ban_chat_member(chat_id=chat_id, user_id=user_id)
             except Exception as e:
-                LOGGER.error(f"Failed to ban user {user_id} from chat {chat_id}: {e}")
+                LOGGER.error(f"【退群删号】- {chat_id}: {e}")
         else:
             pass
 

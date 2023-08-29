@@ -52,7 +52,18 @@ chanel = config["chanel"]
 bot_photo = config["bot_photo"]
 user_buy = config["user_buy"]
 _open = config["open"]
+try:
+    _open["stat"] = False
+    _open["timing"] = 0
+    _open["checkin"] = True
+    _open["exchange"] = False
+    save_config()
+except:
+    pass
 admins = config["admins"]
+if owner in admins:
+    admins.remove(owner)
+    save_config()
 invite = config["invite"]
 sakura_b = config["money"]
 try:
@@ -66,8 +77,10 @@ except Exception as e:
 prefixes = ['/', '!', '.', '#', '。']
 try:
     schedall = config["schedall"]
+    low_activity = schedall["low_activity"]
 except:
-    schedall = {"dayrank": True, "weekrank": True, "dayplayrank": False, "weekplayrank": False, "check_ex": True}
+    schedall = {"dayrank": True, "weekrank": True, "dayplayrank": False, "weekplayrank": False, "check_ex": True,
+                "low_activity": False}
     config["schedall"] = schedall
     save_config()
 
@@ -104,25 +117,25 @@ admin_p = user_p + [
     BotCommand("rmemby", "删除用户[包括非tg] [管理]"),
     BotCommand("prouser", "增加白名单 [管理]"),
     BotCommand("revuser", "减少白名单 [管理]"),
-    BotCommand("schedall", "定时任务面板 [管理]"),
     BotCommand("syncgroupm", "消灭不在群的人 [管理]"),
     BotCommand("syncunbound", "消灭未绑定bot的emby账户 [管理]"),
-    BotCommand("user_ranks", "召唤user日榜，失效时用 [管理]"),
-    BotCommand("days_ranks", "召唤days日榜，失效时用 [管理]"),
-    BotCommand("week_ranks", "召唤week榜，失效时用 [管理]"),
-    BotCommand("check_ex", "手动运行到期检测 [管理]"),
+    BotCommand("low_activity", "手动运行活跃检测 [管理]"),
+    BotCommand("check_ex", "手动到期检测 [管理]"),
+    BotCommand("user_ranks", "召唤观影时长榜，失效时用 [管理]"),
+    BotCommand("days_ranks", "召唤播放次数日榜，失效时用 [管理]"),
+    BotCommand("week_ranks", "召唤播放次数周榜，失效时用 [管理]"),
     BotCommand("embyadmin", "开启emby控制台权限 [管理]"),
     BotCommand("ucr", "私聊创建非tg的emby用户 [管理]"),
     BotCommand("uinfo", "查看非tg的emby2用户 [管理]"),
     BotCommand("urm", "删除非tg的emby2用户 [管理]"),
+    BotCommand("restart", "重启bot [owner]"),
 ]
 
 owner_p = admin_p + [
     BotCommand("proadmin", "添加bot管理 [owner]"),
     BotCommand("revadmin", "移除bot管理 [owner]"),
-    BotCommand("renewall", "一键派送天数给所有未封禁的用户 [owner]"),
-    BotCommand("restart", "重启bot [owner]"),
-    BotCommand("config", "开启bot高级控制面板 [owner]")
+    BotCommand("renewall", "一键派送天数给所有未封禁的用户 [owner]")
+    # BotCommand("config", "开启bot高级控制面板 [owner]")
 ]
 
 from pyrogram import Client, enums

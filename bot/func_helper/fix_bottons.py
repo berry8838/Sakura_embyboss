@@ -18,8 +18,9 @@ def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
     :param uid:
     :return:
     """
-    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'],
-         [f'🎯 签到', 'checkin']]  # ['🏪 商店', 'store_all']
+    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'], ['🎟️ 使用注册码', 'exchange']]  # ['🏪 商店', 'store_all']
+    if _open["checkin"]:
+        d.append([f'🎯 签到', 'checkin'])
     if user_buy["stat"] == "y":
         d.append(['💰 点击购买', 'buy_account'])
     lines = array_chunk(d, 2)
@@ -59,7 +60,7 @@ def members_ikb(emby=False) -> InlineKeyboardMarkup:
     :return:
     """
     if emby is True:
-        return ikb([[('💱 码子续期', 'exchange'), ('🗑️ 删除账号', 'delme')],
+        return ikb([[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
                     [('♻️ 主界面', 'back_start')]])
     else:
@@ -75,6 +76,20 @@ re_changetg_ikb = ikb([[('✨ 重新输入', 'changetg'), ('💫 用户主页', 
 re_delme_ikb = ikb([[('♻️ 重试', 'delme')], [('🔙 返回', 'members')]])
 re_reset_ikb = ikb([[('♻️ 重试', 'reset')], [('🔙 返回', 'members')]])
 re_exchange_b_ikb = ikb([[('♻️ 重试', 'exchange')], [('🔙 返回', 'members')]])
+
+
+def store_ikb():
+    d = []
+    if _open["exchange"]:
+        d.append([f'60{sakura_b} / 1月时长', 'store-renew'])
+    if _open["whitelist"]:
+        d.append([f'9999{sakura_b} / 白名单', 'store-whitelist'])
+    if _open["invite"]:
+        d.append([f'500{sakura_b} / 条', 'store-invite'])
+    d.append([f'◀ 返回', 'members'])
+    lines = array_chunk(d, 2)
+    keyboard = ikb(lines)
+    return keyboard
 
 
 def del_me_ikb(embyid) -> InlineKeyboardMarkup:
@@ -159,6 +174,20 @@ async def cr_paginate(i, j, n) -> InlineKeyboardMarkup:
     return keyboard
 
 
+def cr_renew_ikb():
+    checkin = '✔️' if _open["checkin"] else '❌'
+    exchange = '✔️' if _open["exchange"] else '❌'
+    whitelist = '✔️' if _open["whitelist"] else '❌'
+    invite = '✔️' if _open["invite"] else '❌'
+    keyboard = InlineKeyboard(row_width=2)
+    keyboard.add(InlineButton(f'{checkin} 签到', f'set_renew-checkin'),
+                 InlineButton(f'{exchange} 续期', f'set_renew-exchange'),
+                 InlineButton(f'{whitelist} 白名单', f'set_renew-whitelist'),
+                 InlineButton(f'{invite} 邀请码', f'set_renew-invite'))
+    keyboard.row(InlineButton(f'◀ 返回', 'manage'))
+    return keyboard
+
+
 """ config_panel ↓"""
 
 
@@ -234,14 +263,14 @@ def sched_buttons():
     dayplayrank = '✅' if schedall["dayplayrank"] else '❎'
     weekplayrank = '✅' if schedall["weekplayrank"] else '❎'
     check_ex = '✅' if schedall["check_ex"] else '❎'
-    activity = '✅' if schedall["low_activity"] else '❎'
+    low_activity = '✅' if schedall["low_activity"] else '❎'
     keyboard = InlineKeyboard(row_width=2)
     keyboard.add(InlineButton(f'{dayrank} 播放日榜', f'sched-dayrank'),
                  InlineButton(f'{weekrank} 播放周榜', f'sched-weekrank'),
                  InlineButton(f'{dayplayrank} 看片日榜', f'sched-dayplayrank'),
                  InlineButton(f'{weekplayrank} 看片周榜', f'sched-weekplayrank'),
                  InlineButton(f'{check_ex} 到期检测', f'sched-check_ex'),
-                 InlineButton(f'{activity} 不活跃检测', f'sched-activity')
+                 InlineButton(f'{low_activity} 不活跃检测', f'sched-low_activity')
                  )
     keyboard.row(InlineButton(f'🫧 返回', 'manage'))
     return keyboard

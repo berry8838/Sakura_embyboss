@@ -23,7 +23,7 @@ if schedall["weekplayrank"]:
 if schedall["check_ex"]:
     scheduler.add_job(check_expired, 'cron', hour=0, minute=30)
 if schedall["low_activity"]:
-    scheduler.add_job(check_low_activity, 'cron', hour=12, minute=30)
+    scheduler.add_job(check_low_activity, 'cron', hour=8, minute=30)
 
 
 async def sched_panel(_, msg):

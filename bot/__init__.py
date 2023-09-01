@@ -55,8 +55,10 @@ _open = config["open"]
 try:
     _open["stat"] = False
     _open["timing"] = 0
-    _open["checkin"] = True
+    _open["checkin"] = False
     _open["exchange"] = False
+    _open["whitelist"] = False
+    _open["invite"] = False
     save_config()
 except:
     pass

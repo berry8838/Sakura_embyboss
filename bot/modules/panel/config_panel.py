@@ -7,24 +7,25 @@
 from bot import bot, prefixes, owner, bot_photo, Now, LOGGER, config, save_config, _open, user_buy
 from pyrogram import filters
 
+from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import config_preparation, close_it_ikb, back_config_p_ikb, back_set_ikb, try_set_buy
 from bot.func_helper.msg_utils import deleteMessage, editMessage, callAnswer, callListen, sendPhoto, sendFile
 
 
-@bot.on_message(filters.command('config', prefixes=prefixes) & filters.user(owner))
+@bot.on_message(filters.command('config', prefixes=prefixes) & admins_on_filter)
 async def config_p_set(_, msg):
     await deleteMessage(msg)
     await sendPhoto(msg, photo=bot_photo, caption="🌸 欢迎回来！\n\n👇点击你要修改的内容。",
                     buttons=config_preparation())
 
 
-@bot.on_callback_query(filters.regex('back_config') & filters.user(owner))
+@bot.on_callback_query(filters.regex('back_config') & admins_on_filter)
 async def config_p_re(_, call):
     await callAnswer(call, "✅ config")
     await editMessage(call, "🌸 欢迎回来！\n\n👇点击你要修改的内容。", buttons=config_preparation())
 
 
-@bot.on_callback_query(filters.regex("log_out") & filters.user(owner))
+@bot.on_callback_query(filters.regex("log_out") & admins_on_filter)
 async def log_out(_, call):
     await callAnswer(call, '🌐查询中...')
     # file位置以main.py为准
@@ -36,7 +37,7 @@ async def log_out(_, call):
     LOGGER.info(f"【admin】：{call.from_user.id} - 导出日志成功！")
 
 
-@bot.on_callback_query(filters.regex("set_tz") & filters.user(owner))
+@bot.on_callback_query(filters.regex("set_tz") & admins_on_filter)
 async def set_tz(_, call):
     await callAnswer(call, '📌 设置探针')
     send = await editMessage(call,
@@ -72,7 +73,7 @@ async def set_tz(_, call):
 
 
 # 设置 emby 线路
-@bot.on_callback_query(filters.regex('set_line') & filters.user(owner))
+@bot.on_callback_query(filters.regex('set_line') & admins_on_filter)
 async def set_emby_line(_, call):
     await callAnswer(call, '📌 设置emby线路')
     send = await editMessage(call,
@@ -97,7 +98,7 @@ async def set_emby_line(_, call):
 
 
 # 设置需要显示/隐藏的库
-@bot.on_callback_query(filters.regex('set_block') & filters.user(owner))
+@bot.on_callback_query(filters.regex('set_block') & admins_on_filter)
 async def set_block(_, call):
     await callAnswer(call, '📺 设置显隐媒体库')
     send = await editMessage(call,
@@ -125,7 +126,7 @@ async def set_block(_, call):
         LOGGER.info(f"【admin】：{call.from_user.id} - 更新指定显示/隐藏内容库为 {config['emby_block']} 设置完成")
 
 
-@bot.on_callback_query(filters.regex("set_buy") & filters.user(owner))
+@bot.on_callback_query(filters.regex("set_buy") & admins_on_filter)
 async def set_buy(_, call):
     if user_buy["stat"] == "y":
         user_buy["stat"] = "n"
@@ -179,7 +180,7 @@ async def set_buy(_, call):
                 LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 【文本】{buy_text} - {user_buy["button"]}')
 
 
-@bot.on_callback_query(filters.regex('open_allow_code') & filters.user(owner))
+@bot.on_callback_query(filters.regex('open_allow_code') & admins_on_filter)
 async def open_allow_code(_, call):
     if _open["allow_code"] == "y":
         _open["allow_code"] = "n"

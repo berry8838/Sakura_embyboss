@@ -1,6 +1,6 @@
 import pytz
 
-from bot import _open, save_config, owner, admins, bot_name, ranks
+from bot import _open, save_config, owner, admins, bot_name, ranks, schedall
 from bot.sql_helper.sql_code import sql_add_code
 from bot.sql_helper.sql_emby import sql_get_emby
 
@@ -32,7 +32,6 @@ async def members_info(tg=None, name=None):
         return None
     else:
         name = data.name or '无账户信息'
-        ex = data.ex or '无账户信息'
         pwd2 = data.pwd2
         embyid = data.embyid
         us = [data.us, data.iv]
@@ -40,6 +39,10 @@ async def members_info(tg=None, name=None):
         lv = lv_dict.get(data.lv, '未知')
         if lv == '白名单':
             ex = '+ ∞'
+        elif data.name is not None and schedall["low_activity"] and not schedall["check_ex"]:
+            ex = '__21天无活跃禁用__'
+        else:
+            ex = data.ex or '无账户信息'
         return name, lv, ex, us, embyid, pwd2
 
 
@@ -121,7 +124,7 @@ async def cr_link_one(tg: int, times, count, days: int, method: str):
     return links
 
 
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 
 
 def convert_to_beijing_time(original_date):

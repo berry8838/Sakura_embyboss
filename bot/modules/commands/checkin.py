@@ -29,8 +29,9 @@ async def user_in_checkin(_, call):
                 iv = e.iv + int(d.dice.value)
             sql_update_emby(Emby.tg == call.from_user.id, iv=iv, ch=now)
             await asyncio.gather(call.message.delete(), sendPhoto(call, photo=bot_photo,
-                                                                  caption=f'⭕ **今日签到** | {d.dice.value} c\n🪙 **当前{sakura_b} | {iv} c**',
-                                                                  buttons=back_start_ikb))
+                                                                  caption=f'🎉 **签到成功** | {d.dice.value} {sakura_b}\n'
+                                                                          f'💴 **当前状态** | {iv} {sakura_b}\n'
+                                                                          f'⏳ **签到日期** | {now_i}'))
         else:
             await callAnswer(call, '⭕ 您今天已经签到过了！签到是无聊的活动哦。', True)
     else:

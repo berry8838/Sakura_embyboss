@@ -31,7 +31,7 @@ async def user_plays_rank(days=7):
                 minutes = int(r[1]) // 60
                 emby_name = f'{r[0]}'
                 if em.lv == 'a':
-                    emby_name = f'{r[0][:1]}░{r[0][-1:]}'
+                    emby_name = f'||{r[0]}||'  # ||  {r[0][:1]}░{r[0][-1:]} 隐藏效果
                 ls.append([tg, em.iv + minutes])
             txt += f'**{xu[n]} - **[{emby_name}](tg://user?id={tg}) : **{minutes}** min\n'
             n += 1
@@ -81,18 +81,26 @@ async def check_low_activity():
             try:
                 ac_date = convert_to_beijing_time(user["LastActivityDate"])
                 # print(e.name, ac_date, now)
-                if ac_date + timedelta(days=30) < now:
-                    await emby.emby_change_policy(id=user["Id"], method=True)
+                if ac_date + timedelta(days=21) < now:
+                    if await emby.emby_change_policy(id=user["Id"], method=True):
+                        sql_update_emby(Emby.embyid == user["Id"], lv='c')
+                        await bot.send_message(chat_id=group[0],
+                                               text=f"**🔋#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n21天未活跃，禁用")
+                        LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：21天未活跃")
+                    else:
+                        await bot.send_message(chat_id=group[0],
+                                               text=f"**🎂#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n21天未活跃，禁用失败啦！检查emby连通性")
+                        LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：禁用失败啦！检查emby连通性")
+            except KeyError:
+                if await emby.emby_change_policy(id=user["Id"], method=True):
                     sql_update_emby(Emby.embyid == user["Id"], lv='c')
                     await bot.send_message(chat_id=group[0],
-                                           text=f"**🔋#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n30天未活跃，禁用")
-                    LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：30天未活跃")
-            except KeyError:
-                await emby.emby_change_policy(id=user["Id"], method=True)
-                sql_update_emby(Emby.embyid == user["Id"], lv='c')
-                await bot.send_message(chat_id=group[0],
-                                       text=f"**🔋#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n注册后未活跃，禁用")
-                LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：30天未活跃")
+                                           text=f"**🔋#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n注册后未活跃，禁用")
+                    LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：注册后未活跃禁用")
+                else:
+                    await bot.send_message(chat_id=group[0],
+                                           text=f"**🎂#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n注册后未活跃，禁用失败啦！检查emby连通性")
+                    LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：禁用失败啦！检查emby连通性")
 
 
 @bot.on_message(filters.command('low_activity', prefixes) & admins_on_filter)

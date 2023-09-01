@@ -13,7 +13,7 @@ from bot.sql_helper.sql_code import sql_count_code, sql_count_p_code
 from bot.sql_helper.sql_emby import sql_count_emby
 from bot.func_helper.fix_bottons import gm_ikb_content, open_menu_ikb, gog_rester_ikb, back_open_menu_ikb, \
     back_free_ikb, \
-    re_cr_link_ikb, close_it_ikb, ch_link_ikb, date_ikb, cr_paginate
+    re_cr_link_ikb, close_it_ikb, ch_link_ikb, date_ikb, cr_paginate, cr_renew_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, sendPhoto, callListen, deleteMessage, sendMessage
 from bot.func_helper.utils import open_check, cr_link_one
 
@@ -326,5 +326,15 @@ async def paginate_keyboard(_, call):
         await editMessage(call, f'🔎当前模式- **{num}**天，检索出以下 **{i}**页链接：\n\n{text}', keyboard)
 
 
-# @bot.on_callback_query(filters.regex('set_renew'))
-# async def set_renew(_, call):
+@bot.on_callback_query(filters.regex('set_renew'))
+async def set_renew(_, call):
+    await callAnswer(call, '🚀 进入续期设置')
+    try:
+        method = call.data.split('-')[1]
+        _open[method] = not _open[method]
+        save_config()
+    except IndexError:
+        pass
+    finally:
+        await editMessage(call, text='⭕ **关于用户组的续期功能**\n\n选择点击下方按钮开关任意兑换功能',
+                          buttons=cr_renew_ikb())

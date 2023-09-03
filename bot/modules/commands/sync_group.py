@@ -2,7 +2,7 @@ import time
 
 from pyrogram import filters
 
-from bot import bot, prefixes, bot_photo, LOGGER, Now
+from bot import bot, prefixes, bot_photo, LOGGER
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter, judge_uid_ingroup
 from bot.sql_helper.sql_emby import get_all_emby, Emby
@@ -29,11 +29,11 @@ async def sync_emby_group(_, msg):
             if not await judge_uid_ingroup(_, i.tg):
                 if await emby.emby_del(i.embyid):
                     re = await send.reply(
-                        f'🎯#未在群组封禁 {b} #id{i.tg}\n已将 [{i.tg}](tg://user?id={i.tg}) 账户 {i.name} 完成删除\n#{Now}')
+                        f'🎯#未在群组封禁 {b} #id{i.tg}\n已将 [{i.tg}](tg://user?id={i.tg}) 账户 {i.name} 完成删除')
                     await re.forward(i.tg)
                 else:
                     await send.reply(
-                        f'🎯#未在群组封禁 {b} #id{r[0]}\n[{i.tg}](tg://user?id={i.tg}) 账户 {i.name} 删除错误\n#{Now}')
+                        f'🎯#未在群组封禁 {b} #id{r[0]}\n[{i.tg}](tg://user?id={i.tg}) 账户 {i.name} 删除错误')
             else:
                 pass
         except:

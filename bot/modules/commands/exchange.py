@@ -1,9 +1,9 @@
 """
 兑换注册码exchange
 """
-from datetime import timedelta
+from datetime import timedelta, datetime
 
-from bot import bot, _open, Now, LOGGER, bot_photo, user_buy
+from bot import bot, _open, LOGGER, bot_photo, user_buy
 from bot.func_helper.emby import emby
 from bot.func_helper.fix_bottons import register_code_ikb
 from bot.func_helper.msg_utils import sendMessage, sendPhoto
@@ -43,7 +43,7 @@ async def rgs_code(_, msg):
                                          f'此 `{register_code}` \n注册码已被使用,是[{used}](tg://user?id={used})的形状了喔')
             first = await bot.get_chat(tg1)
             # 此处需要写一个判断 now和ex的大小比较。进行日期加减。
-            ex_new = Now
+            ex_new = datetime.now()
             if ex_new > ex:
                 ex_new = ex_new + timedelta(days=us1)
                 await emby.emby_change_policy(id=embyid, method=False)
@@ -59,7 +59,7 @@ async def rgs_code(_, msg):
                 sql_update_emby(Emby.tg == msg.from_user.id, ex=ex_new)
                 await sendMessage(msg,
                                   f'🎊 少年郎，恭喜你，已收到 [{first.first_name}](tg://user?id={tg1}) 的{us1}天🎁\n到期时间：{ex_new}__')
-            sql_update_code(code=register_code, used=msg.from_user.id, usedtime=Now)
+            sql_update_code(code=register_code, used=msg.from_user.id, usedtime=datetime.now())
             # new_code = "-".join(register_code.split("-")[:2]) + "-" + "█" * 7 + register_code.split("-")[2][7:]
             new_code = register_code[:-7] + "█" * 7
             if user_buy["stat"] != 'y':
@@ -85,7 +85,7 @@ async def rgs_code(_, msg):
             first = await bot.get_chat(tg1)
             x = data.us + us1
             sql_update_emby(Emby.tg == msg.from_user.id, us=x)
-            sql_update_code(code=register_code, used=msg.from_user.id, usedtime=Now)
+            sql_update_code(code=register_code, used=msg.from_user.id, usedtime=datetime.now())
             await sendPhoto(msg, photo=bot_photo,
                             caption=f'🎊 少年郎，恭喜你，已经收到了 [{first.first_name}](tg://user?id={tg1}) 发送的邀请注册资格\n\n请选择你的选项~',
                             buttons=register_code_ikb)

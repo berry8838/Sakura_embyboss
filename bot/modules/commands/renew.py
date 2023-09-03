@@ -1,9 +1,9 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from pyrogram import filters
 from pyrogram.errors import BadRequest
 
-from bot import bot, prefixes, Now, LOGGER
+from bot import bot, prefixes, LOGGER
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.msg_utils import deleteMessage, editMessage
@@ -13,6 +13,7 @@ from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_update_emby2, Emby2
 
 @bot.on_message(filters.command('renew', prefixes) & admins_on_filter)
 async def renew_user(_, msg):
+    Now = datetime.now()
     await deleteMessage(msg)
     reply = await msg.reply(f"🍓 正在处理ing···/·")
     if msg.reply_to_message is None:

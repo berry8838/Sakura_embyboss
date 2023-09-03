@@ -47,6 +47,9 @@ async def server(_, call):
         x = ' - **无权查看**'
     else:
         x = f'{emby_line}'
-    online = emby.get_current_playing_count()
+    try:
+        online = emby.get_current_playing_count()
+    except:
+        online = 'Emby服务器断连 ·0'
     text = f'**▎目前线路 & 用户密码 `{pwd}`**\n\n{x}\n\n{sever}· 🎬 在线 | **{online}** 人\n\n **· 🌏 [{(datetime.now(timezone(timedelta(hours=8)))).strftime("%Y-%m-%d %H:%M:%S")}]**'
     await editMessage(call, text, buttons=keyboard)

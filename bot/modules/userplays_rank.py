@@ -85,22 +85,22 @@ async def check_low_activity():
                     if await emby.emby_change_policy(id=user["Id"], method=True):
                         sql_update_emby(Emby.embyid == user["Id"], lv='c')
                         await bot.send_message(chat_id=group[0],
-                                               text=f"**🔋#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n21天未活跃，禁用")
-                        LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：21天未活跃")
+                                               text=f"**🔋#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n#id{e.tg} 21天未活跃，禁用")
+                        LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']} #id{e.tg}：21天未活跃")
                     else:
                         await bot.send_message(chat_id=group[0],
                                                text=f"**🎂#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n21天未活跃，禁用失败啦！检查emby连通性")
-                        LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：禁用失败啦！检查emby连通性")
+                        LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']} #id{e.tg}：禁用失败啦！检查emby连通性")
             except KeyError:
                 if await emby.emby_change_policy(id=user["Id"], method=True):
                     sql_update_emby(Emby.embyid == user["Id"], lv='c')
                     await bot.send_message(chat_id=group[0],
-                                           text=f"**🔋#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n注册后未活跃，禁用")
-                    LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：注册后未活跃禁用")
+                                           text=f"**🔋#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n#id{e.tg} 注册后未活跃，禁用")
+                    LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']} #id{e.tg}：注册后未活跃禁用")
                 else:
                     await bot.send_message(chat_id=group[0],
-                                           text=f"**🎂#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n注册后未活跃，禁用失败啦！检查emby连通性")
-                    LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']}：禁用失败啦！检查emby连通性")
+                                           text=f"**🎂#活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n#id{e.tg} 注册后未活跃，禁用失败啦！检查emby连通性")
+                    LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']} #id{e.tg}：禁用失败啦！检查emby连通性")
 
 
 @bot.on_message(filters.command('low_activity', prefixes) & admins_on_filter)

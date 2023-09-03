@@ -70,7 +70,7 @@ async def uun_info(_, msg):
             name = data.name
             cr = data.cr
             ex = data.ex
-            expired = data.expired
+            expired = '🟢 正常' if data.expired == 0 else '🔴 封禁'
             text += f"▎ 查询返回\n" \
                     f"**· 🍉 账户名称** | [{name}](tg://user?id={msg.from_user.id})\n" \
                     f"**· 🍓 当前状态** | {expired}\n" \

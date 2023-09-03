@@ -9,7 +9,7 @@ import asyncio
 
 from pyrogram.errors import BadRequest
 
-from bot import bot, LOGGER, _open, emby_line, emby_block, sakura_b, ranks
+from bot import bot, LOGGER, _open, emby_line, emby_block, sakura_b, ranks, config
 from pyrogram import filters
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import user_in_group_on_filter
@@ -101,37 +101,33 @@ async def members(_, call):
 # 创建账户
 @bot.on_callback_query(filters.regex('create') & user_in_group_on_filter)
 async def create(_, call):
-    data = await members_info(tg=call.from_user.id)
-    if data is None:
+    e = sql_get_emby(tg=call.from_user.id)
+    if e is None:
         return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
-    else:
-        e = sql_get_emby(tg=call.from_user.id)
-        if e.embyid is not None:
-            await callAnswer(call, '💦 你已经有账户啦！请勿重复注册。', True)
-        elif _open["tem"] >= int(_open["all_user"]):
-            await callAnswer(call, f"⭕ 很抱歉，注册总数已达限制。", True)
-        elif _open["stat"]:
-            send = await callAnswer(call, f"🪙 开放注册，免除积分要求。", True)
-            if send is False:
-                return
-            else:
-                await create_user(_, call, us=30, stats='y')
-        elif not _open["stat"] and int(e.us) < 30:
-            await callAnswer(call, f'🤖 自助注册已关闭，等待开启。', True)
-        elif not _open["stat"] and int(e.us) > 0:
-            send = await callAnswer(call, f'🪙 积分满足要求，请稍后。', True)
-            if send is False:
-                return
-            else:
-                await create_user(_, call, us=e.us, stats='n')
+
+    if e.embyid is not None:
+        await callAnswer(call, '💦 你已经有账户啦！请勿重复注册。', True)
+    elif _open["tem"] >= int(_open["all_user"]):
+        await callAnswer(call, f"⭕ 很抱歉，注册总数已达限制。", True)
+    elif _open["stat"]:
+        send = await callAnswer(call, f"🪙 开放注册，免除积分要求。", True)
+        if send is False:
+            return
+        else:
+            await create_user(_, call, us=30, stats='y')
+    elif not _open["stat"] and int(e.us) < 30:
+        await callAnswer(call, f'🤖 自助注册已关闭，等待开启。', True)
+    elif not _open["stat"] and int(e.us) > 0:
+        send = await callAnswer(call, f'🪙 积分满足要求，请稍后。', True)
+        if send is False:
+            return
+        else:
+            await create_user(_, call, us=e.us, stats='n')
 
 
 # 换绑tg
 @bot.on_callback_query(filters.regex('changetg') & user_in_group_on_filter)
 async def change_tg(_, call):
-    data = await members_info(tg=call.from_user.id)
-    if data is None:
-        return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
     await callAnswer(call, '⚖️ 绑定TG')
     send = await editMessage(call,
                              '🔰 **【改绑功能介绍】**：\n\n- 两种: 换绑 | 绑定\n'
@@ -158,8 +154,8 @@ async def change_tg(_, call):
         else:
             await editMessage(call,
                               f'✔️ 会话结束，收到设置\n\n用户名：**{emby_name}**__正在检查安全码 **{emby_pwd}**ing。。。__......')
-            data = await members_info(name=emby_name)
-            if data is None:
+            e = sql_get_emby(tg=emby_name)
+            if e is None:
                 # 绑定
                 await editMessage(call, f'❓ 未查询到名为 {emby_name} 的账户，开始绑定功能。。。稍等')
                 pwd2 = await emby.authority_account(call.from_user.id, emby_name, emby_pwd)
@@ -167,7 +163,7 @@ async def change_tg(_, call):
                     return await editMessage(call, '🍥 很遗憾绑定失败，请好好回想并进行再次尝试', buttons=re_changetg_ikb)
                 else:
                     await editMessage(call,
-                                      f'✅ 成功绑定，您的账户 `{emby_name}` - `{emby_pwd}`\n有效期为 30 天\n安全码为 `{pwd2}`，请妥善保存')
+                                      f'✅ 成功绑定\n账户/密码 `{emby_name}` - `{emby_pwd}`\n有效期为 30 天\n安全码为 `{pwd2}`，请妥善保存')
                     await sendMessage(call,
                                       f'⭕#新TG绑定 原emby账户 #{emby_name} \n\n已绑定至 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) - {call.from_user.id}',
                                       send=True)
@@ -176,7 +172,6 @@ async def change_tg(_, call):
 
             else:
                 # 换绑
-                e = sql_get_emby(tg=emby_name)
                 if e.embyid is None:
                     return await editMessage(call, f'⚠️ **数据错误**，请上报闺蜜(管理)检查。', buttons=re_changetg_ikb)
 
@@ -189,7 +184,7 @@ async def change_tg(_, call):
                     if not f.is_deleted:
                         await sendMessage(call,
                                           f'⭕#TG改绑 **用户 [{call.from_user.id}](tg://user?id={call.from_user.id}) '
-                                          f'正在试图改绑一个状态正常的[tg用户](tg://user?id={e.tg}) 账户-{e.name}\n\n请管理员检查。**',
+                                          f'正在试图改绑一个状态正常的[tg用户](tg://user?id={e.tg}) - {e.name}\n\n请管理员检查。**',
                                           send=True)
                         return await editMessage(call,
                                                  f'⚠️ **你所要换绑的[tg](tg://user?id={e.tg})用户状态正常！无须换绑。**',
@@ -212,12 +207,11 @@ async def change_tg(_, call):
 # kill yourself
 @bot.on_callback_query(filters.regex('delme') & user_in_group_on_filter)
 async def del_me(_, call):
-    data = await members_info(tg=call.from_user.id)
-    if data is None:
+    e = sql_get_emby(tg=call.from_user.id)
+    if e is None:
         return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
     else:
-        name, lv, ex, us, embyid, pwd2 = data
-        if embyid is None:
+        if e.embyid is None:
             return await callAnswer(call, '未查询到账户，不许乱点！💢', True)
         await callAnswer(call, "🔴 请先进行 安全码 验证")
         edt = await editMessage(call, '**🔰账户安全验证**：\n\n👮🏻验证是否本人进行敏感操作，请对我发送您设置的安全码。倒计时 120s\n'
@@ -233,11 +227,11 @@ async def del_me(_, call):
             await m.delete()
             await editMessage(call, '__您已经取消输入__ **会话已结束！**', buttons=back_members_ikb)
         else:
-            if m.text == pwd2:
+            if m.text == e.pwd2:
                 await m.delete()
                 await editMessage(call, '**⚠️ 如果您的账户到期，我们将封存您的账户，但仍保留数据'
                                         '而如果您选择删除，这意味着服务器会将您此前的活动数据全部删除。\n**',
-                                  buttons=del_me_ikb(embyid))
+                                  buttons=del_me_ikb(e.embyid))
             else:
                 await m.delete()
                 await editMessage(call, '**💢 验证不通过，安全码错误。**', re_delme_ikb)
@@ -266,12 +260,10 @@ async def del_emby(_, call):
 # 重置密码为空密码
 @bot.on_callback_query(filters.regex('reset') & user_in_group_on_filter)
 async def reset(_, call):
-    data = await members_info(tg=call.from_user.id)
-    if data is None:
+    e = sql_get_emby(tg=call.from_user.id)
+    if e is None:
         return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
-    else:
-        name, lv, ex, us, embyid, pwd2 = data
-    if embyid is None:
+    if e.embyid is None:
         return await bot.answer_callback_query(call.id, '未查询到账户，不许乱点！💢', show_alert=True)
     else:
         await callAnswer(call, "🔴 请先进行 安全码 验证")
@@ -288,7 +280,7 @@ async def reset(_, call):
             await m.delete()
             await editMessage(call, '__您已经取消输入__ **会话已结束！**', buttons=back_members_ikb)
         else:
-            if m.text != pwd2:
+            if m.text != e.pwd2:
                 await m.delete()
                 await editMessage(call, f'**💢 验证不通过，{m.text} 安全码错误。**', buttons=re_reset_ikb)
             else:
@@ -302,7 +294,7 @@ async def reset(_, call):
                 elif mima.text == '/cancel':
                     await mima.delete()
                     await editMessage(call, '**🎯 收到，正在重置ing。。。**')
-                    if await emby.emby_reset(id=embyid) is True:
+                    if await emby.emby_reset(id=e.embyid) is True:
                         await editMessage(call, '🕶️ 操作完成！已为您重置密码为 空。', buttons=back_members_ikb)
                         LOGGER.info(f"【重置密码】：{call.from_user.id} 成功重置了空密码！")
                     else:
@@ -312,7 +304,7 @@ async def reset(_, call):
                 else:
                     await mima.delete()
                     await editMessage(call, '**🎯 收到，正在重置ing。。。**')
-                    if await emby.emby_reset(id=embyid, new=mima.text) is True:
+                    if await emby.emby_reset(id=e.embyid, new=mima.text) is True:
                         await editMessage(call, f'🕶️ 操作完成！已为您重置密码为 `{mima.text}`。',
                                           buttons=back_members_ikb)
                         LOGGER.info(f"【重置密码】：{call.from_user.id} 成功重置了密码为 {mima.text} ！")
@@ -324,23 +316,21 @@ async def reset(_, call):
 # 显示/隐藏某些库
 @bot.on_callback_query(filters.regex('embyblock') & user_in_group_on_filter)
 async def embyblock(_, call):
-    data = await members_info(tg=call.from_user.id)
+    data = sql_get_emby(tg=call.from_user.id)
     if data is None:
         return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
-    else:
-        name, lv, ex, us, embyid, pwd2 = data
-    if embyid is None:
+    if data.embyid is None:
         return await callAnswer(call, '❓ 未查询到账户，不许乱点!', True)
-    elif lv == "c":
+    elif data.lv == "c":
         return await callAnswer(call, '💢 账户到期，封禁中无法使用！', True)
-    elif len(emby_block) == 0:
+    elif len(config["emby_block"]) == 0:
         send = await editMessage(call, '⭕ 管理员未设置。。。 快催催\no(*////▽////*)q', buttons=back_members_ikb)
         if send is False:
             return
     else:
         await asyncio.gather(callAnswer(call, "✅ 到位"),
-                             editMessage(call, f'🎬 目前设定的库为: \n**{emby_block}**\n请选择你的操作。',
-                                         buttons=emby_block_ikb(embyid)))
+                             editMessage(call, f'🎬 目前设定的库为: \n**{config["emby_block"]}**\n请选择你的操作。',
+                                         buttons=emby_block_ikb(data.embyid)))
 
 
 # 隐藏

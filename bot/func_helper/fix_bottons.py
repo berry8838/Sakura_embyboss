@@ -97,8 +97,13 @@ def del_me_ikb(embyid) -> InlineKeyboardMarkup:
 
 
 def emby_block_ikb(embyid) -> InlineKeyboardMarkup:
-    return ikb([[("🕹️ - 显示", f"emby_unblock-{embyid}"), ("🕶️ - 隐藏", f"emby_block-{embyid}")],
-                [("（〃｀ 3′〃）", "members")]])
+    success, rep = emby.user(embyid=embyid)
+    if success is False:
+        return ikb([[('💨 获取失败，返回', 'members')]])
+    if rep["Policy"]["BlockedMediaFolders"] != ['播放列表']:
+        return ikb([[("✔️️ - 显示", f"emby_unblock-{embyid}")], [("🔙 返回", "members")]])
+    else:
+        return ikb([[("✖️ - 隐藏", f"emby_block-{embyid}")], [("🔙 返回", "members")]])
 
 
 user_emby_block_ikb = ikb([[('✅ 已隐藏', 'members')]])

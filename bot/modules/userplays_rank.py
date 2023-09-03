@@ -31,7 +31,7 @@ async def user_plays_rank(days=7):
                 minutes = int(r[1]) // 60
                 emby_name = f'{r[0]}'
                 if em.lv == 'a':
-                    emby_name = f'||{r[0]}||'  # ||  {r[0][:1]}░{r[0][-1:]} 隐藏效果
+                    emby_name = f'{r[0][:1]}░{r[0][-1:]}'  # ||  隐藏效果与链接不可同时存在
                 ls.append([tg, em.iv + minutes])
             txt += f'**{xu[n]} - **[{emby_name}](tg://user?id={tg}) : **{minutes}** min\n'
             n += 1

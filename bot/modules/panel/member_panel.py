@@ -73,7 +73,10 @@ async def create_user(_, call, us, stats):
                 await editMessage(call,
                                   f'**▎创建用户成功🎉**\n\n· 用户名称 | `{emby_name}`\n· 用户密码 | `{pwd1[0]}`\n· 安全密码 | `{emby_pwd2}`'
                                   f'（仅发送一次）\n· 到期时间 | `{pwd1[1]}`\n· 当前线路：\n{emby_line}\n\n**·【服务器】 - 查看线路和密码**')
-                LOGGER.info(f"【创建账户】：{call.from_user.id} - 建立了 {emby_name} ")
+                if stats == 'y':
+                    LOGGER.info(f"【创建账户】[开注状态]：{call.from_user.id} - 建立了 {emby_name} ")
+                elif stats == 'n':
+                    LOGGER.info(f"【创建账户】：{call.from_user.id} - 建立了 {emby_name} ")
                 await tem_alluser()
 
 

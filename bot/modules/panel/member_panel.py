@@ -118,7 +118,7 @@ async def create(_, call):
             return
         else:
             await create_user(_, call, us=30, stats='y')
-    elif not _open["stat"] and int(e.us) < 30:
+    elif not _open["stat"] and int(e.us) <= 0:
         await callAnswer(call, f'🤖 自助注册已关闭，等待开启。', True)
     elif not _open["stat"] and int(e.us) > 0:
         send = await callAnswer(call, f'🪙 积分满足要求，请稍后。', True)

@@ -2,6 +2,7 @@ from pyrogram import filters
 from pyrogram.types import ChatMemberUpdated
 
 from bot import bot, group, LOGGER
+from bot.func_helper.utils import judge_admins
 from bot.sql_helper.sql_emby import sql_get_emby
 from bot.func_helper.emby import emby
 
@@ -11,6 +12,9 @@ async def leave_del_emby(_, event: ChatMemberUpdated):
     # print(event)
     chat_id = event.chat.id
     user_id = event.from_user.id
+    if judge_admins(user_id):
+        # admins无视规则 直接跳过
+        return
     if event.old_chat_member is not None and event.new_chat_member is None:
         # print(event.old_chat_member.status)
         user_fname = event.old_chat_member.user.first_name

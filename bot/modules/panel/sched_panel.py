@@ -21,7 +21,7 @@ if schedall["dayplayrank"]:
 if schedall["weekplayrank"]:
     scheduler.add_job(user_week_plays, 'cron', day_of_week="sun", hour=23, minute=0)
 if schedall["check_ex"]:
-    scheduler.add_job(check_expired, 'cron', hour=0, minute=30)
+    scheduler.add_job(check_expired, 'cron', hour=1, minute=30)
 if schedall["low_activity"]:
     scheduler.add_job(check_low_activity, 'cron', hour=8, minute=30)
 
@@ -39,7 +39,7 @@ async def sched_change_policy(_, call):
         method = call.data.split('-')[1]
         schedall[method] = not schedall[method]
         save_config()
-        await callAnswer(call, f'⭕ 成功更改了 {method} 状态，请 /restart 重启bot', True)
+        await callAnswer(call, f'⭕ 成功更改了 {method} 状态，请 /restart 重启bot 使其生效', True)
         await sched_panel(_, call.message)
     except IndexError:
         await sched_panel(_, call.message)

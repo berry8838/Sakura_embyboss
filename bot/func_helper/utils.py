@@ -40,7 +40,7 @@ async def members_info(tg=None, name=None):
         if lv == '白名单':
             ex = '+ ∞'
         elif data.name is not None and schedall["low_activity"] and not schedall["check_ex"]:
-            ex = '__21天无活跃禁用__'
+            ex = '间隔21天内有观看'
         else:
             ex = data.ex or '无账户信息'
         return name, lv, ex, us, embyid, pwd2

@@ -21,15 +21,17 @@ async def user_info(_, msg):
     await deleteMessage(msg)
     if msg.reply_to_message is None:
         try:
-            uid = msg.text.split()[1]
-            if msg.from_user.id != owner and int(uid) == owner:
+            uid = int(msg.command[1])
+            if msg.from_user.id != owner and uid == owner:
                 return await sendMessage(msg,
                                          f"⭕ [{msg.from_user.first_name}](tg://user?id={msg.from_user.id})！不可以偷窥主人",
                                          timer=60)
 
             first = await bot.get_chat(uid)
-        except (IndexError, KeyError, BadRequest):
-            await sendMessage(msg, '**请先给我一个正确的id！**\n\n用法：/kk [id]\n或者对某人回复kk', timer=60)
+        except (IndexError, KeyError):
+            return await sendMessage(msg, '**请先给我一个tg_id！**\n\n用法：/kk [id]\n或者对某人回复kk', timer=60)
+        except BadRequest:
+            return await sendMessage(msg, f'{uid} - 🎂抱歉，此id未登记bot，或者id错误', timer=60)
         else:
             text, keyboard = await cr_kk_ikb(uid, first.first_name)
             await sendPhoto(msg, photo=bot_photo, caption=text, buttons=keyboard)  # protect_content=True 移除禁止复制

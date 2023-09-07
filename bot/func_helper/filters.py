@@ -79,8 +79,8 @@ async def user_in_group_on_filter(filt, client, update):
         try:
             u = await client.get_chat_member(chat_id=int(i), user_id=uid)
             u = str(u.status)
-            if u in ['ChatMemberStatus.OWNER', 'ChatMemberStatus.ADMINISTRATOR', 'ChatMemberStatus.MEMBER',
-                     'ChatMemberStatus.RESTRICTED']:
+            if u in ['ChatMemberStatus.OWNER', 'ChatMemberStatus.ADMINISTRATOR',
+                     'ChatMemberStatus.MEMBER']:  # 移除了 'ChatMemberStatus.RESTRICTED' 防止有人进群直接注册不验证
                 return True
         except BadRequest as e:
             if e.ID == 'USER_NOT_PARTICIPANT':
@@ -90,8 +90,6 @@ async def user_in_group_on_filter(filt, client, update):
                 return False
             else:
                 return False
-        else:
-            continue
     return False
 
 
@@ -100,8 +98,8 @@ async def judge_uid_ingroup(client, uid):
         try:
             u = await client.get_chat_member(chat_id=int(i), user_id=uid)
             u = str(u.status)
-            if u in ['ChatMemberStatus.OWNER', 'ChatMemberStatus.ADMINISTRATOR', 'ChatMemberStatus.MEMBER',
-                     'ChatMemberStatus.RESTRICTED']:
+            if u in ['ChatMemberStatus.OWNER', 'ChatMemberStatus.ADMINISTRATOR',
+                     'ChatMemberStatus.MEMBER']:  # 移除了 'ChatMemberStatus.RESTRICTED' 防止有人进群直接注册不验证
                 return True
         except BadRequest as e:
             if e.ID == 'USER_NOT_PARTICIPANT':
@@ -111,8 +109,6 @@ async def judge_uid_ingroup(client, uid):
                 return False
             else:
                 return False
-        else:
-            continue
     return False
 
 

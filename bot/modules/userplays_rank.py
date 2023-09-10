@@ -74,8 +74,25 @@ async def check_low_activity():
     for user in users:
         # 数据库先找
         e = sql_get_emby(tg=user["Name"])
-        if e is None or e.lv != 'b':
+        if e is None:
             continue
+
+        elif e.lv == 'c':
+            # print(e.tg)
+            try:
+                ac_date = convert_to_beijing_time(user["LastActivityDate"])
+            except KeyError:
+                ac_date = "None"
+            finally:
+                if ac_date == "None" or ac_date + timedelta(days=15) < now:
+                    if await emby.emby_del(id=e.embyid):
+                        await bot.send_message(chat_id=group[0],
+                                               text=f'**🔋#活跃检测** - [{e.name}](tg://user?id={e.tg})\n#id{e.tg} 禁用后未解禁，已执行删除。')
+                        LOGGER.info(f"【活跃检测】- 删除账户 {user['Name']} #id{e.tg}")
+                    else:
+                        await bot.send_message(chat_id=group[0],
+                                               text=f'**🔋#活跃检测** - [{e.name}](tg://user?id={e.tg})\n#id{e.tg} 禁用后未解禁，执行删除失败。')
+                        LOGGER.info(f"【活跃检测】- 删除账户失败 {user['Name']} #id{e.tg}")
 
         elif e.lv == 'b':
             try:

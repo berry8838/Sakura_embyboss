@@ -35,12 +35,12 @@ async def members_info(tg=None, name=None):
         pwd2 = data.pwd2
         embyid = data.embyid
         us = [data.us, data.iv]
-        lv_dict = {'a': '白名单', 'b': '正常', 'c': '已禁用', 'd': '未注册', 'e': '30天未活跃/无信息'}
+        lv_dict = {'a': '白名单', 'b': '**正常**', 'c': '**已禁用**', 'd': '未注册'}  # , 'e': '**21天未活跃/无信息**'
         lv = lv_dict.get(data.lv, '未知')
         if lv == '白名单':
             ex = '+ ∞'
         elif data.name is not None and schedall["low_activity"] and not schedall["check_ex"]:
-            ex = '间隔21天内有观看'
+            ex = '__若21天无观看将封禁__'
         else:
             ex = data.ex or '无账户信息'
         return name, lv, ex, us, embyid, pwd2

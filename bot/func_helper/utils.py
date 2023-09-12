@@ -59,20 +59,10 @@ async def open_check():
     return open_stats, all_user, tem, timing, allow_code
 
 
-async def tem_alluser(num: int = None):
-    """
-    tem改变后操作
-    :param num: 改变值
-    :return:
-    """
-    if num is None:
-        _open["tem"] = int(_open["tem"] + 1)
-        if _open["tem"] >= _open["all_user"]:
-            _open["stat"] = False
-    else:
-        _open["tem"] = int(_open["tem"] + num)
-        if _open["tem"] < _open["all_user"]:
-            _open["stat"] = True
+async def tem_alluser():
+    _open["tem"] = int(_open["tem"] + 1)
+    if _open["tem"] >= _open["all_user"]:
+        _open["stat"] = False
     save_config()
 
 

@@ -253,7 +253,6 @@ async def del_emby(_, call):
         if send1 is False:
             return
 
-        await tem_alluser(-1)
         LOGGER.info(f"【删除账号】：{call.from_user.id} 已删除！")
     else:
         await editMessage(call, '🥧 蛋糕辣~ 好像哪里出问题了，请向管理反应', buttons=back_members_ikb)

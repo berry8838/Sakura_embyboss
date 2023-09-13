@@ -79,17 +79,11 @@ re_exchange_b_ikb = ikb([[('♻️ 重试', 'exchange')], [('🔙 返回', 'memb
 
 
 def store_ikb():
-    d = []
-    if _open["exchange"]:
-        d.append([f'60{sakura_b} / 1月时长', 'store-renew'])
-    if _open["whitelist"]:
-        d.append([f'9999{sakura_b} / 白名单', 'store-whitelist'])
-    if _open["invite"]:
-        d.append([f'500{sakura_b} / 条', 'store-invite'])
-    d.append([f'◀ 返回', 'members'])
-    lines = array_chunk(d, 2)
-    keyboard = ikb(lines)
-    return keyboard
+    return ikb([[(f'⚖️ {sakura_b}续期', 'store-renew'), (f'♾️ 兑换白名单', 'store-whitelist')],
+                [(f'🎟️ 兑换注册码', 'store-invite'), (f'🔍 查询注册码', 'store-query')], [(f'❌ 取消', 'members')]])
+
+
+re_store_renew = ikb([[('✨ 重新输入', 'changetg'), ('💫 取消输入', 'storeall')]])
 
 
 def del_me_ikb(embyid) -> InlineKeyboardMarkup:
@@ -99,7 +93,7 @@ def del_me_ikb(embyid) -> InlineKeyboardMarkup:
 def emby_block_ikb(embyid) -> InlineKeyboardMarkup:
     success, rep = emby.user(embyid=embyid)
     if success is False:
-        return ikb([[('💨 获取失败，返回', 'members')]])
+        return ikb([[('💨 连接emby失败，返回', 'members')]])
     if rep["Policy"]["BlockedMediaFolders"] != ['播放列表']:
         return ikb([[("✔️️ - 显示", f"emby_unblock-{embyid}")], [("🔙 返回", "members")]])
     else:
@@ -140,8 +134,8 @@ async def cr_page_server():
 """admins ↓"""
 
 gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 生成注册', 'cr_link')],
-                      [('💊 查询注册', 'ch_link'), ('🏬 续期设置', 'set_renew')],
-                      [('🌏 定时', 'schedall'), ('🕹️ 主界面', 'back_start'), ('控制 🪟', 'back_config')]])
+                      [('💊 查询注册', 'ch_link'), ('🏬 兑换设置', 'set_renew')],
+                      [('🌏 定时', 'schedall'), ('🕹️ 主界面', 'back_start'), ('其他 🪟', 'back_config')]])
 
 
 def open_menu_ikb(openstats, timingstats) -> InlineKeyboardMarkup:
@@ -274,8 +268,8 @@ def sched_buttons():
                  InlineButton(f'{weekrank} 播放周榜', f'sched-weekrank'),
                  InlineButton(f'{dayplayrank} 看片日榜', f'sched-dayplayrank'),
                  InlineButton(f'{weekplayrank} 看片周榜', f'sched-weekplayrank'),
-                 InlineButton(f'{check_ex} 到期检测', f'sched-check_ex'),
-                 InlineButton(f'{low_activity} 不活跃检测', f'sched-low_activity')
+                 InlineButton(f'{check_ex} 到期保号', f'sched-check_ex'),
+                 InlineButton(f'{low_activity} 活跃保号', f'sched-low_activity')
                  )
     keyboard.row(InlineButton(f'🫧 返回', 'manage'))
     return keyboard

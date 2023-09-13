@@ -81,11 +81,11 @@ async def open_stats(_, call):
         send_i = await sendPhoto(call, photo=bot_photo,
                                  caption=text, buttons=gog_rester_ikb,
                                  send=True)
-        try:
-            await send_i.pin()
-        except BadRequest:
-            # await send_i.reply("🔴 置顶群消息失败，检查权限")
-            pass
+        # try:
+        #     await send_i.pin()
+        # except BadRequest:
+        #     # await send_i.reply("🔴 置顶群消息失败，检查权限")
+        #     pass
         # await send_i.forward(call.from_user.id)
         await open_menu(_, call)
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 开启了自由注册，总人数限制 {all_user}")

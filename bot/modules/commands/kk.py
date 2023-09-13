@@ -48,7 +48,7 @@ async def user_info(_, msg):
 
 # 封禁或者解除
 @bot.on_callback_query(filters.regex('user_ban'))
-async def gift(_, call):
+async def kk_user_ban(_, call):
     if not judge_admins(call.from_user.id):
         return await call.answer("请不要以下犯上 ok？", show_alert=True)
 

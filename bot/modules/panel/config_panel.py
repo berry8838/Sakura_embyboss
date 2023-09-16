@@ -194,3 +194,19 @@ async def open_allow_code(_, call):
         await config_p_re(_, call)
         save_config()
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 注册码续期 True")
+
+
+@bot.on_callback_query(filters.regex('leave_ban') & admins_on_filter)
+async def open_leave_ban(_, call):
+    if _open["leave_ban"]:
+        _open["leave_ban"] = False
+        await callAnswer(call, '**👮🏻‍♂️ 您已关闭 退群封禁，用户退群bot将不会被封印了**', True)
+        await config_p_re(_, call)
+        save_config()
+        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 退群封禁设置 Falese")
+    elif not _open["leave_ban"]:
+        _open["leave_ban"] = True
+        await callAnswer(call, '**👮🏻‍♂️ 您已开启 退群封禁，用户退群bot将会被封印，禁止入群**', True)
+        await config_p_re(_, call)
+        save_config()
+        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 退群封禁设置 True")

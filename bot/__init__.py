@@ -55,10 +55,7 @@ _open = config["open"]
 try:
     _open["stat"] = False
     _open["timing"] = 0
-    # _open["checkin"] = False
-    # _open["exchange"] = False
-    # _open["whitelist"] = False
-    # _open["invite"] = False
+    _open["leave_ban"] = False
     save_config()
 except:
     pass
@@ -79,7 +76,6 @@ except Exception as e:
 prefixes = ['/', '!', '.', '#', '。']
 try:
     schedall = config["schedall"]
-    low_activity = schedall["low_activity"]
 except:
     schedall = {"dayrank": True, "weekrank": True, "dayplayrank": False, "weekplayrank": False, "check_ex": True,
                 "low_activity": False}

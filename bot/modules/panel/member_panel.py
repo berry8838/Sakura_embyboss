@@ -429,9 +429,10 @@ async def do_store_renew(_, call):
                 new_us = e.iv - iv
                 if new_us < 0:
                     sql_update_emby(Emby.tg == call.from_user.id, iv=e.iv - 10)
-                    return await editMessage(call, f'🫡，西内！超出你持有的{e.iv}{sakura_b}，扣你10分。')
+                    return await editMessage(call, f'🫡，西内！输入值超出你持有的{e.iv}{sakura_b}，倒扣10。')
                 new_ex = e.ex + timedelta(days=iv / 2)
                 sql_update_emby(Emby.tg == call.from_user.id, ex=new_ex, iv=new_us)
+                await emby.emby_change_policy(id=e.embyid)
                 await editMessage(call, f'🎉 您已花费 {iv}{sakura_b}\n🌏 到期时间 **{new_ex}**')
                 LOGGER.info(f'【兑换续期】- {call.from_user.id} 已花费 {iv}{sakura_b}，到期时间：{new_ex}')
     else:
@@ -444,7 +445,7 @@ async def do_store_whitelist(_, call):
         e = sql_get_emby(tg=call.from_user.id)
         if e is None:
             return
-        if e.iv < 9999 or e.lv == 'c':
+        if e.iv < 9999 or e.lv == 'a':
             return await callAnswer(call,
                                     f'🏪 兑换规则：\n当前兑换白名单需要 9999 {sakura_b}，已有白名单无法再次消费。勉励',
                                     True)

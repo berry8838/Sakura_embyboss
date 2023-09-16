@@ -134,7 +134,6 @@ ___
 "bot_photo":     "https://telegra.ph/file/1437f7f348c6c71f0b9ab.png",
                   bot发送消息时的图，必要                  
 "admins": []      拥有管理权限的id，其他添加id要用英文逗号隔开，已和owner分割了 
-"money": "花币"    未来新功能货币的名称
 "emby_api": ""    emby的api，在后台自己创建一个
 "emby_url": ""    建议ip，http://255.255.255.36:8096 最后不带斜杠，是发送给enby的网址，填域名请保证反代不会挂
 "emby_line": ""   展示给用户的emby地址
@@ -143,33 +142,34 @@ ___
 "db_user": "susu" 数据库用户名
 "db_pwd": "1234"  密码
 "db_name": "embyboss"  库名
-"ranks": {
-    "logo": "SAKURA",  日榜/周榜推送榜单图片中的LOGO文字
-    "backdrop": false   是否使用backdrop作为推送榜单的封面图
-}
 ```
 
 - 不填项目
 
 ```
-"user_buy": {
-    "stat": "n",
-    "text": "**🛒请选择购买对应时长的套餐：**网页付款后会发邀请码连接，点击跳转到bot开始注册和续期程式。",
-    "button": [
-      [
-        "Google",
-        "Google.com",
-        "url"
-      ]
-    ]
-  } stat 开启充电按钮，建议默认关闭，可在bot->/config里自行配置，text是显示文本，butoon为键盘
-"open": "n",    是否开启自由注册。
-"buy": [],      购买按钮的样式，不填，等bot起来去里面设置。报错很麻烦
-"invite": "n",  没写好，可以忽略
-"block":[]      不填，确保有这个字段就行。等bot起来去里面设置
-"tz_ad": "",    探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠
+"money": "花币"    未来新功能货币的名称
+"user_buy": {"stat": "n","text": "**🛒请选择购买对应时长的套餐：**网页付款后会发邀请码连接，点击跳转到bot开始注册和续期程式。","button": [["Google","Google.com","url"]]}
+            ”stat“是否开启充电按钮，默认”n“关闭，可在bot->/config里自行配置，text是显示文本，butoon为键盘（依序分别为 键盘显示文本，网址，”url“模式）
+ "open": {
+    "stat": false,   # 注册状态，每次启动时默认关闭
+    "all_user": 1000,  # 注册人数限制
+    "timing": 0,   # 定时注册，默认为0，勿动
+    "tem": 0,      # 储存当前已注册用户数
+    "allow_code": "y", # 能否使用注册码续期，默认”y“，可以，反之”n“
+    "checkin": true,   # 开启签到 
+    "exchange": true,  # 开启兑换续期
+    "whitelist": true, # 开启兑换白名单
+    "invite": false,   # 开启邀请功能
+    "leave_ban": false  # 退群封禁，默认关闭
+  }
+"emby_block":[] 不填，确保有这个字段就行。等bot起来去里面设置
+"tz_ad": "",    探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠，没有请勿填
 "tz_api": "",
 "tz_id": []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。
+"ranks": {
+    "logo": "SAKURA",  日榜/周榜推送榜单图片中的LOGO文字
+    "backdrop": false   是否使用backdrop作为推送榜单的封面图
+}
 ```
 
 - 额外的：如果你希望你的【服务器】可以显示多机器的话，探针就有用了，api生成在nezha的管理后台，id也是，[如图](./image/fwq.png)
@@ -219,8 +219,8 @@ cd /root/Sakura_embyboss
 git fetch --all
 git reset --hard origin/master
 git pull origin master
-# 更新依赖
-pip3 install -r requirements.txt
+# 更新依赖(一般不执行)
+#pip3 install -r requirements.txt
 # 启动命令
 systemctl restart embyboss
 ```

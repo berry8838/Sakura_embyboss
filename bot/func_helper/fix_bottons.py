@@ -193,10 +193,12 @@ def cr_renew_ikb():
 def config_preparation() -> InlineKeyboardMarkup:
     code = '✅' if _open["allow_code"] == 'y' else '❎'
     buy_stat = '✅' if user_buy["stat"] == 'y' else '❎'
+    leave_ban = '✅' if _open["leave_ban"] else '❎'
     keyboard = ikb(
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
-         [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
-         [(f'{code} 注册码续期', 'open_allow_code'), (f'{buy_stat} 开关购买', 'set_buy')],
+         [('💠 emby线路', 'set_line'),('🎬 显/隐指定库', 'set_block')],
+         [(f'{code} 注册码续期', 'open_allow_code'), (f'{buy_stat} 开关购买', 'set_buy'),
+          (f'{leave_ban} 退群封禁', 'leave_ban')],
          [('🔙 返回', 'manage')]])
     return keyboard
 

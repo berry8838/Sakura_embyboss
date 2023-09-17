@@ -7,7 +7,7 @@ from pyrogram import filters
 from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_emby import sql_add_emby
 from bot.func_helper.filters import user_in_group_filter
-from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, callAnswer
+from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, callAnswer, editMessage
 from bot.func_helper.fix_bottons import group_f, judge_start_ikb, judge_group_ikb
 from bot import bot, prefixes, group, bot_photo
 
@@ -47,15 +47,14 @@ async def p_start(_, msg):
 async def b_start(_, call):
     if await user_in_group_filter(_, call):
         await asyncio.gather(callAnswer(call, "⭐ 返回start"),
-                             deleteMessage(call), sendPhoto(call, bot_photo,
-                                                            f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 请选择功能__👇",
-                                                            buttons=judge_start_ikb(
-                                                                call.from_user.id)))
+                             editMessage(call,
+                                         text=f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 请选择功能__👇",
+                                         buttons=judge_start_ikb(
+                                             call.from_user.id)))
     elif not await user_in_group_filter(_, call):
         await asyncio.gather(callAnswer(call, "⭐ 返回start"),
-                             deleteMessage(call), sendPhoto(call, bot_photo,
-                                                            '💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？',
-                                                            judge_group_ikb))
+                             editMessage(call, text='💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？',
+                                         buttons=judge_group_ikb))
 
 
 @bot.on_callback_query(filters.regex('store_all'))

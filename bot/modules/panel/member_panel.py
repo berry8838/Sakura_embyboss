@@ -333,7 +333,7 @@ async def embyblock(_, call):
         success, rep = emby.user(embyid=data.embyid)
         if success is False:
             stat = '💨 未知'
-        elif rep["Policy"]["BlockedMediaFolders"] != ['播放列表']:
+        elif rep["Policy"]["BlockedMediaFolders"] == ['播放列表']:
             stat = '🟢 显示'
         else:
             stat = '🔴 隐藏'

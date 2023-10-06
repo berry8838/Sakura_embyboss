@@ -11,7 +11,7 @@ from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.msg_utils import sendMessage, deleteMessage
 from bot.func_helper.utils import wh_msg
 from bot.modules.bot_commands import bot_commands
-from bot.sql_helper.sql_emby import sql_update_emby, Emby
+from bot.sql_helper.sql_emby import sql_update_emby, Emby, sql_get_emby
 
 
 # 新增管理名单
@@ -57,6 +57,9 @@ async def pro_user(_, msg):
     else:
         uid = msg.reply_to_message.from_user.id
         first = await bot.get_chat(uid)
+    e = sql_get_emby(tg=uid)
+    if e is None or e.embyid is None:
+        return await sendMessage(msg, f'[ta](tg://user?id={uid}) 还没有emby账户无法操作！请先注册')
     if sql_update_emby(Emby.tg == uid, lv='a'):
         await sendMessage(msg,
                           f"**{random.choice(wh_msg)}**\n\n"

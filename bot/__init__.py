@@ -53,9 +53,7 @@ bot_photo = config["bot_photo"]
 user_buy = config["user_buy"]
 _open = config["open"]
 try:
-    _open["stat"] = False
     _open["timing"] = 0
-    _open["leave_ban"] = False
     save_config()
 except:
     pass

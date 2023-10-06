@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 from cacheout import Cache
 import requests as r
-from bot import emby_url, emby_api, _open, emby_block
+from bot import emby_url, emby_api, _open, emby_block, schedall
 from bot.sql_helper.sql_emby import sql_update_emby, sql_delete_emby, sql_change_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_add_emby2, sql_delete_emby2
 from bot.func_helper.utils import pwd_create
@@ -142,7 +142,14 @@ class Embyservice:
                                         us=0)
                     elif stats == 'o':
                         sql_add_emby2(embyid=id, name=name, cr=datetime.now(), ex=ex)
-                    return pwd, ex.strftime("%Y-%m-%d %H:%M:%S")
+
+                    if schedall["check_ex"]:
+                        ex = ex.strftime("%Y-%m-%d %H:%M:%S")
+                    elif schedall["low"]:
+                        ex = '__若21天无观看将封禁__'
+                    else:
+                        ex = '__无需保号，放心食用__'
+                    return pwd, ex
         elif new_user.status_code == 400:
             return 400
 

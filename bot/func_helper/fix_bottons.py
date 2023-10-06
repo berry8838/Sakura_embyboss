@@ -91,13 +91,8 @@ def del_me_ikb(embyid) -> InlineKeyboardMarkup:
 
 
 def emby_block_ikb(embyid) -> InlineKeyboardMarkup:
-    success, rep = emby.user(embyid=embyid)
-    if success is False:
-        return ikb([[('💨 连接emby失败，返回', 'members')]])
-    if rep["Policy"]["BlockedMediaFolders"] != ['播放列表']:
-        return ikb([[("✔️️ - 显示", f"emby_unblock-{embyid}")], [("🔙 返回", "members")]])
-    else:
-        return ikb([[("✖️ - 隐藏", f"emby_block-{embyid}")], [("🔙 返回", "members")]])
+    return ikb(
+        [[("✔️️ - 显示", f"emby_unblock-{embyid}"), ("✖️ - 隐藏", f"emby_block-{embyid}")], [("🔙 返回", "members")]])
 
 
 user_emby_block_ikb = ikb([[('✅ 已隐藏', 'members')]])
@@ -196,7 +191,7 @@ def config_preparation() -> InlineKeyboardMarkup:
     leave_ban = '✅' if _open["leave_ban"] else '❎'
     keyboard = ikb(
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
-         [('💠 emby线路', 'set_line'),('🎬 显/隐指定库', 'set_block')],
+         [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
          [(f'{code} 注册码续期', 'open_allow_code'), (f'{buy_stat} 开关购买', 'set_buy'),
           (f'{leave_ban} 退群封禁', 'leave_ban')],
          [('🔙 返回', 'manage')]])

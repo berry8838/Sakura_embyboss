@@ -29,7 +29,7 @@ if schedall["low_activity"]:
 async def sched_panel(_, msg):
     # await deleteMessage(msg)
     await editMessage(msg,
-                      text=f'🎮 **管理定时任务面板**\n\n默认关闭**用户播放榜单**，开启请在日与周中二选一，以免重复{sakura_b}的计算，谨慎',
+                      text=f'🎮 **管理定时任务面板**\n\n默认关闭**看片榜单**，开启请在日与周中二选一，以免重复{sakura_b}的计算，谨慎',
                       buttons=sched_buttons())
 
 

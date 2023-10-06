@@ -330,8 +330,15 @@ async def embyblock(_, call):
         if send is False:
             return
     else:
+        success, rep = emby.user(embyid=data.embyid)
+        if success is False:
+            stat = '💨 未知'
+        elif rep["Policy"]["BlockedMediaFolders"] != ['播放列表']:
+            stat = '🟢 显示'
+        else:
+            stat = '🔴 隐藏'
         await asyncio.gather(callAnswer(call, "✅ 到位"),
-                             editMessage(call, f'🎬 目前设定的库为: \n**{config["emby_block"]}**\n请选择你的操作。',
+                             editMessage(call, f'🤺 用户状态：{stat}\n🎬 目前设定的库为: \n**{config["emby_block"]}**\n请选择你的操作。',
                                          buttons=emby_block_ikb(data.embyid)))
 
 

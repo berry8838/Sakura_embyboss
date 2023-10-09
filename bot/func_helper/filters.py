@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 from pyrogram.errors import BadRequest
 from pyrogram.filters import create
-from bot import admins, owner, group, LOGGER, bot
+from bot import admins, owner, group, LOGGER
+from pyrogram.enums import ChatMemberStatus
 
 
 # async def owner_filter(client, update):
@@ -49,9 +50,7 @@ async def user_in_group_filter(client, update):
     for i in group:
         try:
             u = await client.get_chat_member(chat_id=int(i), user_id=uid)
-            u = str(u.status)
-            if u in ['ChatMemberStatus.OWNER', 'ChatMemberStatus.ADMINISTRATOR', 'ChatMemberStatus.MEMBER',
-                     'ChatMemberStatus.RESTRICTED']:
+            if u.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER, ChatMemberStatus.OWNER]:
                 return True
         except BadRequest as e:
             if e.ID == 'USER_NOT_PARTICIPANT':
@@ -78,9 +77,8 @@ async def user_in_group_on_filter(filt, client, update):
     for i in group:
         try:
             u = await client.get_chat_member(chat_id=int(i), user_id=uid)
-            u = str(u.status)
-            if u in ['ChatMemberStatus.OWNER', 'ChatMemberStatus.ADMINISTRATOR',
-                     'ChatMemberStatus.MEMBER']:  # 移除了 'ChatMemberStatus.RESTRICTED' 防止有人进群直接注册不验证
+            if u.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER,
+                            ChatMemberStatus.OWNER]:  # 移除了 'ChatMemberStatus.RESTRICTED' 防止有人进群直接注册不验证
                 return True
         except BadRequest as e:
             if e.ID == 'USER_NOT_PARTICIPANT':
@@ -97,9 +95,8 @@ async def judge_uid_ingroup(client, uid):
     for i in group:
         try:
             u = await client.get_chat_member(chat_id=int(i), user_id=uid)
-            u = str(u.status)
-            if u in ['ChatMemberStatus.OWNER', 'ChatMemberStatus.ADMINISTRATOR',
-                     'ChatMemberStatus.MEMBER']:  # 移除了 'ChatMemberStatus.RESTRICTED' 防止有人进群直接注册不验证
+            if u.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER,
+                            ChatMemberStatus.OWNER]:  # 移除了 'ChatMemberStatus.RESTRICTED' 防止有人进群直接注册不验证
                 return True
         except BadRequest as e:
             if e.ID == 'USER_NOT_PARTICIPANT':

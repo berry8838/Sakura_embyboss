@@ -22,7 +22,7 @@ def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
     if _open["checkin"]:
         d.append([f'🎯 签到', 'checkin'])
     if user_buy["stat"] == "y":
-        d.append(['💰 点击购买', 'buy_account'])
+        d.append(user_buy["button"])
     lines = array_chunk(d, 2)
     if judge_admins(uid):
         lines.append([['👮🏻‍♂️ admin', 'manage']])
@@ -36,11 +36,8 @@ def buy_sth_ikb() -> InlineKeyboardMarkup:
     购买按钮
     :return:
     """
-    d = user_buy["button"].copy()
-    lines = array_chunk(d, 2)
-    lines.append([["💫 回到首页", "back_start"]])
-    keyboard = ikb(lines)
-    return keyboard
+    d = [[user_buy["button"]], [["💫 回到首页", "back_start"]]]
+    return ikb(d)
 
 
 # un_group_answer
@@ -206,9 +203,8 @@ def back_set_ikb(method) -> InlineKeyboardMarkup:
 
 
 def try_set_buy(ls: list) -> InlineKeyboardMarkup:
-    lines = array_chunk(ls, 2)
-    lines.append([["✅ 体验结束返回", "back_config"]])
-    return ikb(lines)
+    d = [[ls], [["✅ 体验结束返回", "back_config"]]]
+    return ikb(d)
 
 
 """ other """

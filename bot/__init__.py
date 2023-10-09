@@ -51,6 +51,10 @@ main_group = config["main_group"]
 chanel = config["chanel"]
 bot_photo = config["bot_photo"]
 user_buy = config["user_buy"]
+if user_buy["text"] is not False:
+    user_buy["text"] = False
+    user_buy["button"] = user_buy["button"][0]  # 使用索引访问第一个元素
+    save_config()
 _open = config["open"]
 try:
     _open["timing"] = 0

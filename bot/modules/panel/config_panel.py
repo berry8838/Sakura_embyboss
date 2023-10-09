@@ -136,9 +136,9 @@ async def set_buy(_, call):
         return await config_p_re(_, call)
 
     user_buy["stat"] = "y"
-    await editMessage(call, '**👮🏻‍♂️ 已经为您开启购买按钮啦！**\n'
-                            '- 如更换购买按钮请输入格式形如： \n\n`xxxx（此为显示文本描述）|[按钮描述]-[link1]\n[按钮描述]-[link2]\n[按钮描述]-[link3]`\n 一个按钮一行'
-                            '- 退出状态请按 /cancel，含markdown请在配置文件更改')
+    await editMessage(call, '**👮🏻‍♂️ 已经为您开启购买按钮啦！目前默认只使用一个按钮，如果需求请github联系**\n'
+                            '- 更换按钮请输入格式形如： \n\n`[按钮文字描述] - http://xxx`\n'
+                            '- 退出状态请按 /cancel，需要markdown效果的话请在配置文件更改')
     save_config()
     LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} - 开启了购买按钮")
 
@@ -152,32 +152,21 @@ async def set_buy(_, call):
     else:
         await txt.delete()
         try:
-            buy_text, buy_button = txt.text.replace(' ', '').split('|')
-            buy_button = buy_button.split("\n")
+            buy_text, buy_button = txt.text.replace(' ', '').split('-')
         except (IndexError, TypeError):
             await editMessage(call, f"**格式有误，您的输入：**\n\n{txt.text}", buttons=back_set_ikb('set_buy'))
         else:
-            d = []
-            for i in buy_button:
-                try:
-                    a = i.split("-")
-                    f = [f"{a[0]}", f"{a[1]}", "url"]
-                except (IndexError, TypeError):
-                    return await editMessage(call, f"格式有误，您的输入：\n\n{txt.text}", buttons=back_set_ikb('set_buy'))
-
-                else:
-                    d.append(f)
-                keyboard = try_set_buy(d)
-                edt = await editMessage(call, buy_text,
-                                        buttons=keyboard)
-                if edt is False:
-                    LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 失败')
-                    return await editMessage(call, "可能输入的link格式错误，请重试。http/https+link",
-                                             buttons=back_config_p_ikb)
-                user_buy["text"] = buy_text
-                user_buy["button"] = d
-                save_config()
-                LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 【文本】{buy_text} - {user_buy["button"]}')
+            d = [buy_text, buy_button, 'url']
+            keyboard = try_set_buy(d)
+            edt = await editMessage(call, "**🫡 按钮效果如下：**\n可点击尝试，确认后返回",
+                                    buttons=keyboard)
+            if edt is False:
+                LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 失败')
+                return await editMessage(call, "可能输入的link格式错误，请重试。http/https+link",
+                                         buttons=back_config_p_ikb)
+            user_buy["button"] = d
+            save_config()
+            LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 {user_buy["button"]}')
 
 
 @bot.on_callback_query(filters.regex('open_allow_code') & admins_on_filter)

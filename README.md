@@ -148,8 +148,8 @@ ___
 
 ```
 "money": "花币"    未来新功能货币的名称
-"user_buy": {"stat": "n","text": "**🛒请选择购买对应时长的套餐：**网页付款后会发邀请码连接，点击跳转到bot开始注册和续期程式。","button": [["Google","Google.com","url"]]}
-            ”stat“是否开启充电按钮，默认”n“关闭，可在bot->/config里自行配置，text是显示文本，butoon为键盘（依序分别为 键盘显示文本，网址，”url“模式）
+"user_buy": {"stat": "n","button": ["Google","https://google.com","url"]}
+            ”stat“是否开启充电按钮，默认”n“关闭，可在bot->/config里自行配置，butoon为按钮（依序分别为 按钮显示文本，网址，”url“模式）
  "open": {
     "stat": false,   # 注册状态，每次启动时默认关闭
     "all_user": 1000,  # 注册人数限制

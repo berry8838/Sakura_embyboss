@@ -6,6 +6,7 @@
 有 -> 账户续期，重置密码，删除账户，显隐媒体库
 """
 import asyncio
+import datetime
 import random
 from datetime import timedelta
 
@@ -21,7 +22,8 @@ from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create
     store_ikb, re_store_renew
 from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage
 from bot.modules.commands.exchange import rgs_code
-from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
+from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_add_emby
+from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2
 
 
 # 创号函数
@@ -131,12 +133,15 @@ async def create(_, call):
 # 换绑tg
 @bot.on_callback_query(filters.regex('changetg') & user_in_group_on_filter)
 async def change_tg(_, call):
+    d = sql_get_emby(tg=call.from_user.id)
+    if d.embyid is not None:
+        return await callAnswer(call, '⚖️ 您已经拥有账户，请不要钻空子', True)
     await callAnswer(call, '⚖️ 绑定TG')
     send = await editMessage(call,
                              '🔰 **【改绑功能介绍】**：\n\n- 两种: 换绑 | 绑定\n'
                              '- 换绑适输入 用户名 **安全码**\n'
                              '- 绑定只需 用户名 **正确的密码**\n'
-                             '**程序先执行换绑，不成功则开启绑定**\n'
+                             '**程序优先执行换绑，不成功时开启绑定**\n'
                              '倒计时 120s `用户名 安全码or密码` 密码为空则写None\n退出 /cancel')
     if send is False:
         return
@@ -160,19 +165,43 @@ async def change_tg(_, call):
             e = sql_get_emby(tg=emby_name)
             if e is None:
                 # 绑定
-                await editMessage(call, f'❓ 未查询到名为 {emby_name} 的账户，开始绑定功能。。。稍等')
-                pwd2 = await emby.authority_account(call.from_user.id, emby_name, emby_pwd)
-                if not pwd2:
-                    return await editMessage(call, '🍥 很遗憾绑定失败，请好好回想并进行再次尝试', buttons=re_changetg_ikb)
+                e2 = sql_get_emby2(name=emby_name)
+                if e2 is None:
+                    await editMessage(call, f'❓ 未查询到数据表中名为 {emby_name} 的账户，开始绑定功能。。。稍等')
+                    pwd2 = await emby.authority_account(call.from_user.id, emby_name, emby_pwd)
+                    if not pwd2:
+                        return await editMessage(call, '🍥 很遗憾绑定失败，请好好回想并进行再次尝试',
+                                                 buttons=re_changetg_ikb)
+                    else:
+                        await editMessage(call,
+                                          f'✅ 成功绑定\n账户/密码 `{emby_name}` - `{emby_pwd}`\n有效期为 30 天\n安全码为 `{pwd2}`，请妥善保存')
+                        await sendMessage(call,
+                                          f'⭕#新TG绑定 原emby账户 #{emby_name} \n\n已绑定至 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) - {call.from_user.id}',
+                                          send=True)
+                        LOGGER.info(
+                            f'【新TG绑定】 emby账户 {emby_name} 绑定至 {call.from_user.first_name}-{call.from_user.id}')
                 else:
-                    await editMessage(call,
-                                      f'✅ 成功绑定\n账户/密码 `{emby_name}` - `{emby_pwd}`\n有效期为 30 天\n安全码为 `{pwd2}`，请妥善保存')
-                    await sendMessage(call,
-                                      f'⭕#新TG绑定 原emby账户 #{emby_name} \n\n已绑定至 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) - {call.from_user.id}',
-                                      send=True)
-                    LOGGER.info(
-                        f'【新TG绑定】 emby账户 {emby_name} 绑定至 {call.from_user.first_name}-{call.from_user.id}')
+                    if e2.embyid is None:
+                        return await editMessage(call, f'⚠️ **数据错误**，请上报闺蜜(管理)检查。',
+                                                 buttons=re_changetg_ikb)
 
+                    if emby_pwd != e2.pwd:
+                        return await editMessage(call,
+                                                 f'💢 账户 {emby_name} 的安全码验证错误，请检查您输入的 {emby_pwd} 是否正确。',
+                                                 buttons=re_changetg_ikb)
+                    elif emby_pwd == e2.pwd:
+                        lv = 'b' if e2.ex > datetime.datetime.now() else 'd'
+                        sql_update_emby(Emby.tg == call.from_user.id, embyid=e2.embyid, name=e2.name, pwd=e2.pwd,
+                                        pwd2=e2.pwd, lv=lv, cr=e2.cr, ex=e2.ex)
+                        sql_delete_emby2(embyid=e2.embyid)
+                        text = f'⭕ 账户 {emby_name} 的安全码验证成功！\n\n· 用户名称 | `{emby_name}`\n· 安全密码 | `{emby_pwd}`（仅发送一次）\n' \
+                               f'· 到期时间 | `{e2.ex}`\n\n**·在【服务器】按钮 - 查看线路和密码**'
+                        await sendMessage(call,
+                                          f'⭕#TG改绑 原emby账户 #{emby_name} \n\n从emby2表绑定至 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) - {call.from_user.id}',
+                                          send=True)
+                        LOGGER.info(
+                            f'【TG改绑】 emby账户 {emby_name} 绑定至 {call.from_user.first_name}-{call.from_user.id}')
+                        return await editMessage(call, text)
             else:
                 # 换绑
                 if e.embyid is None:
@@ -341,7 +370,8 @@ async def embyblock(_, call):
         except KeyError:
             stat = '💨 未知'
         await asyncio.gather(callAnswer(call, "✅ 到位"),
-                             editMessage(call, f'🤺 用户状态：{stat}\n🎬 目前设定的库为: \n**{config["emby_block"]}**\n请选择你的操作。',
+                             editMessage(call,
+                                         f'🤺 用户状态：{stat}\n🎬 目前设定的库为: \n**{config["emby_block"]}**\n请选择你的操作。',
                                          buttons=emby_block_ikb(data.embyid)))
 
 

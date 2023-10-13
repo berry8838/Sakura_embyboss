@@ -1,4 +1,5 @@
 from pyrogram import filters
+from pyrogram.enums import ChatMemberStatus
 from pyrogram.types import ChatMemberUpdated
 
 from bot import bot, group, LOGGER, _open
@@ -38,8 +39,7 @@ async def leave_del_emby(_, event: ChatMemberUpdated):
         else:
             pass
     elif event.old_chat_member and event.new_chat_member:
-        # if str(event.new_chat_member.status) == 'ChatMemberStatus.BANNED':
-        if not event.new_chat_member.is_member:
+        if event.new_chat_member.status is ChatMemberStatus.BANNED:
             user_fname = event.new_chat_member.user.first_name
             try:
                 e = sql_get_emby(tg=event.new_chat_member.user.id)

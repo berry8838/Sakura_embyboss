@@ -145,7 +145,7 @@ class Embyservice:
 
                     if schedall["check_ex"]:
                         ex = ex.strftime("%Y-%m-%d %H:%M:%S")
-                    elif schedall["low"]:
+                    elif schedall["low_activity"]:
                         ex = '__若21天无观看将封禁__'
                     else:
                         ex = '__无需保号，放心食用__'

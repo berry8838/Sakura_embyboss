@@ -194,7 +194,9 @@ async def open_all_user_l(_, call):
         return
 
     txt = await callListen(call, 120, buttons=back_free_ikb)
-    if txt.text == "/cancel":
+    if txt is False:
+        return
+    elif txt.text == "/cancel":
         await txt.delete()
         return await open_menu(_, call)
 
@@ -224,7 +226,9 @@ async def cr_link(_, call):
         return
 
     content = await callListen(call, 120, buttons=re_cr_link_ikb)
-    if content.text == '/cancel':
+    if content is False:
+        return
+    elif content.text == '/cancel':
         await content.delete()
         return await editMessage(call, '⭕ 您已经取消操作了。', buttons=re_cr_link_ikb)
     try:

@@ -90,6 +90,11 @@ emby_param = (('api_key', emby_api),)
 emby_url = config["emby_url"]
 emby_line = config["emby_line"]
 emby_block = config["emby_block"]
+try:
+    extra_emby_libs = config["extra_emby_libs"]
+except Exception as e:
+    extra_emby_libs = []
+    print('没有读取到额外媒体库配置，使用默认值', extra_emby_libs)
 # 数据库
 db_host = config["db_host"]
 db_user = config["db_user"]

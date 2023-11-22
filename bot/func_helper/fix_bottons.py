@@ -2,7 +2,7 @@ from cacheout import Cache
 from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
-from bot import chanel, main_group, bot_name, tz_id, tz_ad, tz_api, _open, user_buy, sakura_b, schedall
+from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, user_buy, sakura_b, schedall
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import judge_admins, members_info
@@ -224,6 +224,8 @@ async def cr_kk_ikb(uid, first):
         if name != '无账户信息':
             ban = "🌟 解除禁用" if lv == "已禁用" else '💢 禁用账户'
             keyboard.add(InlineButton(ban, f'user_ban-{uid}'), InlineButton('⚠️ 删除账户', f'closeemby-{uid}'))
+            if len(extra_emby_libs) > 0:
+                keyboard.row(InlineButton('✅开通额外媒体库', f'embyextralib_unblock-{uid}'), InlineButton('❌关闭额外媒体库', f'embyextralib_block-{uid}'))
             try:
                 rst = await emby.emby_cust_commit(user_id=embyid, days=30)
                 last_time = rst[0][0]

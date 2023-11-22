@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 from cacheout import Cache
 import requests as r
-from bot import emby_url, emby_api, _open, emby_block, schedall
+from bot import emby_url, emby_api, _open, emby_block, schedall, extra_emby_libs
 from bot.sql_helper.sql_emby import sql_update_emby, sql_delete_emby, sql_change_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_add_emby2, sql_delete_emby2
 from bot.func_helper.utils import pwd_create
@@ -24,7 +24,7 @@ def create_policy(admin=False, disable=False, limit: int = 2, block: list = None
     :return: plocy 用户策略
     """
     if block is None:
-        block = ['播放列表']
+        block = ['播放列表'] + extra_emby_libs
     else:
         block = block.copy()
         block.extend(['播放列表'])
@@ -204,7 +204,7 @@ class Embyservice:
         else:
             return False
 
-    async def emby_block(self, id, stats=0):
+    async def emby_block(self, id, stats=0, block = emby_block):
         """
         显示、隐藏媒体库
         :param id: emby_id
@@ -212,7 +212,7 @@ class Embyservice:
         :return:bool
         """
         if stats == 0:
-            policy = create_policy(False, False, block=emby_block)
+            policy = create_policy(False, False, block=block)
         else:
             policy = create_policy(False, False)
         _policy = r.post(f'{self.url}/emby/Users/{id}/Policy',

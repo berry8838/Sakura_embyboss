@@ -12,7 +12,7 @@ from datetime import timedelta
 
 from pyrogram.errors import BadRequest
 
-from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, config, group
+from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, config, group, extra_emby_libs, emby_block
 from pyrogram import filters
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import user_in_group_on_filter
@@ -363,10 +363,12 @@ async def embyblock(_, call):
         try:
             if success is False:
                 stat = '💨 未知'
-            elif rep["Policy"]["BlockedMediaFolders"] == ['播放列表']:
-                stat = '🟢 显示'
             else:
-                stat = '🔴 隐藏'
+                blocks = rep["Policy"]["BlockedMediaFolders"]
+                if set(config["emby_block"]).issubset(set(blocks)):
+                    stat = '🔴 隐藏'
+                else:
+                    stat = '🟢 显示'
         except KeyError:
             stat = '💨 未知'
         await asyncio.gather(callAnswer(call, "✅ 到位"),
@@ -382,15 +384,17 @@ async def user_emby_block(_, call):
     send = await callAnswer(call, f'🎬 正在为您关闭显示ing')
     if send is False:
         return
-
-    re = await emby.emby_block(embyid)
-    if re is True:
-        # await embyblock(_, call)
-        send1 = await editMessage(call, f'🕶️ ο(=•ω＜=)ρ⌒☆\n 小尾巴隐藏好了！ ', buttons=user_emby_block_ikb)
-        if send1 is False:
-            return
-    else:
-        await editMessage(call, f'🕶️ Error!\n 隐藏失败，请上报管理检查)', buttons=back_members_ikb)
+    success, rep = emby.user(embyid=embyid)
+    currentblock = []
+    if success:
+        currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + emby_block))
+        re = await emby.emby_block(embyid, 0, block=currentblock)
+        if re is True:
+            send1 = await editMessage(call, f'🕶️ ο(=•ω＜=)ρ⌒☆\n 小尾巴隐藏好了！ ', buttons=user_emby_block_ikb)
+            if send1 is False:
+                return
+        else:
+            await editMessage(call, f'🕶️ Error!\n 隐藏失败，请上报管理检查)', buttons=back_members_ikb)
 
 
 # 显示
@@ -400,15 +404,21 @@ async def user_emby_unblock(_, call):
     send = await callAnswer(call, f'🎬 正在为您开启显示ing')
     if send is False:
         return
-
-    re = await emby.emby_block(embyid, 1)
-    if re is True:
-        # await embyblock(_, call)
-        send1 = await editMessage(call, f'🕶️ ┭┮﹏┭┮\n 小尾巴被抓住辽！ ', buttons=user_emby_unblock_ikb)
-        if send1 is False:
-            return
-    else:
-        await editMessage(call, f'🎬 Error!\n 显示失败，请上报管理检查设置', buttons=back_members_ikb)
+    success, rep = emby.user(embyid=embyid)
+    currentblock = []
+    if success:
+        currentblock = rep["Policy"]["BlockedMediaFolders"]
+        for b in currentblock:
+            if b in emby_block:
+                currentblock.remove(b)
+        re = await emby.emby_block(embyid, 0, block=currentblock)
+        if re is True:
+            # await embyblock(_, call)
+            send1 = await editMessage(call, f'🕶️ ┭┮﹏┭┮\n 小尾巴被抓住辽！ ', buttons=user_emby_unblock_ikb)
+            if send1 is False:
+                return
+        else:
+            await editMessage(call, f'🎬 Error!\n 显示失败，请上报管理检查设置', buttons=back_members_ikb)
 
 
 @bot.on_callback_query(filters.regex('exchange') & user_in_group_on_filter)

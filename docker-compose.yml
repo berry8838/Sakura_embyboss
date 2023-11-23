@@ -15,6 +15,8 @@ services:
       - '3306:3306'  # host物理直接映射端口为
     volumes:
       - /root/Sakura_embyboss/db:/var/lib/mysql
+
+# 以下 phpmyadmin 主要是为了更为直观的供owner翻阅数据，不影响bot运行，如有其他合适软件，可注释内容
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin

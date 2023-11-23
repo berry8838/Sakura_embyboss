@@ -1,6 +1,6 @@
 # sakura_embyboss体验版
 
-![bot](/image/bot2.jpg.png)
+![bot](/image/bot2.png)
 <p align="center">
 <a href="https://github.com/berry8838/Sakura_embyboss/stargazers"><img src="https://img.shields.io/github/stars/berry8838/Sakura_embyboss" alt="stars"></a> 
 <a href="https://github.com/berry8838/Sakura_embyboss/forks"><img src="https://img.shields.io/github/forks/berry8838/Sakura_embyboss" alt="forks"></a> 
@@ -18,7 +18,7 @@ ___
 - 没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑
 - 推荐使用 Debian 11 搭建，比较兼容
 - 解决不了大的技术问题，如需要，请自行fork修改，~~如果能提点有意思的pr更好啦~~
-- 如果你搭建好了请带带我们（非必须） [@HARiA](https://github.com/berry8838) And [@罗宝](https://github.com/dddddluo)
+- 如果你搭建好了请带带我们（非必须） [@First Lover](tg://user?id=1661037800) And [@罗宝](https://t.me/oudoudou)
 - **声明：本项目仅供学习交流使用，仅作为辅助工具借助tg平台方便用户管理自己的媒体库成员，对用户的其他行为及内容毫不知情**
 
 ## 功能一览
@@ -49,6 +49,7 @@ ___
     - [x] 添加用户播放时长，媒体播放数排行榜日推周推 [EmbyTools](https://github.com/Nolovenodie/EmbyTools)
     - [x] **支持docker部署**
 - [ ] 进阶的待定想法(有些不一定做)
+    - [x] 新增额外媒体库，除去用户控制的显示隐藏媒体，可固定隐藏隐私不开放其他用户
     - [ ] 睡眠模式
     - [x] 重新启用签到
     - [x] 开启商店兑换
@@ -104,13 +105,15 @@ systemctl enable docker
 ```
 
 - 接着在Sakura_embyboss目录下面找到文件`docker-compose.yml`，修改成自己的设置后保存。
+- 在yml文件中 phpmyadmin 主要是为了更为直观的供翻阅数据，不影响bot运行，如有其他合适软件，可注释内容     
 - 在Sakura_embyboss目录运行命令`docker-compose up -d`。
 - 搭建完成之后，用 `ip:端口` 访问、管理
 
 #### 安装数据库（2）
 
 - 在你已经拥有宝塔面板前提下使用宝塔面板
-- 在宝塔中，安装好mysql，phpmyadmin，进入`数据库` 新增加一个数据库，用户名密码设置，进行相应的替换，访问点击 `phpmyadmin`  
+- 在宝塔中，安装好mysql（phpmyadmin，可选），进入`数据库` 新增加一个数据库，用户名密码设置，进行相应的替换
+- `phpmyadmin` 是为了更为直观的供owner翻阅数据，不影响bot运行，如有其他合适软件，可跳过   
   ![宝塔](./image/bt.png)
 
 ### 3、配置文件填写
@@ -147,7 +150,7 @@ ___
 - 选填项目
 
 ```
-"money": "花币"    未来新功能货币的名称
+"money": "花币"    功能货币的名称
 "user_buy": {"stat": "n","button": ["Google","https://google.com","url"]}
             ”stat“是否开启充电按钮，默认”n“关闭，可在bot->/config里自行配置，butoon为按钮（依序分别为 按钮显示文本，网址，”url“模式）
  "open": {

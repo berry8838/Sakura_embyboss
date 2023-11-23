@@ -62,14 +62,14 @@ def members_ikb(emby=False) -> InlineKeyboardMarkup:
                     [('♻️ 主界面', 'back_start')]])
     else:
         return ikb(
-            [[('👑 创建账户', 'create'), ('⭕ 改/绑账户', 'changetg')], [('🎟️ 使用注册码', 'exchange')],
-             [('♻️ 主界面', 'back_start')]])
+            [[('👑 创建账户', 'create')],[('⭕ 换绑TG', 'changetg'),('🔍 绑定TG', 'bindtg')],[('♻️ 主界面', 'back_start')]])
 
 
 back_start_ikb = ikb([[('💫 回到首页', 'back_start')]])
 back_members_ikb = ikb([[('💨 返回', 'members')]])
 re_create_ikb = ikb([[('🍥 重新输入', 'create'), ('💫 用户主页', 'members')]])
-re_changetg_ikb = ikb([[('✨ 重新输入', 'changetg'), ('💫 用户主页', 'members')]])
+re_changetg_ikb = ikb([[('✨ 换绑TG', 'changetg'), ('💫 用户主页', 'members')]])
+re_bindtg_ikb = ikb([[('✨ 绑定TG', 'bindtg'), ('💫 用户主页', 'members')]])
 re_delme_ikb = ikb([[('♻️ 重试', 'delme')], [('🔙 返回', 'members')]])
 re_reset_ikb = ikb([[('♻️ 重试', 'reset')], [('🔙 返回', 'members')]])
 re_exchange_b_ikb = ikb([[('♻️ 重试', 'exchange')], [('🔙 返回', 'members')]])
@@ -215,17 +215,27 @@ dp_g_ikb = ikb([[("🈺 ╰(￣ω￣ｏ)", "t.me/Aaaaa_su", "url")]])
 async def cr_kk_ikb(uid, first):
     text = ''
     text1 = ''
-    keyboard = InlineKeyboard(row_width=2)
+    keyboard = []
     data = await members_info(uid)
     if data is None:
         text += f'**· 🆔 TG** ：[{first}](tg://user?id={uid})\n数据库中没有此ID。ta 还没有私聊过我'
     else:
         name, lv, ex, us, embyid, pwd2 = data
         if name != '无账户信息':
-            ban = "🌟 解除禁用" if lv == "已禁用" else '💢 禁用账户'
-            keyboard.add(InlineButton(ban, f'user_ban-{uid}'), InlineButton('⚠️ 删除账户', f'closeemby-{uid}'))
+            ban = "🌟 解除禁用" if lv == "**已禁用**" else '💢 禁用账户'
+            keyboard = [[ban, f'user_ban-{uid}'], ['⚠️ 删除账户', f'closeemby-{uid}']]
             if len(extra_emby_libs) > 0:
-                keyboard.row(InlineButton('✅开通额外媒体库', f'embyextralib_unblock-{uid}'), InlineButton('❌关闭额外媒体库', f'embyextralib_block-{uid}'))
+                success, rep = emby.user(embyid=embyid)
+                if success:
+                    try:
+                        currentblock = rep["Policy"]["BlockedMediaFolders"]
+                    except KeyError:
+                        pass
+                    else:
+                        # print(currentblock)
+                        libs, embyextralib = ['✖️', f'embyextralib_unblock-{uid}'] if set(extra_emby_libs).issubset(
+                            set(currentblock)) else ['✔️', f'embyextralib_block-{uid}']
+                        keyboard.append([f'{libs} 额外媒体库', embyextralib])
             try:
                 rst = await emby.emby_cust_commit(user_id=embyid, days=30)
                 last_time = rst[0][0]
@@ -235,8 +245,7 @@ async def cr_kk_ikb(uid, first):
             except (TypeError, IndexError, ValueError):
                 text1 = f"**· 📅 过去30天未有记录**"
         else:
-            keyboard.add(InlineButton('✨ 赠送资格', f'gift-{uid}'))
-        # if ex != '无账户信息' and ex != '+ ∞': ex = (ex - Now).days + '天'
+            keyboard.append(['✨ 赠送资格', f'gift-{uid}'])
         text += f"**· 🍉 TG名称** | [{first}](tg://user?id={uid})\n" \
                 f"**· 🍒 TG-ID** | `{uid}`\n" \
                 f"**· 🍓 当前状态** | {lv}\n" \
@@ -244,7 +253,9 @@ async def cr_kk_ikb(uid, first):
                 f"**· 💠 账号名称** | {name}\n" \
                 f"**· 🚨 到期时间** | **{ex}**\n"
         text += text1
-    keyboard.row(InlineButton('🚫 踢出并封禁', f'fuckoff-{uid}'), InlineButton('❌ 删除消息', f'closeit'))
+        keyboard.extend([['🚫 踢出并封禁', f'fuckoff-{uid}'], ['❌ 删除消息', f'closeit']])
+        lines = array_chunk(keyboard, 2)
+        keyboard = ikb(lines)
     return text, keyboard
 
 

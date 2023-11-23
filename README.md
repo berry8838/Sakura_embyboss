@@ -1,6 +1,6 @@
 # sakura_embyboss体验版
 
-![bot](/image/bot_logo.png)
+![bot](/image/bot2.jpg.png)
 <p align="center">
 <a href="https://github.com/berry8838/Sakura_embyboss/stargazers"><img src="https://img.shields.io/github/stars/berry8838/Sakura_embyboss" alt="stars"></a> 
 <a href="https://github.com/berry8838/Sakura_embyboss/forks"><img src="https://img.shields.io/github/forks/berry8838/Sakura_embyboss" alt="forks"></a> 
@@ -144,7 +144,7 @@ ___
 "db_name": "embyboss"  库名
 ```
 
-- 不填项目
+- 选填项目
 
 ```
 "money": "花币"    未来新功能货币的名称
@@ -162,8 +162,8 @@ ___
     "invite": false,   # 开启邀请功能
     "leave_ban": false  # 退群封禁，默认关闭
   }
-"emby_block":[] 不填，确保有这个字段就行。等bot起来去里面设置
-"extra_emby_libs": [], 可选，额外媒体库，可通过/kk指令给用户开通/关闭额外媒体库
+"emby_block":["nsfw"] 可选，由用户能控制显示隐藏的媒体库，bot中也可设置
+"extra_emby_libs": ["家庭照片","我的照片"], 可选，额外媒体库，只可通过/kk指令给用户开通/关闭额外媒体库，不由用户控制，由管理决定
 "tz_ad": "",    探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠，没有请勿填
 "tz_api": "",
 "tz_id": []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。

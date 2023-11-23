@@ -5,11 +5,10 @@ kk - 纯装x
 import pyrogram
 from pyrogram import filters
 from pyrogram.errors import BadRequest
-from pyromod.helpers import ikb
 from bot import bot, prefixes, owner, bot_photo, admins, LOGGER, extra_emby_libs
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
-from bot.func_helper.fix_bottons import cr_kk_ikb, gog_rester_ikb, register_code_ikb,close_it_ikb
+from bot.func_helper.fix_bottons import cr_kk_ikb, gog_rester_ikb, register_code_ikb
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, editMessage
 from bot.func_helper.utils import judge_admins
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
@@ -89,21 +88,19 @@ async def kk_user_ban(_, call):
                     await editMessage(call, '⚠️ 解封失败，服务器已执行，数据库写入错误')
             else:
                 await editMessage(call, '⚠️ 解封失败，请检查emby服务器。响应错误')
+
+
 # 开通额外媒体库
 @bot.on_callback_query(filters.regex('embyextralib_unblock'))
 async def user_embyextralib_unblock(_, call):
     if not judge_admins(call.from_user.id):
         return await call.answer("请不要以下犯上 ok？", show_alert=True)
-
-    await call.answer("✅ ok")
+    await call.answer(f'🎬 正在为TA开启显示ing')
     tgid = int(call.data.split("-")[1])
     e = sql_get_emby(tg=tgid)
     if e.embyid is None:
         await editMessage(call, f'💢 ta 没有注册账户。', timer=60)
     embyid = e.embyid
-    send = await call.answer(f'🎬 正在为TA开启显示ing')
-    if send is False:
-        return
     success, rep = emby.user(embyid=embyid)
     currentblock = []
     if success:
@@ -113,38 +110,35 @@ async def user_embyextralib_unblock(_, call):
                 currentblock.remove(b)
         re = await emby.emby_block(embyid, 0, block=currentblock)
         if re is True:
-            send1 = await editMessage(call, f'🕶️ ┭┮﹏┭┮\n 已经开通了额外媒体库！', buttons=ikb([[('✅ - 已开通', 'closeit')]]))
-            if send1 is False:
-                return
+            await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
+                                    f'已开启了 [TA](tg://user?id={tgid}) 的额外媒体库权限\n{extra_emby_libs}')
         else:
-            await editMessage(call, f'🎬 Error!\n 显示失败，请上报管理检查设置', buttons=ikb([[('❌ - 关闭消息', 'closeit')]]))
+            await editMessage(call,
+                              f'🌧️ Error！管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n操作失败请检查设置！')
+
+
 # 隐藏额外媒体库
 @bot.on_callback_query(filters.regex('embyextralib_block'))
 async def user_embyextralib_block(_, call):
     if not judge_admins(call.from_user.id):
         return await call.answer("请不要以下犯上 ok？", show_alert=True)
-
-    await call.answer("✅ ok")
+    await call.answer(f'🎬 正在为TA关闭显示ing')
     tgid = int(call.data.split("-")[1])
     e = sql_get_emby(tg=tgid)
     if e.embyid is None:
         await editMessage(call, f'💢 ta 没有注册账户。', timer=60)
     embyid = e.embyid
-    send = await call.answer(f'🎬 正在为TA关闭显示ing')
-    if send is False:
-        return
     success, rep = emby.user(embyid=embyid)
     currentblock = []
     if success:
         currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + extra_emby_libs))
-        re = await emby.emby_block(embyid, 0, block = currentblock)
+        re = await emby.emby_block(embyid, 0, block=currentblock)
         if re is True:
-            # await embyblock(_, call)
-            send1 = await editMessage(call, f'🕶️ ┭┮﹏┭┮\n 已经关闭了额外媒体库！', buttons=ikb([[('✅ - 已关闭', 'closeit')]]))
-            if send1 is False:
-                return
+            await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
+                                    f'已关闭了 [TA](tg://user?id={tgid}) 的额外媒体库权限\n{extra_emby_libs}')
         else:
-            await editMessage(call, f'🎬 Error!\n 显示失败，请上报管理检查设置', buttons=ikb([[('❌ - 关闭消息', 'closeit')]]))
+            await editMessage(call, f'🌧️ Error！管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n操作失败请检查设置！')
+
 
 # 赠送资格
 @bot.on_callback_query(filters.regex('gift'))

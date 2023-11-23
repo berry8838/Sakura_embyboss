@@ -25,9 +25,9 @@ def create_policy(admin=False, disable=False, limit: int = 2, block: list = None
     """
     if block is None:
         block = ['播放列表'] + extra_emby_libs
-    else:
-        block = block.copy()
-        block.extend(['播放列表'])
+    # else:
+    #     block = block.copy()
+    #     block.extend(['播放列表'])
     policy = {
         "IsAdministrator": admin,
         "IsHidden": True,
@@ -204,7 +204,7 @@ class Embyservice:
         else:
             return False
 
-    async def emby_block(self, id, stats=0, block = emby_block):
+    async def emby_block(self, id, stats=0, block=emby_block):
         """
         显示、隐藏媒体库
         :param id: emby_id

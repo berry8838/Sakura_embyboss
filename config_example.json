@@ -40,6 +40,7 @@
   "emby_block": [
     "nsfw"
   ],
+  "extra_emby_libs": ["电视"],
   "db_host": "255.255.255.255",
   "db_user": "",
   "db_pwd": "",

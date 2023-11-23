@@ -19,7 +19,7 @@ from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.utils import members_info, tem_alluser, wh_msg
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
-    store_ikb, re_store_renew
+    store_ikb, re_store_renew, re_bindtg_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage
 from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_add_emby
@@ -136,13 +136,14 @@ async def change_tg(_, call):
     d = sql_get_emby(tg=call.from_user.id)
     if d.embyid is not None:
         return await callAnswer(call, '⚖️ 您已经拥有账户，请不要钻空子', True)
-    await callAnswer(call, '⚖️ 绑定TG')
+    await callAnswer(call, '⚖️ 更换绑定的TG')
     send = await editMessage(call,
-                             '🔰 **【改绑功能介绍】**：\n\n- 两种: 换绑 | 绑定\n'
-                             '- 换绑适输入 用户名 **安全码**\n'
-                             '- 绑定只需 用户名 **正确的密码**\n'
-                             '**程序优先执行换绑，不成功时开启绑定**\n'
-                             '倒计时 120s `用户名 安全码or密码` 密码为空则写None\n退出 /cancel')
+                             '🔰 **【更换绑定emby的tg】**\n'
+                             '须知：\n'
+                             '- **请确保您之前用其他tg账户注册过**\n'
+                             '- **请确保您注册的其他tg账户呈已注销状态**\n'
+                             '- **请确保您熟悉正确的emby用户名，安全码**\n\n'
+                             '您有120s回复 [emby用户名][空格][安全码]\n例如 `苏苏 5210` ，退出点 /cancel')
     if send is False:
         return
 
@@ -167,19 +168,8 @@ async def change_tg(_, call):
                 # 绑定
                 e2 = sql_get_emby2(name=emby_name)
                 if e2 is None:
-                    await editMessage(call, f'❓ 未查询到数据表中名为 {emby_name} 的账户，开始绑定功能。。。稍等')
-                    pwd2 = await emby.authority_account(call.from_user.id, emby_name, emby_pwd)
-                    if not pwd2:
-                        return await editMessage(call, '🍥 很遗憾绑定失败，请好好回想并进行再次尝试',
-                                                 buttons=re_changetg_ikb)
-                    else:
-                        await editMessage(call,
-                                          f'✅ 成功绑定\n账户/密码 `{emby_name}` - `{emby_pwd}`\n有效期为 30 天\n安全码为 `{pwd2}`，请妥善保存')
-                        await sendMessage(call,
-                                          f'⭕#新TG绑定 原emby账户 #{emby_name} \n\n已绑定至 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) - {call.from_user.id}',
-                                          send=True)
-                        LOGGER.info(
-                            f'【新TG绑定】 emby账户 {emby_name} 绑定至 {call.from_user.first_name}-{call.from_user.id}')
+                    await editMessage(call, f'❓ 未查询到数据表中名为 {emby_name} 的账户，请使用 **绑定TG** 功能。',
+                                      buttons=re_bindtg_ikb)
                 else:
                     if e2.embyid is None:
                         return await editMessage(call, f'⚠️ **数据错误**，请上报闺蜜(管理)检查。',
@@ -234,6 +224,60 @@ async def change_tg(_, call):
                     else:
                         await editMessage(call, "🍰 **【TG改绑】出错，请联系闺蜜（管理）！**", back_members_ikb)
                         LOGGER.error(f"【TG改绑】 emby账户{emby_name} 绑定未知错误。")
+
+
+@bot.on_callback_query(filters.regex('bindtg') & user_in_group_on_filter)
+async def bind_tg(_, call):
+    d = sql_get_emby(tg=call.from_user.id)
+    if d.embyid is not None:
+        return await callAnswer(call, '⚖️ 您已经拥有账户，请不要钻空子', True)
+    await callAnswer(call, '⚖️ 将账户绑定TG')
+    send = await editMessage(call,
+                             '🔰 **【已有emby绑定至tg】**\n'
+                             '须知：\n'
+                             '- **请确保您需绑定的账户不在bot中**\n'
+                             '- **请确保您不是恶意绑定他人的账户**\n'
+                             '- **请确保您熟悉正确的emby用户名，密码**\n\n'
+                             '您有120s回复 [emby用户名][空格][密码]\n例如 `苏苏 5210` ，退出点 /cancel')
+    if send is False:
+        return
+
+    m = await callListen(call, 120, buttons=back_members_ikb)
+    if m is False:
+        return
+
+    elif m.text == '/cancel':
+        await m.delete()
+        await editMessage(call, '__您已经取消输入__ **会话已结束！**', back_members_ikb)
+    else:
+        try:
+            await m.delete()
+            emby_name, emby_pwd = m.text.split()
+        except (IndexError, ValueError):
+            await editMessage(call, f'⚠️ 输入格式错误\n【`{m.text}`】\n **会话已结束！**', re_bindtg_ikb)
+        else:
+            await editMessage(call,
+                              f'✔️ 会话结束，收到设置\n\n用户名：**{emby_name}**__正在检查密码 **{emby_pwd}**ing。。。__......')
+            e = sql_get_emby(tg=emby_name)
+            if e is None:
+                e2 = sql_get_emby2(name=emby_name)
+                if e2 is None:
+                    pwd2 = await emby.authority_account(call.from_user.id, emby_name, emby_pwd)
+                    if not pwd2:
+                        return await editMessage(call, '🍥 很遗憾绑定失败，请好好回想并进行再次尝试',
+                                                 buttons=re_bindtg_ikb)
+                    else:
+                        await editMessage(call,
+                                          f'✅ 成功绑定\n账户/密码 `{emby_name}` - `{emby_pwd}`\n有效期为 30 天\n安全码为 `{pwd2}`，请妥善保存')
+                        await sendMessage(call,
+                                          f'⭕#新TG绑定 原emby账户 #{emby_name} \n\n已绑定至 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) - {call.from_user.id}',
+                                          send=True)
+                        LOGGER.info(
+                            f'【新TG绑定】 emby账户 {emby_name} 绑定至 {call.from_user.first_name}-{call.from_user.id}')
+                else:
+                    await editMessage(call, '🔍 数据库已有此账户，不可绑定，请使用 **换绑TG**', buttons=re_changetg_ikb)
+            else:
+                await editMessage(call, '🔍 数据库已有此账户，不可绑定，请使用 **换绑TG**', buttons=re_changetg_ikb)
 
 
 # kill yourself
@@ -387,7 +431,10 @@ async def user_emby_block(_, call):
     success, rep = emby.user(embyid=embyid)
     currentblock = []
     if success:
-        currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + emby_block))
+        try:
+            currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + emby_block))
+        except KeyError:
+            currentblock = ['播放列表'] + extra_emby_libs + emby_block
         re = await emby.emby_block(embyid, 0, block=currentblock)
         if re is True:
             send1 = await editMessage(call, f'🕶️ ο(=•ω＜=)ρ⌒☆\n 小尾巴隐藏好了！ ', buttons=user_emby_block_ikb)
@@ -407,10 +454,13 @@ async def user_emby_unblock(_, call):
     success, rep = emby.user(embyid=embyid)
     currentblock = []
     if success:
-        currentblock = rep["Policy"]["BlockedMediaFolders"]
-        for b in currentblock:
-            if b in emby_block:
-                currentblock.remove(b)
+        try:
+            currentblock = rep["Policy"]["BlockedMediaFolders"]
+            for b in currentblock:
+                if b in emby_block:
+                    currentblock.remove(b)
+        except KeyError:
+            currentblock = ['播放列表'] + extra_emby_libs
         re = await emby.emby_block(embyid, 0, block=currentblock)
         if re is True:
             # await embyblock(_, call)

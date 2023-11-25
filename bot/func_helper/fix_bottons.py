@@ -232,9 +232,8 @@ async def cr_kk_ikb(uid, first):
                     except KeyError:
                         pass
                     else:
-                        # print(currentblock)
-                        libs, embyextralib = ['✖️', f'embyextralib_unblock-{uid}'] if set(extra_emby_libs).issubset(
-                            set(currentblock)) else ['✔️', f'embyextralib_block-{uid}']
+                        libs, embyextralib = ['✔️', f'embyextralib_unblock-{uid}'] if set(extra_emby_libs).issubset(
+                            set(currentblock)) else ['✖️', f'embyextralib_block-{uid}']
                         keyboard.append([f'{libs} 额外媒体库', embyextralib])
             try:
                 rst = await emby.emby_cust_commit(user_id=embyid, days=30)

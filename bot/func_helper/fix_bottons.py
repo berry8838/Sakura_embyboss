@@ -62,7 +62,8 @@ def members_ikb(emby=False) -> InlineKeyboardMarkup:
                     [('♻️ 主界面', 'back_start')]])
     else:
         return ikb(
-            [[('👑 创建账户', 'create')],[('⭕ 换绑TG', 'changetg'),('🔍 绑定TG', 'bindtg')],[('♻️ 主界面', 'back_start')]])
+            [[('👑 创建账户', 'create')], [('⭕ 换绑TG', 'changetg'), ('🔍 绑定TG', 'bindtg')],
+             [('♻️ 主界面', 'back_start')]])
 
 
 back_start_ikb = ikb([[('💫 回到首页', 'back_start')]])
@@ -112,12 +113,12 @@ async def cr_page_server():
         b.append([f'{name}', f'server:{x}'])
         a[x] = f"{sever}"
     if len(tz_id) == 0:
-        return ikb([[('🔙 - 用户', 'members'), ('❌ - 关闭', 'closeit')]]), ''
+        return ikb([[('🔙 - 用户', 'members'), ('❌ - 上一级', 'back_start')]]), ''
     elif len(tz_id) == 1:
-        return ikb([[('🔙 - 用户', 'members'), ('❌ - 关闭', 'closeit')]]), a[tz_id[0]]
+        return ikb([[('🔙 - 用户', 'members'), ('❌ - 上一级', 'back_start')]]), a[tz_id[0]]
     else:
         lines = array_chunk(b, 3)
-        lines.append([['🔙 - 用户', 'members'], ['❌ - 关闭', 'closeit']])
+        lines.append([['🔙 - 用户', 'members'], ['❌ - 上一级', 'back_start']])
         b = ikb(lines)
         # b是键盘，a是sever
         return b, a
@@ -232,8 +233,9 @@ async def cr_kk_ikb(uid, first):
                     except KeyError:
                         pass
                     else:
-                        libs, embyextralib = ['✔️', f'embyextralib_unblock-{uid}'] if set(extra_emby_libs).issubset(
-                            set(currentblock)) else ['✖️', f'embyextralib_block-{uid}']
+                        # 此处符号用于展示是否开启的状态
+                        libs, embyextralib = ['✖️', f'embyextralib_unblock-{uid}'] if set(extra_emby_libs).issubset(
+                            set(currentblock)) else ['✔️', f'embyextralib_block-{uid}']
                         keyboard.append([f'{libs} 额外媒体库', embyextralib])
             try:
                 rst = await emby.emby_cust_commit(user_id=embyid, days=30)

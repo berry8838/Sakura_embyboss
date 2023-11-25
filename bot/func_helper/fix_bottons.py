@@ -136,7 +136,6 @@ def open_menu_ikb(openstats, timingstats) -> InlineKeyboardMarkup:
                 [('⭕ 注册限制', 'all_user_limit')], [('🌟 返回上一级', 'manage')]])
 
 
-gog_rester_ikb = ikb([[('( •̀ ω •́ )y 点击注册', f't.me/{bot_name}', 'url')]])
 back_free_ikb = ikb([[('🔙 返回上一级', 'open-menu')]])
 back_open_menu_ikb = ikb([[('🪪 重新定时', 'open_timing'), ('🔙 注册状态', 'open-menu')]])
 re_cr_link_ikb = ikb([[('♻️ 继续创建', 'cr_link'), ('🎗️ 返回主页', 'manage')]])
@@ -258,6 +257,11 @@ async def cr_kk_ikb(uid, first):
         lines = array_chunk(keyboard, 2)
         keyboard = ikb(lines)
     return text, keyboard
+
+
+def gog_rester_ikb(link) -> InlineKeyboardMarkup:
+    link_ikb = ikb([[('🎁 点击领取', f'https://{link}', 'url')]])
+    return link_ikb
 
 
 """ sched_panel ↓"""

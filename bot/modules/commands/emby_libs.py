@@ -12,7 +12,7 @@ from bot.func_helper.emby import emby
 @bot.on_message(filters.command('extraembylibs_blockall', prefixes) & filters.user(owner))
 async def extraembylibs_blockall(_, msg):
     await deleteMessage(msg)
-    reply = await msg.reply(f"🍓 正在处理ing····, 正在更新所有用户的额外媒体库访问权限，时间较长，请耐心等待(完成后会有提示)")
+    reply = await msg.reply(f"🍓 正在处理ing····, 正在更新所有用户的额外媒体库访问权限")
 
     rst = get_all_emby(Emby.embyid is not None)
     if rst is None:
@@ -56,3 +56,52 @@ async def extraembylibs_blockall(_, msg):
     else:
         await sendMessage(msg, text=f"**#关闭额外媒体库任务 结束！搞毛，没有人被干掉。**")
     LOGGER.info(f"【关闭额外媒体库任务结束】 - {msg.from_user.id} 共检索出 {allcount} 个账户，成功关闭 {successcount}个，耗时：{times:.3f}s")
+@bot.on_message(filters.command('extraembylibs_unblockall', prefixes) & filters.user(owner))
+async def extraembylibs_unblockall(_, msg):
+    await deleteMessage(msg)
+    reply = await msg.reply(f"🍓 正在处理ing····, 正在更新所有用户的额外媒体库访问权限")
+
+    rst = get_all_emby(Emby.embyid is not None)
+    if rst is None:
+        LOGGER.info(
+            f"【开启额外媒体库任务】 -{msg.from_user.first_name}({msg.from_user.id}) 没有检测到任何emby账户，结束")
+        return await reply.edit("⚡【开启额外媒体库任务】\n\n结束，没有一个有号的")
+
+    allcount = 0
+    successcount = 0
+    start = time.perf_counter()
+    text = ''
+    for i in rst:
+        success, rep = emby.user(embyid=i.embyid)
+        if success:
+            allcount += 1
+            try:
+                currentblock = rep["Policy"]["BlockedMediaFolders"]
+                for b in currentblock:
+                    if b in extra_emby_libs:
+                        currentblock.remove(b)
+            except KeyError:
+                pass
+            else:
+                if not set(extra_emby_libs).issubset(set(currentblock)):
+                    re = await emby.emby_block(i.embyid, 0, block=currentblock)
+                    if re is True:
+                        successcount += 1
+                        text += f'已开启了 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
+                    else:
+                        text += f'🌧️ 开启失败 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
+                else:
+                    successcount += 1
+                    text += f'已开启了 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
+    # 防止触发 MESSAGE_TOO_LONG 异常
+    n = 1000
+    chunks = [text[i:i + n] for i in range(0, len(text), n)]
+    for c in chunks:
+        await msg.reply(c + f'\n**{Now.strftime("%Y-%m-%d %H:%M:%S")}**')
+    end = time.perf_counter()
+    times = end - start
+    if allcount != 0:
+        await sendMessage(msg, text=f"⚡#开启额外媒体库任务 done\n  共检索出 {allcount} 个账户，成功开启 {successcount}个，耗时：{times:.3f}s")
+    else:
+        await sendMessage(msg, text=f"**#开启额外媒体库任务 结束！搞毛，没有人被干掉。**")
+    LOGGER.info(f"【开启额外媒体库任务结束】 - {msg.from_user.id} 共检索出 {allcount} 个账户，成功开启 {successcount}个，耗时：{times:.3f}s")

@@ -144,7 +144,8 @@ owner_p = admin_p + [
     # BotCommand("config", "开启bot高级控制面板 [owner]")
 ]
 if len(extra_emby_libs) > 0:
-    owner_p += [BotCommand("extraembylibs_blockall", "一键关闭所有用户的额外媒体库 [owner]")]
+    owner_p += [BotCommand("extraembylibs_blockall", "一键关闭所有用户的额外媒体库 [owner]"),
+                BotCommand("extraembylibs_unblockall", "一键开启所有用户的额外媒体库 [owner]")]
 
 from pyrogram import Client, enums
 from pyromod import listen

@@ -17,7 +17,7 @@ from pyrogram.enums import ChatMemberStatus
 #     return uid == owner
 
 # 三个参数给on用
-async def admins_on_filter(filt, client, update):
+async def admins_on_filter(filt, client, update) -> bool:
     """
     过滤admins中id，包括owner
     :param client:
@@ -26,7 +26,7 @@ async def admins_on_filter(filt, client, update):
     """
     user = update.from_user or update.sender_chat
     uid = user.id
-    return bool(uid == owner or uid in admins)
+    return bool(uid == owner or uid in admins or uid in group)
 
 
 async def admins_filter(update):

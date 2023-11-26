@@ -2,7 +2,7 @@ import uuid
 
 import pytz
 
-from bot import _open, save_config, owner, admins, bot_name, ranks, schedall
+from bot import _open, save_config, owner, admins, bot_name, ranks, schedall, group
 from bot.sql_helper.sql_code import sql_add_code
 from bot.sql_helper.sql_emby import sql_get_emby
 
@@ -23,7 +23,7 @@ def judge_admins(uid):
     :param uid: tg_id
     :return: bool
     """
-    if uid != owner and uid not in admins:
+    if uid != owner and uid not in admins and uid not in group:
         return False
     else:
         return True
@@ -131,7 +131,7 @@ async def cr_link_one(tg: int, times, count, days: int, method: str):
 async def cr_link_two(tg: int, times, days: int):
     code_list = []
     p = uuid.uuid4()
-    uid = f'{ranks["logo"]}-{times}-{str(p).replace("-","")}'
+    uid = f'{ranks["logo"]}-{times}-{str(p).replace("-", "")}'
     code_list.append(uid)
     link = f't.me/{bot_name}?start={uid}'
     if sql_add_code(code_list, tg, days) is False:

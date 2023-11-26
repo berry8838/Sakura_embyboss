@@ -18,17 +18,16 @@ async def rgs_code(_, msg):
         register_code = msg.text
     u = register_code.split('-')[1]
     if int(u) != msg.from_user.id and len(u) > 7: return await sendMessage(msg, '🤺 这不是你的专属码。')
+    if _open["stat"]: return await sendMessage(msg, "🤧 自由注册开启下无法使用注册码。")
     data = sql_get_emby(tg=msg.from_user.id)
     if data is None: return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
     embyid = data.embyid
     ex = data.ex
     lv = data.lv
     if embyid is not None:
-        if _open["allow_code"] == 'n':
-            return await sendMessage(msg,
-                                     "🔔 很遗憾，管理员已经将注册码续期关闭\n**已有账户成员**无法使用register_code，请悉知",
-                                     timer=60)
-
+        if _open["allow_code"] == 'n': return await sendMessage(msg,
+                                                                "🔔 很遗憾，管理员已经将注册码续期关闭\n**已有账户成员**无法使用register_code，请悉知",
+                                                                timer=60)
         r = sql_get_code(register_code)
         if r is None:
             return await sendMessage(msg, "⛔ **你输入了一个错误de注册码，请确认好重试。**", timer=60)

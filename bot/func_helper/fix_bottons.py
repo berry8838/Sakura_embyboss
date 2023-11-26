@@ -230,12 +230,11 @@ async def cr_kk_ikb(uid, first):
                     try:
                         currentblock = rep["Policy"]["BlockedMediaFolders"]
                     except KeyError:
-                        pass
-                    else:
-                        # 此处符号用于展示是否开启的状态
-                        libs, embyextralib = ['✖️', f'embyextralib_unblock-{uid}'] if set(extra_emby_libs).issubset(
-                            set(currentblock)) else ['✔️', f'embyextralib_block-{uid}']
-                        keyboard.append([f'{libs} 额外媒体库', embyextralib])
+                        currentblock = []
+                    # 此处符号用于展示是否开启的状态
+                    libs, embyextralib = ['✖️未开启', f'embyextralib_unblock-{uid}'] if set(extra_emby_libs).issubset(
+                        set(currentblock)) else ['✔️已开启', f'embyextralib_block-{uid}']
+                    keyboard.append([f'{libs} 额外媒体库', embyextralib])
             try:
                 rst = await emby.emby_cust_commit(user_id=embyid, days=30)
                 last_time = rst[0][0]

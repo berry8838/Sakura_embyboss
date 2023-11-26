@@ -110,10 +110,12 @@ async def user_embyextralib_unblock(_, call):
     success, rep = emby.user(embyid=embyid)
     currentblock = []
     if success:
-        currentblock = rep["Policy"]["BlockedMediaFolders"]
-        for b in currentblock:
-            if b in extra_emby_libs:
-                currentblock.remove(b)
+        try:
+            currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
+            # 保留不同的元素
+            currentblock = [x for x in currentblock if x not in extra_emby_libs] + [x for x in extra_emby_libs if x not in currentblock]
+        except KeyError:
+            currentblock = ["播放列表"]
         re = await emby.emby_block(embyid, 0, block=currentblock)
         if re is True:
             await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
@@ -137,7 +139,11 @@ async def user_embyextralib_block(_, call):
     success, rep = emby.user(embyid=embyid)
     currentblock = []
     if success:
-        currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + extra_emby_libs))
+        try:
+            currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
+            currentblock = list(set(currentblock + extra_emby_libs))
+        except KeyError:
+            currentblock = ["播放列表"] + extra_emby_libs
         re = await emby.emby_block(embyid, 0, block=currentblock)
         if re is True:
             await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'

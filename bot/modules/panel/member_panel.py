@@ -480,7 +480,7 @@ async def user_emby_block(_, call):
     currentblock = []
     if success:
         try:
-            currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + emby_block))
+            currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + emby_block + ['播放列表']))
         except KeyError:
             currentblock = ['播放列表'] + extra_emby_libs + emby_block
         re = await emby.emby_block(embyid, 0, block=currentblock)
@@ -503,10 +503,9 @@ async def user_emby_unblock(_, call):
     currentblock = []
     if success:
         try:
-            currentblock = rep["Policy"]["BlockedMediaFolders"]
-            for b in currentblock:
-                if b in emby_block:
-                    currentblock.remove(b)
+            currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
+            # 保留不同的元素
+            currentblock = [x for x in currentblock if x not in emby_block] + [x for x in emby_block if x not in currentblock]
         except KeyError:
             currentblock = ['播放列表'] + extra_emby_libs
         re = await emby.emby_block(embyid, 0, block=currentblock)

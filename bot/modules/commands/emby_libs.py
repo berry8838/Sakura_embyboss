@@ -1,12 +1,10 @@
 import time
-from datetime import datetime, timezone, timedelta
 
 from pyrogram import filters
 
-from bot import bot, _open, sakura_b, owner,prefixes, extra_emby_libs,LOGGER, Now
-from bot.func_helper.fix_bottons import checkin_button
+from bot import bot, owner,prefixes, extra_emby_libs,LOGGER, Now
 from bot.func_helper.msg_utils import sendMessage, deleteMessage
-from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, get_all_emby, Emby
+from bot.sql_helper.sql_emby import get_all_emby, Emby
 from bot.func_helper.emby import emby
 
 @bot.on_message(filters.command('extraembylibs_blockall', prefixes) & filters.user(owner))
@@ -29,21 +27,21 @@ async def extraembylibs_blockall(_, msg):
         if success:
             allcount += 1
             try:
-                currentblock = rep["Policy"]["BlockedMediaFolders"]
+                currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
             except KeyError:
-                pass
-            else:
-                if not set(extra_emby_libs).issubset(set(currentblock)):
-                    currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + extra_emby_libs))
-                    re = await emby.emby_block(i.embyid, 0, block=currentblock)
-                    if re is True:
-                        successcount += 1
-                        text += f'已关闭了 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
-                    else:
-                        text += f'🌧️ 关闭失败 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
-                else:
+                currentblock = ['播放列表'] + extra_emby_libs
+            if not set(extra_emby_libs).issubset(set(currentblock)):
+                # 去除相同的元素
+                currentblock = list(set(currentblock + extra_emby_libs))
+                re = await emby.emby_block(i.embyid, 0, block=currentblock)
+                if re is True:
                     successcount += 1
                     text += f'已关闭了 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
+                else:
+                    text += f'🌧️ 关闭失败 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
+            else:
+                successcount += 1
+                text += f'已关闭了 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
     # 防止触发 MESSAGE_TOO_LONG 异常
     n = 1000
     chunks = [text[i:i + n] for i in range(0, len(text), n)]
@@ -76,23 +74,21 @@ async def extraembylibs_unblockall(_, msg):
         if success:
             allcount += 1
             try:
-                currentblock = rep["Policy"]["BlockedMediaFolders"]
-                for b in currentblock:
-                    if b in extra_emby_libs:
-                        currentblock.remove(b)
+                currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
+                # 保留不同的元素
+                currentblock = [x for x in currentblock if x not in extra_emby_libs] + [x for x in extra_emby_libs if x not in currentblock]
             except KeyError:
-                pass
-            else:
-                if not set(extra_emby_libs).issubset(set(currentblock)):
-                    re = await emby.emby_block(i.embyid, 0, block=currentblock)
-                    if re is True:
-                        successcount += 1
-                        text += f'已开启了 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
-                    else:
-                        text += f'🌧️ 开启失败 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
-                else:
+                currentblock = ['播放列表']
+            if not set(extra_emby_libs).issubset(set(currentblock)):
+                re = await emby.emby_block(i.embyid, 0, block=currentblock)
+                if re is True:
                     successcount += 1
                     text += f'已开启了 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
+                else:
+                    text += f'🌧️ 开启失败 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
+            else:
+                successcount += 1
+                text += f'已开启了 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
     # 防止触发 MESSAGE_TOO_LONG 异常
     n = 1000
     chunks = [text[i:i + n] for i in range(0, len(text), n)]

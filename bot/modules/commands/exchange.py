@@ -15,13 +15,11 @@ async def rgs_code(_, msg):
     try:
         register_code = msg.text.split()[1]
     except IndexError:
-        # return await sendMessage(msg, "🔍 **无效的值。\n\n正确用法:** `/exchange [注册码]`")
         register_code = msg.text
-    sql_add_emby(msg.from_user.id)
+    u = register_code.split('-')[1]
+    if int(u) != msg.from_user.id and len(u) > 7: return await sendMessage(msg, '🤺 这不是你的专属码。')
     data = sql_get_emby(tg=msg.from_user.id)
-    if data is None:
-        return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
-    # tg, embyid, name, pwd, pwd2, lv, cr, ex, us, iv, ch = data
+    if data is None: return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
     embyid = data.embyid
     ex = data.ex
     lv = data.lv
@@ -95,7 +93,8 @@ async def rgs_code(_, msg):
                 await sendMessage(msg,
                                   f'· 🎟️ 注册码使用 - [{msg.from_user.first_name}](tg://user?id={msg.chat.id}) [{msg.from_user.id}] 使用了 {new_code} 可以创建{us1}天账户咯~',
                                   send=True)
-            LOGGER.info(f"【注册码】：{msg.from_user.first_name}[{msg.chat.id}] 使用了 {register_code} - 可创建 {us1}天账户")
+            LOGGER.info(
+                f"【注册码】：{msg.from_user.first_name}[{msg.chat.id}] 使用了 {register_code} - 可创建 {us1}天账户")
 
 # @bot.on_message(filters.regex('exchange') & filters.private & user_in_group_on_filter)
 # async def exchange_buttons(_, call):

@@ -147,19 +147,19 @@ def sql_update_emby(condition, **kwargs):
         except:
             return False
 
-
-def sql_change_emby(name, new_tg):
-    with Session() as session:
-        try:
-            emby = session.query(Emby).filter_by(name=name).first()
-            if emby is None:
-                return False
-            emby.tg = new_tg
-            session.commit()
-            return True
-        except Exception as e:
-            print(e)
-            return False
+#
+# def sql_change_emby(name, new_tg):
+#     with Session() as session:
+#         try:
+#             emby = session.query(Emby).filter_by(name=name).first()
+#             if emby is None:
+#                 return False
+#             emby.tg = new_tg
+#             session.commit()
+#             return True
+#         except Exception as e:
+#             print(e)
+#             return False
 
 
 def sql_count_emby():

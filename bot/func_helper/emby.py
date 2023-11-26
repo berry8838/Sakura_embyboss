@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 from cacheout import Cache
 import requests as r
 from bot import emby_url, emby_api, _open, emby_block, schedall, extra_emby_libs
-from bot.sql_helper.sql_emby import sql_update_emby, sql_delete_emby, sql_change_emby, Emby
+from bot.sql_helper.sql_emby import sql_update_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_add_emby2, sql_delete_emby2
 from bot.func_helper.utils import pwd_create
 
@@ -223,21 +223,6 @@ class Embyservice:
             return True
         return False
 
-    @staticmethod
-    async def emby_change_tg(name, new_tg) -> bool:
-        """
-        换绑 tg
-        :param name: emby_name
-        :param new_tg: new_tg_id
-        :return: bool
-        """
-        if sql_delete_emby(tg=new_tg) is True:
-            if sql_change_emby(name=name, new_tg=new_tg) is True:
-                return True
-            return False
-        else:
-            return False
-
     @cache.memoize(ttl=120)
     def get_current_playing_count(self) -> int:
         """
@@ -279,13 +264,8 @@ class Embyservice:
         res = r.post(self.url + '/emby/Users/AuthenticateByName', headers=self.headers, json=data)
         if res.status_code == 200:
             embyid = res.json()["User"]["Id"]
-            ex = (datetime.now() + timedelta(days=30))
-            pwd2 = await pwd_create(4)
-            if sql_update_emby(Emby.tg == tg, embyid=embyid, name=username, pwd=password, pwd2=pwd2, lv='b', cr=ex,
-                               ex=ex):
-                if password == "None": sql_update_emby(Emby.tg == tg, pwd=None)
-                return pwd2
-        return False
+            return True, embyid
+        return False, 0
 
     async def emby_cust_commit(self, user_id=None, days=7, method=None):
         _url = f'{self.url}/emby/user_usage_stats/submit_custom_query'

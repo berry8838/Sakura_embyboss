@@ -11,19 +11,17 @@ from bot.modules.userplays_rank import user_day_plays, user_week_plays, check_lo
 
 scheduler = Scheduler()
 if schedall["dayrank"]:
-    # 添加一个cron任务，每天18点30分执行日榜推送
-    scheduler.add_job(day_ranks, 'cron', hour=18, minute=30)
+    scheduler.add_job(day_ranks, 'cron', hour=18, minute=30, id='day_ranks')
 if schedall["weekrank"]:
-    # 添加一个cron任务，每周日23点59分执行周榜推送
-    scheduler.add_job(week_ranks, 'cron', day_of_week="sun", hour=23, minute=59)
+    scheduler.add_job(week_ranks, 'cron', day_of_week="sun", hour=23, minute=59, id='week_ranks')
 if schedall["dayplayrank"]:
-    scheduler.add_job(user_day_plays, 'cron', hour=23, minute=0)  # args=(1,)
+    scheduler.add_job(user_day_plays, 'cron', hour=23, minute=0, id='user_day_plays')  # args=(1,)
 if schedall["weekplayrank"]:
-    scheduler.add_job(user_week_plays, 'cron', day_of_week="sun", hour=23, minute=0)
+    scheduler.add_job(user_week_plays, 'cron', day_of_week="sun", hour=23, minute=0, id='user_week_plays')
 if schedall["check_ex"]:
-    scheduler.add_job(check_expired, 'cron', hour=1, minute=30)
+    scheduler.add_job(check_expired, 'cron', hour=1, minute=30, id='check_expired')
 if schedall["low_activity"]:
-    scheduler.add_job(check_low_activity, 'cron', hour=8, minute=30)
+    scheduler.add_job(check_low_activity, 'cron', hour=8, minute=30, id='check_low_activity')
 
 
 async def sched_panel(_, msg):
@@ -37,9 +35,27 @@ async def sched_panel(_, msg):
 async def sched_change_policy(_, call):
     try:
         method = call.data.split('-')[1]
+        if schedall[method]:
+            m_dict = {'dayrank': 'day_ranks', 'weekrank': 'week_ranks', 'dayplayrank': 'user_day_plays',
+                      'weekplayrank': 'user_week_plays', 'check_ex': 'check_expired',
+                      'low_activity': 'check_low_activity'}
+            m = m_dict.get(method, '未知')
+            scheduler.remove_job(job_id=m, jobstore='default')
         schedall[method] = not schedall[method]
         save_config()
-        await callAnswer(call, f'⭕ 成功更改了 {method} 状态，请 /restart 重启bot 使其生效', True)
+        if schedall["dayrank"]:
+            scheduler.add_job(day_ranks, 'cron', hour=18, minute=30, id='day_ranks')
+        if schedall["weekrank"]:
+            scheduler.add_job(week_ranks, 'cron', day_of_week="sun", hour=23, minute=59, id='week_ranks')
+        if schedall["dayplayrank"]:
+            scheduler.add_job(user_day_plays, 'cron', hour=23, minute=0, id='user_day_plays')  # args=(1,)
+        if schedall["weekplayrank"]:
+            scheduler.add_job(user_week_plays, 'cron', day_of_week="sun", hour=23, minute=0, id='user_week_plays')
+        if schedall["check_ex"]:
+            scheduler.add_job(check_expired, 'cron', hour=1, minute=30, id='check_expired')
+        if schedall["low_activity"]:
+            scheduler.add_job(check_low_activity, 'cron', hour=8, minute=30, id='check_low_activity')
+        await callAnswer(call, f'⭕ 更改成功')
         await sched_panel(_, call.message)
     except IndexError:
         await sched_panel(_, call.message)

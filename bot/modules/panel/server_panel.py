@@ -42,7 +42,7 @@ async def server(_, call):
     if data is None:
         return await editMessage(call, '⚠️ 数据库没有你，请重新 /start录入')
     lv = data.lv
-    pwd = data.pwd
+    pwd = '空' if data.pwd == 'None' else data.pwd
     if lv == "d" or lv == "c" or lv == "e":
         x = ' - **无权查看**'
     else:
@@ -51,5 +51,9 @@ async def server(_, call):
         online = emby.get_current_playing_count()
     except:
         online = 'Emby服务器断连 ·0'
-    text = f'**▎目前线路 & 用户密码 `{pwd}`**\n\n{x}\n\n{sever}· 🎬 在线 | **{online}** 人\n\n **· 🌏 [{(datetime.now(timezone(timedelta(hours=8)))).strftime("%Y-%m-%d %H:%M:%S")}]**'
+    text = f'**▎↓目前线路 & 用户密码：**`{pwd}`\n' \
+           f'{x}\n\n' \
+           f'{sever}' \
+           f'· 🎬 在线 | **{online}** 人\n\n' \
+           f'**· 🌏 [{(datetime.now(timezone(timedelta(hours=8)))).strftime("%Y-%m-%d %H:%M:%S")}]**'
     await editMessage(call, text, buttons=keyboard)

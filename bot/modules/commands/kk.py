@@ -8,9 +8,9 @@ from pyrogram.errors import BadRequest
 from bot import bot, prefixes, owner, bot_photo, admins, LOGGER, extra_emby_libs
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
-from bot.func_helper.fix_bottons import cr_kk_ikb, gog_rester_ikb, register_code_ikb
+from bot.func_helper.fix_bottons import cr_kk_ikb, gog_rester_ikb
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, editMessage
-from bot.func_helper.utils import judge_admins
+from bot.func_helper.utils import judge_admins, cr_link_two
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 
 
@@ -137,7 +137,8 @@ async def user_embyextralib_block(_, call):
             await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
                                     f'已关闭了 [TA](tg://user?id={tgid}) 的额外媒体库权限\n{extra_emby_libs}')
         else:
-            await editMessage(call, f'🌧️ Error！管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n操作失败请检查设置！')
+            await editMessage(call,
+                              f'🌧️ Error！管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n操作失败请检查设置！')
 
 
 # 赠送资格
@@ -155,16 +156,10 @@ async def gift(_, call):
     first = await bot.get_chat(b)
     e = sql_get_emby(tg=b)
     if e.embyid is None:
-        us = e.us + 30
-        if not sql_update_emby(Emby.tg == b, us=us):
-            return await editMessage(call, '⚠️ 数据库写入错误，请检查')
-
+        link = await cr_link_two(tg=call.from_user.id, times=b, days=30)
         await editMessage(call, f"🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n"
                                 f'已为 [{first.first_name}](tg://user?id={b}) 赠予资格。前往bot进行下一步操作：',
-                          buttons=gog_rester_ikb)
-        await bot.send_photo(b, bot_photo,
-                             f"💫 亲爱的 {first.first_name} \n💘请查收管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})的赠送🎁：",
-                             reply_markup=register_code_ikb)
+                          buttons=gog_rester_ikb(link))
         LOGGER.info(f"【admin】：{call.from_user.id} 已发送 注册资格 {first.first_name} - {b} ")
     else:
         await editMessage(call, f'💢 [ta](tg://user?id={b}) 已注册账户。')

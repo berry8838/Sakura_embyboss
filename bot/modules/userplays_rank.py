@@ -26,7 +26,7 @@ async def user_plays_rank(days=7, uplays=True):
             emby_name = '未绑定bot或已删除'
         else:
             emby_name = f'{r[0][:1]}░{r[0][-1:]}' if em.lv == 'a' else f'{r[0]}'  # ||  隐藏效果与链接不可同时存在
-            ls.append([em.tg, em.iv + int(r[1] // 60)])
+            ls.append([em.tg, em.iv + (int(r[1]) // 60)])
         ad_time = await convert_s(int(r[1]))
         txt += f'TOP{n} 用户: [{emby_name}](tg://user?id=None)\n' \
                f'时长: {ad_time} min\n'

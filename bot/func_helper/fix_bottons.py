@@ -186,11 +186,12 @@ def config_preparation() -> InlineKeyboardMarkup:
     code = '✅' if _open["allow_code"] == 'y' else '❎'
     buy_stat = '✅' if user_buy["stat"] == 'y' else '❎'
     leave_ban = '✅' if _open["leave_ban"] else '❎'
+    uplays = '✅' if _open["uplays"] else '❎'
     keyboard = ikb(
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
          [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
-         [(f'{code} 注册码续期', 'open_allow_code'), (f'{buy_stat} 开关购买', 'set_buy'),
-          (f'{leave_ban} 退群封禁', 'leave_ban')],
+         [(f'{code} 注册码续期', 'open_allow_code'), (f'{buy_stat} 开关购买', 'set_buy')],
+         [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 自动看片结算', 'set_uplays')],
          [('🔙 返回', 'manage')]])
     return keyboard
 
@@ -232,8 +233,8 @@ async def cr_kk_ikb(uid, first):
                     except KeyError:
                         currentblock = []
                     # 此处符号用于展示是否开启的状态
-                    libs, embyextralib = ['✖️未开启', f'embyextralib_unblock-{uid}'] if set(extra_emby_libs).issubset(
-                        set(currentblock)) else ['✔️已开启', f'embyextralib_block-{uid}']
+                    libs, embyextralib = ['✖️', f'embyextralib_unblock-{uid}'] if set(extra_emby_libs).issubset(
+                        set(currentblock)) else ['✔️', f'embyextralib_block-{uid}']
                     keyboard.append([f'{libs} 额外媒体库', embyextralib])
             try:
                 rst = await emby.emby_cust_commit(user_id=embyid, days=30)
@@ -259,7 +260,7 @@ async def cr_kk_ikb(uid, first):
 
 
 def gog_rester_ikb(link) -> InlineKeyboardMarkup:
-    link_ikb = ikb([[('🎁 点击领取', f'https://{link}', 'url')]])
+    link_ikb = ikb([[('🎁 点击领取', link, 'url')]])
     return link_ikb
 
 

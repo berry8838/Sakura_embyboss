@@ -27,10 +27,10 @@ async def user_info(_, msg):
                                          timer=60)
 
             first = await bot.get_chat(uid)
-        except (IndexError, KeyError):
-            return await sendMessage(msg, '**请先给我一个tg_id！**\n\n用法：/kk [id]\n或者对某人回复kk', timer=60)
+        except (IndexError, KeyError, ValueError):
+            return await sendMessage(msg, '**请先给我一个tg_id！**\n\n用法：/kk [tg_id]\n或者对某人回复kk', timer=60)
         except BadRequest:
-            return await sendMessage(msg, f'{uid} - 🎂抱歉，此id未登记bot，或者id错误', timer=60)
+            return await sendMessage(msg, f'{msg.command[1]} - 🎂抱歉，此id未登记bot，或者id错误', timer=60)
         except AttributeError:
             pass
         else:
@@ -113,7 +113,8 @@ async def user_embyextralib_unblock(_, call):
         try:
             currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
             # 保留不同的元素
-            currentblock = [x for x in currentblock if x not in extra_emby_libs] + [x for x in extra_emby_libs if x not in currentblock]
+            currentblock = [x for x in currentblock if x not in extra_emby_libs] + [x for x in extra_emby_libs if
+                                                                                    x not in currentblock]
         except KeyError:
             currentblock = ["播放列表"]
         re = await emby.emby_block(embyid, 0, block=currentblock)

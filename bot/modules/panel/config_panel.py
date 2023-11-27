@@ -199,3 +199,19 @@ async def open_leave_ban(_, call):
         await config_p_re(_, call)
         save_config()
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 退群封禁设置 True")
+
+
+@bot.on_callback_query(filters.regex('set_uplays') & admins_on_filter)
+async def open_leave_ban(_, call):
+    if _open["uplays"]:
+        _open["uplays"] = False
+        await callAnswer(call, '**👮🏻‍♂️ 您已关闭 看片榜结算，自动召唤看片榜将不被计算积分**', True)
+        await config_p_re(_, call)
+        save_config()
+        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 看片榜结算 Falese")
+    elif not _open["uplays"]:
+        _open["uplays"] = True
+        await callAnswer(call, '**👮🏻‍♂️ 您已开启 看片榜结算，自动召唤看片榜将会被计算积分**', True)
+        await config_p_re(_, call)
+        save_config()
+        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 看片榜结算 True")

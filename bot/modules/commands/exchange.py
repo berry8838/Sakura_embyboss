@@ -58,7 +58,7 @@ async def rgs_code(_, msg):
                                   f'🎊 少年郎，恭喜你，已收到 [{first.first_name}](tg://user?id={tg1}) 的{us1}天🎁\n到期时间：{ex_new}__')
             sql_update_code(code=register_code, used=msg.from_user.id, usedtime=datetime.now())
             # new_code = "-".join(register_code.split("-")[:2]) + "-" + "█" * 7 + register_code.split("-")[2][7:]
-            new_code = register_code[:-7] + "█" * 7
+            new_code = register_code[:-7] + "░" * 7
             if user_buy["stat"] != 'y':
                 await sendMessage(msg,
                                   f'· 🎟️ 注册码使用 - [{msg.from_user.first_name}](tg://user?id={msg.chat.id}) [{msg.from_user.id}] 使用了 {new_code}\n· 📅 实时到期 - {ex_new}',
@@ -87,7 +87,7 @@ async def rgs_code(_, msg):
                             caption=f'🎊 少年郎，恭喜你，已经收到了 [{first.first_name}](tg://user?id={tg1}) 发送的邀请注册资格\n\n请选择你的选项~',
                             buttons=register_code_ikb)
             # new_code = "-".join(register_code.split("-")[:2]) + "-" + "█" * 7 + register_code.split("-")[2][7:]
-            new_code = register_code[:-7] + "█" * 7
+            new_code = register_code[:-7] + "░" * 7
             if user_buy["stat"] != 'y':
                 await sendMessage(msg,
                                   f'· 🎟️ 注册码使用 - [{msg.from_user.first_name}](tg://user?id={msg.chat.id}) [{msg.from_user.id}] 使用了 {new_code} 可以创建{us1}天账户咯~',

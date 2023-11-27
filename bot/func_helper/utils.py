@@ -142,6 +142,15 @@ async def cr_link_two(tg: int, times, days: int):
 from datetime import datetime, timedelta
 
 
+async def convert_s(seconds: int):
+    # 创建一个时间间隔对象，换算以后返回计算出的字符串
+    duration = timedelta(seconds=seconds)
+    days = duration.days
+    hours, remainder = divmod(duration.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    return f"{days} 天 {hours} 小时 {minutes} 分钟"
+
+
 def convert_to_beijing_time(original_date):
     original_date = original_date.split(".")[0].replace('T', ' ')
     dt = datetime.strptime(original_date, "%Y-%m-%d %H:%M:%S") + timedelta(hours=8)

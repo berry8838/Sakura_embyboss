@@ -56,6 +56,8 @@ if user_buy["text"] is not False:
     user_buy["button"] = user_buy["button"][0]  # 使用索引访问第一个元素
     save_config()
 _open = config["open"]
+if "uplays" not in _open:
+    _open["uplays"] = False
 try:
     _open["timing"] = 0
     save_config()
@@ -93,7 +95,8 @@ emby_block = config["emby_block"]
 try:
     extra_emby_libs = config["extra_emby_libs"]
 except Exception as e:
-    config["extra_emby_libs"] = []
+    extra_emby_libs = []
+    config["extra_emby_libs"] = extra_emby_libs
     save_config()
     # print('没有读取到额外媒体库配置，使用默认值', extra_emby_libs)
 # 数据库
@@ -127,7 +130,7 @@ admin_p = user_p + [
     BotCommand("syncunbound", "消灭未绑定bot的emby账户 [管理]"),
     BotCommand("low_activity", "手动运行活跃检测 [管理]"),
     BotCommand("check_ex", "手动到期检测 [管理]"),
-    BotCommand("user_ranks", "召唤观影时长榜，失效时用 [管理]"),
+    BotCommand("uranks", "召唤观影时长榜，失效时用 [管理]"),
     BotCommand("days_ranks", "召唤播放次数日榜，失效时用 [管理]"),
     BotCommand("week_ranks", "召唤播放次数周榜，失效时用 [管理]"),
     BotCommand("embyadmin", "开启emby控制台权限 [管理]"),

@@ -29,7 +29,7 @@ async def user_plays_rank(days=7, uplays=True):
             ls.append([em.tg, em.iv + (int(r[1]) // 60)])
         ad_time = await convert_s(int(r[1]))
         txt += f'TOP{n} 用户: [{emby_name}](tg://user?id=None)\n' \
-               f'时长: {ad_time} min\n'
+               f'时长: {ad_time}\n'
     txt += f'\n#UPlaysRank {datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")}'
     # print(txt)
     send = await bot.send_photo(chat_id=group[0], photo=bot_photo, caption=txt)

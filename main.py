@@ -10,7 +10,7 @@ from bot import bot
 
 
 from bot.modules import bot_commands, check_restart, check_ex, leave_delemby, leave_unauth_group, ranks_task, \
-    userplays_rank
+    userplays_rank, on_inline_query
 # 面板
 from bot.modules.panel import admin_panel, config_panel, member_panel, server_panel, user_buy, sched_panel
 # 细化

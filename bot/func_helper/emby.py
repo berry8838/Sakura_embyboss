@@ -324,15 +324,17 @@ class Embyservice:
         except Exception as e:
             return False, {'error': e}
 
-    def items(self, user_id, item_id):
+    def add_favotire_items(self, user_id, item_id):
         try:
-            _url = f"{self.url}/emby/Users/{user_id}/Items/{item_id}"
-            resp = r.get(_url, headers=self.headers)
+            _url = f"{self.url}/emby/Users/{user_id}/FavoriteItems/{item_id}"
+            resp = r.post(_url, headers=self.headers)
+            # print(resp.json())
             if resp.status_code != 204 and resp.status_code != 200:
-                return False, {'error': "🤕Emby 服务器连接失败!"}
-            return True, resp.json()
+                return False
+            return True
         except Exception as e:
-            return False, {'error': e}
+            LOGGER.error(f'添加收藏失败 {e}')
+            return False
 
     def primary(self, item_id, width=400, height=600, quality=90):
         try:
@@ -428,7 +430,7 @@ class Embyservice:
         :return: 含title、year属性的字典列表
         """
         # Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines
-        req_url = f"{self.url}/emby/Items?IncludeItemTypes=Movie,Series&Fields=ProductionYear,Overview,OriginalTitle,Taglines,ProviderIds,Genres,RunTimeTicks,ProductionLocations,Path" \
+        req_url = f"{self.url}/emby/Items?IncludeItemTypes=Movie,Series&Fields=ProductionYear,Overview,OriginalTitle,Taglines,ProviderIds,Genres,RunTimeTicks,ProductionLocations" \
                   f"&StartIndex=0&Recursive=true&SearchTerm={title}&Limit=10&IncludeSearchTypes=false"
         try:
             res = r.get(url=req_url, headers=self.headers)
@@ -444,20 +446,20 @@ class Embyservice:
                         ns = ", ".join(res_item.get("Genres"))
                         od = ", ".join(res_item.get("ProductionLocations")) if res_item.get(
                             "ProductionLocations") else '普遍'
+                        title = res_item.get("Name") if res_item.get("Name") == res_item.get(
+                            "OriginalTitle") else f'{res_item.get("Name")} - {res_item.get("OriginalTitle")}'
                         mediaserver_item = dict(ServerId=res_item.get("ServerId"),
                                                 library=res_item.get("ParentId"),
                                                 item_id=res_item.get("Id"),
                                                 item_type=res_item.get("Type"),
-                                                title=res_item.get("Name"),
+                                                title=title,
                                                 genres=ns,
                                                 runtime=runtime,
                                                 od=od,
-                                                original_title='' if title == res_item.get(
-                                                    "OriginalTitle") else res_item.get("OriginalTitle"),
                                                 year=res_item.get("ProductionYear"),
                                                 overview=res_item.get("Overview"),
                                                 taglines='' if not res_item.get("Taglines") else res_item.get(
-                                                    "Taglines"),
+                                                    "Taglines")[0],
                                                 tmdbid=int(item_tmdbid) if item_tmdbid else None,
                                                 # imdbid=res_item.get("ProviderIds", {}).get("Imdb"),
                                                 # tvdbid=res_item.get("ProviderIds", {}).get("Tvdb"),

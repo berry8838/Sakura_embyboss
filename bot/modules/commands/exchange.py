@@ -3,6 +3,8 @@
 """
 from datetime import timedelta, datetime
 
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 from bot import bot, _open, LOGGER, bot_photo, user_buy
 from bot.func_helper.emby import emby
 from bot.func_helper.fix_bottons import register_code_ikb
@@ -20,7 +22,7 @@ async def rgs_code(_, msg):
     if int(u) != msg.from_user.id and len(u) > 7: return await sendMessage(msg, '🤺 这不是你的专属码。')
     if _open["stat"]: return await sendMessage(msg, "🤧 自由注册开启下无法使用注册码。")
     data = sql_get_emby(tg=msg.from_user.id)
-    if data is None: return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
+    if not data: return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
     embyid = data.embyid
     ex = data.ex
     lv = data.lv
@@ -95,7 +97,17 @@ async def rgs_code(_, msg):
             LOGGER.info(
                 f"【注册码】：{msg.from_user.first_name}[{msg.chat.id}] 使用了 {register_code} - 可创建 {us1}天账户")
 
+
 # @bot.on_message(filters.regex('exchange') & filters.private & user_in_group_on_filter)
 # async def exchange_buttons(_, call):
 #
 #     await rgs_code(_, msg)
+
+async def favorite_item(_, msg):
+    n, item_id = msg.command[1].split('-')
+    try:
+        e = sql_get_emby(msg.from_user.id).embyid
+        if emby.add_favotire_items(user_id=e, item_id=item_id):
+            await msg.reply(f'好的, 已收藏💘')
+    except:
+        await msg.reply('🤺 没有账户怎么收藏？')

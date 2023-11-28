@@ -4,12 +4,12 @@
 import asyncio
 from pyrogram import filters
 
-from bot.modules.commands.exchange import rgs_code
+from bot.modules.commands.exchange import rgs_code, favorite_item
 from bot.sql_helper.sql_emby import sql_add_emby
 from bot.func_helper.filters import user_in_group_filter
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, callAnswer, editMessage
 from bot.func_helper.fix_bottons import group_f, judge_start_ikb, judge_group_ikb
-from bot import bot, prefixes, group, bot_photo
+from bot import bot, prefixes, group, bot_photo, ranks
 
 
 # 反命令提示
@@ -30,9 +30,11 @@ async def p_start(_, msg):
                                                 '💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？',
                                                 buttons=judge_group_ikb))
     try:
-        u = msg.command[1]
-        await msg.delete()
-        return await rgs_code(_, msg)
+        u = msg.command[1].split('-')[0]
+        if u == 'itemid':
+            await asyncio.gather(msg.delete(), favorite_item(_, msg))
+        elif u == f'{ranks["logo"]}':
+            await asyncio.gather(msg.delete(), rgs_code(_, msg))
     except (IndexError, TypeError):
         if await user_in_group_filter(_, msg):
             await asyncio.gather(deleteMessage(msg),

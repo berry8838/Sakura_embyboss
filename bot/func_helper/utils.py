@@ -151,6 +151,15 @@ async def convert_s(seconds: int):
     return f"{days} 天 {hours} 小时 {minutes} 分钟"
 
 
+def convert_runtime(RunTimeTicks: int):
+    # 创建一个时间间隔对象，换算以后返回计算出的字符串
+    seconds = RunTimeTicks // 10000000
+    duration = timedelta(seconds=seconds)
+    hours, remainder = divmod(duration.seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+    return f"{hours} 小时 {minutes} 分钟"
+
+
 def convert_to_beijing_time(original_date):
     original_date = original_date.split(".")[0].replace('T', ' ')
     dt = datetime.strptime(original_date, "%Y-%m-%d %H:%M:%S") + timedelta(hours=8)

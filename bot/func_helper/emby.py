@@ -7,10 +7,10 @@ from datetime import datetime, timedelta, timezone
 
 from cacheout import Cache
 import requests as r
-from bot import emby_url, emby_api, _open, emby_block, schedall, extra_emby_libs
+from bot import emby_url, emby_api, _open, emby_block, schedall, extra_emby_libs, LOGGER
 from bot.sql_helper.sql_emby import sql_update_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_add_emby2, sql_delete_emby2
-from bot.func_helper.utils import pwd_create
+from bot.func_helper.utils import pwd_create, convert_runtime
 
 cache = Cache()
 
@@ -93,9 +93,9 @@ class Embyservice:
             'accept': 'application/json',
             'content-type': 'application/json',
             'X-Emby-Token': self.api_key,
-            'X-Emby-Client': 'Emby Web',
-            'X-Emby-Device-Name': 'Chrome Windows',
-            'X-Emby-Client-Version': '4.7.13.0',
+            'X-Emby-Client': 'Sakura BOT',
+            'X-Emby-Device-Name': 'Sakura BOT',
+            'X-Emby-Client-Version': '1.0.0',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.82'
         }
 
@@ -324,7 +324,7 @@ class Embyservice:
         except Exception as e:
             return False, {'error': e}
 
-    async def items(self, user_id, item_id):
+    def items(self, user_id, item_id):
         try:
             _url = f"{self.url}/emby/Users/{user_id}/Items/{item_id}"
             resp = r.get(_url, headers=self.headers)
@@ -334,17 +334,18 @@ class Embyservice:
         except Exception as e:
             return False, {'error': e}
 
-    async def primary(self, item_id, width=200, height=300, quality=90):
+    def primary(self, item_id, width=400, height=600, quality=90):
         try:
             _url = f"{self.url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
-            resp = r.get(_url, headers=self.headers)
-            if resp.status_code != 204 and resp.status_code != 200:
-                return False, {'error': "🤕Emby 服务器连接失败!"}
-            return True, resp.content
+            # resp = r.get(_url, headers=self.headers)
+            # if resp.status_code != 204 and resp.status_code != 200:
+            #     return False, {'error': "🤕Emby 服务器连接失败!"}
+            # print(_url)
+            return True, _url
         except Exception as e:
             return False, {'error': e}
 
-    async def backdrop(self, item_id, width=300, quality=90):
+    def backdrop(self, item_id, width=300, quality=90):
         try:
             _url = f"{self.url}/emby/Items/{item_id}/Images/Backdrop?maxWidth={width}&quality={quality}"
             resp = r.get(_url, headers=self.headers)
@@ -391,6 +392,107 @@ class Embyservice:
             return True, ret["results"]
         except Exception as e:
             return False, {'error': e}
+
+    def get_medias_count(self):
+        """
+        获得电影、电视剧、音乐媒体数量
+        :return: MovieCount SeriesCount SongCount
+        """
+        req_url = f"{self.url}/emby/Items/Counts"
+        try:
+            res = r.get(url=req_url, headers=self.headers)
+            if res:
+                result = res.json()
+                # print(result)
+                movie_count = result.get("MovieCount") or 0
+                tv_count = result.get("SeriesCount") or 0
+                episode_count = result.get("EpisodeCount") or 0
+                music_count = result.get("SongCount") or 0
+                txt = f'🎬 电影数量：{movie_count}\n' \
+                      f'📽️ 剧集数量：{tv_count}\n' \
+                      f'🎵 音乐数量：{music_count}\n' \
+                      f'🎞️ 总集数：{episode_count}\n'
+                return txt
+            else:
+                LOGGER.error(f"Items/Counts 未获取到返回数据")
+                return None
+        except Exception as e:
+            LOGGER.error(f"连接Items/Counts出错：" + str(e))
+            return e
+
+    def get_movies(self, title: str, year: str = None):
+        """
+        根据标题和年份，检查是否在Emby中存在，存在则返回列表
+        :param title: 标题
+        :param year: 年份，可以为空，为空时不按年份过滤
+        :return: 含title、year属性的字典列表
+        """
+        # Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines
+        req_url = f"{self.url}/emby/Items?IncludeItemTypes=Movie,Series&Fields=ProductionYear,Overview,OriginalTitle,Taglines,ProviderIds,Genres,RunTimeTicks,ProductionLocations,Path" \
+                  f"&StartIndex=0&Recursive=true&SearchTerm={title}&Limit=10&IncludeSearchTypes=false"
+        try:
+            res = r.get(url=req_url, headers=self.headers)
+            if res:
+                res_items = res.json().get("Items")
+                if res_items:
+                    ret_movies = []
+                    for res_item in res_items:
+                        # print(res_item)
+                        item_tmdbid = res_item.get("ProviderIds", {}).get("Tmdb")
+                        runtime = convert_runtime(res_item.get("RunTimeTicks")) if res_item.get(
+                            "RunTimeTicks") else '数据缺失'
+                        ns = ", ".join(res_item.get("Genres"))
+                        od = ", ".join(res_item.get("ProductionLocations")) if res_item.get(
+                            "ProductionLocations") else '普遍'
+                        mediaserver_item = dict(ServerId=res_item.get("ServerId"),
+                                                library=res_item.get("ParentId"),
+                                                item_id=res_item.get("Id"),
+                                                item_type=res_item.get("Type"),
+                                                title=res_item.get("Name"),
+                                                genres=ns,
+                                                runtime=runtime,
+                                                od=od,
+                                                original_title='' if title == res_item.get(
+                                                    "OriginalTitle") else res_item.get("OriginalTitle"),
+                                                year=res_item.get("ProductionYear"),
+                                                overview=res_item.get("Overview"),
+                                                taglines='' if not res_item.get("Taglines") else res_item.get(
+                                                    "Taglines"),
+                                                tmdbid=int(item_tmdbid) if item_tmdbid else None,
+                                                # imdbid=res_item.get("ProviderIds", {}).get("Imdb"),
+                                                # tvdbid=res_item.get("ProviderIds", {}).get("Tvdb"),
+                                                # path=res_item.get("Path")
+                                                )
+                        ret_movies.append(mediaserver_item)
+                    return ret_movies
+        except Exception as e:
+            LOGGER.error(f"连接Items出错：" + str(e))
+            return []
+
+    def get_remote_image_by_id(self, item_id: str, image_type: str):
+        """
+        根据ItemId从Emby查询TMDB的图片地址
+        :param item_id: 在Emby中的ID
+        :param image_type: 图片的类弄地，poster或者backdrop等
+        :return: 图片对应在TMDB中的URL
+        """
+        req_url = f"{self.url}/emby/Items/{item_id}/RemoteImages"
+        try:
+            res = r.get(url=req_url, headers=self.headers)
+            if res:
+                images = res.json().get("Images")
+                # print(images)
+                for image in images:
+                    if image.get("ProviderName") == "TheMovieDb" and image.get("Type") == image_type:
+                        # print(image.get("Url"))
+                        return image.get("Url")
+            else:
+                LOGGER.error(f"Items/RemoteImages 未获取到返回数据")
+                return None
+        except Exception as e:
+            LOGGER.error(f"连接Items/Id/RemoteImages出错：" + str(e))
+            return None
+        return None
 
 
 # 实例

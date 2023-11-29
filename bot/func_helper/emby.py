@@ -324,26 +324,30 @@ class Embyservice:
         except Exception as e:
             return False, {'error': e}
 
-    def add_favotire_items(self, user_id, item_id):
+    async def add_favotire_items(self, user_id, item_id):
         try:
             _url = f"{self.url}/emby/Users/{user_id}/FavoriteItems/{item_id}"
             resp = r.post(_url, headers=self.headers)
-            # print(resp.json())
             if resp.status_code != 204 and resp.status_code != 200:
-                return False
-            return True
+                return False, None
+            req = f"{self.url}/emby/Users/{user_id}/Items/{item_id}"
+            reqs = r.get(req, headers=self.headers, timeout=3)
+            if reqs.status_code != 204 and reqs.status_code != 200:
+                return False, None
+            title = reqs.json().get("Name")
+            return True, title
         except Exception as e:
             LOGGER.error(f'添加收藏失败 {e}')
-            return False
+            return False, None
 
-    # def primary(self, item_id, width=400, height=600, quality=90):
+    # async def primary(self, item_id, width=400, height=600, quality=90):
     #     try:
     #         _url = f"{self.url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
-    #         # resp = r.get(_url, headers=self.headers)
-    #         # if resp.status_code != 204 and resp.status_code != 200:
-    #         #     return False, {'error': "🤕Emby 服务器连接失败!"}
+    #         resp = r.get(_url, headers=self.headers)
+    #         if resp.status_code != 204 and resp.status_code != 200:
+    #             return False, {'error': "🤕Emby 服务器连接失败!"}
     #         # print(_url)
-    #         return True, _url
+    #         return True, _url.json()
     #     except Exception as e:
     #         return False, {'error': e}
     #

@@ -17,19 +17,32 @@ from pyrogram.errors import BadRequest
 @bot.on_inline_query(user_in_group_on_filter)
 async def find_sth_media(_, inline_query: InlineQuery):
     try:
-        if len(inline_query.query) >= 2:
-            e = sql_get_emby(tg=inline_query.from_user.id)
-            if not e or not e.embyid:
-                results = [InlineQueryResultArticle(
-                    title=f"{ranks['logo']}",
-                    description=f"未查询到您的Emby账户，停止服务，请先注册",
-                    input_message_content=InputTextMessageContent(f"点击此处 👇"),
-                    reply_markup=InlineKeyboardMarkup(
-                        [[InlineKeyboardButton(text='(●ˇ∀ˇ●)先注册', url=f't.me/{bot_name}?start')]]),
-                    thumb_url=bot_photo, thumb_width=220, thumb_height=330)]
-                return await inline_query.answer(results=results, cache_time=1, switch_pm_text='查询结果',
-                                                 switch_pm_parameter='start')
+        if not inline_query.query or len(inline_query.query) < 2:
+            results = [InlineQueryResultArticle(
+                title=f"请输入输入请至少两位字符！",
+                description=f"本功能只提供于{ranks['logo']}用户搜索收藏Emby资源库中的电影，电视剧，采用原生emby搜索，不一定准确，一切以Emby内容为准",
+                input_message_content=InputTextMessageContent(
+                    "本功能只提供于{ranks['logo']}用户搜索/收藏Emby资源库中的电影，电视剧，采用原生emby搜索，不一定准确，一切以Emby内容为准"),
+                reply_markup=InlineKeyboardMarkup(
+                    [[InlineKeyboardButton(text='🔍 已阅，开始查询', switch_inline_query_current_chat=' ')]]),
+                thumb_url=bot_photo, thumb_height=300, thumb_width=180)]
+            await inline_query.answer(results=results, cache_time=1, switch_pm_text=f'{ranks["logo"]} 搜索指南',
+                                      is_personal=True,
+                                      switch_pm_parameter='start')
 
+        elif not sql_get_emby(tg=inline_query.from_user.id).embyid:
+            # if not e or not e.embyid:
+            results = [InlineQueryResultArticle(
+                title=f"{ranks['logo']}",
+                description=f"未查询到您的Emby账户，停止服务，请先注册",
+                input_message_content=InputTextMessageContent(f"点击此处 👇"),
+                reply_markup=InlineKeyboardMarkup(
+                    [[InlineKeyboardButton(text='(●ˇ∀ˇ●)先注册', url=f't.me/{bot_name}?start')]]),
+                thumb_url=bot_photo, thumb_width=220, thumb_height=330)]
+            return await inline_query.answer(results=results, cache_time=1, switch_pm_text='👉 我要注册！',
+                                             is_personal=True,
+                                             switch_pm_parameter='start')
+        else:
             # print(inline_query)
             Name = inline_query.query
             inline_count = 0 if not inline_query.offset else int(inline_query.offset)
@@ -43,6 +56,7 @@ async def find_sth_media(_, inline_query: InlineQuery):
                         [[InlineKeyboardButton(text='✔️ 重新搜索', switch_inline_query_current_chat=' ')]]),
                     thumb_url=bot_photo, thumb_width=220, thumb_height=330)]
                 await inline_query.answer(results=results, cache_time=1, switch_pm_text='查询结果',
+                                          is_personal=True,
                                           switch_pm_parameter='start')
             else:
                 results = []
@@ -68,21 +82,10 @@ async def find_sth_media(_, inline_query: InlineQuery):
                                                    url=f't.me/{bot_name}?start=itemid-{i["item_id"]}')]]),
                         thumb_url=i['photo'], thumb_width=220, thumb_height=330)
                     results.append(result)
-                await inline_query.answer(results=results, cache_time=1, switch_pm_text='查看结果（最多20条）',
+                await inline_query.answer(results=results, cache_time=300, switch_pm_text='查看结果（最多20条）',
+                                          is_personal=True,
                                           next_offset='10' if not inline_query.offset else '',
                                           switch_pm_parameter='start')
-
-        else:
-            results = [InlineQueryResultArticle(
-                title=f"{ranks['logo']}搜索指南",
-                description="此功能适用于搜索 电影，电视剧 是否存在Emby资源库中，采用原生emby搜索，不一定准确，输入请至少两位字符",
-                input_message_content=InputTextMessageContent(
-                    "此功能适用于搜索 电影，电视剧 是否存在Emby资源库中，采用原生emby搜索，不一定准确，输入请至少两位字符，将返回观看链接。"),
-                reply_markup=InlineKeyboardMarkup(
-                    [[InlineKeyboardButton(text='🔍 已阅，开始查询', switch_inline_query_current_chat=' ')]]),
-                thumb_url=bot_photo, thumb_height=300, thumb_width=180)]
-            await inline_query.answer(results=results, cache_time=1, switch_pm_text='跳转Bot',
-                                      switch_pm_parameter='start')
     except BadRequest:
         pass
 

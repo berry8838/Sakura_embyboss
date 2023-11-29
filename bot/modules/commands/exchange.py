@@ -3,14 +3,12 @@
 """
 from datetime import timedelta, datetime
 
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
-from bot import bot, _open, LOGGER, bot_photo, user_buy
+from bot import bot, _open, LOGGER, bot_photo, user_buy, emby_url
 from bot.func_helper.emby import emby
 from bot.func_helper.fix_bottons import register_code_ikb
 from bot.func_helper.msg_utils import sendMessage, sendPhoto
 from bot.sql_helper.sql_code import sql_get_code, sql_update_code
-from bot.sql_helper.sql_emby import sql_update_emby, sql_get_emby, Emby, sql_add_emby
+from bot.sql_helper.sql_emby import sql_update_emby, sql_get_emby, Emby
 
 
 async def rgs_code(_, msg):
@@ -107,9 +105,11 @@ async def favorite_item(_, msg):
     n, item_id = msg.command[1].split('-')
     try:
         e = sql_get_emby(msg.from_user.id).embyid
-        if emby.add_favotire_items(user_id=e, item_id=item_id):
-            await msg.reply(f'好的, 已收藏💘')
+        success, title = await emby.add_favotire_items(user_id=e, item_id=item_id)
+        if success:
+            _url = f"{emby_url}/emby/Items/{item_id}/Images/Primary?maxHeight=400&maxWidth=600&quality=90"
+            await sendPhoto(msg, photo=_url, caption=f'**《{title}》** 收藏成功！💘')
         else:
-            await msg.reply('⚠️ 收藏错误')
+            await msg.reply(f'⚠️ 收藏失败！项目 {item_id}')
     except:
         await msg.reply('🤺 没有账户怎么收藏？')

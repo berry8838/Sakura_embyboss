@@ -336,26 +336,26 @@ class Embyservice:
             LOGGER.error(f'添加收藏失败 {e}')
             return False
 
-    def primary(self, item_id, width=400, height=600, quality=90):
-        try:
-            _url = f"{self.url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
-            # resp = r.get(_url, headers=self.headers)
-            # if resp.status_code != 204 and resp.status_code != 200:
-            #     return False, {'error': "🤕Emby 服务器连接失败!"}
-            # print(_url)
-            return True, _url
-        except Exception as e:
-            return False, {'error': e}
-
-    def backdrop(self, item_id, width=300, quality=90):
-        try:
-            _url = f"{self.url}/emby/Items/{item_id}/Images/Backdrop?maxWidth={width}&quality={quality}"
-            resp = r.get(_url, headers=self.headers)
-            if resp.status_code != 204 and resp.status_code != 200:
-                return False, {'error': "🤕Emby 服务器连接失败!"}
-            return True, resp.content
-        except Exception as e:
-            return False, {'error': e}
+    # def primary(self, item_id, width=400, height=600, quality=90):
+    #     try:
+    #         _url = f"{self.url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
+    #         # resp = r.get(_url, headers=self.headers)
+    #         # if resp.status_code != 204 and resp.status_code != 200:
+    #         #     return False, {'error': "🤕Emby 服务器连接失败!"}
+    #         # print(_url)
+    #         return True, _url
+    #     except Exception as e:
+    #         return False, {'error': e}
+    #
+    # def backdrop(self, item_id, width=300, quality=90):
+    #     try:
+    #         _url = f"{self.url}/emby/Items/{item_id}/Images/Backdrop?maxWidth={width}&quality={quality}"
+    #         resp = r.get(_url, headers=self.headers)
+    #         if resp.status_code != 204 and resp.status_code != 200:
+    #             return False, {'error': "🤕Emby 服务器连接失败!"}
+    #         return True, resp.content
+    #     except Exception as e:
+    #         return False, {'error': e}
 
     async def get_emby_report(self, types='Movie', user_id=None, days=7, end_date=None, limit=10):
         try:
@@ -422,18 +422,19 @@ class Embyservice:
             LOGGER.error(f"连接Items/Counts出错：" + str(e))
             return e
 
-    def get_movies(self, title: str, year: str = None):
+    async def get_movies(self, title: str, start: int = 0):
         """
         根据标题和年份，检查是否在Emby中存在，存在则返回列表
         :param title: 标题
-        :param year: 年份，可以为空，为空时不按年份过滤
+        :param start: 从何处开始
         :return: 含title、year属性的字典列表
         """
+        if start != 0: start = start
         # Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines
         req_url = f"{self.url}/emby/Items?IncludeItemTypes=Movie,Series&Fields=ProductionYear,Overview,OriginalTitle,Taglines,ProviderIds,Genres,RunTimeTicks,ProductionLocations" \
-                  f"&StartIndex=0&Recursive=true&SearchTerm={title}&Limit=10&IncludeSearchTypes=false"
+                  f"&StartIndex={start}&Recursive=true&SearchTerm={title}&Limit=10&IncludeSearchTypes=false"
         try:
-            res = r.get(url=req_url, headers=self.headers)
+            res = r.get(url=req_url, headers=self.headers, timeout=3)
             if res:
                 res_items = res.json().get("Items")
                 if res_items:
@@ -451,6 +452,7 @@ class Embyservice:
                         mediaserver_item = dict(ServerId=res_item.get("ServerId"),
                                                 library=res_item.get("ParentId"),
                                                 item_id=res_item.get("Id"),
+                                                photo=f'{self.url}/emby/Items/{res_item.get("Id")}/Images/Primary?maxHeight=400&maxWidth=600&quality=90',
                                                 item_type=res_item.get("Type"),
                                                 title=title,
                                                 genres=ns,
@@ -471,30 +473,33 @@ class Embyservice:
             LOGGER.error(f"连接Items出错：" + str(e))
             return []
 
-    def get_remote_image_by_id(self, item_id: str, image_type: str):
-        """
-        根据ItemId从Emby查询TMDB的图片地址
-        :param item_id: 在Emby中的ID
-        :param image_type: 图片的类弄地，poster或者backdrop等
-        :return: 图片对应在TMDB中的URL
-        """
-        req_url = f"{self.url}/emby/Items/{item_id}/RemoteImages"
-        try:
-            res = r.get(url=req_url, headers=self.headers)
-            if res:
-                images = res.json().get("Images")
-                # print(images)
-                for image in images:
-                    if image.get("ProviderName") == "TheMovieDb" and image.get("Type") == image_type:
-                        # print(image.get("Url"))
-                        return image.get("Url")
-            else:
-                LOGGER.error(f"Items/RemoteImages 未获取到返回数据")
-                return None
-        except Exception as e:
-            LOGGER.error(f"连接Items/Id/RemoteImages出错：" + str(e))
-            return None
-        return None
+    # async def get_remote_image_by_id(self, item_id: str, image_type: str):
+    #     """
+    # 废物片段 西内！！！
+    #     根据ItemId从Emby查询TMDB的图片地址
+    #     :param item_id: 在Emby中的ID
+    #     :param image_type: 图片的类弄地，poster或者backdrop等
+    #     :return: 图片对应在TMDB中的URL
+    #     """
+    #     req_url = f"{self.url}/emby/Items/{item_id}/RemoteImages"
+    #     try:
+    #         res = r.get(url=req_url, headers=self.headers,timeout=3)
+    #         if res:
+    #             images = res.json().get("Images")
+    #             if not images:
+    #                 return f'{self.url}/emby/Items/{item_id}/Images/Primary?maxHeight=400&maxWidth=600&quality=90'
+    #             for image in images:
+    #                 # if image.get("ProviderName") in ["TheMovieDb", "MetaTube"] and image.get("Type") == image_type:
+    #                 if image.get("Type") == image_type:
+    #                     # print(image.get("Url"))
+    #                     return image.get("Url")
+    #         else:
+    #             LOGGER.error(f"Items/RemoteImages 未获取到返回数据")
+    #             return None
+    #     except Exception as e:
+    #         LOGGER.error(f"连接Items/Id/RemoteImages出错：" + str(e))
+    #         return None
+    #     return None
 
 
 # 实例

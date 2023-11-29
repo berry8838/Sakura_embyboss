@@ -109,5 +109,7 @@ async def favorite_item(_, msg):
         e = sql_get_emby(msg.from_user.id).embyid
         if emby.add_favotire_items(user_id=e, item_id=item_id):
             await msg.reply(f'好的, 已收藏💘')
+        else:
+            await msg.reply('⚠️ 收藏错误')
     except:
         await msg.reply('🤺 没有账户怎么收藏？')

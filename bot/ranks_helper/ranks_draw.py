@@ -114,11 +114,12 @@ class RanksDraw:
             if success:
                 item_id = data["SeriesId"]
             else:
-                logging.error(f'【ranks_draw】获取剧集ID失败 {item_id} {name}')
+                logging.error(f'【ranks_draw】获取剧集ID失败 {item_id} {name},根据名称开始搜索。')
                 # ID错误时根据剧名搜索得到正确的ID
                 ret_media = await emby.get_movies(title=name, start=0, limit=1)
                 if ret_media:
                     item_id = ret_media[0]['item_id']
+                    logging.info(f'{name} 已更新使用正确ID：{item_id}')
             # 封面图像获取
             if self.backdrop:
                 prisuccess, data = await emby.backdrop(item_id)
@@ -166,7 +167,9 @@ class RanksDraw:
                 draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126)
 
     def save(self,
-             save_path=os.path.join('log', datetime.now(pytz.timezone("Asia/Shanghai")).strftime("%Y-%m-%d.jpg"))):
+             save_path=os.path.join('log', 'img',
+                                    datetime.now(pytz.timezone("Asia/Shanghai")).strftime("%Y-%m-%d.jpg"))):
+        if not os.path.exists('log/img'): os.makedirs('log/img')
         if self.bg.mode in ("RGBA", "P"): self.bg = self.bg.convert("RGB")
         self.bg.save(save_path)
         return save_path

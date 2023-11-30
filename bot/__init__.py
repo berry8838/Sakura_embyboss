@@ -4,6 +4,7 @@
 
 # log的设置，输出到控制台和log文件
 import datetime
+import os
 
 # 转换为亚洲上海时区
 # shanghai = pytz.timezone("Asia/Shanghai")
@@ -84,6 +85,15 @@ except:
     schedall = {"dayrank": True, "weekrank": True, "dayplayrank": False, "weekplayrank": False, "check_ex": True,
                 "low_activity": False}
     config["schedall"] = schedall
+    save_config()
+
+if ("day_ranks_message_id", "week_ranks_message_id") not in schedall:
+    if not os.path.exists("log/rank.json"):
+        schedall.update({"day_ranks_message_id": 0, "week_ranks_message_id": 0})
+    else:
+        with open("log/rank.json", "r") as f:
+            i = json.load(f)
+            schedall.update(i)
     save_config()
 
 # emby设置

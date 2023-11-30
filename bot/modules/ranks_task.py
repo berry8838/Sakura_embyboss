@@ -2,42 +2,16 @@
 定时推送日榜和周榜
 """
 import asyncio
-import json
-import os
 from pyrogram import enums, filters
 from datetime import date
 
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.emby import emby
 from bot.ranks_helper import ranks_draw
-from bot import bot, group, ranks, LOGGER, prefixes
-
-# 记录推送日榜和周榜的消息id
-rank_log_file_path = os.path.join('log', 'rank.json')
+from bot import bot, group, ranks, LOGGER, prefixes, schedall, save_config
 
 
-# 保存变量到文件
-def save_data(data):
-    with open(rank_log_file_path, 'w') as file:
-        json.dump(data, file)
-
-
-# 从文件加载变量
-def get_data():
-    # 判断文件是否存在，如果不存在，写入默认值
-    if not os.path.exists(rank_log_file_path):
-        variable = {"day_ranks_message_id": 0, "week_ranks_message_id": 0}
-        save_data(variable)
-    with open(rank_log_file_path, 'r') as file:
-        try:
-            variable = json.load(file)
-        except Exception as e:
-            variable = {"day_ranks_message_id": 0, "week_ranks_message_id": 0}
-            save_data(variable)
-        return variable
-
-
-async def day_ranks():
+async def day_ranks(pin_mode=True):
     draw = ranks_draw.RanksDraw(ranks['logo'], backdrop=ranks['backdrop'])
     LOGGER.info("【ranks_task】定时任务 正在推送日榜")
     success, movies = await emby.get_emby_report(types='Movie', days=1)
@@ -53,9 +27,8 @@ async def day_ranks():
     path = draw.save()
 
     try:
-        json = get_data()
-        message_id = json['day_ranks_message_id']
-        await bot.unpin_chat_message(chat_id=group[0], message_id=int(message_id))
+        if pin_mode:
+            await bot.unpin_chat_message(chat_id=group[0], message_id=schedall['day_ranks_message_id'])
     except Exception as e:
         LOGGER.warning(f'【ranks_task】unpin day_ranks_message exception {e}')
         pass
@@ -72,18 +45,17 @@ async def day_ranks():
             user_id, item_id, item_type, name, count, duarion = tuple(tv)
             tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
         payload += tmp
-    payload = f"**【{ranks['logo']} 播放日榜】**\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime(
-        '%Y-%m-%d')
+    payload = f"**【{ranks['logo']} 播放日榜】**\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime('%Y-%m-%d')
     message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload,
                                         parse_mode=enums.ParseMode.MARKDOWN)
-    await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id, disable_notification=True)
-    data = get_data()
-    data['day_ranks_message_id'] = message_info.id
-    save_data(data)
+    if pin_mode:
+        await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id, disable_notification=True)
+    schedall['day_ranks_message_id'] = message_info.id
+    save_config()
     LOGGER.info("【ranks_task】定时任务 推送日榜完成")
 
 
-async def week_ranks():
+async def week_ranks(pin_mode=True):
     draw = ranks_draw.RanksDraw(ranks['logo'], weekly=True, backdrop=ranks['backdrop'])
     LOGGER.info("【ranks_task】定时任务 正在推送周榜")
     success, movies = await emby.get_emby_report(types='Movie', days=7)
@@ -99,9 +71,8 @@ async def week_ranks():
     path = draw.save()
 
     try:
-        json = get_data()
-        message_id = json['week_ranks_message_id']
-        await bot.unpin_chat_message(chat_id=group[0], message_id=int(message_id))
+        if pin_mode:
+            await bot.unpin_chat_message(chat_id=group[0], message_id=schedall['week_ranks_message_id'])
     except Exception as e:
         LOGGER.warning(f'【ranks_task】unpin day_ranks_message exception {e}')
         pass
@@ -122,26 +93,18 @@ async def week_ranks():
         '%Y-%m-%d')
     message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload,
                                         parse_mode=enums.ParseMode.MARKDOWN)
-    await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id, disable_notification=True)
-    data = get_data()
-    data['week_ranks_message_id'] = message_info.id
-    save_data(data)
+    if pin_mode:
+        await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id, disable_notification=True)
+    schedall['week_ranks_message_id'] = message_info.id
+    save_config()
     LOGGER.info("【ranks_task】定时任务 推送周榜完成")
-
-
-# scheduler = Scheduler()
-# # 添加一个cron任务，每天18点30分执行日榜推送
-# scheduler.add_job(day_ranks, 'cron', hour=18, minute=30)
-# # scheduler.add_job(day_ranks, 'cron', minute='*/1')
-# # 添加一个cron任务，每周日23点59分执行周榜推送
-# scheduler.add_job(week_ranks, 'cron', day_of_week=0, hour=23, minute=59)
 
 
 @bot.on_message(filters.command('days_ranks', prefixes) & admins_on_filter)
 async def day_r_ranks(_, msg):
-    await asyncio.gather(msg.delete(), day_ranks())
+    await asyncio.gather(msg.delete(), day_ranks(pin_mode=False))
 
 
 @bot.on_message(filters.command('week_ranks', prefixes) & admins_on_filter)
 async def week_r_ranks(_, msg):
-    await asyncio.gather(msg.delete(), week_ranks())
+    await asyncio.gather(msg.delete(), week_ranks(pin_mode=False))

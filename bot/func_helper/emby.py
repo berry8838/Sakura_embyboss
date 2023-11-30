@@ -443,17 +443,18 @@ class Embyservice:
             LOGGER.error(f"连接Items/Counts出错：" + str(e))
             return e
 
-    async def get_movies(self, title: str, start: int = 0):
+    async def get_movies(self, title: str, start: int = 0, limit: int = 5):
         """
         根据标题和年份，检查是否在Emby中存在，存在则返回列表
+        :param limit: x限制条目
         :param title: 标题
         :param start: 从何处开始
-        :return: 含title、year属性的字典列表
+        :return: 返回信息列表
         """
         if start != 0: start = start
         # Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines
         req_url = f"{self.url}/emby/Items?IncludeItemTypes=Movie,Series&Fields=ProductionYear,Overview,OriginalTitle,Taglines,ProviderIds,Genres,RunTimeTicks,ProductionLocations" \
-                  f"&StartIndex={start}&Recursive=true&SearchTerm={title}&Limit=10&IncludeSearchTypes=false"
+                  f"&StartIndex={start}&Recursive=true&SearchTerm={title}&Limit={limit}&IncludeSearchTypes=false"
         try:
             res = r.get(url=req_url, headers=self.headers, timeout=3)
             if res:

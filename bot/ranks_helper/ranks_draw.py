@@ -111,13 +111,14 @@ class RanksDraw:
             # 图片获取，剧集主封面获取
             # 获取剧ID
             success, data = await emby.items(user_id, item_id)
-            if not success:
-                logging.error(f'【ranks_draw】获取剧集ID失败 {item_id} {name}')
-            try:
+            if success:
                 item_id = data["SeriesId"]
-            except KeyError:
-                item_id = data["SeasonId"]
-            # item_id = data["Id"]
+            else:
+                logging.error(f'【ranks_draw】获取剧集ID失败 {item_id} {name}')
+                # ID错误时根据剧名搜索得到正确的ID
+                ret_media = await emby.get_movies(title=name, start=0, limit=1)
+                if ret_media:
+                    item_id = ret_media[0]['item_id']
             # 封面图像获取
             if self.backdrop:
                 prisuccess, data = await emby.backdrop(item_id)

@@ -348,7 +348,7 @@ class Embyservice:
             LOGGER.error(f'获取title失败 {e}')
             return ''
 
-    def primary(self, item_id, width=200, height=300, quality=90):
+    async def primary(self, item_id, width=200, height=300, quality=90):
         try:
             _url = f"{self.url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
             resp = r.get(_url, headers=self.headers)
@@ -358,13 +358,23 @@ class Embyservice:
         except Exception as e:
             return False, {'error': e}
 
-    def backdrop(self, item_id, width=300, quality=90):
+    async def backdrop(self, item_id, width=300, quality=90):
         try:
             _url = f"{self.url}/emby/Items/{item_id}/Images/Backdrop?maxWidth={width}&quality={quality}"
             resp = r.get(_url, headers=self.headers)
             if resp.status_code != 204 and resp.status_code != 200:
                 return False, {'error': "🤕Emby 服务器连接失败!"}
             return True, resp.content
+        except Exception as e:
+            return False, {'error': e}
+
+    async def items(self, user_id, item_id):
+        try:
+            _url = f"{self.url}/emby/Users/{user_id}/Items/{item_id}"
+            resp = r.get(_url, headers=self.headers)
+            if resp.status_code != 204 and resp.status_code != 200:
+                return False, {'error': "🤕Emby 服务器连接失败!"}
+            return True, resp.json()
         except Exception as e:
             return False, {'error': e}
 

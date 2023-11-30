@@ -113,7 +113,11 @@ class RanksDraw:
             success, data = await emby.items(user_id, item_id)
             if not success:
                 logging.error(f'【ranks_draw】获取剧集ID失败 {item_id} {name}')
-            item_id = data["SeriesId"]
+            try:
+                item_id = data["SeriesId"]
+            except KeyError:
+                item_id = data["SeasonId"]
+            # item_id = data["Id"]
             # 封面图像获取
             if self.backdrop:
                 prisuccess, data = await emby.backdrop(item_id)

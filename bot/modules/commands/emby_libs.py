@@ -2,10 +2,11 @@ import time
 
 from pyrogram import filters
 
-from bot import bot, owner,prefixes, extra_emby_libs,LOGGER, Now
+from bot import bot, owner, prefixes, extra_emby_libs, LOGGER, Now
 from bot.func_helper.msg_utils import sendMessage, deleteMessage
 from bot.sql_helper.sql_emby import get_all_emby, Emby
 from bot.func_helper.emby import emby
+
 
 @bot.on_message(filters.command('extraembylibs_blockall', prefixes) & filters.user(owner))
 async def extraembylibs_blockall(_, msg):
@@ -50,10 +51,14 @@ async def extraembylibs_blockall(_, msg):
     end = time.perf_counter()
     times = end - start
     if allcount != 0:
-        await sendMessage(msg, text=f"⚡#关闭额外媒体库任务 done\n  共检索出 {allcount} 个账户，成功关闭 {successcount}个，耗时：{times:.3f}s")
+        await sendMessage(msg,
+                          text=f"⚡#关闭额外媒体库任务 done\n  共检索出 {allcount} 个账户，成功关闭 {successcount}个，耗时：{times:.3f}s")
     else:
         await sendMessage(msg, text=f"**#关闭额外媒体库任务 结束！搞毛，没有人被干掉。**")
-    LOGGER.info(f"【关闭额外媒体库任务结束】 - {msg.from_user.id} 共检索出 {allcount} 个账户，成功关闭 {successcount}个，耗时：{times:.3f}s")
+    LOGGER.info(
+        f"【关闭额外媒体库任务结束】 - {msg.from_user.id} 共检索出 {allcount} 个账户，成功关闭 {successcount}个，耗时：{times:.3f}s")
+
+
 @bot.on_message(filters.command('extraembylibs_unblockall', prefixes) & filters.user(owner))
 async def extraembylibs_unblockall(_, msg):
     await deleteMessage(msg)
@@ -76,7 +81,8 @@ async def extraembylibs_unblockall(_, msg):
             try:
                 currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
                 # 保留不同的元素
-                currentblock = [x for x in currentblock if x not in extra_emby_libs] + [x for x in extra_emby_libs if x not in currentblock]
+                currentblock = [x for x in currentblock if x not in extra_emby_libs] + [x for x in extra_emby_libs if
+                                                                                        x not in currentblock]
             except KeyError:
                 currentblock = ['播放列表']
             if not set(extra_emby_libs).issubset(set(currentblock)):
@@ -97,7 +103,9 @@ async def extraembylibs_unblockall(_, msg):
     end = time.perf_counter()
     times = end - start
     if allcount != 0:
-        await sendMessage(msg, text=f"⚡#开启额外媒体库任务 done\n  共检索出 {allcount} 个账户，成功开启 {successcount}个，耗时：{times:.3f}s")
+        await sendMessage(msg,
+                          text=f"⚡#开启额外媒体库任务 done\n  共检索出 {allcount} 个账户，成功开启 {successcount}个，耗时：{times:.3f}s")
     else:
         await sendMessage(msg, text=f"**#开启额外媒体库任务 结束！搞毛，没有人被干掉。**")
-    LOGGER.info(f"【开启额外媒体库任务结束】 - {msg.from_user.id} 共检索出 {allcount} 个账户，成功开启 {successcount}个，耗时：{times:.3f}s")
+    LOGGER.info(
+        f"【开启额外媒体库任务结束】 - {msg.from_user.id} 共检索出 {allcount} 个账户，成功开启 {successcount}个，耗时：{times:.3f}s")

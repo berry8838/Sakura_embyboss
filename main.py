@@ -6,15 +6,14 @@ uvloop.install()
 from bot import bot
 
 # 定时任务与基础
-
-
-from bot.modules import (bot_commands, check_restart, check_ex, leave_delemby, leave_unauth_group, ranks_task, \
-                         userplays_rank, on_inline_query)
+from bot.modules import (bot_commands, check_restart, check_ex, ranks_task, userplays_rank)
 # 面板
-from bot.modules.panel import (admin_panel, config_panel, member_panel, server_panel, user_buy, sched_panel)
-# 细化
-from bot.modules.commands import (admin, close_it, rmemby, kk, myinfo, pro_rev, renew, renewall, \
-                                  score, start, sync_group, sync_unbound, coins, checkin, emby_libs)
-from bot.modules.extra import (create, urm)
+from bot.modules.panel import (admin_panel, config_panel, kk, member_panel, server_panel, sched_panel)
+# 命令
+from bot.modules.commands import (admin, coins, exchange, emby_libs, myinfo, pro_rev, renew, rmemby, renewall, start,
+                                  score, sync_unbound, sync_group)
+# 其他
+from bot.modules.extra import (urm, create)
+from bot.modules.callback import (checkin, close_it, leave_delemby, leave_unauth_group, on_inline_query)
 
 bot.run()

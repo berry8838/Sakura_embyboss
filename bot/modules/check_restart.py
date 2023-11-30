@@ -1,37 +1,41 @@
-from pyrogram.errors import BadRequest
-import threading
+# 重启
 import os
-import logging
-
-from bot import bot
+import threading
+from pyrogram import filters
+from bot import bot, prefixes, LOGGER, schedall, save_config
+from bot.func_helper.filters import admins_on_filter
+from pyrogram.errors import BadRequest
 
 
 # 定义一个检查函数
 def check_restart():
-    # 使用 os.path.isfile 来检查文件是否存在
-    if os.path.isfile('.restartmsg'):
-        # 使用 open 来打开文件，并使用 with 语句来管理文件对象
-        with open(".restartmsg") as f:
-            try:
-                # 读取文件的一行内容
-                line = f.readline()
-                # 将字符串分割为列表，并转换为整数
-                chat_id, msg_id = [int(x) for x in line.split()]
-                f.close()
-                try:
-                    bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text='Restarted Successfully!')
-                except BadRequest:
-                    pass
-                os.remove(".restartmsg")  # 使用 os.remove 来删除文件
-                logging.info(f"————目标：{chat_id} 消息id：{msg_id} 已提示重启成功————")
-            # 捕获可能的异常
-            except (ValueError, UnicodeDecodeError) as e:
-                # 打印错误信息
-                print(f"Invalid file content: {e}")
-    # 如果文件不存在
+    if schedall['restart_chat_id'] != 0:
+        chat_id, msg_id = schedall['restart_chat_id'], schedall['restart_msg_id']
+        try:
+            bot.edit_message_text(chat_id=chat_id, message_id=msg_id, text='Restarted Successfully!')
+        except BadRequest:
+            bot.send_message(chat_id=chat_id, text='Restarted Successfully!')
+        LOGGER.info(f"目标：{chat_id} 消息id：{msg_id} 已提示重启成功")
+        schedall.update({"restart_chat_id": 0, "restart_msg_id": 0})
+        save_config()
+
     else:
-        logging.info("————未检索到有重启指令，直接启动————")
+        LOGGER.info("未检索到有重启指令，直接启动")
 
 
 timer = threading.Timer(3, check_restart)
 timer.start()  # 重启
+
+
+@bot.on_message(filters.command('restart', prefixes) & admins_on_filter)
+async def restart_bot(_, msg):
+    await msg.delete()
+    send = await msg.reply("Restarting，等待几秒钟。")
+    schedall.update({"restart_chat_id": int(send.chat.id), "restart_msg_id": int(send.id)})
+    save_config()
+    try:
+        # some code here
+        LOGGER.info("重启")
+        os.execl('/bin/systemctl', 'systemctl', 'restart', 'embyboss')  # 用当前进程执行systemctl命令，重启embyboss服务
+    except FileNotFoundError:
+        exit(1)

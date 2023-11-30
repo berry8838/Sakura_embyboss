@@ -96,6 +96,12 @@ if ("day_ranks_message_id", "week_ranks_message_id") not in schedall:
             schedall.update(i)
     save_config()
 
+try:
+    restart_chat_id, restart_msg_id = schedall['restart_chat_id'], schedall['restart_msg_id']
+except:
+    schedall.update({"restart_chat_id": 0, "restart_msg_id": 0})
+    save_config()
+
 # emby设置
 emby_api = config["emby_api"]
 emby_param = (('api_key', emby_api),)

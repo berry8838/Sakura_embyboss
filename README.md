@@ -49,7 +49,7 @@ ___
     - [x] 添加用户播放时长，媒体播放数排行榜日推周推 [EmbyTools](https://github.com/Nolovenodie/EmbyTools)
     - [x] **支持docker部署**
 - [ ] 进阶的待定想法(有些不一定做)
-    - [x] 通过[内联模式(如何开启点这里)](image/turn_on_inline_mode.mp4)搜索emby内资源，并提供一键收藏。
+    - [x] 通过[内联模式(如何开启点这里)](https://t.me/su_yxfy/433) 搜索emby内资源，并提供一键收藏。
     - [x] 新增额外媒体库，除去用户控制的显示隐藏媒体，可固定隐藏隐私不开放其他用户
     - [ ] 睡眠模式
     - [x] 重新启用签到

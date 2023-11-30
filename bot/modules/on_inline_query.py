@@ -68,7 +68,7 @@ async def find_sth_media(_, inline_query: InlineQuery):
                         # id=str(uuid.uuid4()),
                         description=f"{i['taglines']}-{i['overview']}",
                         input_message_content=InputTextMessageContent(
-                            f"**[{typer[1]}]({i['photo']}) 《{i['title']}》**\n\n"
+                            f"**{typer[1]}《{i['title']}》 [ ]({i['photo']})**\n\n"
                             f"·**年份:** {i['year']}\n"
                             f"·**地区:** {i['od']}\n"
                             f"·**类型:** {i['genres']}\n"

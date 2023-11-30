@@ -329,16 +329,24 @@ class Embyservice:
             _url = f"{self.url}/emby/Users/{user_id}/FavoriteItems/{item_id}"
             resp = r.post(_url, headers=self.headers)
             if resp.status_code != 204 and resp.status_code != 200:
-                return False, None
+                return False
+            return True
+        except Exception as e:
+            LOGGER.error(f'添加收藏失败 {e}')
+            return False
+
+    async def item_id_namme(self, user_id, item_id):
+        try:
             req = f"{self.url}/emby/Users/{user_id}/Items/{item_id}"
             reqs = r.get(req, headers=self.headers, timeout=3)
             if reqs.status_code != 204 and reqs.status_code != 200:
-                return False, None
+                return ''
             title = reqs.json().get("Name")
-            return True, title
+            # print(reqs.json())
+            return title
         except Exception as e:
-            LOGGER.error(f'添加收藏失败 {e}')
-            return False, None
+            LOGGER.error(f'获取title失败 {e}')
+            return ''
 
     # async def primary(self, item_id, width=400, height=600, quality=90):
     #     try:

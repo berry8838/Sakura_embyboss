@@ -22,7 +22,8 @@ async def find_sth_media(_, inline_query: InlineQuery):
                 title=f"请输入输入请至少两位字符！",
                 description=f"本功能只提供于{ranks['logo']}用户搜索收藏Emby资源库中的电影，电视剧，采用原生emby搜索，不一定准确，一切以Emby内容为准",
                 input_message_content=InputTextMessageContent(
-                    "本功能只提供于{ranks['logo']}用户搜索/收藏Emby资源库中的电影，电视剧，采用原生emby搜索，不一定准确，一切以Emby内容为准"),
+                    f"本功能只提供于{ranks['logo']}用户搜索/收藏Emby资源库中的电影，电视剧，采用原生emby搜索，不一定准确，一切以Emby内容为准"),
+                # ﹒
                 reply_markup=InlineKeyboardMarkup(
                     [[InlineKeyboardButton(text='🔍 已阅，开始查询', switch_inline_query_current_chat=' ')]]),
                 thumb_url=bot_photo, thumb_height=300, thumb_width=180)]
@@ -61,20 +62,19 @@ async def find_sth_media(_, inline_query: InlineQuery):
             else:
                 results = []
                 for i in ret_movies:
-                    # uid = str(uuid.uuid4()).replace('-', '')
                     typer = ['movie', '🎬'] if i['item_type'] == 'Movie' else ['tv', '📺']
                     result = InlineQueryResultArticle(
                         title=f"{typer[1]} {i['title']} ({i['year']})",
-                        id=str(uuid.uuid4()),
+                        # id=str(uuid.uuid4()),
                         description=f"{i['taglines']}-{i['overview']}",
                         input_message_content=InputTextMessageContent(
-                            f"**{typer[1]} 《{i['title']}》**\n\n"
+                            f"**[{typer[1]}]({i['photo']}) 《{i['title']}》**\n\n"
                             f"·**年份:** {i['year']}\n"
                             f"·**地区:** {i['od']}\n"
                             f"·**类型:** {i['genres']}\n"
                             f"·**时长:** {i['runtime']}\n"
                             f"**{i['taglines']}**\n"
-                            f"{i['overview']}"),
+                            f"{i['overview']}", disable_web_page_preview=False),
                         reply_markup=InlineKeyboardMarkup(
                             [[InlineKeyboardButton(text=f'🍿 TMDB',
                                                    url=f'https://www.themoviedb.org/{typer[0]}/{i["tmdbid"]}'),

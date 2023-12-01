@@ -105,23 +105,16 @@ async def cr_page_server():
     翻页服务器面板
     :return:
     """
-    a = {}
-    b = []
-    for x in tz_id:
-        # l = a.get(x, {})  获取或创建一个空字典
-        name, sever = nezha_res.sever_info(tz_ad, tz_api, x)
-        b.append([f'{name}', f'server:{x}'])
-        a[x] = f"{sever}"
-    if len(tz_id) == 0:
-        return ikb([[('🔙 - 用户', 'members'), ('❌ - 上一级', 'back_start')]]), ''
-    elif len(tz_id) == 1:
-        return ikb([[('🔙 - 用户', 'members'), ('❌ - 上一级', 'back_start')]]), a[tz_id[0]]
-    else:
-        lines = array_chunk(b, 3)
-        lines.append([['🔙 - 用户', 'members'], ['❌ - 上一级', 'back_start']])
-        b = ikb(lines)
-        # b是键盘，a是sever
-        return b, a
+    sever = nezha_res.sever_info(tz_ad, tz_api, tz_id)
+    if not sever:
+        return ikb([[('🔙 - 用户', 'members'), ('❌ - 上一级', 'back_start')]]), None
+    d = []
+    for i in sever:
+        d.append([i['name'], f'server:{i["id"]}'])
+    lines = array_chunk(d, 3)
+    lines.append([['🔙 - 用户', 'members'], ['❌ - 上一级', 'back_start']])
+    # keyboard是键盘，a是sever
+    return ikb(lines), sever
 
 
 """admins ↓"""

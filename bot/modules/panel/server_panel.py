@@ -2,8 +2,8 @@
 服务器讯息打印
 
 """
+import random
 from datetime import datetime, timezone, timedelta
-
 from pyrogram import filters
 from bot import bot, emby_line, tz_id
 from bot.func_helper.emby import emby
@@ -15,45 +15,33 @@ from bot.func_helper.msg_utils import callAnswer, editMessage
 
 @bot.on_callback_query(filters.regex('server') & user_in_group_on_filter)
 async def server(_, call):
-    """
-    显示账户名密码,线路和设置好服务器信息
-    :param _:
-    :param call:
-    :return:
-    """
+    data = sql_get_emby(tg=call.from_user.id)
+    if not data:
+        return await editMessage(call, '⚠️ 数据库没有你，请重新 /start录入')
+    await callAnswer(call, '🌐查询中...')
     try:
-        j = call.data.split(':')[1]
+        j = int(call.data.split(':')[1])
     except IndexError:
         # 第一次查看
-        send = await editMessage(call, "**▎🌐查询中...\n\nο(=•ω＜=)ρ⌒☆ 发送bibo电波~bibo~ \n⚡ 卡住请等待即可.**")
+        send = await editMessage(call, "**▎🌐查询中...\n\nο(=•ω＜=)ρ⌒☆ 发送bibo电波~bibo~ \n⚡ 点击按钮查看相应服务器状态**")
         if send is False:
             return
 
         keyboard, sever = await cr_page_server()
-        # print(keyboard, sever)
-        if len(tz_id) > 1:
-            sever = sever[tz_id[0]]
+        server_info = sever[0]['server'] if sever == '' else ''
     else:
         keyboard, sever = await cr_page_server()
-        sever = sever[j]
+        server_info = ''.join([item['server'] for item in sever if item['id'] == j])
 
-    await callAnswer(call, '🌐查询中...')
-    data = sql_get_emby(tg=call.from_user.id)
-    if data is None:
-        return await editMessage(call, '⚠️ 数据库没有你，请重新 /start录入')
-    lv = data.lv
-    pwd = '空' if data.pwd == 'None' else data.pwd
-    if lv == "d" or lv == "c" or lv == "e":
-        x = ' - **无权查看**'
-    else:
-        x = f'{emby_line}'
+    pwd = '空' if not data.pwd else data.pwd
+    line = f'{emby_line}' if data.lv in ['a', 'b'] else ' - **无权查看**'
     try:
         online = emby.get_current_playing_count()
     except:
         online = 'Emby服务器断连 ·0'
     text = f'**▎↓目前线路 & 用户密码：**`{pwd}`\n' \
-           f'{x}\n\n' \
-           f'{sever}' \
+           f'{line}\n\n' \
+           f'{server_info}' \
            f'· 🎬 在线 | **{online}** 人\n\n' \
            f'**· 🌏 [{(datetime.now(timezone(timedelta(hours=8)))).strftime("%Y-%m-%d %H:%M:%S")}]**'
     await editMessage(call, text, buttons=keyboard)

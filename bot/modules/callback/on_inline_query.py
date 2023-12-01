@@ -27,12 +27,13 @@ async def find_sth_media(_, inline_query: InlineQuery):
                 reply_markup=InlineKeyboardMarkup(
                     [[InlineKeyboardButton(text='🔍 已阅，开始查询', switch_inline_query_current_chat=' ')]]),
                 thumb_url=bot_photo, thumb_height=300, thumb_width=180)]
-            await inline_query.answer(results=results, cache_time=1, switch_pm_text=f'{ranks["logo"]} 搜索指南',
-                                      is_personal=True,
-                                      switch_pm_parameter='start')
+            return await inline_query.answer(results=results, cache_time=1, switch_pm_text=f'{ranks["logo"]} 搜索指南',
+                                             is_personal=True,
+                                             switch_pm_parameter='start')
 
-        elif not sql_get_emby(tg=inline_query.from_user.id).embyid:
-            # if not e or not e.embyid:
+        e = sql_get_emby(tg=inline_query.from_user.id)
+
+        if not e or not e.embyid:
             results = [InlineQueryResultArticle(
                 title=f"{ranks['logo']}",
                 description=f"未查询到您的Emby账户，停止服务，请先注册",

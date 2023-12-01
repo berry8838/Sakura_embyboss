@@ -161,7 +161,8 @@ owner_p = admin_p + [
     BotCommand("proadmin", "添加bot管理 [owner]"),
     BotCommand("revadmin", "移除bot管理 [owner]"),
     BotCommand("renewall", "一键派送天数给所有未封禁的用户 [owner]"),
-    # BotCommand("config", "开启bot高级控制面板 [owner]")
+    BotCommand("bindall_id", "一键更新用户们Embyid [owner]"),
+    BotCommand("config", "开启bot高级控制面板 [owner]")
 ]
 if len(extra_emby_libs) > 0:
     owner_p += [BotCommand("extraembylibs_blockall", "一键关闭所有用户的额外媒体库 [owner]"),

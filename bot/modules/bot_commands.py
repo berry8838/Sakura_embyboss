@@ -2,8 +2,6 @@
 bot_commands - 初始化设置命令
 """
 import asyncio
-# from pyrogram import enums
-from pyrogram.errors import BadRequest, NotAcceptable
 from bot import owner, admins, group, LOGGER, user_p, admin_p, owner_p, bot
 from pyrogram.types import BotCommandScopeChatMember, BotCommandScopeChat, BotCommandScopeAllPrivateChats, \
     BotCommandScopeAllGroupChats
@@ -19,25 +17,23 @@ class BotCommands:
 
     # 定义一个方法，用来设置命令
     async def set_commands(self, client):
-        # 私聊
         try:
-            await client.set_bot_commands(self.user_p, scope=BotCommandScopeAllPrivateChats())
+            await client.delete_bot_commands(scope=BotCommandScopeAllGroupChats())  # 删除所有群聊指令
+            await client.delete_bot_commands(scope=BotCommandScopeAllPrivateChats())  # 删除所有私聊命令
+            await client.set_bot_commands(self.user_p, scope=BotCommandScopeAllPrivateChats())  # 所有私聊命令
+            await client.set_bot_commands(self.user_p, scope=BotCommandScopeAllGroupChats())  # 所有群聊命令
+
+            # 私聊
             for admin_id in admins:
                 await client.set_bot_commands(self.admin_p, scope=BotCommandScopeChat(chat_id=admin_id))
             await client.set_bot_commands(self.owner_p, scope=BotCommandScopeChat(chat_id=owner))
-
             # 群组
             for i in group:
-                await client.delete_bot_commands(scope=BotCommandScopeChat(chat_id=i))
-                try:
-                    for admin_id in admins:
-                        await client.set_bot_commands(self.admin_p,
-                                                      scope=BotCommandScopeChatMember(chat_id=i, user_id=admin_id))
-                    await client.set_bot_commands(self.owner_p,
-                                                  scope=BotCommandScopeChatMember(chat_id=i, user_id=owner))
-                except (BadRequest, NotAcceptable):
-                    LOGGER.info(f"————错误，请检查bot是否在群 {i} 或相应权限————")
-            await client.set_bot_commands(self.user_p, scope=BotCommandScopeAllGroupChats())
+                for admin_id in admins:
+                    await client.set_bot_commands(self.admin_p,
+                                                  scope=BotCommandScopeChatMember(chat_id=i, user_id=admin_id))
+                await client.set_bot_commands(self.owner_p,
+                                              scope=BotCommandScopeChatMember(chat_id=i, user_id=owner))
             LOGGER.info("————初始化 命令显示 done————")
         except ConnectionError:
             pass

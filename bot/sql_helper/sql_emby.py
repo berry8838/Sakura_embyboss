@@ -82,6 +82,15 @@ def sql_update_embys(some_list: list, method=None):
             except:
                 session.rollback()
                 return False
+        if method == 'bind':
+            try:
+                mappings = [{"name": c[0], "embyid": c[1]} for c in some_list]
+                session.bulk_update_mappings(Emby, mappings)
+                session.commit()
+                return True
+            except:
+                session.rollback()
+                return False
 
 
 def sql_get_emby(tg):
@@ -146,6 +155,7 @@ def sql_update_emby(condition, **kwargs):
             return True
         except:
             return False
+
 
 #
 # def sql_change_emby(name, new_tg):

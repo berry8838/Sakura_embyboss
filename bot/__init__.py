@@ -120,6 +120,10 @@ db_host = config["db_host"]
 db_user = config["db_user"]
 db_pwd = config["db_pwd"]
 db_name = config["db_name"]
+db_is_docker = config["db_is_docker"]
+db_docker_name = config["db_docker_name"]
+db_backup_dir = config["db_backup_dir"]
+db_backup_maxcount = int(config["db_backup_maxcount"])
 # 探针
 tz_ad = config["tz_ad"]
 tz_api = config["tz_api"]
@@ -162,6 +166,7 @@ owner_p = admin_p + [
     BotCommand("revadmin", "移除bot管理 [owner]"),
     BotCommand("renewall", "一键派送天数给所有未封禁的用户 [owner]"),
     BotCommand("bindall_id", "一键更新用户们Embyid [owner]"),
+    BotCommand("manual_backup", "手动备份数据库[owner]"),
     BotCommand("config", "开启bot高级控制面板 [owner]")
 ]
 if len(extra_emby_libs) > 0:

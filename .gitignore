@@ -11,3 +11,4 @@ gen
 !/keaiji_bot.session-journal
 __pycache__
 log
+*.sql

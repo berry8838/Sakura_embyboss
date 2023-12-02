@@ -11,7 +11,7 @@ from bot.modules import (bot_commands, check_restart, check_ex, ranks_task, user
 from bot.modules.panel import (admin_panel, config_panel, kk, member_panel, server_panel, sched_panel)
 # 命令
 from bot.modules.commands import (admin, coins, exchange, emby_libs, myinfo, pro_rev, renew, rmemby, renewall, start,
-                                  score, sync_unbound, sync_group, bindall_id)
+                                  score, sync_unbound, sync_group, bindall_id, backup_db)
 # 其他
 from bot.modules.extra import (urm, create)
 from bot.modules.callback import (checkin, close_it, leave_delemby, leave_unauth_group, on_inline_query)

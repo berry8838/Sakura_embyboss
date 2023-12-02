@@ -45,6 +45,10 @@
   "db_user": "",
   "db_pwd": "",
   "db_name": "",
+  "db_is_docker": false,
+  "db_docker_name": "mysql",
+  "db_backup_dir": "./backup",
+  "db_backup_maxcount": 7,
   "tz_ad": "",
   "tz_api": "",
   "tz_id": [
@@ -59,6 +63,7 @@
     "dayplayrank": false,
     "weekplayrank": false,
     "check_ex": true,
-    "low_activity": false
+    "low_activity": false,
+    "backup_db": false
   }
 }

@@ -145,6 +145,10 @@ ___
 "db_user": "susu" 数据库用户名
 "db_pwd": "1234"  密码
 "db_name": "embyboss"  库名
+"db_is_docker": true 数据库是否为docker模式启动
+"db_docker_name": "mysql" 如果是docker模式启动的数据库，此数据库容器的名字
+"db_backup_dir": "./backup" 数据库备份文件所保存的目录
+"db_backup_maxcount": 7 数据库备份文件保留的个数
 ```
 
 - 选填项目

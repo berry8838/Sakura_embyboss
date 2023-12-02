@@ -6,7 +6,7 @@ uvloop.install()
 from bot import bot
 
 # 定时任务与基础
-from bot.modules import (bot_commands, check_restart, check_ex, ranks_task, userplays_rank)
+from bot.modules import (backup_db, bot_commands, check_restart, check_ex, ranks_task, userplays_rank)
 # 面板
 from bot.modules.panel import (admin_panel, config_panel, kk, member_panel, server_panel, sched_panel)
 # 命令

@@ -8,40 +8,23 @@ from bot.func_helper.scheduler import Scheduler
 from bot.modules.check_ex import check_expired
 from bot.modules.ranks_task import day_ranks, week_ranks
 from bot.modules.userplays_rank import user_day_plays, user_week_plays, check_low_activity
+from bot.modules.backup_db import auto_backup_db
 
 scheduler = Scheduler()
-
-# 写优雅点
-# 字典，method相应的操作函数
-action_dict = {
-    "dayrank": day_ranks,
-    "weekrank": week_ranks,
-    "dayplayrank": user_day_plays,
-    "weekplayrank": user_week_plays,
-    "check_ex": check_expired,
-    "low_activity": check_low_activity
-}
-
-# 字典，对应的操作函数的参数和id
-args_dict = {
-    "dayrank": {'hour': 18, 'minute': 30, 'id': 'day_ranks'},
-    "weekrank": {'day_of_week': "sun", 'hour': 23, 'minute': 59, 'id': 'week_ranks'},
-    "dayplayrank": {'hour': 23, 'minute': 0, 'id': 'user_day_plays'},
-    "weekplayrank": {'day_of_week': "sun", 'hour': 23, 'minute': 0, 'id': 'user_week_plays'},
-    "check_ex": {'hour': 1, 'minute': 30, 'id': 'check_expired'},
-    "low_activity": {'hour': 8, 'minute': 30, 'id': 'check_low_activity'}
-}
-
-
-def set_all_sche():
-    for key, value in action_dict.items():
-        if schedall[key]:
-            action = action_dict[key]
-            args = args_dict[key]
-            scheduler.add_job(action, 'cron', **args)
-
-
-set_all_sche()
+if schedall["dayrank"]:
+    scheduler.add_job(day_ranks, 'cron', hour=18, minute=30, id='day_ranks')
+if schedall["weekrank"]:
+    scheduler.add_job(week_ranks, 'cron', day_of_week="sun", hour=23, minute=59, id='week_ranks')
+if schedall["dayplayrank"]:
+    scheduler.add_job(user_day_plays, 'cron', hour=23, minute=0, id='user_day_plays')  # args=(1,)
+if schedall["weekplayrank"]:
+    scheduler.add_job(user_week_plays, 'cron', day_of_week="sun", hour=23, minute=0, id='user_week_plays')
+if schedall["check_ex"]:
+    scheduler.add_job(check_expired, 'cron', hour=1, minute=30, id='check_expired')
+if schedall["low_activity"]:
+    scheduler.add_job(check_low_activity, 'cron', hour=8, minute=30, id='check_low_activity')
+if schedall["backup_db"]:
+    scheduler.add_job(auto_backup_db, 'cron', hour=1, minute=30, id='auto_backup_db')
 
 
 async def sched_panel(_, msg):
@@ -55,15 +38,28 @@ async def sched_panel(_, msg):
 async def sched_change_policy(_, call):
     try:
         method = call.data.split('-')[1]
-        # 根据method的值来添加或移除相应的任务
-        action = action_dict[method]
-        args = args_dict[method]
         if schedall[method]:
-            scheduler.remove_job(job_id=args['id'], jobstore='default')
-        else:
-            scheduler.add_job(action, 'cron', **args)
+            m_dict = {'dayrank': 'day_ranks', 'weekrank': 'week_ranks', 'dayplayrank': 'user_day_plays',
+                      'weekplayrank': 'user_week_plays', 'check_ex': 'check_expired',
+                      'low_activity': 'check_low_activity', 'backup_db': 'auto_backup_db'}
+            m = m_dict.get(method, '未知')
+            scheduler.remove_job(job_id=m, jobstore='default')
         schedall[method] = not schedall[method]
         save_config()
+        if schedall["dayrank"]:
+            scheduler.add_job(day_ranks, 'cron', hour=18, minute=30, id='day_ranks')
+        if schedall["weekrank"]:
+            scheduler.add_job(week_ranks, 'cron', day_of_week="sun", hour=23, minute=59, id='week_ranks')
+        if schedall["dayplayrank"]:
+            scheduler.add_job(user_day_plays, 'cron', hour=23, minute=0, id='user_day_plays')  # args=(1,)
+        if schedall["weekplayrank"]:
+            scheduler.add_job(user_week_plays, 'cron', day_of_week="sun", hour=23, minute=0, id='user_week_plays')
+        if schedall["check_ex"]:
+            scheduler.add_job(check_expired, 'cron', hour=1, minute=30, id='check_expired')
+        if schedall["low_activity"]:
+            scheduler.add_job(check_low_activity, 'cron', hour=8, minute=30, id='check_low_activity')
+        if schedall["backup_db"]:
+            scheduler.add_job(auto_backup_db, 'cron', hour=1, minute=30, id='auto_backup_db')
         await callAnswer(call, f'⭕ 更改成功')
         await sched_panel(_, call.message)
     except IndexError:

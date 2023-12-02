@@ -32,7 +32,7 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          file: ./Dockerfile_dragon
+          file: ./Dockerfile
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/sakura_embyboss:${{ github.event.release.tag_name }}

@@ -1,6 +1,7 @@
 FROM python:3.10.11-alpine
 WORKDIR /app
 ENV TZ=Asia/Shanghai
+ENV DOCKER_MODE=1
 COPY requirements.txt requirements.txt
 RUN apk add --no-cache \
     mysql-client \

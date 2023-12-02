@@ -1,3 +1,4 @@
+import os
 from bot import bot, prefixes, owner, LOGGER, db_is_docker, db_docker_name, db_host, db_name, db_user, db_pwd, db_backup_dir, db_backup_maxcount
 from pyrogram import filters
 from bot.func_helper.backup_db_utils import BackupDBUtils
@@ -5,18 +6,19 @@ from bot.func_helper.msg_utils import deleteMessage
 
 async def backup_db():
     backup_file = None
-    if db_is_docker:
-        backup_file = await BackupDBUtils.backup_mysql_db_docker(
-            container_name=db_docker_name,
+    # 如果是在docker模式下运行的此程序，使用BackupDBUtils.backup_mysql_db的方式备份数据库（此镜像中已经安装了mysqldump工具）
+    if os.environ.get('DOCKER_MODE') == 1 or not db_is_docker:
+        backup_file = await BackupDBUtils.backup_mysql_db(
+            host=db_host,
             user=db_user,
             password=db_pwd,
             database_name=db_name,
             backup_dir=db_backup_dir,
             max_backup_count=db_backup_maxcount
         )
-    else:
-        backup_file = await BackupDBUtils.backup_mysql_db(
-            host=db_host,
+    elif db_is_docker:
+        backup_file = await BackupDBUtils.backup_mysql_db_docker(
+            container_name=db_docker_name,
             user=db_user,
             password=db_pwd,
             database_name=db_name,

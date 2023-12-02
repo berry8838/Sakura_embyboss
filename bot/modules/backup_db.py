@@ -7,7 +7,7 @@ from bot.func_helper.msg_utils import deleteMessage
 async def backup_db():
     backup_file = None
     # 如果是在docker模式下运行的此程序，使用BackupDBUtils.backup_mysql_db的方式备份数据库（此镜像中已经安装了mysqldump工具）
-    if os.environ.get('DOCKER_MODE') == 1 or not db_is_docker:
+    if os.environ.get('DOCKER_MODE') == "1" or not db_is_docker:
         backup_file = await BackupDBUtils.backup_mysql_db(
             host=db_host,
             user=db_user,

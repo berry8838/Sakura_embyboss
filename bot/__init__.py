@@ -86,7 +86,9 @@ except:
                 "low_activity": False, "backup_db": True}
     config["schedall"] = schedall
     save_config()
-
+if "backup_db" not in schedall:
+    schedall.update({"backup_db": True})
+    save_config()
 if ("day_ranks_message_id", "week_ranks_message_id") not in schedall:
     if not os.path.exists("log/rank.json"):
         schedall.update({"day_ranks_message_id": 0, "week_ranks_message_id": 0})
@@ -120,10 +122,30 @@ db_host = config["db_host"]
 db_user = config["db_user"]
 db_pwd = config["db_pwd"]
 db_name = config["db_name"]
-db_is_docker = config["db_is_docker"]
-db_docker_name = config["db_docker_name"]
-db_backup_dir = config["db_backup_dir"]
-db_backup_maxcount = int(config["db_backup_maxcount"])
+try:
+    db_is_docker = config["db_is_docker"]
+except Exception as e:
+    db_is_docker = False
+    config["db_is_docker"] = db_is_docker
+    save_config()
+try:
+    db_docker_name = config["db_docker_name"]
+except Exception as e:
+    db_docker_name = "mysql"
+    config["db_docker_name"] = db_docker_name
+    save_config()
+try:
+    db_backup_dir = config["db_backup_dir"]
+except Exception as e:
+    db_backup_dir = "/db_backup"
+    config["db_backup_dir"] = db_backup_dir
+    save_config()
+try:
+    db_backup_maxcount = int(config["db_backup_maxcount"])
+except Exception as e:
+    db_backup_maxcount = 7
+    config["db_backup_maxcount"] = db_backup_maxcount
+    save_config()
 # 探针
 tz_ad = config["tz_ad"]
 tz_api = config["tz_api"]

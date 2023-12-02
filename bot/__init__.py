@@ -83,7 +83,7 @@ try:
     schedall = config["schedall"]
 except:
     schedall = {"dayrank": True, "weekrank": True, "dayplayrank": False, "weekplayrank": False, "check_ex": True,
-                "low_activity": False}
+                "low_activity": False, "backup_db": True}
     config["schedall"] = schedall
     save_config()
 
@@ -166,7 +166,7 @@ owner_p = admin_p + [
     BotCommand("revadmin", "移除bot管理 [owner]"),
     BotCommand("renewall", "一键派送天数给所有未封禁的用户 [owner]"),
     BotCommand("bindall_id", "一键更新用户们Embyid [owner]"),
-    BotCommand("manual_backup", "手动备份数据库[owner]"),
+    BotCommand("backup_db", "手动备份数据库[owner]"),
     BotCommand("config", "开启bot高级控制面板 [owner]")
 ]
 if len(extra_emby_libs) > 0:

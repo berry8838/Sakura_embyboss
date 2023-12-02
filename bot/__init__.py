@@ -137,7 +137,7 @@ except Exception as e:
 try:
     db_backup_dir = config["db_backup_dir"]
 except Exception as e:
-    db_backup_dir = "/db_backup"
+    db_backup_dir = "./db_backup"
     config["db_backup_dir"] = db_backup_dir
     save_config()
 try:

@@ -1,14 +1,12 @@
 """
 定时推送日榜和周榜
 """
-import asyncio
-from pyrogram import enums, filters
+from pyrogram import enums
 from datetime import date
 
-from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.emby import emby
 from bot.ranks_helper import ranks_draw
-from bot import bot, group, ranks, LOGGER, prefixes, schedall, save_config
+from bot import bot, group, ranks, LOGGER, schedall, save_config
 
 
 async def day_ranks(pin_mode=True):
@@ -98,13 +96,3 @@ async def week_ranks(pin_mode=True):
     schedall['week_ranks_message_id'] = message_info.id
     save_config()
     LOGGER.info("【ranks_task】定时任务 推送周榜完成")
-
-
-@bot.on_message(filters.command('days_ranks', prefixes) & admins_on_filter)
-async def day_r_ranks(_, msg):
-    await asyncio.gather(msg.delete(), day_ranks(pin_mode=False))
-
-
-@bot.on_message(filters.command('week_ranks', prefixes) & admins_on_filter)
-async def week_r_ranks(_, msg):
-    await asyncio.gather(msg.delete(), week_ranks(pin_mode=False))

@@ -94,31 +94,31 @@ async def create_user(_, call, us, stats):
 @bot.on_callback_query(filters.regex('members') & user_in_group_on_filter)
 async def members(_, call):
     data = await members_info(tg=call.from_user.id)
-    if data is None:
+    if not data:
         return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
+
+    await callAnswer(call, f"✅ 用户界面")
+    name, lv, ex, us, embyid, pwd2 = data
+    text = f"▎__欢迎进入用户面板！{call.from_user.first_name}__\n\n" \
+           f"**· 🆔 用户ID** | `{call.from_user.id}`\n" \
+           f"**· 📊 当前状态** | {lv}\n" \
+           f"**· 🍒 积分{sakura_b}** | {us[0]} · {us[1]}\n" \
+           f"**· 💠 账号名称** | [{name}](tg://user?id={call.from_user.id})\n" \
+           f"**· 🚨 到期时间** | {ex}"
+    if not embyid:
+        await editMessage(call, text, members_ikb(False))
     else:
-        await callAnswer(call, f"✅ 用户界面")
-        name, lv, ex, us, embyid, pwd2 = data
-        text = f"▎__欢迎进入用户面板！{call.from_user.first_name}__\n\n" \
-               f"**· 🆔 用户ID** | `{call.from_user.id}`\n" \
-               f"**· 📊 当前状态** | {lv}\n" \
-               f"**· 🍒 积分{sakura_b}** | {us[0]} · {us[1]}\n" \
-               f"**· 💠 账号名称** | [{name}](tg://user?id={call.from_user.id})\n" \
-               f"**· 🚨 到期时间** | {ex}"
-        if embyid is None:
-            await editMessage(call, text, members_ikb(False))
-        else:
-            await editMessage(call, text, members_ikb(True))
+        await editMessage(call, text, members_ikb(True))
 
 
 # 创建账户
 @bot.on_callback_query(filters.regex('create') & user_in_group_on_filter)
 async def create(_, call):
     e = sql_get_emby(tg=call.from_user.id)
-    if e is None:
+    if not e:
         return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
 
-    if e.embyid is not None:
+    if e.embyid:
         await callAnswer(call, '💦 你已经有账户啦！请勿重复注册。', True)
     elif not _open["stat"] and int(e.us) <= 0:
         await callAnswer(call, f'🤖 自助注册已关闭，等待开启。', True)
@@ -140,8 +140,11 @@ async def create(_, call):
 @bot.on_callback_query(filters.regex('changetg') & user_in_group_on_filter)
 async def change_tg(_, call):
     d = sql_get_emby(tg=call.from_user.id)
-    if d.embyid is not None:
+    if not d:
+        return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
+    if d.embyid:
         return await callAnswer(call, '⚖️ 您已经拥有账户，请不要钻空子', True)
+
     await callAnswer(call, '⚖️ 更换绑定的TG')
     send = await editMessage(call,
                              '🔰 **【更换绑定emby的tg】**\n'
@@ -505,7 +508,8 @@ async def user_emby_unblock(_, call):
         try:
             currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
             # 保留不同的元素
-            currentblock = [x for x in currentblock if x not in emby_block] + [x for x in emby_block if x not in currentblock]
+            currentblock = [x for x in currentblock if x not in emby_block] + [x for x in emby_block if
+                                                                               x not in currentblock]
         except KeyError:
             currentblock = ['播放列表'] + extra_emby_libs
         re = await emby.emby_block(embyid, 0, block=currentblock)

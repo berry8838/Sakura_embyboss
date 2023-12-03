@@ -3,7 +3,6 @@ from pyrogram.enums import ChatMemberStatus
 from pyrogram.types import ChatMemberUpdated
 
 from bot import bot, group, LOGGER, _open
-from bot.func_helper.utils import judge_admins
 from bot.sql_helper.sql_emby import sql_get_emby
 from bot.func_helper.emby import emby
 

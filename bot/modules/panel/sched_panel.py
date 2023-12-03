@@ -1,16 +1,37 @@
-from pyrogram import filters
+import threading
+import asyncio
+import os
 
-from bot import bot, sakura_b, schedall, save_config
+from pyrogram import filters
+from bot import bot, sakura_b, schedall, save_config, prefixes, _open, owner, LOGGER
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import sched_buttons
-from bot.func_helper.msg_utils import callAnswer, editMessage
+from bot.func_helper.msg_utils import callAnswer, editMessage, deleteMessage
 from bot.func_helper.scheduler import Scheduler
-from bot.modules.check_ex import check_expired
-from bot.modules.ranks_task import day_ranks, week_ranks
-from bot.modules.userplays_rank import user_day_plays, user_week_plays, check_low_activity
-from bot.modules.backup_db import auto_backup_db
+from bot.modules.schedme import *
 
+# 实例化
 scheduler = Scheduler()
+
+# 开机检查重启
+timer = threading.Timer(1, check_restart)
+timer.start()  # 重启
+
+# 初始化命令
+loop = asyncio.get_event_loop()
+loop.call_later(5, lambda: loop.create_task(BotCommands.set_commands(client=bot)))
+
+# 启动定时任务
+auto_backup_db = DbBackupUtils.auto_backup_db
+user_plays_rank = Uplaysinfo.user_plays_rank
+check_low_activity = Uplaysinfo.check_low_activity
+
+
+async def user_day_plays(): await user_plays_rank(1)
+
+
+async def user_week_plays(): await user_plays_rank(7)
+
 
 # 写优雅点
 # 字典，method相应的操作函数
@@ -67,7 +88,62 @@ async def sched_change_policy(_, call):
             scheduler.add_job(action, 'cron', **args)
         schedall[method] = not schedall[method]
         save_config()
-        await callAnswer(call, f'⭕️ {method} 更改成功')
-        await sched_panel(_, call.message)
+        await asyncio.gather(callAnswer(call, f'⭕️ {method} 更改成功'), sched_panel(_, call.message))
     except IndexError:
         await sched_panel(_, call.message)
+
+
+@bot.on_message(filters.command('check_ex', prefixes) & admins_on_filter)
+async def check_ex_admin(_, msg):
+    send = await msg.reply("🍥 正在运行 【到期检测】。。。")
+    await check_expired()
+    await asyncio.gather(msg.delete(), send.edit("✅ 【到期检测结束】"))
+
+
+# bot数据库手动备份
+@bot.on_message(filters.command('backup_db', prefixes) & filters.user(owner))
+async def manual_backup_db(_, msg):
+    await asyncio.gather(deleteMessage(msg), auto_backup_db())
+
+
+@bot.on_message(filters.command('days_ranks', prefixes) & admins_on_filter)
+async def day_r_ranks(_, msg):
+    await asyncio.gather(msg.delete(), day_ranks(pin_mode=False))
+
+
+@bot.on_message(filters.command('week_ranks', prefixes) & admins_on_filter)
+async def week_r_ranks(_, msg):
+    await asyncio.gather(msg.delete(), week_ranks(pin_mode=False))
+
+
+@bot.on_message(filters.command('low_activity', prefixes) & admins_on_filter)
+async def run_low_ac(_, msg):
+    await deleteMessage(msg)
+    send = await msg.reply(f"⭕ 不活跃检测运行ing···")
+    await asyncio.gather(check_low_activity(), send.delete())
+
+
+@bot.on_message(filters.command('uranks', prefixes) & admins_on_filter)
+async def shou_dong_uplayrank(_, msg):
+    await deleteMessage(msg)
+    try:
+        days = int(msg.command[1])
+        await user_plays_rank(days=days, uplays=False)
+    except (IndexError, ValueError):
+        await msg.reply(
+            f"🔔 请输入 `/uranks 天数`，此运行手动不会影响{sakura_b}的结算（仅定时运行时结算），放心使用。\n"
+            f"定时结算状态: {_open['uplays']}")
+
+
+@bot.on_message(filters.command('restart', prefixes) & admins_on_filter)
+async def restart_bot(_, msg):
+    await msg.delete()
+    send = await msg.reply("Restarting，等待几秒钟。")
+    schedall.update({"restart_chat_id": int(send.chat.id), "restart_msg_id": int(send.id)})
+    save_config()
+    try:
+        # some code here
+        LOGGER.info("重启")
+        os.execl('/bin/systemctl', 'systemctl', 'restart', 'embyboss')  # 用当前进程执行systemctl命令，重启embyboss服务
+    except FileNotFoundError:
+        exit(1)

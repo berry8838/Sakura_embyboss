@@ -1,14 +1,18 @@
 """
 启动面板start命令 返回面ban
+
++ myinfo 个人数据
++ count  服务器媒体数
 """
 import asyncio
 from pyrogram import filters
 
+from bot.func_helper.emby import Embyservice
 from bot.modules.commands.exchange import rgs_code, favorite_item
 from bot.sql_helper.sql_emby import sql_add_emby
-from bot.func_helper.filters import user_in_group_filter
+from bot.func_helper.filters import user_in_group_filter, user_in_group_on_filter
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, callAnswer, editMessage
-from bot.func_helper.fix_bottons import group_f, judge_start_ikb, judge_group_ikb
+from bot.func_helper.fix_bottons import group_f, judge_start_ikb, judge_group_ikb, cr_kk_ikb
 from bot import bot, prefixes, group, bot_photo, ranks
 
 
@@ -19,6 +23,21 @@ async def ui_g_command(_, msg):
                          sendMessage(msg,
                                      f"🤖 亲爱的 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 这是一条私聊命令",
                                      buttons=group_f, timer=60))
+
+
+# 查看自己的信息
+@bot.on_message(filters.command('myinfo', prefixes) & user_in_group_on_filter)
+async def my_info(_, msg):
+    await deleteMessage(msg)
+    text, keyboard = await cr_kk_ikb(uid=msg.from_user.id, first=msg.from_user.first_name)
+    await sendMessage(msg, text, timer=60)
+
+
+@bot.on_message(filters.command('count', prefixes) & user_in_group_on_filter & filters.private)
+async def count_info(_, msg):
+    await deleteMessage(msg)
+    text = Embyservice.get_medias_count()
+    await sendMessage(msg, text, timer=60)
 
 
 # 私聊开启面板

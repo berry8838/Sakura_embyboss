@@ -1,6 +1,3 @@
-"""
-__init__.py - 
+__all__ = ['admin_panel', 'config_panel', 'kk', 'member_panel', 'sched_panel', 'server_panel']
 
-Author:susu
-Date:2023/7/16
-"""
+from . import admin_panel, config_panel, kk, member_panel, sched_panel, server_panel

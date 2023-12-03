@@ -416,14 +416,15 @@ class Embyservice:
         except Exception as e:
             return False, {'error': e}
 
-    def get_medias_count(self):
+    @staticmethod
+    def get_medias_count():
         """
         获得电影、电视剧、音乐媒体数量
         :return: MovieCount SeriesCount SongCount
         """
-        req_url = f"{self.url}/emby/Items/Counts"
+        req_url = f"{emby_url}/emby/Items/Counts?api_key={emby_api}"
         try:
-            res = r.get(url=req_url, headers=self.headers)
+            res = r.get(url=req_url)
             if res:
                 result = res.json()
                 # print(result)

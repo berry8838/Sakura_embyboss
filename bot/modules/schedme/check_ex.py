@@ -3,13 +3,10 @@
 """
 from datetime import timedelta, datetime
 
-import asyncio
-from pyrogram import filters
 from sqlalchemy import and_
 
-from bot import bot, owner, group, LOGGER, prefixes
+from bot import bot, owner, group, LOGGER
 from bot.func_helper.emby import emby
-from bot.func_helper.filters import admins_on_filter
 from bot.sql_helper.sql_emby import Emby, get_all_emby, sql_update_emby
 from bot.sql_helper.sql_emby2 import get_all_emby2, Emby2, sql_update_emby2
 
@@ -109,11 +106,3 @@ async def check_expired():
         else:
             await bot.send_message(owner, f'✨**自动任务：**\n  到期封印非TG账户：`{e.name}` embyapi操作失败，请手动')
 
-
-# scheduler.add_job(check_expired, 'cron', minute='*/1')
-
-@bot.on_message(filters.command('check_ex', prefixes) & admins_on_filter)
-async def check_ex_admin(_, msg):
-    send = await msg.reply("🍥 正在运行 【到期检测】。。。")
-    await check_expired()
-    await asyncio.gather(msg.delete(), send.edit("✅ 【到期检测结束】"))

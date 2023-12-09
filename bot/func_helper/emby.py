@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 from cacheout import Cache
 import requests as r
-from bot import emby_url, emby_api, _open, emby_block, schedall, extra_emby_libs, LOGGER
+from bot import emby_url, emby_api, _open, emby_block, schedall, extra_emby_libs, LOGGER, config
 from bot.sql_helper.sql_emby import sql_update_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_add_emby2, sql_delete_emby2
 from bot.func_helper.utils import pwd_create, convert_runtime
@@ -235,11 +235,24 @@ class Embyservice:
         count = 0
         for session in sessions:
             try:
-                if session["NowPlayingItem"] is not None:
+                if session["NowPlayingItem"]:
                     count += 1
             except KeyError:
                 pass
-        # print(count)
+        try:
+            response1 = r.get(f"{config['another_line'][0]}/emby/Sessions?api_key={config['another_line'][1]}")
+            sessions1 = response1.json()
+            # print(sessions1)
+        except Exception as e:
+            print(e)
+            return count
+        else:
+            for session1 in sessions1:
+                try:
+                    if session1["NowPlayingItem"]:
+                        count += 1
+                except KeyError:
+                    pass
         return count
 
     async def emby_change_policy(self, id=id, admin=False, method=False):

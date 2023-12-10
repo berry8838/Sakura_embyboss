@@ -1,5 +1,3 @@
-import uuid
-
 import pytz
 
 from bot import _open, save_config, owner, admins, bot_name, ranks, schedall, group
@@ -128,10 +126,10 @@ async def cr_link_one(tg: int, times, count, days: int, method: str):
     return links
 
 
-async def cr_link_two(tg: int, times, days: int):
+async def cr_link_two(tg: int, for_tg, days: int):
     code_list = []
-    p = uuid.uuid4()
-    uid = f'{ranks["logo"]}-{times}-{str(p).replace("-", "")}'
+    invite_code = await pwd_create(11)
+    uid = f'{for_tg}-{invite_code}'
     code_list.append(uid)
     link = f't.me/{bot_name}?start={uid}'
     if sql_add_code(code_list, tg, days) is False:

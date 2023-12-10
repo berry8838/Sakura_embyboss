@@ -17,8 +17,6 @@ async def rgs_code(_, msg):
         register_code = msg.text.split()[1]
     except IndexError:
         register_code = msg.text
-    u = register_code.split('-')[1]
-    if int(u) != msg.from_user.id and len(u) > 7: return await sendMessage(msg, '🤺 这不是你的专属码。')
     if _open["stat"]: return await sendMessage(msg, "🤧 自由注册开启下无法使用注册码。")
     data = sql_get_emby(tg=msg.from_user.id)
     if not data: return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")

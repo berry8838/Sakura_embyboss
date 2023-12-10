@@ -169,7 +169,7 @@ async def gift(_, call):
     first = await bot.get_chat(b)
     e = sql_get_emby(tg=b)
     if e.embyid is None:
-        link = await cr_link_two(tg=call.from_user.id, times=b, days=30)
+        link = await cr_link_two(tg=call.from_user.id, for_tg=b, days=30)
         await editMessage(call, f"🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n"
                                 f'已为 [{first.first_name}](tg://user?id={b}) 赠予资格。前往bot进行下一步操作：',
                           buttons=gog_rester_ikb(link))

@@ -1,4 +1,4 @@
-# sakura_embyboss体验版
+# Sakura_embyboss
 
 ![bot](/image/bot2.png)
 <p align="center">
@@ -10,21 +10,27 @@
 <a href="" ><img src="https://img.shields.io/badge/platform-amd64-pink" alt="plat"></a>
 </p>
 
+## 贡献者们
+
+____
+<a href="https://github.com/berry8838"><img src="https://github.com/berry8838.png?size=100" style="border-radius: 50%;"></a>
+<a href="https://github.com/dddddluo"><img src="https://github.com/dddddluo.png?size=100" style="border-radius: 50%;"></a>
+<a href="https://github.com/U41ovo"><img src="https://github.com/U41ovo.png?size=100" style="border-radius: 50%;"></a>
+
 ## 项目说明
 
 ___
+本项目是 **业余选手** 写就，结合一些我所认为优质的特点、元素，截至目前我自己都不知道有什么了，由于没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑
 
-- 本项目是 **业余选手** 写就，结合一些我所认为优质的特点、元素，截至目前我自己都不知道有什么了
-- 没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑
-- 推荐使用 Debian 11 搭建，比较兼容
+- 推荐使用 Debian 11 - amd 的 vps 搭建，比较兼容
 - 解决不了大的技术问题，如需要，请自行fork修改，~~如果能提点有意思的pr更好啦~~
 - 如果你搭建好了请带带我们（非必须） [@First Lover](tg://user?id=1661037800) And [@罗宝](https://t.me/oudoudou)
-- **声明：本项目仅供学习交流使用，仅作为辅助工具借助tg平台方便用户管理自己的媒体库成员，对用户的其他行为及内容毫不知情**
+
+> **声明：本项目仅供学习交流使用，仅作为辅助工具借助tg平台方便用户管理自己的媒体库成员，对用户的其他行为及内容毫不知情**
 
 ## 功能一览
 
 ___
-
 - [x] 用户面板
     - [x] 创建账户
     - [x] 绑定未登记账户、换绑TG
@@ -73,7 +79,6 @@ ___
 ## 配置说明
 
 ___
-
 ### 1、拉取代码
 
 - 下载源码到本地
@@ -85,9 +90,7 @@ git clone https://github.com/berry8838/Sakura_embyboss.git && cd Sakura_embyboss
 
 ### 2、安装数据库
 
-- ~~有两种方式配置数据库。分别说，任选一种~~
-- 已实现自动创建，请确保安装好数据库、能联通即可
-- 以下数据库管理软件均布置在 vps 上，温馨提示：准备好每隔一段时间的**数据库备份！**
+- 以下数据库管理软件均布置在 vps 上，温馨提示：**Bot提供数据库备份功能，可以开启！**
 - 还有一件事，以下安装的时候请确保掌握 -> 数据库的ip，用户名，密码，数据库名，服务器字符集为UTF-8 Unicode (utf8mb4)
 
 #### docker安装数据库 (1)
@@ -115,12 +118,11 @@ systemctl enable docker
 - 在你已经拥有宝塔面板前提下使用宝塔面板
 - 在宝塔中，安装好mysql（phpmyadmin属可选，**非必要安装！非必要安装！非必要安装！不需要就不安装。重要的事情说三遍**
   ），进入`数据库` 新增加一个数据库，用户名密码设置，进行相应的替换
-  ![宝塔](./image/bt.png)
+  [点击 宝塔示例图片](./image/bt.png)
 
 ### 3、配置文件填写
 
 ___
-
 - 打开文件`config_example.json`，参考下列说明填写自己的内容（bot，数据库，emby等等）
 - 填写完整以后改名成`config.json`
 - 必填项目
@@ -135,8 +137,8 @@ ___
 "main_group":""   你群组的用户名或者你私密群组的邀请链接，没有的话就随便填个 Google.com 吧  
                   如 https://t.me/+7ZL9MbJd8h44Zjc1 中的 "+7ZL9MbJd8h44Zjc1"              
 "chanel": ""      你频道username (不加@)，没有的话就随便填个 Google.com 吧
-"bot_photo":     "https://telegra.ph/file/1437f7f348c6c71f0b9ab.png",
-                  bot发送消息时的图，必要                  
+"bot_photo":""    "https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png",
+                  bot发送消息时的配图，可更换图片url，必要                  
 "admins": []      拥有管理权限的id，其他添加id要用英文逗号隔开，已和owner分割了 
 "emby_api": ""    emby的api，在后台自己创建一个
 "emby_url": ""    建议ip，http://255.255.255.36:8096 最后不带斜杠，是发送给enby的网址，填域名请保证反代不会挂
@@ -146,7 +148,7 @@ ___
 "db_user": "susu" 数据库用户名
 "db_pwd": "1234"  密码
 "db_name": "embyboss"  库名
-"db_is_docker": true 数据库是否为docker模式启动
+"db_is_docker": true 数据库是否为docker模式启动，or false
 "db_docker_name": "mysql" 如果是docker模式启动的数据库，此数据库容器的名字
 "db_backup_dir": "./backup" 数据库备份文件所保存的目录
 "db_backup_maxcount": 7 数据库备份文件保留的个数
@@ -186,7 +188,6 @@ ___
 ### 4、启动bot (两种方式)
 
 ___
-
 - cd（切换） 到 文件目录 Sakura_embyboss，选择任意一方法，运行
 
 #### 一、docker
@@ -239,13 +240,14 @@ git pull origin master
 systemctl restart embyboss
 ```
 
-## 感谢（排序不分先后）
+## 特别感谢（排序不分先后）
 
 - [Pyrogram • 一个现代、优雅和异步的MTProto API框架](https://github.com/pyrogram/pyrogram)
 - [Nezha探针 • 自托管、轻量级、服务器和网站监控运维工具](https://github.com/naiba/nezha)
 - [小宝 • 按钮风格](https://t.me/EmbyClubBot)
-- [MisakaF_Emby • 使用EMBY API的方法](https://github.com/MisakaFxxk/MisakaF_Emby)
-- [xiaocao • service写法](https://github.com/xiaocao666tzh/EmbyBot)
-- [Nolovenodie • 播放榜单海报推送](https://github.com/Nolovenodie/EmbyTools)
+- [MisakaF_Emby • 启发]((https://github.com/MisakaFxxk/MisakaF_Emby))
+  以及  [EMBY API官方文档](https://swagger.emby.media/?staticview=true#/UserService)
+- [Nolovenodie • 播放榜单海报推送借鉴](https://github.com/Nolovenodie/EmbyTools)
+- [罗宝 • 提供的代码援助](https://github.com/dddddluo)
 - [折花 • 日榜周榜推送设计图](https://github.com/U41ovo)
   ![bixin](./image/bixin.jpg)

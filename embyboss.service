@@ -1,13 +1,13 @@
 [Unit]
-Description=此处填写您的服务名
+Description=此处填写您的服务名 # 例如 embyboss
 After=mysqld.service
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=此处填写你在服务器上存放Bot的目录/bot
-ExecStart=python3 /你/放/Bot/的/目录/bot/main.py
+WorkingDirectory=此处填写你在服务器上存放Bot的目录 # 例如/root/Sakura_embyboss/
+ExecStart=python3 你放Bot的目录 # 例如 /root/Sakura_embyboss/main.py
 Restart=on-abnormal
 PrivateTmp=True
 RestartSec=5s

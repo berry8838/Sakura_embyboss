@@ -1,3 +1,4 @@
+#（此处请注意，拉取的镜像仅适用于amd架构，arm请注意修改配置）
 version: '3'
 services:
   mysql:
@@ -16,7 +17,7 @@ services:
     volumes:
       - /root/Sakura_embyboss/db:/var/lib/mysql
 
-# 以下 phpmyadmin 主要是为了更为直观的供owner翻阅数据，不影响bot运行，如有其他合适软件，可注释内容
+  # 以下 phpmyadmin 主要是为了更为直观的供owner翻阅数据，不影响bot运行，如有其他合适软件，可注释内容 # xxxx
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin

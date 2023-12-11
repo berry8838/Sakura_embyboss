@@ -93,7 +93,7 @@ git clone https://github.com/berry8838/Sakura_embyboss.git && cd Sakura_embyboss
 #### docker安装数据库 (1)
 
 - 用docker-compose一步到位。
-  如果你还没有安装docker、docker compose，下面是安装步骤：
+  如果你还没有安装docker、docker compose，下面是其安装步骤：
 
 ```shell
 curl -fsSL https://get.docker.com | bash -s docker
@@ -104,16 +104,17 @@ systemctl start docker
 systemctl enable docker
 ```
 
-- 接着在Sakura_embyboss目录下面找到文件`docker-compose.yml`，修改成自己的设置后保存。
-- 在yml文件中 phpmyadmin 主要是为了更为直观的供翻阅数据，不影响bot运行，如有其他合适软件，可注释内容     
+- ~~在yml文件中 phpmyadmin 主要是为了更为直观的供翻阅数据，不影响bot运行，如有其他合适软件，可注释内容~~  
+  **非必要安装！非必要安装！非必要安装！不需要就注释。重要的事情说三遍**
+- 在Sakura_embyboss目录下面找到文件`docker-compose.yml`，修改成自己的设置后保存。
 - 在Sakura_embyboss目录运行命令`docker-compose up -d`。
 - 搭建完成之后，用 `ip:端口` 访问、管理
 
 #### 安装数据库（2）
 
 - 在你已经拥有宝塔面板前提下使用宝塔面板
-- 在宝塔中，安装好mysql（phpmyadmin，可选），进入`数据库` 新增加一个数据库，用户名密码设置，进行相应的替换
-- `phpmyadmin` 是为了更为直观的供owner翻阅数据，不影响bot运行，如有其他合适软件，可跳过   
+- 在宝塔中，安装好mysql（phpmyadmin属可选，**非必要安装！非必要安装！非必要安装！不需要就不安装。重要的事情说三遍**
+  ），进入`数据库` 新增加一个数据库，用户名密码设置，进行相应的替换
   ![宝塔](./image/bt.png)
 
 ### 3、配置文件填写
@@ -186,9 +187,11 @@ ___
 
 ___
 
+- cd（切换） 到 文件目录 Sakura_embyboss，选择任意一方法，运行
+
 #### 一、docker
 
-- cd（切换） 到 文件目录 Sakura_embyboss，运行下面
+- arm架构没有环境制作相应的镜像，请使用第二种方法。果(￣﹃￣)咩
 
 ```shell
 docker run -it --name sakura_embyboss -d --restart=always -v ./config.json:/app/config.json -v ./log:/app/log jingwei520/sakura_embyboss:latest
@@ -196,11 +199,14 @@ docker run -it --name sakura_embyboss -d --restart=always -v ./config.json:/app/
 
 #### 二、普通
 
-- 依赖
+- 安装依赖
   `pip3 install -r requirements.txt`
 
-- 在`embyboss.service`
-  里面编辑我中文标注的3行,默认可以分别填入`embyboss`，`/root/Sakura_embyboss/` ,`/root/Sakura_embyboss/main.py`
+- 修改`embyboss.service`
+  里面编辑我中文标注的3行,默认可以分别填入  
+  （程序名称）`embyboss`，  
+  （程序运行目录）`/root/Sakura_embyboss/`  
+  （运行主程序地址）`/root/Sakura_embyboss/main.py`
 - 若有修改路径请按照自己的修改填写
 - 保存后运行 `mv embyboss.service /usr/lib/systemd/system`
 - 以下是控制命令

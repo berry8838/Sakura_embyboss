@@ -12,7 +12,7 @@ from bot import bot, prefixes, owner, admins, save_config, LOGGER
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.msg_utils import sendMessage, deleteMessage
 from bot.func_helper.utils import wh_msg
-from bot.modules.schedme.bot_commands import BotCommands
+from bot.scheduler.bot_commands import BotCommands
 from bot.sql_helper.sql_emby import sql_update_emby, Emby, sql_get_emby
 
 

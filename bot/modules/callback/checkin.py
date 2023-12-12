@@ -14,7 +14,7 @@ from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 async def user_in_checkin(_, call):
     now = datetime.now(timezone(timedelta(hours=8)))
     now_i = now.strftime("%Y-%m-%d")
-    if _open["checkin"]:
+    if _open.checkin:
         e = sql_get_emby(tg=call.from_user.id)
         if e.ch is None or e.ch.strftime("%Y-%m-%d") < now_i:
             await editMessage(call,

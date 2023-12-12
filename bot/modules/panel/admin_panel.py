@@ -46,7 +46,7 @@ async def open_menu(_, call):
            f'- **注册总人数限制 {all_user}**'
     await editMessage(call, text, buttons=open_menu_ikb(openstats, timingstats))
     if tem != emby:
-        _open["tem"] = emby
+        _open.tem = emby
         save_config()
 
 
@@ -54,40 +54,32 @@ async def open_menu(_, call):
 async def open_stats(_, call):
     stat, all_user, tem, timing, allow_code = await open_check()
     if timing != 0:
-        return await callAnswer(call, "🔴 目前正在运行定时注册。\n无法调用", True)
+        return await callAnswer(call, "🔴 目前正在运行定时注册。\n无法调用，请再次点击，【定时注册】关闭状态", True)
 
     tg, emby, white = sql_count_emby()
     if stat:
-        _open["stat"] = False
+        _open.stat = False
         save_config()
         await callAnswer(call, "🟢【自由注册】\n\n已结束", True)
         sur = all_user - tem
         text = f'🫧 管理员 {call.from_user.first_name} 已关闭 **自由注册**\n\n' \
                f'🎫 总注册限制 | {all_user}\n🎟️ 已注册人数 | {tem}\n' \
                f'🎭 剩余可注册 | **{sur}**\n🤖 bot使用人数 | {tg}'
-        await sendPhoto(call, photo=bot_photo,
-                        caption=text, send=True)
-        await editMessage(call, text, buttons=back_free_ikb)
+        await asyncio.gather(sendPhoto(call, photo=bot_photo, caption=text, send=True),
+                             editMessage(call, text, buttons=back_free_ikb))
         # await open_menu(_, call)
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 关闭了自由注册")
     elif not stat:
-        _open["stat"] = True
+        _open.stat = True
         save_config()
         await callAnswer(call, "🟡【自由注册】\n\n已开启", True)
         sur = all_user - tem  # for i in group可以多个群组用，但是现在不做
         text = f'🫧 管理员 {call.from_user.first_name} 已开启 **自由注册**\n\n' \
                f'🎫 总注册限制 | {all_user}\n🎟️ 已注册人数 | {tem}\n' \
                f'🎭 剩余可注册 | **{sur}**\n🤖 bot使用人数 | {tg}'
-        send_i = await sendPhoto(call, photo=bot_photo,
-                                 caption=text, buttons=gog_rester_ikb,
-                                 send=True)
-        # try:
-        #     await send_i.pin()
-        # except BadRequest:
-        #     # await send_i.reply("🔴 置顶群消息失败，检查权限")
-        #     pass
-        # await send_i.forward(call.from_user.id)
-        await open_menu(_, call)
+        await asyncio.gather(sendPhoto(call, photo=bot_photo, caption=text, buttons=gog_rester_ikb(), send=True),
+                             editMessage(call, text=text, buttons=back_free_ikb))
+        # await open_menu(_, call)
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 开启了自由注册，总人数限制 {all_user}")
 
 
@@ -97,7 +89,7 @@ change_for_timing_task = None
 @bot.on_callback_query(filters.regex('open_timing') & admins_on_filter)
 async def open_timing(_, call):
     global change_for_timing_task
-    if _open["timing"] == 0:
+    if _open.timing == 0:
         await callAnswer(call, '⭕ 定时设置')
         await editMessage(call,
                           "🦄【定时注册】 \n\n- 请在 120s 内发送 [定时时长] [总人数]\n"
@@ -115,30 +107,29 @@ async def open_timing(_, call):
 
         try:
             new_timing, new_all_user = txt.text.split()
-            _open["timing"] = int(new_timing)
-            _open["all_user"] = int(new_all_user)
-            _open["stat"] = True
+            _open.timing = int(new_timing)
+            _open.all_user = int(new_all_user)
+            _open.stat = True
             save_config()
         except ValueError:
             await editMessage(call, "🚫 请检查数字填写是否正确。\n`[时长min] [总人数]`", buttons=back_open_menu_ikb)
         else:
             tg, emby, white = sql_count_emby()
-            # time_over = (call.message.date + timedelta(minutes=int(timing))).strftime("%Y-%m-%d %H:%M:%S")
-            sur = int(new_all_user) - emby
-            send_i = await sendPhoto(call, photo=bot_photo,
-                                     caption=f'🫧 管理员 {call.from_user.first_name} 已开启 **定时注册**\n\n'
-                                             f'⏳ 可持续时间 | **{new_timing}** min\n'
-                                             f'🎫 总注册限制 | {new_all_user}\n🎟️ 已注册人数 | {emby}\n'
-                                             f'🎭 剩余可注册 | **{sur}**\n🤖 bot使用人数 | {tg}',
-                                     buttons=gog_rester_ikb, send=True)
-            await editMessage(call, f"®️ 好，已设置**定时注册 {new_timing}min 总限额 {new_all_user}**",
-                              buttons=back_free_ikb)
-            # await send.forward(call.from_user.id)
+            sur = _open.all_user - emby
+            await asyncio.gather(sendPhoto(call, photo=bot_photo,
+                                           caption=f'🫧 管理员 {call.from_user.first_name} 已开启 **定时注册**\n\n'
+                                                   f'⏳ 可持续时间 | **{_open.timing}** min\n'
+                                                   f'🎫 总注册限制 | {_open.all_user}\n🎟️ 已注册人数 | {emby}\n'
+                                                   f'🎭 剩余可注册 | **{sur}**\n🤖 bot使用人数 | {tg}',
+                                           buttons=gog_rester_ikb(), send=True),
+                                 editMessage(call,
+                                             f"®️ 好，已设置**定时注册 {_open.timing} min 总限额 {_open.all_user}**",
+                                             buttons=back_free_ikb))
             LOGGER.info(
-                f"【admin】-定时注册：管理员 {call.from_user.first_name} 开启了定时注册 {new_timing} min，人数限制 {sur}")
+                f"【admin】-定时注册：管理员 {call.from_user.first_name} 开启了定时注册 {_open.timing} min，人数限制 {sur}")
             # 创建一个异步任务并保存为变量，并给它一个名字
             change_for_timing_task = asyncio.create_task(
-                change_for_timing(int(new_timing), call.from_user.id, send_i), name='change_for_timing')
+                change_for_timing(_open.timing, call.from_user.id, call), name='change_for_timing')
 
     else:
         try:
@@ -155,33 +146,23 @@ async def open_timing(_, call):
             await open_menu(_, call)
 
 
-async def change_for_timing(timing, tgid, send_i):
-    try:
-        await send_i.pin()
-    except BadRequest:
-        # await send_i.reply("🔴 置顶群消息失败，检查权限")
-        pass
-    a = _open["tem"]
+async def change_for_timing(timing, tgid, call):
+    a = _open.tem
     timing = timing * 60
     try:
         await asyncio.sleep(timing)
     except asyncio.CancelledError:
-        # print('task canceled1')
         pass
     finally:
-        _open["timing"] = 0
-        _open["stat"] = False
+        _open.timing = 0
+        _open.stat = False
         save_config()
-        b = _open["tem"] - a
-        s = _open["all_user"] - _open["tem"]
-        text = f'⏳** 注册结束**：\n\n🍉 目前席位：{_open["tem"]}\n🥝 新增席位：{b}\n🍋 剩余席位：{s}'
-        try:
-            await send_i.unpin()
-        except BadRequest:
-            pass
-        send = await sendPhoto(send_i, photo=bot_photo, caption=text, timer=300, send=True)
+        b = _open.tem - a
+        s = _open.all_user - _open.tem
+        text = f'⏳** 注册结束**：\n\n🍉 目前席位：{_open.tem}\n🥝 新增席位：{b}\n🍋 剩余席位：{s}'
+        send = await sendPhoto(call, photo=bot_photo, caption=text, timer=300, send=True)
         send1 = await send.forward(tgid)
-        LOGGER.info(f'【admin】-定时注册：运行结束，本次注册 目前席位：{_open["tem"]}  新增席位:{b}  剩余席位：{s}')
+        LOGGER.info(f'【admin】-定时注册：运行结束，本次注册 目前席位：{_open.tem}  新增席位:{b}  剩余席位：{s}')
         await deleteMessage(send1, 30)
 
 
@@ -206,7 +187,7 @@ async def open_all_user_l(_, call):
     except ValueError:
         await editMessage(call, f"❌ 八嘎，请输入一个数字给我。", buttons=back_free_ikb)
     else:
-        _open["all_user"] = a
+        _open.all_user = a
         save_config()
         await editMessage(call, f"✔️ 成功，您已设置 **注册总人数 {a}**", buttons=back_free_ikb)
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 调整了总人数限制：{a}")
@@ -335,7 +316,7 @@ async def set_renew(_, call):
     await callAnswer(call, '🚀 进入续期设置')
     try:
         method = call.data.split('-')[1]
-        _open[method] = not _open[method]
+        setattr(_open, method, not getattr(_open, method))
         save_config()
     except IndexError:
         pass

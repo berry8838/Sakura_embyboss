@@ -49,9 +49,9 @@ async def members_info(tg=None, name=None):
         lv = lv_dict.get(data.lv, '未知')
         if lv == '白名单':
             ex = '+ ∞'
-        elif data.name is not None and schedall["low_activity"] and not schedall["check_ex"]:
+        elif data.name is not None and schedall.low_activity and not schedall.check_ex:
             ex = '__若21天无观看将封禁__'
-        elif data.name is not None and not schedall["low_activity"] and not schedall["check_ex"]:
+        elif data.name is not None and not schedall.low_activity and not schedall.check_ex:
             ex = ' __无需保号，放心食用__'
         else:
             ex = data.ex or '无账户信息'
@@ -63,18 +63,18 @@ async def open_check():
     对config查询open
     :return: open_stats, all_user, tem, timing
     """
-    open_stats = _open["stat"]
-    all_user = _open["all_user"]
-    tem = _open["tem"]
-    timing = _open["timing"]
-    allow_code = _open["allow_code"]
+    open_stats = _open.stat
+    all_user = _open.all_user
+    tem = _open.tem
+    timing = _open.timing
+    allow_code = _open.allow_code
     return open_stats, all_user, tem, timing, allow_code
 
 
 async def tem_alluser():
-    _open["tem"] = int(_open["tem"] + 1)
-    if _open["tem"] >= _open["all_user"]:
-        _open["stat"] = False
+    _open.tem = _open.tem + 1
+    if _open.tem >= _open.all_user:
+        _open.stat = False
     save_config()
 
 
@@ -108,7 +108,7 @@ async def cr_link_one(tg: int, times, count, days: int, method: str):
     if method == 'code':
         while i <= count:
             p = await pwd_create(10)
-            uid = f'{ranks["logo"]}-{times}-{p}'
+            uid = f'{ranks.logo}-{times}-{p}'
             code_list.append(uid)
             link = f'`{uid}`\n'
             links += link
@@ -116,7 +116,7 @@ async def cr_link_one(tg: int, times, count, days: int, method: str):
     elif method == 'link':
         while i <= count:
             p = await pwd_create(10)
-            uid = f'{ranks["logo"]}-{times}-{p}'
+            uid = f'{ranks.logo}-{times}-{p}'
             code_list.append(uid)
             link = f't.me/{bot_name}?start={uid}\n'
             links += link

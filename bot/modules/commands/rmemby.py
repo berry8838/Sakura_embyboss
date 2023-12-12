@@ -1,5 +1,4 @@
 from pyrogram import filters
-from pyrogram.errors import BadRequest
 
 from bot import bot, prefixes, LOGGER
 from bot.func_helper.emby import emby

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 from cacheout import Cache
 import requests as r
-from bot import emby_url, emby_api, _open, emby_block, schedall, extra_emby_libs, LOGGER, config
+from bot import emby_url, emby_api, _open, emby_block, schedall, extra_emby_libs, LOGGER, another_line
 from bot.sql_helper.sql_emby import sql_update_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_add_emby2, sql_delete_emby2
 from bot.func_helper.utils import pwd_create, convert_runtime
@@ -109,9 +109,8 @@ class Embyservice:
         :param stats: plocy 策略
         :return: bool
         """
-        if _open["tem"] >= int(_open["all_user"]):
+        if _open.tem >= _open.all_user:
             return 403
-        # name = escape_html_special_chars(name)
         ex = (datetime.now() + timedelta(days=us))
         name_data = ({"Name": name})
         new_user = r.post(f'{self.url}/emby/Users/New',
@@ -143,9 +142,9 @@ class Embyservice:
                     elif stats == 'o':
                         sql_add_emby2(embyid=id, name=name, cr=datetime.now(), ex=ex)
 
-                    if schedall["check_ex"]:
+                    if schedall.check_ex:
                         ex = ex.strftime("%Y-%m-%d %H:%M:%S")
-                    elif schedall["low_activity"]:
+                    elif schedall.low_activity:
                         ex = '__若21天无观看将封禁__'
                     else:
                         ex = '__无需保号，放心食用__'
@@ -240,7 +239,7 @@ class Embyservice:
             except KeyError:
                 pass
         try:
-            response1 = r.get(f"{config['another_line'][0]}/emby/Sessions?api_key={config['another_line'][1]}")
+            response1 = r.get(f"{another_line[0]}/emby/Sessions?api_key={another_line[1]}")
             sessions1 = response1.json()
             # print(sessions1)
         except Exception as e:

@@ -52,7 +52,7 @@ async def p_start(_, msg):
         u = msg.command[1].split('-')[0]
         if u == 'itemid':
             await asyncio.gather(msg.delete(), favorite_item(_, msg))
-        elif u in f'{ranks["logo"]}' or u == str(msg.from_user.id):
+        elif u in f'{ranks.logo}' or u == str(msg.from_user.id):
             await asyncio.gather(msg.delete(), rgs_code(_, msg))
         else:
             await asyncio.gather(sendMessage(msg, '🤺 你也想和bot击剑吗 ?'), msg.delete())

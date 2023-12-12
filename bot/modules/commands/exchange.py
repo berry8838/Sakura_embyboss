@@ -17,16 +17,16 @@ async def rgs_code(_, msg):
         register_code = msg.text.split()[1]
     except IndexError:
         register_code = msg.text
-    if _open["stat"]: return await sendMessage(msg, "🤧 自由注册开启下无法使用注册码。")
+    if _open.stat: return await sendMessage(msg, "🤧 自由注册开启下无法使用注册码。")
     data = sql_get_emby(tg=msg.from_user.id)
     if not data: return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
     embyid = data.embyid
     ex = data.ex
     lv = data.lv
-    if embyid is not None:
-        if _open["allow_code"] == 'n': return await sendMessage(msg,
-                                                                "🔔 很遗憾，管理员已经将注册码续期关闭\n**已有账户成员**无法使用register_code，请悉知",
-                                                                timer=60)
+    if embyid:
+        if not _open.allow_code: return await sendMessage(msg,
+                                                          "🔔 很遗憾，管理员已经将注册码续期关闭\n**已有账户成员**无法使用register_code，请悉知",
+                                                          timer=60)
         r = sql_get_code(register_code)
         if r is None:
             return await sendMessage(msg, "⛔ **你输入了一个错误de注册码，请确认好重试。**", timer=60)
@@ -58,7 +58,7 @@ async def rgs_code(_, msg):
             sql_update_code(code=register_code, used=msg.from_user.id, usedtime=datetime.now())
             # new_code = "-".join(register_code.split("-")[:2]) + "-" + "█" * 7 + register_code.split("-")[2][7:]
             new_code = register_code[:-7] + "░" * 7
-            if user_buy["stat"] != 'y':
+            if not user_buy.stat:
                 await sendMessage(msg,
                                   f'· 🎟️ 注册码使用 - [{msg.from_user.first_name}](tg://user?id={msg.chat.id}) [{msg.from_user.id}] 使用了 {new_code}\n· 📅 实时到期 - {ex_new}',
                                   send=True)
@@ -87,7 +87,7 @@ async def rgs_code(_, msg):
                             buttons=register_code_ikb)
             # new_code = "-".join(register_code.split("-")[:2]) + "-" + "█" * 7 + register_code.split("-")[2][7:]
             new_code = register_code[:-7] + "░" * 7
-            if user_buy["stat"] != 'y':
+            if not user_buy.stat:
                 await sendMessage(msg,
                                   f'· 🎟️ 注册码使用 - [{msg.from_user.first_name}](tg://user?id={msg.chat.id}) [{msg.from_user.id}] 使用了 {new_code} 可以创建{us1}天账户咯~',
                                   send=True)

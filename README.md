@@ -10,7 +10,8 @@
 <a href="" ><img src="https://img.shields.io/badge/platform-amd64-pink" alt="plat"></a>
 </p>
 
-## 🩷 Our Contributors
+## 💐 Our Contributors
+
 <a href="https://github.com/berry8838/Sakura_embyboss/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=berry8838/Sakura_embyboss" />
 </a>  
@@ -27,7 +28,9 @@
 
 ## 功能一览
 
-___
+<details>
+<summary>点击展开</summary>
+
 - [x] 用户面板
     - [x] 创建账户
     - [x] 绑定未登记账户、换绑TG
@@ -64,9 +67,9 @@ ___
     - [ ] 添加Emby中的更新推送
     - [ ] 公告功能(群发信息,频道管理加按钮等)
 
-## 🤝 使用帮助
+</details>
 
-___
+## 🤝 使用帮助
 
 - [部分效果图和命令大全看这里](https://telegra.ph/embyboss-05-29)
 - 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符多添加三种  
@@ -75,7 +78,6 @@ ___
 
 ## 配置说明
 
-___
 ### 1、拉取代码
 
 - 下载源码到本地
@@ -110,6 +112,8 @@ systemctl enable docker
 - 在Sakura_embyboss目录运行命令`docker-compose up -d`。
 - 搭建完成之后，用 `ip:端口` 访问、管理
 
+___
+
 #### 安装数据库（2）
 
 - 在你已经拥有宝塔面板前提下使用宝塔面板
@@ -117,9 +121,10 @@ systemctl enable docker
   ），进入`数据库` 新增加一个数据库，用户名密码设置，进行相应的替换
   [点击 宝塔示例图片](./image/bt.png)
 
+___
+
 ### 3、配置文件填写
 
-___
 - 打开文件`config_example.json`，参考下列说明填写自己的内容（bot，数据库，emby等等）
 - 填写完整以后改名成`config.json`
 - 必填项目
@@ -185,6 +190,7 @@ ___
 ### 4、启动bot (两种方式)
 
 ___
+
 - cd（切换） 到 文件目录 Sakura_embyboss，选择任意一方法，运行
 
 #### 一、docker

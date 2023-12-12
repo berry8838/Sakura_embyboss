@@ -4,7 +4,7 @@
 部分目前有 导出日志，更改探针，更改emby线路，设置购买按钮
 
 """
-from bot import bot, prefixes, owner, bot_photo, Now, LOGGER, config, save_config, _open, user_buy
+from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open, user_buy
 from pyrogram import filters
 
 from bot.func_helper.filters import admins_on_filter
@@ -41,7 +41,7 @@ async def log_out(_, call):
 async def set_tz(_, call):
     await callAnswer(call, '📌 设置探针')
     send = await editMessage(call,
-                             "【设置探针】\n\n请依次输入探针地址，api_token，设置的检测多个id 如：\n**【地址】http://tz.susuyyds.xyz\n【api_token】xxxxxx\n【数字】1 2 3**\n取消点击 /cancel")
+                             "【设置探针】\n\n请依次输入探针地址，api_token，设置的检测多个id 如：\n**【地址】https://tz.susuyyds.xyz\n【api_token】xxxxxx\n【数字】1 2 3**\n取消点击 /cancel")
     if send is False:
         return
 
@@ -62,12 +62,12 @@ async def set_tz(_, call):
         except IndexError:
             await editMessage(call, f"请注意格式！您的输入如下：\n\n`{txt.text}`", buttons=back_set_ikb('set_tz'))
         else:
-            config["tz_ad"] = s_tz
-            config["tz_api"] = s_tzapi
-            config["tz_id"] = s_tzid
+            config.tz_ad = s_tz
+            config.tz_api = s_tzapi
+            config.tz_id = s_tzid
             save_config()
             await editMessage(call,
-                              f"【网址】\n{s_tz}\n\n【api_token】\n{s_tzapi}\n\n【检测的ids】\n{config['tz_id']} **Done！**",
+                              f"【网址】\n{s_tz}\n\n【api_token】\n{s_tzapi}\n\n【检测的ids】\n{config.tz_id} **Done！**",
                               buttons=back_config_p_ikb)
             LOGGER.info(f"【admin】：{call.from_user.id} - 更新探针设置完成")
 
@@ -90,11 +90,11 @@ async def set_emby_line(_, call):
         await editMessage(call, '__您已经取消输入__ **会话已结束！**', buttons=back_set_ikb('set_line'))
     else:
         await txt.delete()
-        config["emby_line"] = txt.text
+        config.emby_line = txt.text
         save_config()
-        await editMessage(call, f"**【网址样式】:** \n\n{config['emby_line']}\n\n设置完成！done！",
+        await editMessage(call, f"**【网址样式】:** \n\n{config.emby_line}\n\n设置完成！done！",
                           buttons=back_config_p_ikb)
-        LOGGER.info(f"【admin】：{call.from_user.id} - 更新emby线路为{config['emby_line']}设置完成")
+        LOGGER.info(f"【admin】：{call.from_user.id} - 更新emby线路为{config.emby_line}设置完成")
 
 
 # 设置需要显示/隐藏的库
@@ -111,31 +111,31 @@ async def set_block(_, call):
         return
 
     elif txt.text == '/cancel':
-        config["emby_block"] = []
+        config.emby_block = []
         save_config()
         await txt.delete()
         await editMessage(call, '__已清空并退出，__ **会话已结束！**', buttons=back_set_ikb('set_block'))
         LOGGER.info(f"【admin】：{call.from_user.id} - 清空 指定显示/隐藏内容库 设置完成")
     else:
         c = txt.text.split()
-        config["emby_block"] = c
+        config.emby_block = c
         save_config()
         await txt.delete()
-        await editMessage(call, f"🎬 指定显示/隐藏内容如下: \n\n{config['emby_block']}\n设置完成！done！",
+        await editMessage(call, f"🎬 指定显示/隐藏内容如下: \n\n{config.emby_block}\n设置完成！done！",
                           buttons=back_config_p_ikb)
-        LOGGER.info(f"【admin】：{call.from_user.id} - 更新指定显示/隐藏内容库为 {config['emby_block']} 设置完成")
+        LOGGER.info(f"【admin】：{call.from_user.id} - 更新指定显示/隐藏内容库为 {config.emby_block} 设置完成")
 
 
 @bot.on_callback_query(filters.regex("set_buy") & admins_on_filter)
 async def set_buy(_, call):
-    if user_buy["stat"] == "y":
-        user_buy["stat"] = "n"
+    if user_buy.stat:
+        user_buy.stat = False
         save_config()
         await callAnswer(call, '**👮🏻‍♂️ 已经为您关闭购买按钮啦！**')
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} - 关闭了购买按钮")
         return await config_p_re(_, call)
 
-    user_buy["stat"] = "y"
+    user_buy.stat = True
     await editMessage(call, '**👮🏻‍♂️ 已经为您开启购买按钮啦！目前默认只使用一个按钮，如果需求请github联系**\n'
                             '- 更换按钮请输入格式形如： \n\n`[按钮文字描述] - http://xxx`\n'
                             '- 退出状态请按 /cancel，需要markdown效果的话请在配置文件更改')
@@ -164,21 +164,21 @@ async def set_buy(_, call):
                 LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 失败')
                 return await editMessage(call, "可能输入的link格式错误，请重试。http/https+link",
                                          buttons=back_config_p_ikb)
-            user_buy["button"] = d
+            user_buy.button = d
             save_config()
-            LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 {user_buy["button"]}')
+            LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 {user_buy.button}')
 
 
 @bot.on_callback_query(filters.regex('open_allow_code') & admins_on_filter)
 async def open_allow_code(_, call):
-    if _open["allow_code"] == "y":
-        _open["allow_code"] = "n"
+    if _open.allow_code:
+        _open.allow_code = False
         await callAnswer(call, '**👮🏻‍♂️ 您已调整 注册码续期 Falese（关闭）**', True)
         await config_p_re(_, call)
         save_config()
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 注册码续期 Falese")
-    elif _open["allow_code"] == "n":
-        _open["allow_code"] = 'y'
+    elif not _open.allow_code:
+        _open.allow_code = True
         await callAnswer(call, '**👮🏻‍♂️ 您已调整 注册码续期 True（开启）**', True)
         await config_p_re(_, call)
         save_config()
@@ -187,14 +187,14 @@ async def open_allow_code(_, call):
 
 @bot.on_callback_query(filters.regex('leave_ban') & admins_on_filter)
 async def open_leave_ban(_, call):
-    if _open["leave_ban"]:
-        _open["leave_ban"] = False
+    if _open.leave_ban:
+        _open.leave_ban = False
         await callAnswer(call, '**👮🏻‍♂️ 您已关闭 退群封禁，用户退群bot将不会被封印了**', True)
         await config_p_re(_, call)
         save_config()
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 退群封禁设置 Falese")
-    elif not _open["leave_ban"]:
-        _open["leave_ban"] = True
+    elif not _open.leave_ban:
+        _open.leave_ban = True
         await callAnswer(call, '**👮🏻‍♂️ 您已开启 退群封禁，用户退群bot将会被封印，禁止入群**', True)
         await config_p_re(_, call)
         save_config()
@@ -203,14 +203,14 @@ async def open_leave_ban(_, call):
 
 @bot.on_callback_query(filters.regex('set_uplays') & admins_on_filter)
 async def open_leave_ban(_, call):
-    if _open["uplays"]:
-        _open["uplays"] = False
+    if _open.uplays:
+        _open.uplays = False
         await callAnswer(call, '**👮🏻‍♂️ 您已关闭 看片榜结算，自动召唤看片榜将不被计算积分**', True)
         await config_p_re(_, call)
         save_config()
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 看片榜结算 Falese")
-    elif not _open["uplays"]:
-        _open["uplays"] = True
+    elif not _open.uplays:
+        _open.uplays = True
         await callAnswer(call, '**👮🏻‍♂️ 您已开启 看片榜结算，自动召唤看片榜将会被计算积分**', True)
         await config_p_re(_, call)
         save_config()

@@ -12,7 +12,7 @@ from datetime import timedelta, datetime
 
 from pyrogram.errors import BadRequest
 
-from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, config, group, extra_emby_libs, emby_block
+from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emby_libs, emby_block
 from pyrogram import filters
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import user_in_group_on_filter
@@ -120,15 +120,15 @@ async def create(_, call):
 
     if e.embyid:
         await callAnswer(call, '💦 你已经有账户啦！请勿重复注册。', True)
-    elif not _open["stat"] and int(e.us) <= 0:
+    elif not _open.stat and int(e.us) <= 0:
         await callAnswer(call, f'🤖 自助注册已关闭，等待开启。', True)
-    elif not _open["stat"] and int(e.us) > 0:
+    elif not _open.stat and int(e.us) > 0:
         send = await callAnswer(call, f'🪙 积分满足要求，请稍后。', True)
         if send is False:
             return
         else:
             await create_user(_, call, us=e.us, stats='n')
-    elif _open["stat"]:
+    elif _open.stat:
         send = await callAnswer(call, f"🪙 开放注册，免除积分要求。", True)
         if send is False:
             return
@@ -441,7 +441,7 @@ async def reset(_, call):
 
 # 显示/隐藏某些库
 @bot.on_callback_query(filters.regex('embyblock') & user_in_group_on_filter)
-async def embyblock(_, call):
+async def embyblocks(_, call):
     data = sql_get_emby(tg=call.from_user.id)
     if data is None:
         return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
@@ -449,7 +449,7 @@ async def embyblock(_, call):
         return await callAnswer(call, '❓ 未查询到账户，不许乱点!', True)
     elif data.lv == "c":
         return await callAnswer(call, '💢 账户到期，封禁中无法使用！', True)
-    elif len(config["emby_block"]) == 0:
+    elif len(emby_block) == 0:
         send = await editMessage(call, '⭕ 管理员未设置。。。 快催催\no(*////▽////*)q', buttons=back_members_ikb)
         if send is False:
             return
@@ -460,7 +460,7 @@ async def embyblock(_, call):
                 stat = '💨 未知'
             else:
                 blocks = rep["Policy"]["BlockedMediaFolders"]
-                if set(config["emby_block"]).issubset(set(blocks)):
+                if set(emby_block).issubset(set(blocks)):
                     stat = '🔴 隐藏'
                 else:
                     stat = '🟢 显示'
@@ -468,7 +468,7 @@ async def embyblock(_, call):
             stat = '💨 未知'
         await asyncio.gather(callAnswer(call, "✅ 到位"),
                              editMessage(call,
-                                         f'🤺 用户状态：{stat}\n🎬 目前设定的库为: \n**{config["emby_block"]}**\n请选择你的操作。',
+                                         f'🤺 用户状态：{stat}\n🎬 目前设定的库为: \n**{emby_block}**\n请选择你的操作。',
                                          buttons=emby_block_ikb(data.embyid)))
 
 
@@ -551,7 +551,7 @@ async def do_store(_, call):
 
 @bot.on_callback_query(filters.regex('store-renew') & user_in_group_on_filter)
 async def do_store_renew(_, call):
-    if _open["exchange"]:
+    if _open.exchange:
         await callAnswer(call, '✔️ 进入兑换时长')
         e = sql_get_emby(tg=call.from_user.id)
         if e is None:
@@ -592,7 +592,7 @@ async def do_store_renew(_, call):
 
 @bot.on_callback_query(filters.regex('store-whitelist') & user_in_group_on_filter)
 async def do_store_whitelist(_, call):
-    if _open["whitelist"]:
+    if _open.whitelist:
         e = sql_get_emby(tg=call.from_user.id)
         if e is None:
             return

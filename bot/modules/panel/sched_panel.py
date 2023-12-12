@@ -8,7 +8,7 @@ from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import sched_buttons
 from bot.func_helper.msg_utils import callAnswer, editMessage, deleteMessage
 from bot.func_helper.scheduler import Scheduler
-from bot.modules.schedme import *
+from bot.scheduler import *
 
 # 实例化
 scheduler = Scheduler()
@@ -59,7 +59,7 @@ args_dict = {
 
 def set_all_sche():
     for key, value in action_dict.items():
-        if schedall[key]:
+        if getattr(schedall, key):
             action = action_dict[key]
             args = args_dict[key]
             scheduler.add_job(action, 'cron', **args)
@@ -82,11 +82,11 @@ async def sched_change_policy(_, call):
         # 根据method的值来添加或移除相应的任务
         action = action_dict[method]
         args = args_dict[method]
-        if schedall[method]:
+        if getattr(schedall, method):
             scheduler.remove_job(job_id=args['id'], jobstore='default')
         else:
             scheduler.add_job(action, 'cron', **args)
-        schedall[method] = not schedall[method]
+        setattr(schedall, method, not getattr(schedall, method))
         save_config()
         await asyncio.gather(callAnswer(call, f'⭕️ {method} 更改成功'), sched_panel(_, call.message))
     except IndexError:
@@ -132,7 +132,7 @@ async def shou_dong_uplayrank(_, msg):
     except (IndexError, ValueError):
         await msg.reply(
             f"🔔 请输入 `/uranks 天数`，此运行手动不会影响{sakura_b}的结算（仅定时运行时结算），放心使用。\n"
-            f"定时结算状态: {_open['uplays']}")
+            f"定时结算状态: {_open.uplays}")
 
 
 @bot.on_message(filters.command('restart', prefixes) & admins_on_filter)

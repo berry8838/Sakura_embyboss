@@ -2,7 +2,8 @@ from cacheout import Cache
 from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
-from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, user_buy, sakura_b, schedall
+from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, user_buy, sakura_b, \
+    schedall
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import judge_admins, members_info
@@ -19,10 +20,10 @@ def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
     :return:
     """
     d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'], ['🎟️ 使用注册码', 'exchange']]  # ['🏪 商店', 'store_all']
-    if _open["checkin"]:
+    if _open.checkin:
         d.append([f'🎯 签到', 'checkin'])
-    if user_buy["stat"] == "y":
-        d.append(user_buy["button"])
+    if user_buy.stat:
+        d.append(user_buy.button)
     lines = array_chunk(d, 2)
     if judge_admins(uid):
         lines.append([['👮🏻‍♂️ admin', 'manage']])
@@ -159,10 +160,10 @@ async def cr_paginate(i, j, n) -> InlineKeyboardMarkup:
 
 
 def cr_renew_ikb():
-    checkin = '✔️' if _open["checkin"] else '❌'
-    exchange = '✔️' if _open["exchange"] else '❌'
-    whitelist = '✔️' if _open["whitelist"] else '❌'
-    invite = '✔️' if _open["invite"] else '❌'
+    checkin = '✔️' if _open.checkin else '❌'
+    exchange = '✔️' if _open.exchange else '❌'
+    whitelist = '✔️' if _open.whitelist else '❌'
+    invite = '✔️' if _open.invite else '❌'
     keyboard = InlineKeyboard(row_width=2)
     keyboard.add(InlineButton(f'{checkin} 签到', f'set_renew-checkin'),
                  InlineButton(f'{exchange} 续期', f'set_renew-exchange'),
@@ -176,10 +177,10 @@ def cr_renew_ikb():
 
 
 def config_preparation() -> InlineKeyboardMarkup:
-    code = '✅' if _open["allow_code"] == 'y' else '❎'
-    buy_stat = '✅' if user_buy["stat"] == 'y' else '❎'
-    leave_ban = '✅' if _open["leave_ban"] else '❎'
-    uplays = '✅' if _open["uplays"] else '❎'
+    code = '✅' if _open.allow_code else '❎'
+    buy_stat = '✅' if user_buy.stat else '❎'
+    leave_ban = '✅' if _open.leave_ban else '❎'
+    uplays = '✅' if _open.uplays else '❎'
     keyboard = ikb(
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
          [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
@@ -212,7 +213,7 @@ async def cr_kk_ikb(uid, first):
     keyboard = []
     data = await members_info(uid)
     if data is None:
-        text += f'**· 🆔 TG** ：[{first}](tg://user?id={uid})\n数据库中没有此ID。ta 还没有私聊过我'
+        text += f'**· 🆔 TG** ：[{first}](tg://user?id={uid}) [`{uid}`]\n数据库中没有此ID。ta 还没有私聊过我'
     else:
         name, lv, ex, us, embyid, pwd2 = data
         if name != '无账户信息':
@@ -252,8 +253,8 @@ async def cr_kk_ikb(uid, first):
     return text, keyboard
 
 
-def gog_rester_ikb(link) -> InlineKeyboardMarkup:
-    link_ikb = ikb([[('🎁 点击领取', link, 'url')]])
+def gog_rester_ikb(link=None) -> InlineKeyboardMarkup:
+    link_ikb = ikb([[('🎁 点击领取', link, 'url')]]) if link else ikb([[('👆🏻 点击注册', f't.me/{bot_name}', 'url')]])
     return link_ikb
 
 
@@ -261,13 +262,13 @@ def gog_rester_ikb(link) -> InlineKeyboardMarkup:
 
 
 def sched_buttons():
-    dayrank = '✅' if schedall["dayrank"] else '❎'
-    weekrank = '✅' if schedall["weekrank"] else '❎'
-    dayplayrank = '✅' if schedall["dayplayrank"] else '❎'
-    weekplayrank = '✅' if schedall["weekplayrank"] else '❎'
-    check_ex = '✅' if schedall["check_ex"] else '❎'
-    low_activity = '✅' if schedall["low_activity"] else '❎'
-    backup_db = '✅' if schedall["backup_db"] else '❎'
+    dayrank = '✅' if schedall.dayrank else '❎'
+    weekrank = '✅' if schedall.weekrank else '❎'
+    dayplayrank = '✅' if schedall.dayplayrank else '❎'
+    weekplayrank = '✅' if schedall.weekplayrank else '❎'
+    check_ex = '✅' if schedall.check_ex else '❎'
+    low_activity = '✅' if schedall.low_activity else '❎'
+    backup_db = '✅' if schedall.backup_db else '❎'
     keyboard = InlineKeyboard(row_width=2)
     keyboard.add(InlineButton(f'{dayrank} 播放日榜', f'sched-dayrank'),
                  InlineButton(f'{weekrank} 播放周榜', f'sched-weekrank'),

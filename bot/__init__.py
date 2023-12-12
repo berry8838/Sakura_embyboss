@@ -1,155 +1,59 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
+from .func_helper.logger_config import logu, Now
 
+LOGGER = logu(__name__)
 
-# log的设置，输出到控制台和log文件
-import datetime
-import os
+from .schemas import Config
 
-# 转换为亚洲上海时区
-# shanghai = pytz.timezone("Asia/Shanghai")
-# Now = datetime.datetime.now(shanghai)
-Now = datetime.datetime.now()
-
-import logging
-
-# 定义一个通用的日志输出格式
-LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-
-# 使用 basicConfig() 方法来配置根日志器的输出格式、处理器和级别
-logging.basicConfig(format=LOG_FORMAT, handlers=[logging.FileHandler(f"log/log_{Now:%Y%m%d}.txt", encoding='utf-8'),
-                                                 logging.StreamHandler()], level=logging.INFO)
-LOGGER = logging.getLogger(__name__)  # __name__
-
-# 设置 pyrogram 的日志输出级别为 logging.WARNING
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
-
-import json
-
-
-def load_config():
-    with open("config.json", "r", encoding="utf-8") as f:
-        config = json.load(f)
-        return config
+config = Config.load_config()
 
 
 def save_config():
-    with open("config.json", "w", encoding="utf-8") as f:
-        json.dump(config, f, indent=4, ensure_ascii=False)
+    config.save_config()
 
 
-config = load_config()
-
-'''从环境变量或者config对象中获取bot_name和bot_token等属性值'''
+'''从config对象中获取属性值'''
 # bot
-bot_name = config["bot_name"]
-bot_token = config["bot_token"]
-owner_api = config["owner_api"]
-owner_hash = config["owner_hash"]
-owner = int(config["owner"])
-group = list(config["group"])
-main_group = config["main_group"]
-chanel = config["chanel"]
-bot_photo = config["bot_photo"]
-user_buy = config["user_buy"]
-if user_buy["text"] is not False:
-    user_buy["text"] = False
-    user_buy["button"] = user_buy["button"][0]  # 使用索引访问第一个元素
-    save_config()
-_open = config["open"]
-if "uplays" not in _open:
-    _open["uplays"] = False
-try:
-    _open["timing"] = 0
-    save_config()
-except:
-    pass
-admins = config["admins"]
-if owner in admins:
-    admins.remove(owner)
-    save_config()
-invite = config["invite"]
-sakura_b = config["money"]
-try:
-    ranks = config["ranks"]
-except Exception as e:
-    ranks = {
-        "logo": "SAKURA",
-        "backdrop": False
-    }
-    print('没有读取到播放榜单配置，使用默认值', ranks)
+bot_name = config.bot_name
+bot_token = config.bot_token
+owner_api = config.owner_api
+owner_hash = config.owner_hash
+owner = config.owner
+group = config.group
+main_group = config.main_group
+chanel = config.chanel
+bot_photo = config.bot_photo
+user_buy = config.user_buy
+_open = config.open
+admins = config.admins
+invite = config.invite
+sakura_b = config.money
+ranks = config.ranks
 prefixes = ['/', '!', '.', '#', '。']
-try:
-    schedall = config["schedall"]
-except:
-    schedall = {"dayrank": True, "weekrank": True, "dayplayrank": False, "weekplayrank": False, "check_ex": True,
-                "low_activity": False, "backup_db": True}
-    config["schedall"] = schedall
-    save_config()
-if "backup_db" not in schedall:
-    schedall.update({"backup_db": True})
-    save_config()
-if ("day_ranks_message_id", "week_ranks_message_id") not in schedall:
-    if not os.path.exists("log/rank.json"):
-        schedall.update({"day_ranks_message_id": 0, "week_ranks_message_id": 0})
-    else:
-        with open("log/rank.json", "r") as f:
-            i = json.load(f)
-            schedall.update(i)
-    save_config()
-
-try:
-    restart_chat_id, restart_msg_id = schedall['restart_chat_id'], schedall['restart_msg_id']
-except:
-    schedall.update({"restart_chat_id": 0, "restart_msg_id": 0})
-    save_config()
-
+schedall = config.schedall
 # emby设置
-emby_api = config["emby_api"]
-emby_param = (('api_key', emby_api),)
-emby_url = config["emby_url"]
-emby_line = config["emby_line"]
-emby_block = config["emby_block"]
-try:
-    extra_emby_libs = config["extra_emby_libs"]
-except Exception as e:
-    extra_emby_libs = []
-    config["extra_emby_libs"] = extra_emby_libs
-    save_config()
-    # print('没有读取到额外媒体库配置，使用默认值', extra_emby_libs)
-# 数据库
-db_host = config["db_host"]
-db_user = config["db_user"]
-db_pwd = config["db_pwd"]
-db_name = config["db_name"]
-try:
-    db_is_docker = config["db_is_docker"]
-except Exception as e:
-    db_is_docker = False
-    config["db_is_docker"] = db_is_docker
-    save_config()
-try:
-    db_docker_name = config["db_docker_name"]
-except Exception as e:
-    db_docker_name = "mysql"
-    config["db_docker_name"] = db_docker_name
-    save_config()
-try:
-    db_backup_dir = config["db_backup_dir"]
-except Exception as e:
-    db_backup_dir = "./db_backup"
-    config["db_backup_dir"] = db_backup_dir
-    save_config()
-try:
-    db_backup_maxcount = int(config["db_backup_maxcount"])
-except Exception as e:
-    db_backup_maxcount = 7
-    config["db_backup_maxcount"] = db_backup_maxcount
-    save_config()
+emby_api = config.emby_api
+emby_url = config.emby_url
+emby_line = config.emby_line
+emby_block = config.emby_block
+extra_emby_libs = config.extra_emby_libs
+another_line = config.another_line
+# # 数据库
+db_host = config.db_host
+db_user = config.db_user
+db_pwd = config.db_pwd
+db_name = config.db_name
+db_is_docker = config.db_is_docker
+db_docker_name = config.db_docker_name
+db_backup_dir = config.db_backup_dir
+db_backup_maxcount = config.db_backup_maxcount
 # 探针
-tz_ad = config["tz_ad"]
-tz_api = config["tz_api"]
-tz_id = config["tz_id"]
+tz_ad = config.tz_ad
+tz_api = config.tz_api
+tz_id = config.tz_id
+
+save_config()
 
 LOGGER.info("配置文件加载完毕")
 from pyrogram.types import BotCommand

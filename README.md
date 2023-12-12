@@ -1,4 +1,4 @@
-# Sakura_embyboss
+# 🌸 Sakura_embyboss 初学练习版
 
 ![bot](/image/bot2.png)
 <p align="center">
@@ -10,15 +10,14 @@
 <a href="" ><img src="https://img.shields.io/badge/platform-amd64-pink" alt="plat"></a>
 </p>
 
-## 贡献者们
+## 🩷 Our Contributors
+<a href="https://github.com/berry8838/Sakura_embyboss/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=berry8838/Sakura_embyboss" />
+</a>  
 
-<a href="https://github.com/berry8838"><img src="https://github.com/berry8838.png?size=100" style="border-radius: 50%;"></a>
-<a href="https://github.com/dddddluo"><img src="https://github.com/dddddluo.png?size=100" style="border-radius: 50%;"></a>
-<a href="https://github.com/U41ovo"><img src="https://github.com/U41ovo.png?size=100" style="border-radius: 50%;"></a>
+## 📜 项目说明
 
-## 项目说明
-
-本项目是 **业余选手** 写就，结合一些我所认为优质的特点、元素，截至目前我自己都不知道有什么了，由于没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑
+本项目是 **业余选手** 写就，结合一些我所认为优质的特点、元素，截至目前我自己都不知道有什么了，由于没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑，练练手啦。
 
 - 推荐使用 Debian 11 - amd 的 vps 搭建，比较兼容
 - 解决不了大的技术问题，如需要，请自行fork修改，~~如果能提点有意思的pr更好啦~~
@@ -65,7 +64,7 @@ ___
     - [ ] 添加Emby中的更新推送
     - [ ] 公告功能(群发信息,频道管理加按钮等)
 
-## 使用帮助
+## 🤝 使用帮助
 
 ___
 

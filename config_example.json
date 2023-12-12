@@ -11,20 +11,20 @@
   "chanel": "su_yxfy",
   "bot_photo": "https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png",
   "user_buy": {
-    "stat": "y",
+    "stat": false,
     "button": [
       "💰 点击购买",
       "https://google.com",
       "url"
     ],
-    "text": "**🛒请选择购买对应时长的套餐：**网页付款后会发邀请码连接，点击跳转到bot开始注册和续期程式。"
+    "text": false
   },
   "open": {
     "stat": false,
     "all_user": 1000,
     "timing": 0,
     "tem": 0,
-    "allow_code": "y",
+    "allow_code": true,
     "checkin": true,
     "exchange": true,
     "whitelist": true,
@@ -40,7 +40,9 @@
   "emby_block": [
     "nsfw"
   ],
-  "extra_emby_libs": ["电视"],
+  "extra_emby_libs": [
+    "电视"
+  ],
   "db_host": "255.255.255.255",
   "db_user": "",
   "db_pwd": "",
@@ -52,6 +54,7 @@
   "tz_ad": "",
   "tz_api": "",
   "tz_id": [
+    ""
   ],
   "ranks": {
     "logo": "SAKURA",

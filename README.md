@@ -12,14 +12,12 @@
 
 ## 贡献者们
 
-____
 <a href="https://github.com/berry8838"><img src="https://github.com/berry8838.png?size=100" style="border-radius: 50%;"></a>
 <a href="https://github.com/dddddluo"><img src="https://github.com/dddddluo.png?size=100" style="border-radius: 50%;"></a>
 <a href="https://github.com/U41ovo"><img src="https://github.com/U41ovo.png?size=100" style="border-radius: 50%;"></a>
 
 ## 项目说明
 
-___
 本项目是 **业余选手** 写就，结合一些我所认为优质的特点、元素，截至目前我自己都不知道有什么了，由于没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑
 
 - 推荐使用 Debian 11 - amd 的 vps 搭建，比较兼容

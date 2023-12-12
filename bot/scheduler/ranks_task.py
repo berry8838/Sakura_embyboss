@@ -10,7 +10,7 @@ from bot import bot, group, ranks, LOGGER, schedall, save_config
 
 
 async def day_ranks(pin_mode=True):
-    draw = ranks_draw.RanksDraw(ranks['logo'], backdrop=ranks['backdrop'])
+    draw = ranks_draw.RanksDraw(ranks.logo, backdrop=ranks.backdrop)
     LOGGER.info("【ranks_task】定时任务 正在推送日榜")
     success, movies = await emby.get_emby_report(types='Movie', days=1)
     if not success:
@@ -26,7 +26,7 @@ async def day_ranks(pin_mode=True):
 
     try:
         if pin_mode:
-            await bot.unpin_chat_message(chat_id=group[0], message_id=schedall['day_ranks_message_id'])
+            await bot.unpin_chat_message(chat_id=group[0], message_id=schedall.day_ranks_message_id)
     except Exception as e:
         LOGGER.warning(f'【ranks_task】unpin day_ranks_message exception {e}')
         pass
@@ -43,18 +43,18 @@ async def day_ranks(pin_mode=True):
             user_id, item_id, item_type, name, count, duarion = tuple(tv)
             tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
         payload += tmp
-    payload = f"**【{ranks['logo']} 播放日榜】**\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime('%Y-%m-%d')
+    payload = f"**【{ranks.logo} 播放日榜】**\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime('%Y-%m-%d')
     message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload,
                                         parse_mode=enums.ParseMode.MARKDOWN)
     if pin_mode:
         await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id, disable_notification=True)
-    schedall['day_ranks_message_id'] = message_info.id
+    schedall.day_ranks_message_id = message_info.id
     save_config()
     LOGGER.info("【ranks_task】定时任务 推送日榜完成")
 
 
 async def week_ranks(pin_mode=True):
-    draw = ranks_draw.RanksDraw(ranks['logo'], weekly=True, backdrop=ranks['backdrop'])
+    draw = ranks_draw.RanksDraw(ranks.logo, weekly=True, backdrop=ranks.backdrop)
     LOGGER.info("【ranks_task】定时任务 正在推送周榜")
     success, movies = await emby.get_emby_report(types='Movie', days=7)
     if not success:
@@ -70,7 +70,7 @@ async def week_ranks(pin_mode=True):
 
     try:
         if pin_mode:
-            await bot.unpin_chat_message(chat_id=group[0], message_id=schedall['week_ranks_message_id'])
+            await bot.unpin_chat_message(chat_id=group[0], message_id=schedall.week_ranks_message_id)
     except Exception as e:
         LOGGER.warning(f'【ranks_task】unpin day_ranks_message exception {e}')
         pass
@@ -87,12 +87,12 @@ async def week_ranks(pin_mode=True):
             user_id, item_id, item_type, name, count, duarion = tuple(tv)
             tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
         payload += tmp
-    payload = f"**【{ranks['logo']} 播放周榜】**\n\n" + payload + "\n#WeekRanks" + "  " + date.today().strftime(
+    payload = f"**【{ranks.logo} 播放周榜】**\n\n" + payload + "\n#WeekRanks" + "  " + date.today().strftime(
         '%Y-%m-%d')
     message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload,
                                         parse_mode=enums.ParseMode.MARKDOWN)
     if pin_mode:
         await bot.pin_chat_message(chat_id=message_info.chat.id, message_id=message_info.id, disable_notification=True)
-    schedall['week_ranks_message_id'] = message_info.id
+    schedall.week_ranks_message_id = message_info.id
     save_config()
     LOGGER.info("【ranks_task】定时任务 推送周榜完成")

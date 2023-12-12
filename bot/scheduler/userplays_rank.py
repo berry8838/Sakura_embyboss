@@ -18,7 +18,7 @@ class Uplaysinfo:
             return await bot.send_photo(chat_id=group[0], photo=bot_photo,
                                         caption=f'🍥 获取过去{days}天UserPlays失败了嘤嘤嘤 ~ 手动重试 ')
 
-        txt = f'**▎{ranks["logo"]} {days} 天看片榜**\n\n'
+        txt = f'**▎{ranks.logo} {days} 天看片榜**\n\n'
         n = 0
         ls = []
         for r in results:
@@ -35,7 +35,7 @@ class Uplaysinfo:
         txt += f'\n#UPlaysRank {now.strftime("%Y-%m-%d")}'
         # print(txt)
         send = await bot.send_photo(chat_id=group[0], photo=bot_photo, caption=txt)
-        if uplays and _open["uplays"]:
+        if uplays and _open.uplays:
             # print(1)
             if sql_update_embys(some_list=ls, method='iv'):
                 await send.reply(f'**自动将观看时长转换为{sakura_b}\n请已上榜用户检查是否到账**')

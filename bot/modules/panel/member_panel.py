@@ -527,7 +527,7 @@ async def call_exchange(_, call):
     await callAnswer(call, '🔋 使用注册码')
     send = await editMessage(call,
                              '🔋 **【使用注册码】**：\n\n'
-                             f'- 请在120s内对我发送你的注册码，形如\n`{ranks["logo"]}-xx-xxxx`\n退出点 /cancel')
+                             f'- 请在120s内对我发送你的注册码，形如\n`{ranks.logo}-xx-xxxx`\n退出点 /cancel')
     if send is False:
         return
 

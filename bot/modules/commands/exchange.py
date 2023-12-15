@@ -20,23 +20,29 @@ async def rgs_code(_, msg):
         register_code = msg.text
     if _open.stat: return await sendMessage(msg, "🤧 自由注册开启下无法使用注册码。")
 
-    with Session() as session:
-        data = session.query(Emby).filter(Emby.tg == msg.from_user.id).first()
-        if not data: return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
-        embyid = data.embyid
-        ex = data.ex
-        lv = data.lv
-        if embyid:
-            if not _open.allow_code: return await sendMessage(msg,
-                                                              "🔔 很遗憾，管理员已经将注册码续期关闭\n**已有账户成员**无法使用register_code，请悉知",
-                                                              timer=60)
-            r = session.query(Code).filter(Code.code == register_code).first()
+    data = sql_get_emby(tg=msg.from_user.id)
+    if not data: return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
+    embyid = data.embyid
+    ex = data.ex
+    lv = data.lv
+    if embyid:
+        if not _open.allow_code: return await sendMessage(msg,
+                                                          "🔔 很遗憾，管理员已经将注册码续期关闭\n**已有账户成员**无法使用register_code，请悉知",
+                                                          timer=60)
+        with Session() as session:
+            # with_for_update 是一个排他锁，其实就不需要悲观锁或者是乐观锁，先锁定先到的数据使其他session无法读取，修改(单独似乎不起作用，也许是不能完全防止并发冲突，于是加入原子操作)
+            r = session.query(Code).filter(Code.code == register_code).with_for_update().first()
             if not r: return await sendMessage(msg, "⛔ **你输入了一个错误de注册码，请确认好重试。**", timer=60)
+            re = session.query(Code).filter(Code.code == register_code, Code.used.is_(None)).with_for_update().update(
+                {Code.used: msg.from_user.id, Code.usedtime: datetime.now()})
+            session.commit()  # 必要的提交。否则失效
             tg1 = r.tg
             us1 = r.us
             used = r.used
-            if used: return await sendMessage(msg,
-                                              f'此 `{register_code}` \n注册码已被使用,是[{used}](tg://user?id={used})的形状了喔')
+            if re == 0: return await sendMessage(msg,
+                                                 f'此 `{register_code}` \n注册码已被使用,是[{used}](tg://user?id={used})的形状了喔')
+            session.query(Code).filter(Code.code == register_code).with_for_update().update(
+                {Code.used: msg.from_user.id, Code.usedtime: datetime.now()})
             first = await bot.get_chat(tg1)
             # 此处需要写一个判断 now和ex的大小比较。进行日期加减。
             ex_new = datetime.now()
@@ -54,8 +60,6 @@ async def rgs_code(_, msg):
                 session.query(Emby).filter(Emby.tg == msg.from_user.id).update({Emby.ex: ex_new})
                 await sendMessage(msg,
                                   f'🎊 少年郎，恭喜你，已收到 [{first.first_name}](tg://user?id={tg1}) 的{us1}天🎁\n到期时间：{ex_new}__')
-            session.query(Code).filter(Code.code == register_code).update(
-                {Code.used: msg.from_user.id, Code.usedtime: datetime.now()})
             session.commit()
             new_code = register_code[:-7] + "░" * 7
             if not user_buy.stat:
@@ -64,20 +68,23 @@ async def rgs_code(_, msg):
                                   send=True)
             LOGGER.info(f"【注册码】：{msg.from_user.first_name}[{msg.chat.id}] 使用了 {register_code}，到期时间：{ex_new}")
 
-        else:
-            r = session.query(Code).filter(Code.code == register_code).first()
+    else:
+        with Session() as session:
+            # 我勒个豆，终于用 原子操作 + 排他锁 成功防止了并发更新
+            # 在 UPDATE 语句中添加一个条件，只有当注册码未被使用时，才更新数据。这样，如果有两个用户同时尝试使用同一条注册码，只有一个用户的 UPDATE 语句会成功，因为另一个用户的 UPDATE 语句会发现注册码已经被使用。
+            r = session.query(Code).filter(Code.code == register_code).with_for_update().first()
             if not r: return await sendMessage(msg, "⛔ **你输入了一个错误de注册码，请确认好重试。**")
+            re = session.query(Code).filter(Code.code == register_code, Code.used.is_(None)).with_for_update().update(
+                {Code.used: msg.from_user.id, Code.usedtime: datetime.now()})
+            session.commit()  # 必要的提交。否则失效
             tg1 = r.tg
             us1 = r.us
             used = r.used
-            if used: return await sendMessage(msg,
-                                              f'此 `{register_code}` \n注册码已被使用,是 [{used}](tg://user?id={used}) 的形状了喔')
-
+            if re == 0: return await sendMessage(msg,
+                                                 f'此 `{register_code}` \n注册码已被使用,是 [{used}](tg://user?id={used}) 的形状了喔')
             first = await bot.get_chat(tg1)
             x = data.us + us1
             session.query(Emby).filter(Emby.tg == msg.from_user.id).update({Emby.us: x})
-            session.query(Code).filter(Code.code == register_code).update(
-                {Code.used: msg.from_user.id, Code.usedtime: datetime.now()})
             session.commit()
             await sendPhoto(msg, photo=bot_photo,
                             caption=f'🎊 少年郎，恭喜你，已经收到了 [{first.first_name}](tg://user?id={tg1}) 发送的邀请注册资格\n\n请选择你的选项~',

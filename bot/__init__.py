@@ -99,8 +99,8 @@ if len(extra_emby_libs) > 0:
     owner_p += [BotCommand("extraembylibs_blockall", "一键关闭所有用户的额外媒体库 [owner]"),
                 BotCommand("extraembylibs_unblockall", "一键开启所有用户的额外媒体库 [owner]")]
 
-from pyrogram import Client, enums
-from pyromod import listen
+from pyrogram import enums
+from pyromod import Client
 
 bot = Client(bot_name, api_id=owner_api, api_hash=owner_hash, bot_token=bot_token,
              workers=300,

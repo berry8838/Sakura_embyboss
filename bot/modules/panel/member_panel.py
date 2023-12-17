@@ -11,17 +11,20 @@ import random
 from datetime import timedelta, datetime
 
 from pyrogram.errors import BadRequest
-
-from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emby_libs, emby_block
+from bot.schemas import ExDate
+from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emby_libs, emby_block, user_buy, schedall, \
+    bot_name
 from pyrogram import filters
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import user_in_group_on_filter
-from bot.func_helper.utils import members_info, tem_alluser, wh_msg
+from bot.func_helper.utils import members_info, tem_alluser, wh_msg, cr_link_one
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
-    store_ikb, re_store_renew, re_bindtg_ikb
-from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage
+    store_ikb, re_store_renew, re_bindtg_ikb, close_it_ikb
+from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage, ask_return
+from bot.modules.commands import p_start
 from bot.modules.commands.exchange import rgs_code
+from bot.sql_helper.sql_code import sql_count_c_code
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby
 from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2
 
@@ -524,29 +527,24 @@ async def user_emby_unblock(_, call):
 
 @bot.on_callback_query(filters.regex('exchange') & user_in_group_on_filter)
 async def call_exchange(_, call):
-    await callAnswer(call, '🔋 使用注册码')
-    send = await editMessage(call,
-                             '🔋 **【使用注册码】**：\n\n'
-                             f'- 请在120s内对我发送你的注册码，形如\n`{ranks.logo}-xx-xxxx`\n退出点 /cancel')
-    if send is False:
-        return
-
-    msg = await callListen(call, 120, buttons=re_exchange_b_ikb)
+    await asyncio.gather(callAnswer(call, '🔋 使用注册码'), call.message.delete())
+    msg = await ask_return(call, text='🔋 **【使用注册码】**：\n\n'
+                                      f'- 请在120s内对我发送你的注册码，形如\n`{ranks.logo}-xx-xxxx`\n退出点 /cancel',
+                           button=re_exchange_b_ikb)
     if msg is False:
         return
     elif msg.text == '/cancel':
-        await msg.delete()
-        await editMessage(call, '__您已经取消输入__ **会话已结束！**', re_exchange_b_ikb)
+        await asyncio.gather(msg.delete(), p_start(_, msg))
     else:
-        await editMessage(call, f'验证注册码 {msg.text} ing。。。')
-        await rgs_code(_, msg)
+        await rgs_code(_, msg, register_code=msg.text)
 
 
 @bot.on_callback_query(filters.regex('storeall') & user_in_group_on_filter)
 async def do_store(_, call):
-    await callAnswer(call, '✔️ 欢迎进入兑换商店')
-    # e = sql_get_emby(tg=call.from_user.id)
-    await editMessage(call, '🏪 请选择想要使用的服务', buttons=store_ikb())
+    if user_buy.stat or not _open.checkin:
+        return await callAnswer(call, '🌏 Sorry，此功能仅服务于开启 到期保号 模式和开启 签到 的公益服', True)
+    await asyncio.gather(callAnswer(call, '✔️ 欢迎进入兑换商店'),
+                         editMessage(call, '🏪 请选择想要使用的服务', buttons=store_ikb()))
 
 
 @bot.on_callback_query(filters.regex('store-renew') & user_in_group_on_filter)
@@ -568,8 +566,7 @@ async def do_store_renew(_, call):
             return
 
         elif m.text == '/cancel':
-            await m.delete()
-            await do_store(_, call)
+            await asyncio.gather(m.delete(), do_store(_, call))
         else:
             try:
                 await m.delete()
@@ -583,8 +580,8 @@ async def do_store_renew(_, call):
                     return await editMessage(call, f'🫡，西内！输入值超出你持有的{e.iv}{sakura_b}，倒扣10。')
                 new_ex = e.ex + timedelta(days=iv / 2)
                 sql_update_emby(Emby.tg == call.from_user.id, ex=new_ex, iv=new_us)
-                await emby.emby_change_policy(id=e.embyid)
-                await editMessage(call, f'🎉 您已花费 {iv}{sakura_b}\n🌏 到期时间 **{new_ex}**')
+                await asyncio.gather(emby.emby_change_policy(id=e.embyid),
+                                     editMessage(call, f'🎉 您已花费 {iv}{sakura_b}\n🌏 到期时间 **{new_ex}**'))
                 LOGGER.info(f'【兑换续期】- {call.from_user.id} 已花费 {iv}{sakura_b}，到期时间：{new_ex}')
     else:
         await callAnswer(call, '❌ 管理员未开启此兑换', True)
@@ -612,9 +609,62 @@ async def do_store_whitelist(_, call):
 
 @bot.on_callback_query(filters.regex('store-invite') & user_in_group_on_filter)
 async def do_store_invite(_, call):
-    await callAnswer(call, '❌ 管理员未开启此兑换，等待编写', True)
+    if _open.invite:
+        e = sql_get_emby(tg=call.from_user.id)
+        if not e or not e.embyid:
+            return callAnswer(call, '❌ 仅持有账户可兑换此选项', True)
+        if e.iv < 500:
+            return await callAnswer(call,
+                                    f'🏪 兑换规则：\n当前兑换邀请码至少需要 500 {sakura_b}。勉励',
+                                    True)
+        await editMessage(call,
+                          f'🎟️ 请回复创建 [类型] [数量] [模式]\n\n'
+                          f'**类型**：月mon，季sea，半年half，年year\n'
+                          f'**模式**： link -深链接 | code -码\n'
+                          f'**示例**：`sea 1 link` 记作 1条 季度注册码链接\n'
+                          f'**注意**：兑率 1天 = 100{sakura_b}，手续 200\n'
+                          f'__取消本次操作，请 /cancel__')
+        content = await callListen(call, 120)
+        if content is False:
+            return await do_store(_, call)
+
+        elif content.text == '/cancel':
+            return await asyncio.gather(content.delete(), do_store(_, call))
+        try:
+            times, count, method = content.text.split()
+            days = getattr(ExDate(), times)
+            count = int(count)
+            cost = 200 + (10 * days * count)
+            if e.iv < cost:
+                return await asyncio.gather(content.delete(),
+                                            sendMessage(call,
+                                                        f'您只有 {e.iv}{sakura_b}，而您需要花费 {cost}，超前消费是不可取的哦！？',
+                                                        timer=10),
+                                            do_store(_, call))
+            method = getattr(ExDate(), method)
+        except (AttributeError, ValueError, IndexError):
+            return await asyncio.gather(sendMessage(call, f'⚠️ 检查输入，格式似乎有误\n{content.text}', timer=10),
+                                        do_store(_, call),
+                                        content.delete())
+        else:
+            sql_update_emby(Emby.tg == call.from_user.id, iv=e.iv - cost)
+            links = await cr_link_one(call.from_user.id, days, count, days, method)
+            if links is None:
+                return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库')
+            links = f"🎯 {bot_name}已为您生成了 **{days}天** 邀请码 {count} 个\n\n" + links
+            chunks = [links[i:i + 4096] for i in range(0, len(links), 4096)]
+            for chunk in chunks:
+                await sendMessage(content, chunk)
+            LOGGER.info(f"【注册码兑换】：{bot_name}已为 {content.from_user.id} 生成了 {count} 个 {days} 天邀请码")
+
+    else:
+        await callAnswer(call, '❌ 管理员未开启此兑换', True)
 
 
 @bot.on_callback_query(filters.regex('store-query') & user_in_group_on_filter)
 async def do_store_query(_, call):
-    await callAnswer(call, '❌ 管理员未开启此兑换，等待编写', True)
+    a, b = sql_count_c_code(tg_id=call.from_user.id)
+    if not a:
+        return await callAnswer(call, '❌ 空', True)
+    await callAnswer(call, '📜 请等待搜索。')
+    await sendMessage(call, text=a, buttons=close_it_ikb)

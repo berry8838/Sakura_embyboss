@@ -1,10 +1,20 @@
 import json
 import os
-from pydantic import BaseModel, StrictBool, field_validator
+from pydantic import BaseModel, StrictBool, field_validator, ValidationError
 from typing import List, Optional
 
 
 # 嵌套式的数据设计，规范数据 config.json
+
+class ExDate(BaseModel):
+    mon: int = 30
+    sea: int = 90
+    half: int = 180
+    year: int = 365
+    used: int = 0
+    code: str = 'code'
+    link: str = 'link'
+
 
 class UserBuy(BaseModel):
     stat: StrictBool

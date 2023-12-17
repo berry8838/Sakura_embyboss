@@ -9,6 +9,7 @@ from pyrogram.errors import BadRequest
 
 from bot import bot, _open, save_config, bot_photo, LOGGER, bot_name, admins, owner
 from bot.func_helper.filters import admins_on_filter
+from bot.schemas import ExDate
 from bot.sql_helper.sql_code import sql_count_code, sql_count_p_code
 from bot.sql_helper.sql_emby import sql_count_emby
 from bot.func_helper.fix_bottons import gm_ikb_content, open_menu_ikb, gog_rester_ikb, back_open_menu_ikb, \
@@ -271,23 +272,13 @@ async def ch_admin_link(client, call):
     | filters.regex('register_half') | filters.regex('register_year') | filters.regex('register_used'))
 async def buy_mon(_, call):
     await call.answer('✅ 显示注册码')
-    cd, u = call.data.split('-')
-    if cd == 'register_mon':
-        n = 30
-    elif cd == 'register_sea':
-        n = 90
-    elif cd == 'register_half':
-        n = 180
-    elif cd == 'register_used':
-        n = 0
-    else:
-        n = 365
+    cd, times, u = call.data.split('_')
+    n = getattr(ExDate(), times)
     a, i = sql_count_p_code(u, n)
     if a is None:
         x = '**空**'
     else:
         x = a[0]
-    # print(a,i)
     first = await bot.get_chat(u)
     keyboard = await cr_paginate(i, 1, n)
     await sendMessage(call, f'🔎当前 {first.first_name} - **{n}**天，检索出以下 **{i}**页：\n\n{x}', keyboard)

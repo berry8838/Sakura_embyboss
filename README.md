@@ -60,7 +60,7 @@
     - [x] 自动定时备份启动（同样支持手动）
     - [x] 重新启用签到
     - [x] 开启商店兑换
-    - [ ] 添加邀请功能
+    - [x] 添加邀请功能，包括展示邀请码数据
     - [ ] 管理白名单
     - [ ] 斗牛玩牌
     - [ ] 控制设备数
@@ -248,7 +248,7 @@ systemctl restart embyboss
 - [Pyrogram • 一个现代、优雅和异步的MTProto API框架](https://github.com/pyrogram/pyrogram)
 - [Nezha探针 • 自托管、轻量级、服务器和网站监控运维工具](https://github.com/naiba/nezha)
 - [小宝 • 按钮风格](https://t.me/EmbyClubBot)
-- [MisakaF_Emby • 启发]((https://github.com/MisakaFxxk/MisakaF_Emby))
+- [MisakaF_Emby • 启发](https://github.com/MisakaFxxk/MisakaF_Emby)
   以及  [EMBY API官方文档](https://swagger.emby.media/?staticview=true#/UserService)
 - [Nolovenodie • 播放榜单海报推送借鉴](https://github.com/Nolovenodie/EmbyTools)
 - [罗宝 • 提供的代码援助](https://github.com/dddddluo)

@@ -243,7 +243,7 @@ class Embyservice:
             sessions1 = response1.json()
             # print(sessions1)
         except Exception as e:
-            print(e)
+            # print(e)
             return count
         else:
             for session1 in sessions1:

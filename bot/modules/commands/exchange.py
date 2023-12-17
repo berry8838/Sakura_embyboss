@@ -13,11 +13,7 @@ from bot.sql_helper.sql_emby import sql_get_emby, Emby
 from bot.sql_helper import Session
 
 
-async def rgs_code(_, msg):
-    try:
-        register_code = msg.text.split()[1]
-    except IndexError:
-        register_code = msg.text
+async def rgs_code(_, msg, register_code):
     if _open.stat: return await sendMessage(msg, "🤧 自由注册开启下无法使用注册码。")
 
     data = sql_get_emby(tg=msg.from_user.id)

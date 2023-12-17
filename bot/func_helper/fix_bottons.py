@@ -57,8 +57,9 @@ def members_ikb(emby=False) -> InlineKeyboardMarkup:
     :param emby:
     :return:
     """
-    if emby is True:
-        return ikb([[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
+    if emby:
+        method = 'storeall' if not user_buy.stat else 'exchange'
+        return ikb([[('🏪 续期兑换', method), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
                     [('♻️ 主界面', 'back_start')]])
     else:
@@ -74,7 +75,7 @@ re_changetg_ikb = ikb([[('✨ 换绑TG', 'changetg'), ('💫 用户主页', 'mem
 re_bindtg_ikb = ikb([[('✨ 绑定TG', 'bindtg'), ('💫 用户主页', 'members')]])
 re_delme_ikb = ikb([[('♻️ 重试', 'delme')], [('🔙 返回', 'members')]])
 re_reset_ikb = ikb([[('♻️ 重试', 'reset')], [('🔙 返回', 'members')]])
-re_exchange_b_ikb = ikb([[('♻️ 重试', 'exchange')], [('🔙 返回', 'members')]])
+re_exchange_b_ikb = ikb([[('♻️ 重试', 'exchange'), ('❌ 关闭', 'closeit')]])
 
 
 def store_ikb():
@@ -143,9 +144,9 @@ def ch_link_ikb(ls: list) -> InlineKeyboardMarkup:
 
 
 def date_ikb(i) -> InlineKeyboardMarkup:
-    return ikb([[('🌘 - 月', f'register_mon-{i}'), ('🌗 - 季', f'register_sea-{i}'),
-                 ('🌖 - 半年', f'register_half-{i}')],
-                [('🌕 - 年', f'register_year-{i}'), ('🎟️ - 已用', f'register_used-{i}')], [('🔙 - 返回', 'ch_link')]])
+    return ikb([[('🌘 - 月', f'register_mon_{i}'), ('🌗 - 季', f'register_sea_{i}'),
+                 ('🌖 - 半年', f'register_half_{i}')],
+                [('🌕 - 年', f'register_year_{i}'), ('🎟️ - 已用', f'register_used_{i}')], [('🔙 - 返回', 'ch_link')]])
 
 
 # 翻页按钮

@@ -8,9 +8,11 @@ import asyncio
 from pyrogram import filters
 from pyrogram.errors import FloodWait, Forbidden, BadRequest
 from pyrogram.types import CallbackQuery
-from pyromod.listen.listen import ListenerTimeout
+from pyromod.exceptions import ListenerTimeout
 from bot import LOGGER, group, bot
 
+
+# 将来自己要是重写，希望不要把/cancel当关键词，用call.data，省代码还好看，切记。
 
 async def sendMessage(message, text: str, buttons=None, timer=None, send=False):
     """
@@ -219,6 +221,16 @@ async def callAsk(callbackquery, text, timer: int = 120, button=None):
         txt = await callbackquery.message.chat.ask(text, filters=filters.CallbackQuery, timeout=timer, button=button)
         return True
     except:
+        return False
+
+
+async def ask_return(update, text, timer: int = 120, button=None):
+    if isinstance(update, CallbackQuery):
+        update = update.message
+    try:
+        return await update.chat.ask(text=text, timeout=timer)
+    except ListenerTimeout:
+        await sendMessage(update, '💦 __没有获取到您的输入__ **会话状态自动取消！**', buttons=button)
         return False
 
 

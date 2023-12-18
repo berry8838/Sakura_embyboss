@@ -21,7 +21,7 @@ from bot.func_helper.utils import members_info, tem_alluser, wh_msg, cr_link_one
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
     store_ikb, re_store_renew, re_bindtg_ikb, close_it_ikb
-from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage, ask_return
+from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage, ask_return, deleteMessage
 from bot.modules.commands import p_start
 from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_code import sql_count_c_code
@@ -527,7 +527,7 @@ async def user_emby_unblock(_, call):
 
 @bot.on_callback_query(filters.regex('exchange') & user_in_group_on_filter)
 async def call_exchange(_, call):
-    await asyncio.gather(callAnswer(call, '🔋 使用注册码'), call.message.delete())
+    await asyncio.gather(callAnswer(call, '🔋 使用注册码'), deleteMessage(call))
     msg = await ask_return(call, text='🔋 **【使用注册码】**：\n\n'
                                       f'- 请在120s内对我发送你的注册码，形如\n`{ranks.logo}-xx-xxxx`\n退出点 /cancel',
                            button=re_exchange_b_ikb)

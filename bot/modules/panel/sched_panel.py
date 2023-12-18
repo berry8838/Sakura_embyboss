@@ -137,9 +137,10 @@ async def shou_dong_uplayrank(_, msg):
 
 @bot.on_message(filters.command('restart', prefixes) & admins_on_filter)
 async def restart_bot(_, msg):
-    await msg.delete()
+    await deleteMessage(msg)
     send = await msg.reply("Restarting，等待几秒钟。")
-    schedall.update({"restart_chat_id": int(send.chat.id), "restart_msg_id": int(send.id)})
+    schedall.restart_chat_id = send.chat.id
+    schedall.restart_msg_id = send.id
     save_config()
     try:
         # some code here

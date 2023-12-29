@@ -1,13 +1,15 @@
 """
 小功能 - 给所有未被封禁的 emby 延长指定天数。加货币
 """
+import asyncio
 import time
 from datetime import timedelta
 
 from pyrogram import filters
+from pyrogram.errors import FloodWait
 
 from bot import bot, prefixes, bot_photo, LOGGER, sakura_b
-from bot.func_helper.msg_utils import sendMessage, deleteMessage
+from bot.func_helper.msg_utils import sendMessage, deleteMessage, ask_return
 from bot.func_helper.filters import admins_on_filter
 from bot.sql_helper.sql_emby import get_all_emby, Emby, sql_update_embys
 
@@ -17,7 +19,7 @@ async def renew_all(_, msg):
     await deleteMessage(msg)
     # send_chat
     try:
-        a = int(msg.command[1])
+        a = float(msg.command[1])
     except (IndexError, ValueError):
         return await sendMessage(msg,
                                  "🔔 **使用格式：**/renewall [+/-天数]\n\n  给所有未封禁emby [+/-天数]", timer=60)
@@ -90,3 +92,35 @@ async def coins_all(_, msg):
             f"【派送{sakura_b}任务】 - {msg.from_user.first_name}({msg.from_user.id}) 派出 {a} {sakura_b} * {b}，消息私发完成")
     else:
         await msg.reply("数据库操作出错，请检查重试")
+
+
+@bot.on_message(filters.command('callall', prefixes) & admins_on_filter & filters.private)
+async def call_all(_, msg):
+    await msg.delete()
+    # 可以做分级 所有 b类 非群组类 ：太麻烦，随便搞搞就行
+    m = await ask_return(msg,
+                         text='**🕶️ 一键公告**\n\n倒计时10min，发送您想要公告的消息，我将为您copy至数据库中每一位用户，取消请 /cancel',
+                         timer=600)
+
+    if m is False:
+        return
+    elif m.text == '/cancel':
+        return
+    else:
+        reply = await msg.reply('开始执行发送......')
+        rst = get_all_emby(Emby.tg is not None)
+        a = 0
+        start = time.perf_counter()
+        for r in rst:
+            try:
+                a += 1
+                await m.copy(r.tg)
+
+            except FloodWait as f:
+                LOGGER.warning(str(f))
+                await asyncio.sleep(f.value * 1.2)
+                return await m.copy(r.tg)
+        end = time.perf_counter()
+        times = end - start
+        await reply.edit(f'消息发送完毕\n\n共计：{a} 次，用时 {times:.3f} s')
+        LOGGER.info(f'【群发消息】：{msg.from_user.first_name} 消息发送完毕 - 共计：a 次，用时 {times:.3f} s')

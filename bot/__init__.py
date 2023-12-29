@@ -92,6 +92,7 @@ owner_p = admin_p + [
     BotCommand("revadmin", "移除bot管理 [owner]"),
     BotCommand("renewall", "一键派送天数给所有未封禁的用户 [owner]"),
     BotCommand("coinsall", "一键派送币币给所有未封禁的用户 [owner]"),
+    BotCommand("callall", "群发消息给每个人 [owner]"),
     BotCommand("bindall_id", "一键更新用户们Embyid [owner]"),
     BotCommand("backup_db", "手动备份数据库[owner]"),
     BotCommand("config", "开启bot高级控制面板 [owner]")

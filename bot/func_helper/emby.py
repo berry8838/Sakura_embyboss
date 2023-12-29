@@ -50,7 +50,8 @@ def create_policy(admin=False, disable=False, limit: int = 2, block: list = None
         "EnableMediaConversion": False,
         "EnableAllDevices": True,
         "SimultaneousStreamLimit": limit,
-        "BlockedMediaFolders": block
+        "BlockedMediaFolders": block,
+        "AllowCameraUpload": False  # 新版api 控制开关相机上传
     }
     return policy
 

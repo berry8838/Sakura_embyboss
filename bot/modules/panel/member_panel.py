@@ -65,8 +65,7 @@ async def create_user(_, call, us, stats):
                 else:
                     return await editMessage(call, "🚫 根据银河正义法，您创建的用户名不得与任何 tg_id 相同",
                                              re_create_ikb)
-            await asyncio.sleep(1)
-
+            # await asyncio.sleep(1)
             # emby api操作
             pwd1 = await emby.emby_create(call.from_user.id, emby_name, emby_pwd2, us, stats)
             if pwd1 == 403:
@@ -311,7 +310,7 @@ async def bind_tg(_, call):
                                              f'🍥 很遗憾绑定失败，您输入的账户密码不符（{emby_name} - {emby_pwd}），请仔细确认后再次尝试',
                                              buttons=re_bindtg_ikb)
                 else:
-                    pwd = '空（直接回车）', 5210 if emby_pwd == 'None' else emby_pwd, emby_pwd
+                    pwd = ['空（直接回车）', 5210] if emby_pwd == 'None' else [emby_pwd, emby_pwd]
                     ex = (datetime.now() + timedelta(days=30))
                     text = f'✅ 账户 {emby_name} 成功绑定\n\n' \
                            f'· 用户名称 | `{emby_name}`\n' \

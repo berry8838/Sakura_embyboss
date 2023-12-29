@@ -120,7 +120,8 @@ async def bindall_id(_, msg):
         await send.edit(rst)
         LOGGER.error(rst)
         return
-    unknow_txt = '非数据库人员名单'
+
+    unknow_txt = '**非数据库人员名单**\n\n'
     b = 0
     ls = []
     start = time.perf_counter()
@@ -129,16 +130,21 @@ async def bindall_id(_, msg):
         Name = i["Name"]
         Emby_id = i["Id"]
         e = sql_get_emby(tg=Name)
-        if not e or e.embyid:
+        if not e:
             unknow_txt += f'{Name}\n'
+            continue
+        if Emby_id == e.embyid:
+            continue
         else:
-            if e.embyid != Emby_id:
-                ls.append([Name, Emby_id])
+            ls.append([e.tg, Name, Emby_id])
+
     if sql_update_embys(some_list=ls, method='bind'):
         end = time.perf_counter()
         times = end - start
-        await send.edit(
-            f"⚡一键更新Emby_id执行完成，耗时：{times} s。剩余一些账户不在数据库，请过目\n\n{unknow_txt}")
+        n = 1000
+        chunks = [unknow_txt[i:i + n] for i in range(0, len(unknow_txt), n)]
+        for c in chunks:
+            await send.reply(c + f"⚡一键更新Emby_id执行完成，耗时：{times:.3f} s")
         LOGGER.info(
             f"一键更新Emby_id执行完成。{unknow_txt}")
     else:

@@ -84,11 +84,13 @@ def sql_update_embys(some_list: list, method=None):
                 return False
         if method == 'bind':
             try:
-                mappings = [{"name": c[0], "embyid": c[1]} for c in some_list]
+                # mappings = [{"name": c[0], "embyid": c[1]} for c in some_list] 没有主键不能插入的这是emby表
+                mappings = [{"tg": c[0], "name": c[1], "embyid": c[2]} for c in some_list]
                 session.bulk_update_mappings(Emby, mappings)
                 session.commit()
                 return True
-            except:
+            except Exception as e:
+                print(e)
                 session.rollback()
                 return False
 

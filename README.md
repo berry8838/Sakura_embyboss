@@ -22,7 +22,7 @@
 
 - 推荐使用 Debian 11 - amd 的 vps 搭建，比较兼容
 - 解决不了大的技术问题，如需要，请自行fork修改，~~如果能提点有意思的pr更好啦~~
-- 如果你搭建好了请带带我们（非必须） [@First Lover](tg://user?id=1661037800) And [@罗宝](https://t.me/oudoudou)
+- 反馈请尽量issue [@First Lover](https://t.me/Aaaaa_su) And [@罗宝](https://t.me/oudoudou) 看到会处理
 
 > **声明：本项目仅供学习交流使用，仅作为辅助工具借助tg平台方便用户管理自己的媒体库成员，对用户的其他行为及内容毫不知情**
 

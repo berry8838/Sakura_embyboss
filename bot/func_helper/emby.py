@@ -428,6 +428,23 @@ class Embyservice:
         except Exception as e:
             return False, {'error': e}
 
+    # 找出 指定用户播放过的不同ip，设备
+    async def get_emby_userip(self, user_id):
+        sql = f"SELECT DISTINCT RemoteAddress,DeviceName FROM PlaybackActivity " \
+              f"WHERE RemoteAddress <> '127.0.0.1' and UserId = '{user_id}'"
+        data = {
+            "CustomQueryString": sql,
+            "ReplaceUserId": True
+        }
+        _url = f'{self.url}/emby/user_usage_stats/submit_custom_query?api_key={emby_api}'
+        resp = r.post(_url, json=data)
+        if resp.status_code != 204 and resp.status_code != 200:
+            return False, {'error': "🤕Emby 服务器连接失败!"}
+        ret = resp.json()
+        if len(ret["colums"]) == 0:
+            return False, ret["message"]
+        return True, ret["results"]
+
     @staticmethod
     def get_medias_count():
         """

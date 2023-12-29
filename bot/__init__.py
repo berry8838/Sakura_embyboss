@@ -82,8 +82,8 @@ admin_p = user_p + [
     BotCommand("week_ranks", "召唤播放次数周榜，失效时用 [管理]"),
     BotCommand("embyadmin", "开启emby控制台权限 [管理]"),
     BotCommand("ucr", "私聊创建非tg的emby用户 [管理]"),
-    BotCommand("uinfo", "查看非tg的emby2用户 [管理]"),
-    BotCommand("urm", "删除非tg的emby2用户 [管理]"),
+    BotCommand("uinfo", "查询指定用户名 [管理]"),
+    BotCommand("urm", "删除指定用户名 [管理]"),
     BotCommand("restart", "重启bot [owner]"),
 ]
 
@@ -91,6 +91,7 @@ owner_p = admin_p + [
     BotCommand("proadmin", "添加bot管理 [owner]"),
     BotCommand("revadmin", "移除bot管理 [owner]"),
     BotCommand("renewall", "一键派送天数给所有未封禁的用户 [owner]"),
+    BotCommand("coinsall", "一键派送币币给所有未封禁的用户 [owner]"),
     BotCommand("bindall_id", "一键更新用户们Embyid [owner]"),
     BotCommand("backup_db", "手动备份数据库[owner]"),
     BotCommand("config", "开启bot高级控制面板 [owner]")

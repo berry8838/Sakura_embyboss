@@ -254,6 +254,10 @@ async def cr_kk_ikb(uid, first):
     return text, keyboard
 
 
+def cv_user_ip(user_id):
+    return ikb([[('🌏 播放查询', f'userip-{user_id}'), ('❌ 关闭', 'closeit')]])
+
+
 def gog_rester_ikb(link=None) -> InlineKeyboardMarkup:
     link_ikb = ikb([[('🎁 点击领取', link, 'url')]]) if link else ikb([[('👆🏻 点击注册', f't.me/{bot_name}', 'url')]])
     return link_ikb

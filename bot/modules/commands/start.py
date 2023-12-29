@@ -28,7 +28,9 @@ async def ui_g_command(_, msg):
 # 查看自己的信息
 @bot.on_message(filters.command('myinfo', prefixes) & user_in_group_on_filter)
 async def my_info(_, msg):
-    await deleteMessage(msg)
+    await msg.delete()
+    if msg.sender_chat:
+        return
     text, keyboard = await cr_kk_ikb(uid=msg.from_user.id, first=msg.from_user.first_name)
     await sendMessage(msg, text, timer=60)
 

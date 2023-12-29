@@ -74,6 +74,8 @@ async def user_in_group_on_filter(filt, client, update):
     """
     uid = update.from_user or update.sender_chat
     uid = uid.id
+    if uid in group:
+        return True
     for i in group:
         try:
             u = await client.get_chat_member(chat_id=int(i), user_id=uid)

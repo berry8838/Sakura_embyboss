@@ -1,7 +1,7 @@
 import json
 import os
 from pydantic import BaseModel, StrictBool, field_validator, ValidationError
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 # 嵌套式的数据设计，规范数据 config.json
@@ -118,6 +118,9 @@ class Config(BaseModel):
     db_backup_dir: str = "./db_backup"
     db_backup_maxcount: int = 7
     another_line: Optional[List[str]] = []
+    # 如果使用的是 Python 3.10+ ，|运算符能用
+    # w_anti_chanel_ids: Optional[List[str | int]] = []
+    w_anti_chanel_ids: Optional[List[Union[str, int]]] = []
 
     def __init__(self, **data):
         super().__init__(**data)

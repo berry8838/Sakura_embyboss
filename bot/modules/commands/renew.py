@@ -13,7 +13,7 @@ from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_update_emby2, Emby2
 
 async def get_user_input(msg):
     await deleteMessage(msg)
-    gm_name = '匿名管理员' if msg.sender_chat else f'管理员 [{msg.from_user.first_name}]({msg.from_user.id})'
+    gm_name = msg.sender_chat.title if msg.sender_chat else f'管理员 [{msg.from_user.first_name}]({msg.from_user.id})'
     if msg.reply_to_message is None:
         try:
             b = msg.command[1]  # name

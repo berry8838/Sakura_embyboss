@@ -53,6 +53,7 @@ tz_ad = config.tz_ad
 tz_api = config.tz_api
 tz_id = config.tz_id
 
+w_anti_chanel_ids = config.w_anti_chanel_ids
 save_config()
 
 LOGGER.info("配置文件加载完毕")
@@ -73,6 +74,9 @@ admin_p = user_p + [
     BotCommand("rmemby", "删除用户[包括非tg] [管理]"),
     BotCommand("prouser", "增加白名单 [管理]"),
     BotCommand("revuser", "减少白名单 [管理]"),
+    BotCommand("rev_white_chanel", "移除皮套人白名单 [管理]"),
+    BotCommand("white_chanel", "添加皮套人白名单 [管理]"),
+    BotCommand("unban_chanel", "解封皮套人 [管理]"),
     BotCommand("syncgroupm", "消灭不在群的人 [管理]"),
     BotCommand("syncunbound", "消灭未绑定bot的emby账户 [管理]"),
     BotCommand("low_activity", "手动运行活跃检测 [管理]"),

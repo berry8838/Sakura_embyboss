@@ -17,7 +17,7 @@ from bot.func_helper.fix_bottons import group_f
 
 
 async def get_user_input(msg):
-    gm_name = '匿名管理员' if msg.sender_chat else f'管理员 [{msg.from_user.first_name}]({msg.from_user.id})'
+    gm_name = msg.sender_chat.title if msg.sender_chat else f'管理员 [{msg.from_user.first_name}]({msg.from_user.id})'
     if msg.reply_to_message is None:
         try:
             uid = int(msg.command[1])

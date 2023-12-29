@@ -10,7 +10,7 @@ from bot.func_helper.emby import emby
 @bot.on_chat_member_updated(filters.chat(group))
 async def leave_del_emby(_, event: ChatMemberUpdated):
     if event.old_chat_member and not event.new_chat_member:
-        if not event.old_chat_member.is_member:
+        if not event.old_chat_member.is_member and event.old_chat_member.user:
             user_id = event.old_chat_member.user.id
             user_fname = event.old_chat_member.user.first_name
             try:

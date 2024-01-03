@@ -261,7 +261,8 @@ async def users_iv_rank():
                     e = d + 1
                 text = ''
                 for q in result:
-                    text += f'**TOP{e}** | [{members_dict[q.tg]}](google.com?q={q.tg}) | 🎯{sakura_b}：{q.iv}\n'
+                    name = members_dict[q.tg] if members_dict[q.tg] else q.tg
+                    text += f'**TOP{e}** | [{name}](google.com?q={q.tg}) | 🎯{sakura_b}：{q.iv}\n'
                     e += 1
                 a.append(text)
                 b += 1

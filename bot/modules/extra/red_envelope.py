@@ -12,7 +12,7 @@ from pyrogram import filters
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 from sqlalchemy import func
 
-from bot import bot, prefixes, sakura_b, group
+from bot import bot, prefixes, sakura_b, group, bot_photo
 from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.fix_bottons import users_iv_button, cache
 from bot.func_helper.msg_utils import sendPhoto, sendMessage, callAnswer, editMessage
@@ -52,12 +52,13 @@ async def send_red_envelop(_, msg):
                                         sendMessage(msg, f'**🧧 专享红包：\n\n使用请回复一位群友 + {sakura_b}'))
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
-            if not e or e.iv < 5 or money < 5:
+            if not e or e.iv < 5 or money < 5 or msg.reply_to_message.from_user.id == msg.from_user.id:
                 await asyncio.gather(msg.delete(),
                                      msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
                                                               datetime.now() + timedelta(minutes=1)),
                                      sendMessage(msg, f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) '
-                                                      f'没币瞎发什么，禁言一分钟。最低5{sakura_b}', timer=60))
+                                                      f'没币瞎发什么，禁言一分钟。\n最低5{sakura_b} ~~不许发自己~~',
+                                                 timer=60))
                 return
             else:
                 new_iv = e.iv - money
@@ -228,7 +229,7 @@ async def s_rank(_, msg):
     text, i = await users_iv_rank()
     t = '❌ 数据库操作失败' if not text else text[0]
     button = await users_iv_button(i, 1)
-    await editMessage(reply, t, buttons=button)
+    await sendPhoto(reply, photo=bot_photo, caption=f'**🎖️ {sakura_b}风云录**\n\n{t}', buttons=button)
 
 
 @cache.memoize(ttl=120)
@@ -262,7 +263,7 @@ async def users_iv_rank():
                 text = ''
                 for q in result:
                     name = members_dict[q.tg] if members_dict[q.tg] else q.tg
-                    text += f'**TOP{e}** | [{name}](google.com?q={q.tg}) | 🎯{sakura_b}：{q.iv}\n'
+                    text += f'TOP{e} 用户：[{name}](google.com?q={q.tg})  **🎉 {q.iv} {sakura_b}**\n'
                     e += 1
                 a.append(text)
                 b += 1
@@ -288,4 +289,4 @@ async def users_iv_pikb(_, call):
         a, b = await users_iv_rank()
         j = j - 1
         text = a[j]
-        await editMessage(call, text, keyboard)
+        await editMessage(call, f'**🎖️ {sakura_b}风云录**\n\n{text}', keyboard)

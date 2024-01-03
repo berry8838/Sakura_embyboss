@@ -49,6 +49,9 @@ class Open(BaseModel):
     invite: bool
     leave_ban: bool
     uplays: bool = True
+    exchange_cost: int = 300
+    whitelist_cost: int = 9999
+    invite_cost: int = 1000
 
     # 每次创建 Open 对象时被重置为 0
     def __init__(self, **data):

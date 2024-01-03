@@ -174,6 +174,10 @@ ___
     "whitelist": true, # 开启兑换白名单
     "invite": false,   # 开启邀请功能
     "leave_ban": false  # 退群封禁，默认关闭
+    "exchange_cost": 300  续期 一天
+    "whitelist_cost": 9999 白名单价格
+    "invite_cost": 500 每月价格
+    这是自定义的 兑换商店价格，config-open字段配置 
   }
 "emby_block":["nsfw"] 可选，由用户能控制显示隐藏的媒体库，bot中也可设置
 "extra_emby_libs": ["家庭照片","我的照片"], 可选，额外媒体库，只可通过/kk指令给用户开通/关闭额外媒体库，不由用户控制，由管理决定

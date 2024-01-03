@@ -2,7 +2,7 @@ import asyncio
 from pyrogram import filters
 from pyrogram.errors import BadRequest
 
-from bot import bot, prefixes, LOGGER, emby_line, owner, bot_photo
+from bot import bot, prefixes, LOGGER, emby_line, owner, bot_photo, schedall
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import cv_user_ip
@@ -101,11 +101,19 @@ async def uun_info(_, msg):
         a = f'**· 🆔 查询 TG** | {e.tg}\n'
     except AttributeError:
         a = ''
+
+    if e.name and schedall.low_activity and not schedall.check_ex:
+        ex = '__若21天无观看将封禁__'
+
+    elif e.name and not schedall.low_activity and not schedall.check_ex:
+        ex = ' __无需保号，放心食用__'
+    else:
+        ex = e.ex or '无账户信息'
     text += f"▎ 查询返回\n" \
             f"**· 🍉 账户名称** | {e.name}\n{a}" \
             f"**· 🍓 当前状态** | {e.lv}\n" \
             f"**· 🍒 创建时间** | {e.cr}\n" \
-            f"**· 🚨 到期时间** | **{e.ex}**\n"
+            f"**· 🚨 到期时间** | **{ex}**\n"
 
     await asyncio.gather(sendPhoto(msg, photo=bot_photo, caption=text, buttons=cv_user_ip(e.embyid)), msg.delete())
 
@@ -117,7 +125,7 @@ async def user_cha_ip(_, call):
     if not success or len(result) == 0:
         return await callAnswer(call, '没有更多信息咧')
     else:
-        text = '🌏 以下为该用户播放过的设备&ip\n\n'
+        text = '**🌏 以下为该用户播放过的设备&ip**\n\n'
         for r in result:
             ip, device = r
             text += f'[{device}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true)\n'

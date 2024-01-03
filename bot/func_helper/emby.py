@@ -432,7 +432,7 @@ class Embyservice:
     # 找出 指定用户播放过的不同ip，设备
     async def get_emby_userip(self, user_id):
         sql = f"SELECT DISTINCT RemoteAddress,DeviceName FROM PlaybackActivity " \
-              f"WHERE RemoteAddress <> '127.0.0.1' and UserId = '{user_id}'"
+              f"WHERE RemoteAddress NOT IN ('127.0.0.1', '172.17.0.1') and UserId = '{user_id}'"
         data = {
             "CustomQueryString": sql,
             "ReplaceUserId": True

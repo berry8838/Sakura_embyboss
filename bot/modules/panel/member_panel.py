@@ -11,13 +11,13 @@ import random
 from datetime import timedelta, datetime
 
 from pyrogram.errors import BadRequest
-from bot.schemas import ExDate
+from bot.schemas import ExDate,Yulv
 from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emby_libs, emby_block, user_buy, schedall, \
     bot_name
 from pyrogram import filters
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import user_in_group_on_filter
-from bot.func_helper.utils import members_info, tem_alluser, wh_msg, cr_link_one
+from bot.func_helper.utils import members_info, tem_alluser, cr_link_one
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
     store_ikb, re_store_renew, re_bindtg_ikb, close_it_ikb
@@ -598,7 +598,7 @@ async def do_store_whitelist(_, call):
                                     True)
         await callAnswer(call, f'🏪 您已满足 9999 {sakura_b}要求', True)
         sql_update_emby(Emby.tg == call.from_user.id, lv='a', iv=e.iv - 9999)
-        send = await call.message.edit(f'**{random.choice(wh_msg)}**\n\n'
+        send = await call.message.edit(f'**{random.choice(Yulv.load_yulv().wh_msg)}**\n\n'
                                        f'🎉 恭喜[{call.from_user.first_name}](tg://user?id={call.from_user.id}) 今日晋升，{ranks["logo"]}白名单')
         await send.forward(group[0])
         LOGGER.info(f'【兑换白名单】- {call.from_user.id} 已花费 9999{sakura_b}，晋升白名单')

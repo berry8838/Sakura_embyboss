@@ -3,8 +3,6 @@ on_inline_query -
 突发奇想地想要一个内联键盘来搜索emby里面的资源
 先要打开内联模式
 """
-import uuid
-
 from bot import bot, ranks, bot_photo, bot_name
 from bot.func_helper.filters import user_in_group_on_filter
 from pyrogram.types import (InlineQueryResultArticle, InputTextMessageContent,
@@ -90,16 +88,11 @@ async def find_sth_media(_, inline_query: InlineQuery):
     except BadRequest:
         pass
 
-        # results = [InlineQueryResultArticle(
-        #     title=f"{ranks['logo']}",
-        #     description=f"数据处理过期，请重新搜索",
-        #     input_message_content=InputTextMessageContent(f"数据处理过期，请重新搜索"),
-        #     reply_markup=InlineKeyboardMarkup(
-        #         [[InlineKeyboardButton(text='✔️ 重新搜索', switch_inline_query_current_chat=' ')]]),
-        #     thumb_url=bot_photo, thumb_width=220, thumb_height=330)]
-        # await inline_query.answer(results=results, cache_time=1, switch_pm_text='查询结果',
-        #                           switch_pm_parameter='start')
-# @bot.on_chosen_inline_result()
-# def handle_chosen(_, chosen: ChosenInlineResult):
-#     print(chosen)
-#     result_id = chosen.result_id
+
+# @bot.on_chosen_inline_result(user_in_group_on_filter)
+# async def handle_chosen(_, chosen: ChosenInlineResult):
+    # print(chosen)
+    # result_id = chosen.result_id
+    # await chosen.query.delete()
+
+# 此处需要开启 Inline feedback settings in bot father 100% 因为用不上故而注释

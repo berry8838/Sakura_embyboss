@@ -136,3 +136,14 @@ class Config(BaseModel):
     def save_config(self):
         with open("config.json", "w", encoding="utf-8") as f:
             json.dump(self.model_dump(), f, indent=4, ensure_ascii=False)
+
+
+class Yulv(BaseModel):
+    wh_msg: List[str]
+    red_bag: List[str]
+
+    @classmethod
+    def load_yulv(cls):
+        with open("bot/func_helper/yvlu.json", "r", encoding="utf-8") as f:
+            yulv = json.load(f)
+            return cls(**yulv)

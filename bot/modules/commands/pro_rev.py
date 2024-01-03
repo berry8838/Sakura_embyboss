@@ -11,7 +11,7 @@ from pyrogram.errors import BadRequest
 from bot import bot, prefixes, owner, admins, save_config, LOGGER
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.msg_utils import sendMessage, deleteMessage
-from bot.func_helper.utils import wh_msg
+from bot.schemas import Yulv
 from bot.scheduler.bot_commands import BotCommands
 from bot.sql_helper.sql_emby import sql_update_emby, Emby, sql_get_emby
 
@@ -37,7 +37,7 @@ async def pro_admin(_, msg):
 
     await asyncio.gather(deleteMessage(msg), BotCommands.pro_commands(_, uid),
                          sendMessage(msg,
-                                     f'**{random.choice(wh_msg)}**\n\n'
+                                     f'**{random.choice(Yulv.load_yulv().wh_msg)}**\n\n'
                                      f'👮🏻 新更新管理员 #[{first.first_name}](tg://user?id={uid}) | `{uid}`\n**当前admins**\n{admins}',
                                      timer=60))
 
@@ -64,7 +64,7 @@ async def pro_user(_, msg):
         return await sendMessage(msg, f'[ta](tg://user?id={uid}) 还没有emby账户无法操作！请先注册')
     if sql_update_emby(Emby.tg == uid, lv='a'):
         await asyncio.gather(deleteMessage(msg), sendMessage(msg,
-                                                             f"**{random.choice(wh_msg)}**\n\n"
+                                                             f"**{random.choice(Yulv.load_yulv().wh_msg)}**\n\n"
                                                              f"🎉 恭喜 [{first.first_name}](tg://user?id={uid}) 获得 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 签出的白名单."))
     else:
         return await sendMessage(msg, '⚠️ 数据库执行错误')

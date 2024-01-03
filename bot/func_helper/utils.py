@@ -4,16 +4,6 @@ from bot import _open, save_config, owner, admins, bot_name, ranks, schedall, gr
 from bot.sql_helper.sql_code import sql_add_code
 from bot.sql_helper.sql_emby import sql_get_emby
 
-wh_msg = ['.仰天大笑出门去，我辈岂是蓬蒿人。', '北海虽赊，扶摇可接；东隅已逝，桑榆非晚。', '一念开明，反身而诚。',
-          '即今江海一归客，他日云霄万里人。', '纵横逸气宁称力，驰骋长途定出群。', '莫愁千里路，自有到来风',
-          '几人平地上，看我碧霄中。', '少年心事当拏云，谁念幽寒坐呜呃。', '待到秋来九月八,我花开后百花杀。',
-          '海到无边天作岸,山登绝顶我为峰。',
-          '万里不惜死，一朝得成功。', '千淘万漉虽辛苦，吹尽狂沙始到金。', '长风破浪会有时，直挂云帆济沧海。',
-          '大鹏一日同风起，扶摇直上九万里。', '起青草之微末兮，化狂飙以骋太宇', '早知书中有黄金，小米稀饭喝三斤。',
-          '先天六天赋，出道即巅峰，因不被上三宗承认，且一路追杀，苟且至今，今遇高人指点，双生领悟得以再次突破，今日晋升',
-          '春风得意马蹄疾，一日看尽长安花', '一生大笑能几回，斗酒相逢须醉倒。', "岂曰无衣，与子同白\n(●'◡'●)",
-          '天南地北双飞客，相思迢递彩云间']
-
 
 def judge_admins(uid):
     """
@@ -146,7 +136,8 @@ async def convert_s(seconds: int):
     days = duration.days
     hours, remainder = divmod(duration.seconds, 3600)
     minutes, _ = divmod(remainder, 60)
-    return f"{days} 天 {hours} 小时 {minutes} 分钟"
+    days = '' if days == 0 else f'{days} 天'
+    return f"{days} {hours} 小时 {minutes} 分钟"
 
 
 def convert_runtime(RunTimeTicks: int):

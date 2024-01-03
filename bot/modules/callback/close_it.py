@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 from pyrogram import filters
+from pyrogram.enums import ChatType
 
 from bot import bot
 from bot.func_helper.msg_utils import callAnswer, deleteMessage
@@ -9,7 +10,7 @@ from bot.func_helper.utils import judge_admins
 # 使用装饰器语法来定义回调函数，并传递 client 和 call 参数
 @bot.on_callback_query(filters.regex('closeit'))
 async def close_it(_, call):
-    if str(call.message.chat.type) == "ChatType.PRIVATE":
+    if call.message.chat.type is ChatType.PRIVATE:
         await deleteMessage(call)
     else:
         # 只有管理员才能删除消息，并且只能删除自己发送的消息

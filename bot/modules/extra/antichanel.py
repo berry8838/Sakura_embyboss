@@ -1,5 +1,5 @@
 """
-antichanel - 
+antichanel - 恶趣味，因为我没有所以其他人也不行。阿门
 
 Author:susu
 Date:2023/12/30
@@ -31,7 +31,8 @@ async def un_fukk_pitao(_, msg):
     if not a:
         return await msg.reply('使用 /unban_chanel 回复 或 /unban_chanel + [id/用户名] 为皮套解禁')
     # print(a)
-    await bot.unban_chat_member(msg.chat.id, a)
+    # await asyncio.gather(bot.unban_chat_member(msg.chat.id, a),
+    await asyncio.gather(msg.chat.unban_member(a), msg.reply(f'🕶️ {gm} 解禁皮套 ——> {a}'))
     LOGGER.info(f'【AntiChanel】- {gm} 解禁皮套 ——> {a} ')
 
 
@@ -43,7 +44,7 @@ async def allow_pitao(_, msg):
     if a not in w_anti_chanel_ids:
         w_anti_chanel_ids.append(a)
         save_config()
-    await asyncio.gather(msg.reply(f'🎁 {gm} 已为 {a} 添加皮套人白名单'), bot.unban_chat_member(msg.chat.id, a))
+    await asyncio.gather(msg.reply(f'🎁 {gm} 已为 {a} 添加皮套人白名单'), msg.chat.unban_member(a))
     LOGGER.info(f'【AntiChanel】- {gm} 豁免皮套 ——> {a}')
 
 
@@ -55,7 +56,7 @@ async def remove_pitao(_, msg):
     if a in w_anti_chanel_ids:
         w_anti_chanel_ids.remove(a)
         save_config()
-    await asyncio.gather(msg.reply(f'🕶️ {gm} 已为 {a} 移除皮套人白名单'), bot.ban_chat_member(msg.chat.id, a))
+    await asyncio.gather(msg.reply(f'🕶️ {gm} 已为 {a} 移除皮套人白名单并封禁'), msg.chat.ban_member(a))
     LOGGER.info(f'【AntiChanel】- {gm} 封禁皮套 ——> {a}')
 
 
@@ -73,8 +74,20 @@ custom_chat_filter = filters.create(
 async def fuxx_pitao(_, msg):
     # print(msg)
     try:
-        await asyncio.gather(bot.ban_chat_member(msg.chat.id, msg.sender_chat.id),
+        await asyncio.gather(msg.delete(),
+                             msg.chat.ban_member(msg.sender_chat.id),
                              msg.reply(f'🎯 自动狙杀皮套人！{msg.sender_chat.title} - `{msg.sender_chat.id}`'))
         LOGGER.info(f'【AntiChanel】- {msg.sender_chat.title} - {msg.sender_chat.id} 被封禁')
     except:
         pass
+
+# custom_chanel_filter = filters.create(
+#     lambda _, __, message: True if message.forward_from_chat.id == chanel_id else False)
+#
+#
+# @bot.on_message(custom_chanel_filter & filters.group)
+# async def anti_chanel_forward(_, msg):
+#     try:
+#         await msg.unpin()
+#     except:
+#         pass

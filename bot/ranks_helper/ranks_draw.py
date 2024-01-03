@@ -1,3 +1,4 @@
+import asyncio
 import os
 import pytz
 import random
@@ -8,6 +9,7 @@ from PIL import ImageFont
 from PIL import ImageDraw
 from datetime import datetime
 from bot.func_helper.emby import emby
+import numpy as np
 
 """
 日榜周榜海报样式
@@ -16,6 +18,11 @@ from bot.func_helper.emby import emby
 
 
 class RanksDraw:
+    red_bg_path = os.path.join('bot', 'ranks_helper', 'red', 'bg')
+    red_bg_list = os.listdir(red_bg_path)
+    red_mask = Image.open(os.path.join('bot', 'ranks_helper', 'red', 'red_mask.png')).convert('RGBA')
+    shouji_font = os.path.join('bot', 'ranks_helper', "resource", 'font', "shouji.ttf")
+    bold_font = os.path.join('bot', 'ranks_helper', "resource", 'font', "PingFang Bold.ttf")
 
     def __init__(self, embyname=None, weekly=False, backdrop=False):
         # 绘图文件路径初始化
@@ -242,6 +249,50 @@ class RanksDraw:
                 draw_text_psd_style(text, (1470, 830), self.embyname, self.font_logo, 126)
             else:
                 draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126)
+
+    @staticmethod
+    async def hb_test_draw(money: int, members: int, user_pic: bytes = None, first_name: str = None):
+        red_bg = os.path.join(RanksDraw.red_bg_path, random.choice(RanksDraw.red_bg_list))
+        if not user_pic:
+            return red_bg
+        cover = Image.open(red_bg)
+        # 获取 cover 的背景颜色
+        bg_color = cover.getpixel((0, 0))
+        try:
+            _pic = Image.open(user_pic).convert('RGBA').resize((300, 300))
+        except IOError:
+            print("user_pic 不是有效的图片数据")
+            return
+        border = RanksDraw.red_mask.convert('L')
+        _pic.putalpha(border)
+        pic = convert_bgcc(_pic, bg_color)
+        cover = draw_cover_text(cover, first_name, money, members)
+        pic, cover = await asyncio.gather(pic, cover)
+        cover.paste(pic, ((cover.width - _pic.width) // 2, 180))
+        img_bytes = BytesIO()
+        cover.save(img_bytes, format='png')  # 将image对象保存到BytesIO对象中
+        return img_bytes  # 返回BytesIO
+
+
+async def convert_bgcc(_pic, bg_color):
+    # 将图像转换为 numpy 数组
+    pic_array = np.array(_pic)
+    # 创建一个 mask，标记出 _pic 中的透明像素
+    mask = pic_array[..., 3] == 0
+    # 将 _pic 中的透明像素替换为背景颜色
+    pic_array[mask] = bg_color
+    # 将 numpy 数组转换回 PIL 图像
+    _pic = Image.fromarray(pic_array)
+    return _pic
+
+
+async def draw_cover_text(cover, first_name, money, members):
+    draw = ImageDraw.Draw(cover)
+    draw.text((cover.width // 2, 550), f'{first_name} の 红包',
+              font=ImageFont.truetype(RanksDraw.shouji_font, 60), anchor='mm', fill=(249, 219, 160))
+    draw.text((cover.width // 2, cover.height - 50), f'{money} / {members}',
+              font=ImageFont.truetype(RanksDraw.bold_font, 60), anchor='mm', fill=(249, 219, 160))
+    return cover
 
 
 def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, **kwargs):

@@ -10,11 +10,14 @@ import math
 from datetime import datetime, timedelta
 from pyrogram import filters
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
+from sqlalchemy import func
 
-from bot import bot, prefixes, sakura_b
+from bot import bot, prefixes, sakura_b, group
 from bot.func_helper.filters import user_in_group_on_filter
+from bot.func_helper.fix_bottons import users_iv_button, cache
 from bot.func_helper.msg_utils import sendPhoto, sendMessage, callAnswer, editMessage
 from bot.func_helper.utils import pwd_create
+from bot.sql_helper import Session
 from bot.sql_helper.sql_emby import Emby, sql_get_emby, sql_update_emby
 from bot.ranks_helper.ranks_draw import RanksDraw
 from bot.schemas import Yulv
@@ -36,7 +39,7 @@ async def create_reds(money, members, first_name, flag=None):
     return InlineKeyboardMarkup([[InlineKeyboardButton(text='👆🏻 好運連連', callback_data=f'red_bag-{red_id}')]])
 
 
-@bot.on_message(filters.command('red', prefixes) & user_in_group_on_filter)
+@bot.on_message(filters.command('red', prefixes) & user_in_group_on_filter & filters.group)
 async def send_red_envelop(_, msg):
     # user_pic = first_name = None
     try:
@@ -56,7 +59,7 @@ async def send_red_envelop(_, msg):
                                  msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
                                                           datetime.now() + timedelta(minutes=1)),
                                  sendMessage(msg, f'[{msg.from_user.first_name}]({msg.from_user.id}) '
-                                                  f'未私聊过bot或积分不足，禁言一分钟。', timer=60))
+                                                  f'未私聊过bot或{sakura_b}不足，禁言一分钟。', timer=60))
             return
         else:
             new_iv = e.iv - money
@@ -113,7 +116,7 @@ async def pick_red_bag(_, call):
         if bag["rest"] == 0:
             red_bags.pop(red_id, '不存在的红包')
             text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}**\n\n' \
-                   f'{bag["sender"]} 的红包已经被抢光啦~'
+                   f'{bag["sender"]} 的红包已经被抢光啦~\n\n{bag["members"]} 人 均分 {bag["money"]}{sakura_b}'
             await editMessage(call, text)
 
         await callAnswer(call, f'🧧 {random.choice(Yulv.load_yulv().red_bag)}\n\n'
@@ -143,9 +146,95 @@ async def pick_red_bag(_, call):
         if bag["rest"] == 0:
             red_bags.pop(red_id, '不存在的红包')
             # 找出运气王
-            lucky_king = max(bag["flag"], key=bag["flag"].get)
-            first = await bot.get_chat(lucky_king)
+            # 对用户按照积分从高到低进行排序，并取出前六名
+            top_five_scores = sorted(bag["flag"].items(), key=lambda x: x[1], reverse=True)[:6]
             text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}**\n\n' \
-                   f'{bag["sender"]} 的红包已经被抢光啦~ \n\n' \
-                   f'运气王 {first.first_name} 获得了 {bag["flag"][lucky_king]}{sakura_b}'
+                   f'{bag["sender"]} 的红包已经被抢光啦~ \n\n'
+            for i, score in enumerate(top_five_scores):
+                print(i)
+                user = await bot.get_chat(score[0])
+                if i == 0:
+                    text += f'🏆运气王 {user.first_name} 获得了 {score[1]}{sakura_b}'
+                else:
+                    text += f'\n🏅{i + 1}: {user.first_name} 获得了 {score[1]} {sakura_b}'
             await editMessage(call, text)
+
+
+@bot.on_message(filters.command("srank", prefixes) & user_in_group_on_filter & filters.group)
+async def s_rank(_, msg):
+    await msg.delete()
+    if not msg.sender_chat:
+        e = sql_get_emby(tg=msg.from_user.id)
+        if not e or e.iv < 5:
+            await asyncio.gather(msg.delete(),
+                                 msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
+                                                          datetime.now() + timedelta(minutes=1)),
+                                 sendMessage(msg, f'[{msg.from_user.first_name}]({msg.from_user.id}) '
+                                                  f'未私聊过bot或不足支付手续费5{sakura_b}，禁言一分钟。', timer=60))
+            return
+        else:
+            sql_update_emby(Emby.tg == msg.from_user.id, iv=e.iv - 5)
+    elif msg.sender_chat.id == msg.chat.id:
+        pass
+    else:
+        return
+    reply = await msg.reply(f"已扣除手续5{sakura_b}, 请稍等......加载中")
+    text, i = await users_iv_rank()
+    button = await users_iv_button(i, 1)
+    await editMessage(reply, text[0], button)
+
+
+@cache.memoize(ttl=120)
+async def users_iv_rank():
+    try:
+        with Session() as session:
+            # 查询 Emby 表的所有数据，且>=10 的条数
+            p = session.query(func.count()).filter(Emby.iv >= 10).scalar()
+            if p == 0:
+                return None, 1
+            # 创建一个空字典来存储用户的 first_name 和 id
+            members_dict = {}
+            async for member in bot.get_chat_members(chat_id=group[0]):
+                members_dict[member.user.id] = member.user.first_name
+            i = math.ceil(p / 30)
+            a = []
+            b = 1
+            # 分析出页数，将检索出 分割p（总数目）的 间隔，将间隔分段，放进【】中返回
+            while b <= i:
+                d = (b - 1) * 30
+                # 查询iv排序，分页查询
+                result = session.query(Emby).filter(Emby.iv > 0).order_by(Emby.iv.desc()).limit(30).offset(d).all()
+
+                if d == 0:
+                    e = 1
+                if d != 0:
+                    e = d + 1
+                text = ''
+                for q in result:
+                    text += f'**TOP{e}** | [{members_dict[q.tg]}](google.com?q={q.tg}) | 🎯{sakura_b}：{q.iv}\n'
+                    e += 1
+                a.append(text)
+                b += 1
+            # a 是内容物，i是页数
+            return a, i
+    except Exception as e:
+        print(e)
+        return None, 1
+
+
+# 检索翻页
+@bot.on_callback_query(filters.regex('users_iv') & user_in_group_on_filter)
+async def users_iv_pikb(_, call):
+    # print(call.data)
+    c = call.data.split(":")[1]
+    if c == 1:
+        return await callAnswer(call, f'您只有一页')
+    else:
+        i = int(c.split('-')[1])
+        j = int(c[0].split(":")[0])
+        await callAnswer(call, f'将为您翻到第 {j} 页')
+        keyboard = await users_iv_button(i=i, j=j)
+        a, b = await users_iv_rank()
+        j = j - 1
+        text = a[j]
+        await editMessage(call, text, keyboard)

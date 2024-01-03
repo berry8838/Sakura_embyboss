@@ -160,6 +160,16 @@ async def cr_paginate(i, j, n) -> InlineKeyboardMarkup:
     return keyboard
 
 
+async def users_iv_button(i, j):
+    # i 总数，j是当前页数
+    keyboard = InlineKeyboard()
+    keyboard.paginate(i, j, f'users_iv:{j}-{i}')
+    keyboard.row(
+        InlineButton('❌ - Close', 'closeit')
+    )
+    return keyboard
+
+
 def cr_renew_ikb():
     checkin = '✔️' if _open.checkin else '❌'
     exchange = '✔️' if _open.exchange else '❌'

@@ -282,7 +282,7 @@ async def users_iv_pikb(_, call):
         return await callAnswer(call, f'您只有一页')
     else:
         i = int(c.split('-')[1])
-        j = int(c[0].split(":")[0])
+        j = int(c.split("-")[0])
         await callAnswer(call, f'将为您翻到第 {j} 页')
         keyboard = await users_iv_button(i=i, j=j)
         a, b = await users_iv_rank()

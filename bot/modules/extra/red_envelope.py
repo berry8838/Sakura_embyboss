@@ -239,11 +239,13 @@ async def users_iv_rank():
             p = session.query(func.count()).filter(Emby.iv > 0).scalar()
             if p == 0:
                 return None, 1
-            print(p)
             # 创建一个空字典来存储用户的 first_name 和 id
             members_dict = {}
             async for member in bot.get_chat_members(chat_id=group[0]):
-                members_dict[member.user.id] = member.user.first_name
+                try:
+                    members_dict[member.user.id] = member.user.first_name
+                except Exception as e:
+                    print(f'{e} 某名bug {member}')
             i = math.ceil(p / 30)
             a = []
             b = 1

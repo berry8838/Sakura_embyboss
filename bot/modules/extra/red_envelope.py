@@ -63,12 +63,19 @@ async def send_red_envelop(_, msg):
             else:
                 new_iv = e.iv - money
                 sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
-                user_pic = await bot.download_media(msg.reply_to_message.from_user.photo.big_file_id, in_memory=True)
+                if not msg.reply_to_message.from_user.photo:
+                    user_pic = None
+                else:
+                    user_pic = await bot.download_media(msg.reply_to_message.from_user.photo.big_file_id,
+                                                        in_memory=True)
                 first_name = msg.from_user.first_name
 
         elif msg.sender_chat.id == msg.chat.id:
-            user_pic = await bot.download_media(message=msg.reply_to_message.from_user.photo.big_file_id,
-                                                in_memory=True)
+            if not msg.reply_to_message.from_user.photo:
+                user_pic = None
+            else:
+                user_pic = await bot.download_media(message=msg.reply_to_message.from_user.photo.big_file_id,
+                                                    in_memory=True)
             first_name = msg.chat.title
         else:
             return
@@ -100,12 +107,17 @@ async def send_red_envelop(_, msg):
             else:
                 new_iv = e.iv - money
                 sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
-                # print(msg)
-                user_pic = await bot.download_media(msg.from_user.photo.big_file_id, in_memory=True)
+                if not msg.from_user.photo:
+                    user_pic = None
+                else:
+                    user_pic = await bot.download_media(msg.from_user.photo.big_file_id, in_memory=True)
                 first_name = msg.from_user.first_name
 
         elif msg.sender_chat.id == msg.chat.id:
-            user_pic = await bot.download_media(message=msg.chat.photo.big_file_id, in_memory=True)
+            if not msg.chat.photo:
+                user_pic = None
+            else:
+                user_pic = await bot.download_media(message=msg.chat.photo.big_file_id, in_memory=True)
             first_name = msg.chat.title
         else:
             return

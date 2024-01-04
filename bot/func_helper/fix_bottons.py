@@ -163,7 +163,7 @@ async def cr_paginate(i, j, n) -> InlineKeyboardMarkup:
 async def users_iv_button(i, j):
     # i 总数，j是当前页数
     keyboard = InlineKeyboard()
-    keyboard.paginate(i, j, f'users_iv:{j}-{i}')
+    keyboard.paginate(i, j, 'users_iv:{number}')
     keyboard.row(
         InlineButton('❌ - Close', 'closeit')
     )

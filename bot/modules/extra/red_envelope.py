@@ -8,7 +8,7 @@ import asyncio
 import random
 import math
 from datetime import datetime, timedelta
-from pyrogram import filters
+from pyrogram import filters, enums
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 from sqlalchemy import func
 
@@ -157,11 +157,14 @@ async def pick_red_bag(_, call):
         sql_update_emby(Emby.tg == call.from_user.id, iv=new)
         bag["used"][call.from_user.id] = bag["num"]
         bag["rest"] = bag["rest"] - 1
-        # print(bag)
         if bag["rest"] == 0:
             red_bags.pop(red_id, '不存在的红包')
-            text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}**\n\n' \
-                   f'🕶️{bag["sender"]} 的红包已经被抢光啦~\n\n{bag["members"]} 人 均分 {bag["money"]}{sakura_b}'
+            text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
+                   f'🕶️{bag["sender"]} **的红包已经被抢光啦~\n\n'
+            top_five_scores = sorted(bag["flag"].items(), key=lambda x: x[1], reverse=True)[:5]
+            for i, score in enumerate(top_five_scores):
+                user = await bot.get_chat(score[0])
+                text += f'**🎖️ {user.first_name} 获得了 {score[1]} {sakura_b}**'
             await editMessage(call, text)
 
         await callAnswer(call, f'🧧 {random.choice(Yulv.load_yulv().red_bag)}\n\n'
@@ -175,8 +178,8 @@ async def pick_red_bag(_, call):
             await callAnswer(call, f'🧧 {random.choice(Yulv.load_yulv().red_bag)}\n\n'
                                    f'恭喜，你领取到了 {bag["sender"]} の {bag["m"]}{sakura_b}', True)
             first = await bot.get_chat(bag["members"])
-            text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}**\n\n' \
-                   f'🕶️{bag["sender"]} 的专属红包已被 [{first.first_name}](tg://user?id={bag["members"]}) 领取'
+            text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
+                   f'🕶️{bag["sender"]} **的专属红包已被 [{first.first_name}](tg://user?id={bag["members"]}) 领取'
             await editMessage(call, text)
             return
         else:
@@ -207,13 +210,12 @@ async def pick_red_bag(_, call):
             # 找出运气王
             # 对用户按照积分从高到低进行排序，并取出前六名
             top_five_scores = sorted(bag["flag"].items(), key=lambda x: x[1], reverse=True)[:6]
-            text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}**\n\n' \
-                   f'🕶️{bag["sender"]} 的红包已经被抢光啦~ \n\n'
+            text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
+                   f'🕶️{bag["sender"]} **的红包已经被抢光啦~ \n\n'
             for i, score in enumerate(top_five_scores):
-                print(i)
                 user = await bot.get_chat(score[0])
                 if i == 0:
-                    text += f'**🏆 手气最佳** {user.first_name} 获得了 {score[1]} {sakura_b}'
+                    text += f'**🏆 手气最佳 {user.first_name} **获得了 {score[1]} {sakura_b}'
                 else:
                     text += f'\n**🏅 {user.first_name}** 获得了 {score[1]} {sakura_b}'
             await editMessage(call, text)
@@ -241,7 +243,8 @@ async def s_rank(_, msg):
     text, i = await users_iv_rank()
     t = '❌ 数据库操作失败' if not text else text[0]
     button = await users_iv_button(i, 1)
-    await sendPhoto(reply, photo=bot_photo, caption=f'**🎖️ {sakura_b}风云录**\n\n{t}', buttons=button)
+    await asyncio.gather(reply.delete(),
+                         sendPhoto(msg, photo=bot_photo, caption=f'**🏅 {sakura_b}风云录**\n\n{t}', buttons=button))
 
 
 @cache.memoize(ttl=120)
@@ -291,14 +294,12 @@ async def users_iv_rank():
 async def users_iv_pikb(_, call):
     # print(call.data)
     c = call.data.split(":")[1]
-    if c == 1:
-        return await callAnswer(call, f'您只有一页')
+    j = int(c)
+    if j == 1:
+        return await callAnswer(call, f'您只有一页', True)
     else:
-        i = int(c.split('-')[1])
-        j = int(c.split("-")[0])
         await callAnswer(call, f'将为您翻到第 {j} 页')
-        keyboard = await users_iv_button(i=i, j=j)
         a, b = await users_iv_rank()
         j = j - 1
         text = a[j]
-        await editMessage(call, f'**🎖️ {sakura_b}风云录**\n\n{text}', keyboard)
+        await editMessage(call, f'**🏅 {sakura_b}风云录**\n\n{text}')

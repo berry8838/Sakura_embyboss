@@ -254,7 +254,11 @@ class RanksDraw:
     async def hb_test_draw(money: int, members: int, user_pic: bytes = None, first_name: str = None):
         red_bg = os.path.join(RanksDraw.red_bg_path, random.choice(RanksDraw.red_bg_list))
         if not user_pic:
-            return red_bg
+            cover = Image.open(red_bg)
+            cover = await draw_cover_text(cover, first_name, money, members)
+            img_bytes = BytesIO()
+            cover.save(img_bytes, format='png')
+            return img_bytes
         cover = Image.open(red_bg)
         # 获取 cover 的背景颜色
         bg_color = cover.getpixel((0, 0))

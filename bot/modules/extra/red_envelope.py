@@ -294,7 +294,6 @@ async def users_iv_rank():
 async def users_iv_pikb(_, call):
     # print(call.data)
     c = call.data.split(":")[1]
-    i = int(c.split('-')[1])
     j = int(c)
     if j == 1:
         return await callAnswer(call, f'您只有一页', True)

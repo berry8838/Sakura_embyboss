@@ -280,7 +280,7 @@ async def users_iv_rank():
                     if members_dict[q.tg]:
                         name = members_dict[q.tg]
                         if len(name) > 12:
-                            name = name[:12]+'..'
+                            name = name[:12] + '..'
                     else:
                         name = q.tg
                     text += f'TOP{e} | [{name}](google.com?q={q.tg})  **🎉 {q.iv} {sakura_b}**\n'
@@ -300,12 +300,12 @@ async def users_iv_pikb(_, call):
     # print(call.data)
     c = call.data.split(":")[1]
     j = int(c)
-    if j == 1:
-        return await callAnswer(call, f'您只有一页', True)
-    else:
-        await callAnswer(call, f'将为您翻到第 {j} 页')
-        a, b = await users_iv_rank()
-        button = await users_iv_button(b, j)
-        j -= 1
-        text = a[j]
-        await editMessage(call, f'**🏅 {sakura_b}风云录**\n\n{text}', buttons=button)
+    # if j == 1:
+    #     return await callAnswer(call, f'您只有一页', True)
+    # else:
+    await callAnswer(call, f'将为您翻到第 {j} 页')
+    a, b = await users_iv_rank()
+    button = await users_iv_button(b, j)
+    j -= 1
+    text = a[j]
+    await editMessage(call, f'**🏅 {sakura_b}风云录**\n\n{text}', buttons=button)

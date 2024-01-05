@@ -98,7 +98,7 @@ async def send_red_envelop(_, msg):
                                                     f'[mode]留空为 拼手气, 任意值为 均分\n专享红包请回复 + {sakura_b}'))
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
-            if not e or e.iv < money or money < members:
+            if not all([e, e.iv >= money, money >= members, members > 0]):
                 await asyncio.gather(msg.delete(),
                                      msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
                                                               datetime.now() + timedelta(minutes=1)),
@@ -300,5 +300,5 @@ async def users_iv_pikb(_, call):
     await callAnswer(call, f'将为您翻到第 {j} 页')
     a, b = await users_iv_rank()
     button = await users_iv_button(b, j, tg)
-    text = a[j-1]
+    text = a[j - 1]
     await editMessage(call, f'**▎🏆 {sakura_b}风云录**\n\n{text}', buttons=button)

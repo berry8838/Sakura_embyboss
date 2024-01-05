@@ -158,7 +158,7 @@ async def cr_paginate(i, j, n) -> InlineKeyboardMarkup:
     :return:
     """
     keyboard = InlineKeyboard()
-    keyboard.paginate(i, j, 'pagination_keyboard:{number}'+f'-{n}')
+    keyboard.paginate(i, j, 'pagination_keyboard:{number}' + f'-{n}')
     keyboard.row(
         InlineButton('❌ - Close', 'closeit')
     )
@@ -167,9 +167,18 @@ async def cr_paginate(i, j, n) -> InlineKeyboardMarkup:
 
 async def users_iv_button(i, j, tg) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboard()
-    keyboard.paginate(i, j, 'users_iv:{number}'+f'-{tg}')
+    keyboard.paginate(i, j, 'users_iv:{number}' + f'_{tg}')
     keyboard.row(
-        InlineButton('❌ - Close', 'closeit')
+        InlineButton('❌ - Close', f'closeit_{tg}')
+    )
+    return keyboard
+
+
+async def plays_list_button(i, j,days) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboard()
+    keyboard.paginate(i, j, 'uranks:{number}'+f'_{days}')
+    keyboard.row(
+        InlineButton('❌ - Close', f'closeit')
     )
     return keyboard
 

@@ -53,7 +53,7 @@ async def send_red_envelop(_, msg):
                                         sendMessage(msg, f'**🧧 专享红包：\n\n使用请回复一位群友 + {sakura_b}'))
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
-            if not e or e.iv < 5 or money < 5 or msg.reply_to_message.from_user.id == msg.from_user.id:
+            if not e or e.iv < money < 5 or msg.reply_to_message.from_user.id == msg.from_user.id:
                 await asyncio.gather(msg.delete(),
                                      msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
                                                               datetime.now() + timedelta(minutes=1)),
@@ -251,48 +251,45 @@ async def s_rank(_, msg):
 
 @cache.memoize(ttl=120)
 async def users_iv_rank():
-    try:
-        with Session() as session:
-            # 查询 Emby 表的所有数据，且>0 的条数
-            p = session.query(func.count()).filter(Emby.iv > 0).scalar()
-            if p == 0:
-                return None, 1
-            # 创建一个空字典来存储用户的 first_name 和 id
-            members_dict = {}
-            async for member in bot.get_chat_members(chat_id=group[0]):
-                try:
-                    members_dict[member.user.id] = member.user.first_name
-                except Exception as e:
-                    print(f'{e} 某名bug {member}')
-            i = math.ceil(p / 10)
-            a = []
-            b = 1
-            m = ["🥇", "🥈", "🥉", "🏅"]
-            # 分析出页数，将检索出 分割p（总数目）的 间隔，将间隔分段，放进【】中返回
-            while b <= i:
-                d = (b - 1) * 10
-                # 查询iv排序，分页查询
-                result = session.query(Emby).filter(Emby.iv > 0).order_by(Emby.iv.desc()).limit(10).offset(d).all()
-                e = 1 if d == 0 else d + 1
-                text = ''
-                for q in result:
-                    name = members_dict[q.tg][:12] if members_dict[q.tg] else q.tg
-                    medal = m[e - 1] if e < 4 else m[3]
-                    text += f'{medal}**第{cn2an.an2cn(e)}名** | [{name}](google.com?q={q.tg}) の **{q.iv} {sakura_b}**\n'
-                    e += 1
-                a.append(text)
-                b += 1
-            # a 是内容物，i是页数
-            return a, i
-    except Exception as e:
-        print(e)
-        return None, 1
+    with Session() as session:
+        # 查询 Emby 表的所有数据，且>0 的条数
+        p = session.query(func.count()).filter(Emby.iv > 0).scalar()
+        if p == 0:
+            return None, 1
+        # 创建一个空字典来存储用户的 first_name 和 id
+        members_dict = {}
+        async for member in bot.get_chat_members(chat_id=group[0]):
+            try:
+                members_dict[member.user.id] = member.user.first_name
+            except Exception as e:
+                print(f'{e} 某名bug {member}')
+        i = math.ceil(p / 10)
+        a = []
+        b = 1
+        m = ["🥇", "🥈", "🥉", "🏅"]
+        # 分析出页数，将检索出 分割p（总数目）的 间隔，将间隔分段，放进【】中返回
+        while b <= i:
+            d = (b - 1) * 10
+            # 查询iv排序，分页查询
+            result = session.query(Emby).filter(Emby.iv > 0).order_by(Emby.iv.desc()).limit(10).offset(d).all()
+            e = 1 if d == 0 else d + 1
+            text = ''
+            for q in result:
+                name = str(members_dict.get(q.tg, q.tg))[:12]
+                medal = m[e - 1] if e < 4 else m[3]
+                text += f'{medal}**第{cn2an.an2cn(e)}名** | [{name}](google.com?q={q.tg}) の **{q.iv} {sakura_b}**\n'
+                e += 1
+            a.append(text)
+            b += 1
+        # a 是内容物，i是页数
+        return a, i
 
 
 # 检索翻页
 @bot.on_callback_query(filters.regex('users_iv') & user_in_group_on_filter)
 async def users_iv_pikb(_, call):
-    j, tg = map(int, call.data.split(":")[1].split('-'))
+    # print(call.data)
+    j, tg = map(int, call.data.split(":")[1].split('_'))
     if call.from_user.id != tg:
         if not judge_admins(call.from_user.id):
             return await callAnswer(call, '❌ 这不是你召唤出的榜单，请使用自己的 /srank', True)

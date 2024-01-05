@@ -13,6 +13,13 @@ async def close_it(_, call):
     if call.message.chat.type is ChatType.PRIVATE:
         await deleteMessage(call)
     else:
+        try:
+            t = int(call.data.split('_'))
+        except:
+            pass
+        else:
+            if t == call.from_user.id:
+                return await deleteMessage(call)
         # 只有管理员才能删除消息，并且只能删除自己发送的消息
         if judge_admins(call.from_user.id):
             await deleteMessage(call)

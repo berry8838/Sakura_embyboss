@@ -21,11 +21,13 @@ async def user_info(_, msg):
     if msg.reply_to_message is None:
         try:
             uid = int(msg.command[1])
-            if msg.from_user.id != owner and uid == owner:
-                return await sendMessage(msg,
-                                         f"⭕ [{msg.from_user.first_name}](tg://user?id={msg.from_user.id})！不可以偷窥主人",
-                                         timer=60)
-
+            if not msg.sender_chat:
+                if msg.from_user.id != owner and uid == owner:
+                    return await sendMessage(msg,
+                                             f"⭕ [{msg.from_user.first_name}](tg://user?id={msg.from_user.id})！不可以偷窥主人",
+                                             timer=60)
+            else:
+                pass
             first = await bot.get_chat(uid)
         except (IndexError, KeyError, ValueError):
             return await sendMessage(msg, '**请先给我一个tg_id！**\n\n用法：/kk [tg_id]\n或者对某人回复kk', timer=60)
@@ -46,8 +48,8 @@ async def user_info(_, msg):
         except AttributeError:
             pass
 
-        first = await bot.get_chat(uid)
-        text, keyboard = await cr_kk_ikb(uid, first.first_name)
+        # first = await bot.get_chat(uid)
+        text, keyboard = await cr_kk_ikb(uid, msg.reply_to_message.from_user.first_name)
         await sendMessage(msg, text=text, buttons=keyboard)
 
 

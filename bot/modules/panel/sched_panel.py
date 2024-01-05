@@ -4,10 +4,11 @@ import os
 
 from pyrogram import filters
 from bot import bot, sakura_b, schedall, save_config, prefixes, _open, owner, LOGGER
-from bot.func_helper.filters import admins_on_filter
-from bot.func_helper.fix_bottons import sched_buttons
+from bot.func_helper.filters import admins_on_filter, user_in_group_on_filter
+from bot.func_helper.fix_bottons import sched_buttons, plays_list_button
 from bot.func_helper.msg_utils import callAnswer, editMessage, deleteMessage
 from bot.func_helper.scheduler import Scheduler
+from bot.func_helper.utils import judge_admins
 from bot.scheduler import *
 
 # 实例化
@@ -148,3 +149,15 @@ async def restart_bot(_, msg):
         os.execl('/bin/systemctl', 'systemctl', 'restart', 'embyboss')  # 用当前进程执行systemctl命令，重启embyboss服务
     except FileNotFoundError:
         exit(1)
+
+
+@bot.on_callback_query(filters.regex('uranks') & user_in_group_on_filter)
+async def page_uplayrank(_, call):
+    j, days = map(int, call.data.split(":")[1].split('_'))
+    await callAnswer(call, f'将为您翻到第 {j} 页')
+    a, b, c = await Uplaysinfo.users_playback_list(days)
+    if not a:
+        return await callAnswer(call, f'🍥 获取过去{days}天UserPlays失败了嘤嘤嘤 ~ 手动重试', True)
+    button = await plays_list_button(b, j, days)
+    text = a[j - 1]
+    await editMessage(call, text, buttons=button)

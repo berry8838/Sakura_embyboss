@@ -4,11 +4,12 @@ red_envelope -
 Author:susu
 Date:2023/01/02
 """
+import cn2an
 import asyncio
 import random
 import math
 from datetime import datetime, timedelta
-from pyrogram import filters, enums
+from pyrogram import filters
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 from sqlalchemy import func
 
@@ -16,7 +17,7 @@ from bot import bot, prefixes, sakura_b, group, bot_photo
 from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.fix_bottons import users_iv_button, cache
 from bot.func_helper.msg_utils import sendPhoto, sendMessage, callAnswer, editMessage
-from bot.func_helper.utils import pwd_create
+from bot.func_helper.utils import pwd_create, judge_admins
 from bot.sql_helper import Session
 from bot.sql_helper.sql_emby import Emby, sql_get_emby, sql_update_emby
 from bot.ranks_helper.ranks_draw import RanksDraw
@@ -235,16 +236,17 @@ async def s_rank(_, msg):
             return
         else:
             sql_update_emby(Emby.tg == msg.from_user.id, iv=e.iv - 5)
+            sender = msg.from_user.id
     elif msg.sender_chat.id == msg.chat.id:
-        pass
+        sender = msg.chat.id
     else:
         return
     reply = await msg.reply(f"已扣除手续5{sakura_b}, 请稍等......加载中")
     text, i = await users_iv_rank()
     t = '❌ 数据库操作失败' if not text else text[0]
-    button = await users_iv_button(i, 1)
+    button = await users_iv_button(i, 1, sender)
     await asyncio.gather(reply.delete(),
-                         sendPhoto(msg, photo=bot_photo, caption=f'**🏅 {sakura_b}风云录**\n\n{t}', buttons=button))
+                         sendPhoto(msg, photo=bot_photo, caption=f'**▎🏆 {sakura_b}风云录**\n\n{t}', buttons=button))
 
 
 @cache.memoize(ttl=120)
@@ -262,28 +264,21 @@ async def users_iv_rank():
                     members_dict[member.user.id] = member.user.first_name
                 except Exception as e:
                     print(f'{e} 某名bug {member}')
-            i = math.ceil(p / 30)
+            i = math.ceil(p / 10)
             a = []
             b = 1
+            m = ["🥇", "🥈", "🥉", "🏅"]
             # 分析出页数，将检索出 分割p（总数目）的 间隔，将间隔分段，放进【】中返回
             while b <= i:
-                d = (b - 1) * 30
+                d = (b - 1) * 10
                 # 查询iv排序，分页查询
-                result = session.query(Emby).filter(Emby.iv > 0).order_by(Emby.iv.desc()).limit(30).offset(d).all()
-
-                if d == 0:
-                    e = 1
-                if d != 0:
-                    e = d + 1
+                result = session.query(Emby).filter(Emby.iv > 0).order_by(Emby.iv.desc()).limit(10).offset(d).all()
+                e = 1 if d == 0 else d + 1
                 text = ''
                 for q in result:
-                    if members_dict[q.tg]:
-                        name = members_dict[q.tg]
-                        if len(name) > 12:
-                            name = name[:12] + '..'
-                    else:
-                        name = q.tg
-                    text += f'TOP{e} | [{name}](google.com?q={q.tg})  **🎉 {q.iv} {sakura_b}**\n'
+                    name = members_dict[q.tg][:12] if members_dict[q.tg] else q.tg
+                    medal = m[e - 1] if e < 4 else m[3]
+                    text += f'{medal}**第{cn2an.an2cn(e)}名** | [{name}](google.com?q={q.tg}) の **{q.iv} {sakura_b}**\n'
                     e += 1
                 a.append(text)
                 b += 1
@@ -297,15 +292,16 @@ async def users_iv_rank():
 # 检索翻页
 @bot.on_callback_query(filters.regex('users_iv') & user_in_group_on_filter)
 async def users_iv_pikb(_, call):
-    # print(call.data)
+    tg = int(call.data.split('-')[0])
+    if call.from_user.id != tg:
+        if not judge_admins(call.from_user.id):
+            return await callAnswer(call, '❌ 这不是你召唤出的榜单，请使用自己的 /srank', True)
+
     c = call.data.split(":")[1]
     j = int(c)
-    # if j == 1:
-    #     return await callAnswer(call, f'您只有一页', True)
-    # else:
     await callAnswer(call, f'将为您翻到第 {j} 页')
     a, b = await users_iv_rank()
-    button = await users_iv_button(b, j)
+    button = await users_iv_button(b, j, tg)
     j -= 1
     text = a[j]
-    await editMessage(call, f'**🏅 {sakura_b}风云录**\n\n{text}', buttons=button)
+    await editMessage(call, f'**▎🏆 {sakura_b}风云录**\n\n{text}', buttons=button)

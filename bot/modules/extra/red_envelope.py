@@ -292,16 +292,13 @@ async def users_iv_rank():
 # 检索翻页
 @bot.on_callback_query(filters.regex('users_iv') & user_in_group_on_filter)
 async def users_iv_pikb(_, call):
-    tg = int(call.data.split('-')[0])
+    j, tg = map(int, call.data.split(":")[1].split('-'))
     if call.from_user.id != tg:
         if not judge_admins(call.from_user.id):
             return await callAnswer(call, '❌ 这不是你召唤出的榜单，请使用自己的 /srank', True)
 
-    c = call.data.split(":")[1]
-    j = int(c)
     await callAnswer(call, f'将为您翻到第 {j} 页')
     a, b = await users_iv_rank()
     button = await users_iv_button(b, j, tg)
-    j -= 1
-    text = a[j]
+    text = a[j-1]
     await editMessage(call, f'**▎🏆 {sakura_b}风云录**\n\n{text}', buttons=button)

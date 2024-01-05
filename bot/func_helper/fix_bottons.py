@@ -151,9 +151,14 @@ def date_ikb(i) -> InlineKeyboardMarkup:
 
 # 翻页按钮
 async def cr_paginate(i, j, n) -> InlineKeyboardMarkup:
-    # i 总数，j是当前页数，n是传入的检索类型num，如30天
+    """
+    :param i: 总数
+    :param j: 目前
+    :param n: mode 可变项
+    :return:
+    """
     keyboard = InlineKeyboard()
-    keyboard.paginate(i, j, f'pagination_keyboard:{{number}}-{i}-{n}')
+    keyboard.paginate(i, j, 'pagination_keyboard:{number}'+f'-{n}')
     keyboard.row(
         InlineButton('❌ - Close', 'closeit')
     )
@@ -161,9 +166,8 @@ async def cr_paginate(i, j, n) -> InlineKeyboardMarkup:
 
 
 async def users_iv_button(i, j, tg) -> InlineKeyboardMarkup:
-    # i 总数，j是当前页数
     keyboard = InlineKeyboard()
-    keyboard.paginate(i, j, str(tg) + '-users_iv:{number}')
+    keyboard.paginate(i, j, 'users_iv:{number}'+f'-{tg}')
     keyboard.row(
         InlineButton('❌ - Close', 'closeit')
     )
@@ -251,8 +255,8 @@ async def cr_kk_ikb(uid, first):
                 text1 = f"**· 📅 过去30天未有记录**"
         else:
             keyboard.append(['✨ 赠送资格', f'gift-{uid}'])
-        text += f"**· 🍉 TG名称** | [{first}](tg://user?id={uid})\n" \
-                f"**· 🍒 TG-ID** | `{uid}`\n" \
+        text += f"**· 🍉 TG&名称** | [{first}](tg://user?id={uid})\n" \
+                f"**· 🍒 识别のID** | `{uid}`\n" \
                 f"**· 🍓 当前状态** | {lv}\n" \
                 f"**· 🍥 积分{sakura_b}** | {us[0]} · {us[1]}\n" \
                 f"**· 💠 账号名称** | {name}\n" \

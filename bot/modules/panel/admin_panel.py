@@ -287,19 +287,12 @@ async def buy_mon(_, call):
 # 检索翻页
 @bot.on_callback_query(filters.regex('pagination_keyboard'))
 async def paginate_keyboard(_, call):
-    c = call.data.split("-")
-    num = int(c[-1])
-    i = int(c[1])
-    if i == 1:
-        pass
-    else:
-        j = int(c[0].split(":")[1])
-        # print(num,i,j)
-        keyboard = await cr_paginate(i, j, num)
-        a, b = await sql_count_p_code(call.from_user.id, num)
-        j = j - 1
-        text = a[j]
-        await editMessage(call, f'🔎当前模式- **{num}**天，检索出以下 **{i}**页链接：\n\n{text}', keyboard)
+    j, mode = map(int, call.data.split(":")[1].split('-'))
+    await callAnswer(call, f'好的，将为您翻到第 {j} 页')
+    a, b = sql_count_p_code(call.from_user.id, mode)
+    keyboard = await cr_paginate(b, j, mode)
+    text = a[j-1]
+    await editMessage(call, f'🔎当前模式- **{mode}**天，检索出以下 **{b}**页链接：\n\n{text}', keyboard)
 
 
 @bot.on_callback_query(filters.regex('set_renew'))

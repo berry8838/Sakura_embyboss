@@ -1,4 +1,3 @@
-import threading
 import asyncio
 import os
 
@@ -8,19 +7,15 @@ from bot.func_helper.filters import admins_on_filter, user_in_group_on_filter
 from bot.func_helper.fix_bottons import sched_buttons, plays_list_button
 from bot.func_helper.msg_utils import callAnswer, editMessage, deleteMessage
 from bot.func_helper.scheduler import Scheduler
-from bot.func_helper.utils import judge_admins
 from bot.scheduler import *
 
 # 实例化
 scheduler = Scheduler()
 
-# 开机检查重启
-timer = threading.Timer(1, check_restart)
-timer.start()  # 重启
-
-# 初始化命令
+# 初始化命令 开机检查重启
 loop = asyncio.get_event_loop()
 loop.call_later(5, lambda: loop.create_task(BotCommands.set_commands(client=bot)))
+loop.call_later(5, lambda: loop.create_task(check_restart()))
 
 # 启动定时任务
 auto_backup_db = DbBackupUtils.auto_backup_db

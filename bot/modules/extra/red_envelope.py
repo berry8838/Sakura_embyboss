@@ -178,8 +178,7 @@ async def pick_red_bag(_, call):
             top_five_scores = sorted(bag["flag"].items(), key=lambda x: x[1], reverse=True)[:5]
             members = await get_users()
             for i, score in enumerate(top_five_scores):
-                user = members.get(i, 'None')
-                text += f'**🎖️ {user} 获得了 {score[1]} {sakura_b}**'
+                text += f'**🎖️ [{members.get(score[0], "None")}](tg://user?id={score[0]}) 获得了 {score[1]} {sakura_b}**'
             await editMessage(call, text)
 
         await callAnswer(call, f'🧧 {random.choice(Yulv.load_yulv().red_bag)}\n\n'
@@ -230,11 +229,10 @@ async def pick_red_bag(_, call):
                    f'🕶️{bag["sender"]} **的红包已经被抢光啦~ \n\n'
             members = await get_users()
             for i, score in enumerate(top_five_scores):
-                user = members.get(i, 'None')
                 if i == 0:
-                    text += f'**🏆 手气最佳 {user} **获得了 {score[1]} {sakura_b}'
+                    text += f'**🏆 手气最佳 [{members.get(score[0], "None")}](tg://user?id={score[0]}) **获得了 {score[1]} {sakura_b}'
                 else:
-                    text += f'\n**🏅 {user}** 获得了 {score[1]} {sakura_b}'
+                    text += f'\n**🏅 [{members.get(score[0], "None")}](tg://user?id={score[0]})** 获得了 {score[1]} {sakura_b}'
             await editMessage(call, text)
 
 

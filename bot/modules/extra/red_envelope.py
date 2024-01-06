@@ -22,10 +22,23 @@ from bot.sql_helper import Session
 from bot.sql_helper.sql_emby import Emby, sql_get_emby, sql_update_emby
 from bot.ranks_helper.ranks_draw import RanksDraw
 from bot.schemas import Yulv
+from bot.func_helper.emby import cache
 
 # 小项目，说实话不想写数据库里面。放内存里了，从字典里面每次拿分
 
 red_bags = {}
+
+
+@cache.memoize(ttl=300)
+async def get_users():
+    # 创建一个空字典来存储用户的 first_name 和 id
+    members_dict = {}
+    async for member in bot.get_chat_members(chat_id=group[0]):
+        try:
+            members_dict[member.user.id] = member.user.first_name
+        except Exception as e:
+            print(f'{e} 某名bug {member}')
+    return members_dict
 
 
 async def create_reds(money, members, first_name, flag=None, private=None):
@@ -53,7 +66,7 @@ async def send_red_envelop(_, msg):
                                         sendMessage(msg, f'**🧧 专享红包：\n\n使用请回复一位群友 + {sakura_b}'))
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
-            if not e or e.iv < money < 5 or msg.reply_to_message.from_user.id == msg.from_user.id:
+            if not e or e.iv < 5 or money < 5 or msg.reply_to_message.from_user.id == msg.from_user.id:
                 await asyncio.gather(msg.delete(),
                                      msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
                                                               datetime.now() + timedelta(minutes=1)),
@@ -163,13 +176,15 @@ async def pick_red_bag(_, call):
             text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
                    f'🕶️{bag["sender"]} **的红包已经被抢光啦~\n\n'
             top_five_scores = sorted(bag["flag"].items(), key=lambda x: x[1], reverse=True)[:5]
+            members = await get_users()
             for i, score in enumerate(top_five_scores):
-                user = await bot.get_chat(score[0])
-                text += f'**🎖️ {user.first_name} 获得了 {score[1]} {sakura_b}**'
+                user = members.get(i, 'None')
+                text += f'**🎖️ {user} 获得了 {score[1]} {sakura_b}**'
             await editMessage(call, text)
 
         await callAnswer(call, f'🧧 {random.choice(Yulv.load_yulv().red_bag)}\n\n'
                                f'恭喜，你领取到了 {bag["sender"]} の {bag["num"]}{sakura_b}', True)
+
     elif bag["flag"] == 2:
         if bag["rest"] and call.from_user.id == bag["members"]:
             bag["rest"] = False
@@ -178,9 +193,9 @@ async def pick_red_bag(_, call):
             sql_update_emby(Emby.tg == call.from_user.id, iv=new_iv)
             await callAnswer(call, f'🧧 {random.choice(Yulv.load_yulv().red_bag)}\n\n'
                                    f'恭喜，你领取到了 {bag["sender"]} の {bag["m"]}{sakura_b}', True)
-            first = await bot.get_chat(bag["members"])
+            members = await get_users()
             text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
-                   f'🕶️{bag["sender"]} **的专属红包已被 [{first.first_name}](tg://user?id={bag["members"]}) 领取'
+                   f'🕶️{bag["sender"]} **的专属红包已被 [{members.get(call.from_user.id,"None")}](tg://user?id={bag["members"]}) 领取'
             await editMessage(call, text)
             return
         else:
@@ -213,12 +228,13 @@ async def pick_red_bag(_, call):
             top_five_scores = sorted(bag["flag"].items(), key=lambda x: x[1], reverse=True)[:6]
             text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
                    f'🕶️{bag["sender"]} **的红包已经被抢光啦~ \n\n'
+            members = await get_users()
             for i, score in enumerate(top_five_scores):
-                user = await bot.get_chat(score[0])
+                user = members.get(i, 'None')
                 if i == 0:
-                    text += f'**🏆 手气最佳 {user.first_name} **获得了 {score[1]} {sakura_b}'
+                    text += f'**🏆 手气最佳 {user} **获得了 {score[1]} {sakura_b}'
                 else:
-                    text += f'\n**🏅 {user.first_name}** 获得了 {score[1]} {sakura_b}'
+                    text += f'\n**🏅 {user}** 获得了 {score[1]} {sakura_b}'
             await editMessage(call, text)
 
 
@@ -257,12 +273,7 @@ async def users_iv_rank():
         if p == 0:
             return None, 1
         # 创建一个空字典来存储用户的 first_name 和 id
-        members_dict = {}
-        async for member in bot.get_chat_members(chat_id=group[0]):
-            try:
-                members_dict[member.user.id] = member.user.first_name
-            except Exception as e:
-                print(f'{e} 某名bug {member}')
+        members_dict = await get_users()
         i = math.ceil(p / 10)
         a = []
         b = 1

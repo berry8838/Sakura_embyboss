@@ -251,12 +251,13 @@ class RanksDraw:
                 draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126)
 
     @staticmethod
-    async def hb_test_draw(money: int, members: int, user_pic: bytes = None, first_name: str = None):
+    async def hb_test_draw(money: int, members: int, user_pic: bytes = None, first_name: str = "None"):
         red_bg = os.path.join(RanksDraw.red_bg_path, random.choice(RanksDraw.red_bg_list))
         if not user_pic:
             cover = Image.open(red_bg)
             cover = await draw_cover_text(cover, first_name, money, members)
             img_bytes = BytesIO()
+            img_bytes.name = first_name
             cover.save(img_bytes, format='png')
             return img_bytes
         cover = Image.open(red_bg)
@@ -274,6 +275,7 @@ class RanksDraw:
         pic, cover = await asyncio.gather(pic, cover)
         cover.paste(pic, ((cover.width - _pic.width) // 2, 180))
         img_bytes = BytesIO()
+        img_bytes.name = first_name
         cover.save(img_bytes, format='png')  # 将image对象保存到BytesIO对象中
         return img_bytes  # 返回BytesIO
 

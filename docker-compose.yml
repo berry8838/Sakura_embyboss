@@ -1,4 +1,4 @@
-#（此处请注意，拉取的镜像仅适用于amd架构，arm请注意修改配置）
+#（此处请注意，拉取的镜像仅适用于amd架构，arm请注意修改配置包括但不仅限于镜像等）
 version: '3'
 services:
   mysql:
@@ -30,3 +30,11 @@ services:
       PMA_PORT: 3306
     depends_on:
       - mysql
+
+  sakura_embyboss:
+    image: jingwei520/sakura_embyboss:latest
+    container_name: embyboss
+    restart: always
+    volumes:
+      - ./config.json:/app/config.json
+      - ./log:/app/log

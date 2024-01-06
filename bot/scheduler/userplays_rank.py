@@ -34,6 +34,7 @@ class Uplaysinfo:
             ls = []
             a = []
             m = ["🥇", "🥈", "🥉", "🏅"]
+            num = [1000, 900, 800, 700, 600, 500, 400, 300, 200, 100]
             while n <= page:
                 d = (n - 1) * 10
                 e = 1 if d == 0 else d + 1
@@ -44,8 +45,12 @@ class Uplaysinfo:
                     if not em:
                         emby_name = '未绑定bot或已删除'
                     else:
+                        new_iv = num[e - 1] + em["iv"] + (int(p[1]) // 60) if e <= 10 else em["iv"] + (int(p[1]) // 60)
                         emby_name = f'{p[0][:1]}░{p[0][-1:]}' if em["lv"] == 'a' else f'{p[0]}'
-                        ls.append([em["tg"], em["iv"] + (int(p[1]) // 60)])
+                        ls.append([em["tg"], new_iv])
+                        # ls = [[em["tg"], num[e - 1] if e <= 10 else 0 + em["iv"] + (int(p[1]) // 60)] for e, p in
+                        #       enumerate(play_list[d:d + 10], start=1) if
+                        #       (em := members_dict.get(p[0], None)) is not None]
                     ad_time = await convert_s(int(p[1]))
                     txt += f'{medal}**第{cn2an.an2cn(e)}名** | [{emby_name}](tg://user?id=None)\n' \
                            f'  播放时长 | {ad_time}\n'

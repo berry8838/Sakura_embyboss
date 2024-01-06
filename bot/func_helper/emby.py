@@ -484,7 +484,7 @@ class Embyservice:
         """
         if start != 0: start = start
         # Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines
-        req_url = f"{self.url}/emby/Items?IncludeItemTypes=Movie,Series&Fields=ProductionYear,Overview,OriginalTitle,Taglines,ProviderIds,Genres,RunTimeTicks,ProductionLocations" \
+        req_url = f"{self.url}/emby/Items?IncludeItemTypes=Movie,Series&Fields=ProductionYear,Overview,OriginalTitle,Taglines,ProviderIds,Genres,RunTimeTicks,ProductionLocations,DateCreated,Studios" \
                   f"&StartIndex={start}&Recursive=true&SearchTerm={title}&Limit={limit}&IncludeSearchTypes=false"
         try:
             res = r.get(url=req_url, headers=self.headers, timeout=3)
@@ -494,31 +494,24 @@ class Embyservice:
                     ret_movies = []
                     for res_item in res_items:
                         # print(res_item)
-                        item_tmdbid = res_item.get("ProviderIds", {}).get("Tmdb")
-                        runtime = convert_runtime(res_item.get("RunTimeTicks")) if res_item.get(
-                            "RunTimeTicks") else '数据缺失'
-                        ns = ", ".join(res_item.get("Genres"))
-                        od = ", ".join(res_item.get("ProductionLocations")) if res_item.get(
-                            "ProductionLocations") else '普遍'
                         title = res_item.get("Name") if res_item.get("Name") == res_item.get(
                             "OriginalTitle") else f'{res_item.get("Name")} - {res_item.get("OriginalTitle")}'
-                        mediaserver_item = dict(ServerId=res_item.get("ServerId"),
-                                                library=res_item.get("ParentId"),
-                                                item_id=res_item.get("Id"),
+                        od = ", ".join(res_item.get("ProductionLocations", ["普""遍"]))
+                        ns = ", ".join(res_item.get("Genres", "未知"))
+                        runtime = convert_runtime(res_item.get("RunTimeTicks")) if res_item.get(
+                            "RunTimeTicks") else '数据缺失'
+                        item_tmdbid = res_item.get("ProviderIds", {}).get("Tmdb", None)
+                        # studios = ", ".join([item["Name"] for item in res_item.get("Studios", [])])
+                        mediaserver_item = dict(item_type=res_item.get("Type"), item_id=res_item.get("Id"), title=title,
+                                                year=res_item.get("ProductionYear", '缺失'),
+                                                od=od, genres=ns,
                                                 photo=f'{self.url}/emby/Items/{res_item.get("Id")}/Images/Primary?maxHeight=400&maxWidth=600&quality=90',
-                                                item_type=res_item.get("Type"),
-                                                title=title,
-                                                genres=ns,
                                                 runtime=runtime,
-                                                od=od,
-                                                year=res_item.get("ProductionYear"),
-                                                overview=res_item.get("Overview"),
-                                                taglines='' if not res_item.get("Taglines") else res_item.get(
-                                                    "Taglines")[0],
-                                                tmdbid=int(item_tmdbid) if item_tmdbid else None,
-                                                # imdbid=res_item.get("ProviderIds", {}).get("Imdb"),
-                                                # tvdbid=res_item.get("ProviderIds", {}).get("Tvdb"),
-                                                # path=res_item.get("Path")
+                                                overview=res_item.get("Overview", "暂无更多信息"),
+                                                taglines='简介：' if not res_item.get("Taglines") else res_item.get("Taglines")[0],
+                                                tmdbid=item_tmdbid,
+                                                add=res_item.get("DateCreated", "None.").split('.')[0],
+                                                # studios=studios
                                                 )
                         ret_movies.append(mediaserver_item)
                     return ret_movies

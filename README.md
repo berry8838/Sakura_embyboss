@@ -29,7 +29,7 @@
 ## 功能一览
 
 <details>
-<summary>点击展开</summary>
+<summary>点击展开所有功能概览</summary>
 
 - [x] 用户面板
     - [x] 创建账户
@@ -37,14 +37,16 @@
     - [x] 兑换注册码
     - [x] 重置密码
     - [x] 删除账户
-    - [x] 显示隐藏媒体库（默认不显示 `播放列表`）
+    - [x] 显示隐藏指定媒体库（默认不显示 `播放列表`）
 - [x] **服务器**
-    - [x] 查看服务器信息网速负载等 显示emby线路，密码，播放人数
-    - [x] 支持多服务器查看
+    - [x] 显示emby线路，密码，播放人数
+    - [x] 支持多服务器查看，查看服务器信息网速负载等（需要配置哪吒地址api等）
 - [x] **admin面板**
     - [x] 管理注册 ->总限额，状态，定时注册
     - [x] 创建以及管理邀请码 -> code与深链接 两种形式
     - [x] 查看邀请码
+    - [x] 开关各种定时任务
+    - [x] 开关兑换商店
 - [x] **config面板**
     - [x] 导出日志
     - [x] bot内设置探针，emby展示线路，指定显隐媒体库，控制注册码续期，自定义开关充电按钮
@@ -75,7 +77,6 @@
 - [部分效果图和命令大全看这里](https://telegra.ph/embyboss-05-29)
 - 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符多添加三种  
   即命令使用 ：`/start = .start = #start = !start = 。start`
-- 请给bot打开 删除消息、置顶消息，踢出成员权限
 
 ## 配置说明
 
@@ -83,15 +84,15 @@
 
 - 下载源码到本地
 
-```
+```shell
 sudo apt install python3-pip
 git clone https://github.com/berry8838/Sakura_embyboss.git && cd Sakura_embyboss && chmod +x main.py
 ```
 
-### 2、安装数据库
+### 2、安装数据库 （推荐 Docker 部署）
 
-- 以下数据库管理软件均布置在 vps 上，温馨提示：**Bot提供数据库备份功能，可以开启！**
-- 还有一件事，以下安装的时候请确保掌握 -> 数据库的ip，用户名，密码，数据库名，服务器字符集为UTF-8 Unicode (utf8mb4)
+- 温馨提示：以下安装的时候请确保掌握 -> 数据库的ip，用户名，密码，数据库名，服务器字符集为UTF-8 Unicode (utf8mb4)
+- 以下使用的数据库管理软件均布置在 vps
 
 #### docker安装数据库 (1)
 
@@ -107,103 +108,86 @@ systemctl start docker
 systemctl enable docker
 ```
 
-- ~~在yml文件中 phpmyadmin 主要是为了更为直观的供翻阅数据，不影响bot运行，如有其他合适软件，可注释内容~~  
-  **非必要安装！非必要安装！非必要安装！不需要就注释。重要的事情说三遍**
-- 在Sakura_embyboss目录下面找到文件`docker-compose.yml`，修改成自己的设置后保存。
-- 在Sakura_embyboss目录运行命令`docker-compose up -d`。
-- 搭建完成之后，用 `ip:端口` 访问、管理
+接下来 请转到 [配置文件填写](#3配置文件填写)
 
-___
-
-#### 安装数据库（2）
+#### 宝塔安装数据库（2）
 
 - 在你已经拥有宝塔面板前提下使用宝塔面板
 - 在宝塔中，安装好mysql（phpmyadmin属可选，**非必要安装！非必要安装！非必要安装！不需要就不安装。重要的事情说三遍**
   ），进入`数据库` 新增加一个数据库，用户名密码设置，进行相应的替换
   [点击 宝塔示例图片](./image/bt.png)
 
-___
-
 ### 3、配置文件填写
 
-- 打开文件`config_example.json`，参考下列说明填写自己的内容（bot，数据库，emby等等）
-- 填写完整以后改名成`config.json`
-- 必填项目
-
-```
-"bot_name": ""    bot的username，比如我的机器人@keaiji1_bot，就填keaiji1_bot
-"bot_token": ""   bot的API token
-"owner_api": ""   你的api  https://my.telegram.org/auth
-"owner_hash": ""  你的hash  https://my.telegram.org/auth
-"owner":          拥有者的tgid
-"group": []       授权群组id (如 -1001869392674)，未授权的群组拉bot会自动退出。不在群组的成员会提示先加入群组
-"main_group":""   你群组的用户名或者你私密群组的邀请链接，没有的话就随便填个 Google.com 吧  
-                  如 https://t.me/+7ZL9MbJd8h44Zjc1 中的 "+7ZL9MbJd8h44Zjc1"              
-"chanel": ""      你频道username (不加@)，没有的话就随便填个 Google.com 吧
-"bot_photo":""    "https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png",
-                  bot发送消息时的配图，可更换图片url，必要                  
-"admins": []      拥有管理权限的id，其他添加id要用英文逗号隔开，已和owner分割了 
-"emby_api": ""    emby的api，在后台自己创建一个
-"emby_url": ""    建议ip，http://255.255.255.36:8096 最后不带斜杠，是发送给enby的网址，填域名请保证反代不会挂
-"emby_line": ""   展示给用户的emby地址
-
-"db_host": ""     如上，数据库的ip 如：255.255.255.36 不需要3306端口，默认的
-"db_user": "susu" 数据库用户名
-"db_pwd": "1234"  密码
-"db_name": "embyboss"  库名
-"db_is_docker": true 数据库是否为docker模式启动，or false
-"db_docker_name": "mysql" 如果是docker模式启动的数据库，此数据库容器的名字
-"db_backup_dir": "./backup" 数据库备份文件所保存的目录
-"db_backup_maxcount": 7 数据库备份文件保留的个数
+```shell
+cp config_example.json config.json
 ```
 
-- 选填项目
+- 打开文件`config.json`，参考下列说明填写自己的内容（bot，数据库，emby等等）
+- 如果您使用 docker部署数据库，可以在Sakura_embyboss目录下面找到文件`docker-compose.yml`， 更改您的数据库设置，并在下列填写完毕
+- 先决条件，您需要 在@Botfather创建一个自己的机器人，还需一个自己的群组，并获得 群组id
+  -100xxxxx，给bot添加群管理员以及 `删除消息、置顶消息，踢出成员权限`
 
-```
-"money": "花币"    功能货币的名称
-"user_buy": {"stat": "n","button": ["Google","https://google.com","url"]}
-            ”stat“是否开启充电按钮，默认”n“关闭，可在bot->/config里自行配置，butoon为按钮（依序分别为 按钮显示文本，网址，”url“模式）
- "open": {
-    "stat": false,   # 注册状态，每次启动时默认关闭
-    "all_user": 1000,  # 注册人数限制
-    "timing": 0,   # 定时注册，默认为0，勿动
-    "tem": 0,      # 储存当前已注册用户数
-    "allow_code": "y", # 能否使用注册码续期，默认”y“，可以，反之”n“
-    "checkin": true,   # 开启签到 
-    "exchange": true,  # 开启兑换续期
-    "whitelist": true, # 开启兑换白名单
-    "invite": false,   # 开启邀请功能
-    "leave_ban": false  # 退群封禁，默认关闭
-    "exchange_cost": 300  续期 一天
-    "whitelist_cost": 9999 白名单价格
-    "invite_cost": 500 每月价格
-    这是自定义的 兑换商店价格，config-open字段配置 
-  }
-"emby_block":["nsfw"] 可选，由用户能控制显示隐藏的媒体库，bot中也可设置
-"extra_emby_libs": ["家庭照片","我的照片"], 可选，额外媒体库，只可通过/kk指令给用户开通/关闭额外媒体库，不由用户控制，由管理决定
-"tz_ad": "",    探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠，没有请勿填
-"tz_api": "",
-"tz_id": []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。
-"ranks": {
-    "logo": "SAKURA",  日榜/周榜推送榜单图片中的LOGO文字
-    "backdrop": false   是否使用backdrop作为推送榜单的封面图
-}
-```
+<details>
+<summary>点击以展开配置指南</summary>
+
+| 必填变量               | 填写指南                                                                                                           |
+|--------------------|----------------------------------------------------------------------------------------------------------------|
+| bot_name           | bot的username，比如我的机器人@keaiji1_bot，就填keaiji1_bot                                                                 |
+| bot_token          | bot的API token ，你在@Botfather创建bot时的api_key                                                                      |
+| owner_api          | 你的api  https://my.telegram.org/auth 获取                                                                         |
+| owner_hash         | 你的hash  https://my.telegram.org/auth                                                                           |
+| owner              | 拥有者的tgid                                                                                                       |
+| group              | 授权群组id (如 `-1001869392674` )，未授权的群组拉bot会自动退出。不在群组的成员会提示先加入群组                                                   |
+| main_group         | 群组的用户名(形如bot_name) 或 私密群组的邀请链接(如 https://t.me/+7ZL9MbJd8h44Zjc1 中的 "+7ZL9MbJd8h44Zjc1")，没有的话就随便填个 `Google.com` |      
+| chanel             | 你频道username (形如bot_name)，没有的话就随便填个 Google.com 吧                                                                |
+| bot_photo          | 形如 https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png bot发送消息时的配图，可更换图片url，必要                                   |                
+| admins             | [] ，可 空，拥有管理权限的id，其他添加id要用英文逗号隔开，不需要将`owner`填进来                                                                |
+| emby_api           | emby的api，在后台自己创建一个                                                                                             |
+| emby_url           | 形如 http://255.255.255.36:8096 最后不带斜杠，为发起请求emby的地址                                                              |
+| emby_line          | 展示给用户的emby地址，支持telegram的markdown写法                                                                             |
+| db_host            | 如上，数据库的ip 如：255.255.255.36 默认3306端口                                                                            |
+| db_user            | 数据库用户名,默认 `susu`  可更改                                                                                          |
+| db_pwd             | 数据库密码，默认`1234`                                                                                                 |
+| db_name            | 数据库库名，默认`embyboss`                                                                                             |
+| db_is_docker       | true 数据库是否为docker模式启动，or false                                                                                 |
+| db_docker_name     | 若docker模式启动的数据库，此数据库容器的名字，默认`mysql`                                                                            |
+| db_backup_dir      | 数据库备份文件所保存的目录,默认 `./backup`                                                                                    |
+| db_backup_maxcount | 数据库备份文件保留的个数,默认，`7`                                                                                            |
+
+- 如已经填完上述，您已经可以[启动bot](#4启动bot推荐-docker)了
+- 接下来是 【选填项目】 会自动生成，不填亦可
+
+| 选填变量            | 填写指南                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+|-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| money           | 功能货币的名称，默认`花币`                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| user_buy        | {"stat": false,"button": ["Google","https://google.com","url"]} <br> `stat` 是否开启充电按钮，默认`false`，`butoon` 按钮（依序分别 `按钮显示文本`,`网址`,固定不可变字段`url`）                                                                                                                                                                                                                                                                                             |
+| open            | { "stat": false # 注册状态，每次启动时默认关闭 <br> "all_user": 1000, # 注册人数限制 <br> "timing": 0, # 定时注册，默认为0，勿动 <br>"tem": 0, # 储存当前已注册用户数 <br>"allow_code": true, # 能否使用注册码续期，默认`true` <br> "checkin": true, # 开启签到 <br> "exchange": true, # 开启兑换续期 <br>"whitelist": true, # 开启兑换白名单<br>"invite": false, # 开启邀请功能 <br>"leave_ban": false # 退群封禁，默认关闭 <br> "exchange_cost": 300 续期 一天价格 <br>"whitelist_cost": 9999 白名单价格 <br>"invite_cost": 500 邀请价格} |
+| emby_block      | ["nsfw"] 可选，由用户能控制显示隐藏的媒体库，bot中也可设置                                                                                                                                                                                                                                                                                                                                                                                                     |
+| extra_emby_libs | ["家庭照片","我的照片"], 可选，额外媒体库但是区别于 `emby_block`，只可通过/kk指令给用户开通/关闭额外媒体库，不由用户控制，由管理决定                                                                                                                                                                                                                                                                                                                                                         |
+| tz_ad           | 探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠，没有请勿填                                                                                                                                                                                                                                                                                                                                                                          |
+| tz_api          | 探针后台生成的 api                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| tz_id           | 需要展示的 机器的 id []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。                                                                                                                                                                                                                                                                                                                                                                                 |
+| ranks           | {"logo": "SAKURA", 日榜/周榜推送榜单图片中的LOGO文字 <br> "backdrop": false 是否使用backdrop（即横版图）作为推送榜单的封面图 }                                                                                                                                                                                                                                                                                                                                            |
 
 - 额外的：如果你希望你的【服务器】可以显示多机器的话，探针就有用了，api生成在nezha的管理后台，id也是，[如图](./image/fwq.png)
 
-### 4、启动bot (两种方式)
+</details>
 
-___
+### 4、启动bot（推荐 Docker）
 
 - cd（切换） 到 文件目录 Sakura_embyboss，选择任意一方法，运行
 
 #### 一、docker
 
 - arm架构没有环境制作相应的镜像，请使用第二种方法。果(￣﹃￣)咩
+- 如果您 不需要 `docker-compose.yml` 的 phpmyadmin，请注释<br>
+  只是当您需要可视化数据库时，确保能使用安装phpmyadmin或以外的（如navicat）软件连接数据库即可  
+  **非必要安装！非必要安装！非必要安装！不需要就注释。重要的事情说三遍**
+- 在Sakura_embyboss目录运行命令`docker-compose up -d`
 
 ```shell
-docker run -it --name sakura_embyboss -d --restart=always -v ./config.json:/app/config.json -v ./log:/app/log jingwei520/sakura_embyboss:latest
+docker-compose up -d
 ```
 
 #### 二、普通
@@ -211,7 +195,7 @@ docker run -it --name sakura_embyboss -d --restart=always -v ./config.json:/app/
 - 安装依赖
   `pip3 install -r requirements.txt`
 
-- 修改`embyboss.service`
+- 修改`embyboss.service`<br>
   里面编辑我中文标注的3行,默认可以分别填入  
   （程序名称）`embyboss`，  
   （程序运行目录）`/root/Sakura_embyboss/`  

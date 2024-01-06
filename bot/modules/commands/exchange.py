@@ -1,10 +1,9 @@
 """
 兑换注册码exchange
 """
-import asyncio
 from datetime import timedelta, datetime
 
-from bot import bot, _open, LOGGER, bot_photo, user_buy, emby_url
+from bot import bot, _open, LOGGER, bot_photo, user_buy
 from bot.func_helper.emby import emby
 from bot.func_helper.fix_bottons import register_code_ikb
 from bot.func_helper.msg_utils import sendMessage, sendPhoto
@@ -98,19 +97,3 @@ async def rgs_code(_, msg, register_code):
 # async def exchange_buttons(_, call):
 #
 #     await rgs_code(_, msg)
-
-async def favorite_item(_, msg):
-    n, item_id = msg.command[1].split('-')
-    try:
-        e = sql_get_emby(msg.from_user.id).embyid
-        success, title = await asyncio.gather(emby.add_favotire_items(user_id=e, item_id=item_id),
-                                              emby.item_id_namme(user_id=e, item_id=item_id))
-        if success:
-            _url = f"{emby_url}/emby/Items/{item_id}/Images/Primary?maxHeight=400&maxWidth=600&quality=90"
-            send = await sendPhoto(msg, photo=_url, caption=f'**{title} 收藏成功！💘**')
-            if type(send) is not bool:
-                await sendMessage(msg, text=f'**{title} 收藏成功！💘**')
-        else:
-            await msg.reply(f'⚠️ 收藏失败！项目 {item_id}')
-    except:
-        await msg.reply('🤺 没有账户怎么收藏？')

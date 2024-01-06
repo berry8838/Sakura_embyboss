@@ -137,7 +137,7 @@ async def convert_s(seconds: int):
     hours, remainder = divmod(duration.seconds, 3600)
     minutes, _ = divmod(remainder, 60)
     days = '' if days == 0 else f'{days} 天'
-    hours = '' if days == 0 else f'{hours} 小时'
+    hours = '' if hours == 0 else f'{hours} 小时'
     return f"{days} {hours} {minutes} 分钟"
 
 
@@ -147,7 +147,8 @@ def convert_runtime(RunTimeTicks: int):
     duration = timedelta(seconds=seconds)
     hours, remainder = divmod(duration.seconds, 3600)
     minutes, _ = divmod(remainder, 60)
-    return f"{hours} 小时 {minutes} 分钟"
+    hours = '' if hours == 0 else f'{hours} 小时'
+    return f"{hours} {minutes} 分钟"
 
 
 def convert_to_beijing_time(original_date):

@@ -8,7 +8,7 @@ import asyncio
 from pyrogram import filters
 
 from bot.func_helper.emby import Embyservice
-from bot.modules.commands.exchange import rgs_code, favorite_item
+from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_emby import sql_add_emby
 from bot.func_helper.filters import user_in_group_filter, user_in_group_on_filter
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, callAnswer, editMessage
@@ -52,9 +52,7 @@ async def p_start(_, msg):
                                                 buttons=judge_group_ikb))
     try:
         u = msg.command[1].split('-')[0]
-        if u == 'itemid':
-            await asyncio.gather(msg.delete(), favorite_item(_, msg))
-        elif u in f'{ranks.logo}' or u == str(msg.from_user.id):
+        if u in f'{ranks.logo}' or u == str(msg.from_user.id):
             await asyncio.gather(msg.delete(), rgs_code(_, msg, register_code=msg.command[1]))
         else:
             await asyncio.gather(sendMessage(msg, '🤺 你也想和bot击剑吗 ?'), msg.delete())

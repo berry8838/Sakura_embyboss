@@ -13,7 +13,7 @@ from datetime import timedelta, datetime
 
 from pyrogram.errors import BadRequest
 from bot.schemas import ExDate, Yulv
-from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emby_libs, emby_block, user_buy, schedall, \
+from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emby_libs, config, user_buy, \
     bot_name
 from pyrogram import filters
 from bot.func_helper.emby import emby
@@ -446,13 +446,13 @@ async def reset(_, call):
 @bot.on_callback_query(filters.regex('embyblock') & user_in_group_on_filter)
 async def embyblocks(_, call):
     data = sql_get_emby(tg=call.from_user.id)
-    if data is None:
+    if not data:
         return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
     if data.embyid is None:
         return await callAnswer(call, '❓ 未查询到账户，不许乱点!', True)
     elif data.lv == "c":
         return await callAnswer(call, '💢 账户到期，封禁中无法使用！', True)
-    elif len(emby_block) == 0:
+    elif len(config.emby_block) == 0:
         send = await editMessage(call, '⭕ 管理员未设置。。。 快催催\no(*////▽////*)q', buttons=back_members_ikb)
         if send is False:
             return
@@ -463,15 +463,16 @@ async def embyblocks(_, call):
                 stat = '💨 未知'
             else:
                 blocks = rep["Policy"]["BlockedMediaFolders"]
-                if set(emby_block).issubset(set(blocks)):
+                if set(config.emby_block).issubset(set(blocks)):
                     stat = '🔴 隐藏'
                 else:
                     stat = '🟢 显示'
         except KeyError:
             stat = '💨 未知'
+        block = ", ".join(config.emby_block)
         await asyncio.gather(callAnswer(call, "✅ 到位"),
                              editMessage(call,
-                                         f'🤺 用户状态：{stat}\n🎬 目前设定的库为: \n**{emby_block}**\n请选择你的操作。',
+                                         f'🤺 用户状态：{stat}\n🎬 目前设定的库为: \n\n**{block}**\n\n请选择你的操作。',
                                          buttons=emby_block_ikb(data.embyid)))
 
 
@@ -486,9 +487,9 @@ async def user_emby_block(_, call):
     currentblock = []
     if success:
         try:
-            currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + emby_block + ['播放列表']))
+            currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + config.emby_block + ['播放列表']))
         except KeyError:
-            currentblock = ['播放列表'] + extra_emby_libs + emby_block
+            currentblock = ['播放列表'] + extra_emby_libs + config.emby_block
         re = await emby.emby_block(embyid, 0, block=currentblock)
         if re is True:
             send1 = await editMessage(call, f'🕶️ ο(=•ω＜=)ρ⌒☆\n 小尾巴隐藏好了！ ', buttons=user_emby_block_ikb)
@@ -511,7 +512,7 @@ async def user_emby_unblock(_, call):
         try:
             currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
             # 保留不同的元素
-            currentblock = [x for x in currentblock if x not in emby_block] + [x for x in emby_block if
+            currentblock = [x for x in currentblock if x not in config.emby_block] + [x for x in config.emby_block if
                                                                                x not in currentblock]
         except KeyError:
             currentblock = ['播放列表'] + extra_emby_libs

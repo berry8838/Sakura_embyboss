@@ -24,7 +24,7 @@ async def gm_ikb(_, call):
     await callAnswer(call, '✔️ manage面板')
     stat, all_user, tem, timing, allow_code = await open_check()
     stat = "True" if stat else "False"
-    allow_code = 'True' if allow_code == "y" else 'False'
+    allow_code = 'True' if allow_code else 'False'
     timing = 'Turn off' if timing == 0 else str(timing) + ' min'
     tg, emby, white = sql_count_emby()
     gm_text = f'⚙️ 欢迎您，亲爱的管理员 {call.from_user.first_name}\n\n· ®️ 注册状态 | **{stat}**\n· ⏳ 定时注册 | **{timing}**\n' \

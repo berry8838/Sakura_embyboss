@@ -146,8 +146,8 @@ cp config_example.json config.json
 | emby_api           | emby的api，在后台自己创建一个                                                                                             |
 | emby_url           | 形如 http://255.255.255.36:8096 最后不带斜杠，为发起请求emby的地址                                                              |
 | emby_line          | 展示给用户的emby地址，支持telegram的markdown写法                                                                             |
-| db_host            | 如上，数据库的ip 如：255.255.255.36 默认3306端口                                                                            |
-| db_user            | 数据库用户名,默认 `susu`  可更改                                                                                          |
+| db_host            | 本机可以直接`localhost` or 数据库的ip 如：255.255.255.36  默认`3306`端口                                                       |
+| db_user            | 数据库用户名,默认 `susu`                                                                                               |
 | db_pwd             | 数据库密码，默认`1234`                                                                                                 |
 | db_name            | 数据库库名，默认`embyboss`                                                                                             |
 | db_is_docker       | true 数据库是否为docker模式启动，or false                                                                                 |
@@ -169,6 +169,7 @@ cp config_example.json config.json
 | tz_api          | 探针后台生成的 api                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | tz_id           | 需要展示的 机器的 id []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。                                                                                                                                                                                                                                                                                                                                                                                 |
 | ranks           | {"logo": "SAKURA", 日榜/周榜推送榜单图片中的LOGO文字 <br> "backdrop": false 是否使用backdrop（即横版图）作为推送榜单的封面图 }                                                                                                                                                                                                                                                                                                                                            |
+| schedall        | 各种定时任务管理 <br> {"dayrank": true # 定时发送媒体播放次数日榜(18:30 <br> "weekrank": true # 定时发送媒体播放次数周榜(周日23:59 <br> "dayplayrank": false # 定时发送用户观看时长日榜(23:00 <br> "weekplayrank": false # 定时发送用户观看时长周榜(周日23:30 <br> "check_ex": true # 到期保号检测开启(每日02:30 <br> "low_activity": false # 活跃保号检测开启(每日08:30 <br> (如都不开启上述保号,则无需保号) <br> "backup_db": false # 自动定时备份数据库(每日01:30 }                                                                           |
 
 - 额外的：如果你希望你的【服务器】可以显示多机器的话，探针就有用了，api生成在nezha的管理后台，id也是，[如图](./image/fwq.png)
 
@@ -181,9 +182,9 @@ cp config_example.json config.json
 #### 一、docker
 
 - arm架构没有环境制作相应的镜像，请使用第二种方法。果(￣﹃￣)咩
-- 如果您 不需要 `docker-compose.yml` 的 phpmyadmin，请注释<br>
+- 如果您需要图形化管理数据库,可以将 `docker-compose.yml` 的 phpmyadmin注释解开 <br>
   只是当您需要可视化数据库时，确保能使用安装phpmyadmin或以外的（如navicat）软件连接数据库即可  
-  **非必要安装！非必要安装！非必要安装！不需要就注释。重要的事情说三遍**
+  **非必要安装！非必要安装！非必要安装！不需要就保持注释。重要的事情说三遍**
 - 在Sakura_embyboss目录运行命令`docker-compose up -d`
 
 ```shell

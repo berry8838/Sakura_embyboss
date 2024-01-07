@@ -10,6 +10,20 @@
   "main_group": "Aaaaa_su",
   "chanel": "su_yxfy",
   "bot_photo": "https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png",
+  "admins": [],
+  "invite": "n",
+  "money": "花币",
+  "emby_api": "xxxxx",
+  "emby_url": "http://255.255.255.255:8096",
+  "emby_line": "susuyyds.com",
+  "db_host": "localhost",
+  "db_user": "",
+  "db_pwd": "",
+  "db_name": "",
+  "db_is_docker": false,
+  "db_docker_name": "mysql",
+  "db_backup_dir": "./backup",
+  "db_backup_maxcount": 7,
   "user_buy": {
     "stat": false,
     "button": [
@@ -19,6 +33,12 @@
     ],
     "text": false
   },
+  "emby_block": [
+    "nsfw"
+  ],
+  "extra_emby_libs": [
+    "电视"
+  ],
   "open": {
     "stat": false,
     "all_user": 1000,
@@ -31,26 +51,6 @@
     "invite": false,
     "leave_ban": true
   },
-  "admins": [],
-  "invite": "n",
-  "money": "花币",
-  "emby_api": "xxxxx",
-  "emby_url": "http://255.255.255.255:8096",
-  "emby_line": "susuyyds.com",
-  "emby_block": [
-    "nsfw"
-  ],
-  "extra_emby_libs": [
-    "电视"
-  ],
-  "db_host": "255.255.255.255",
-  "db_user": "",
-  "db_pwd": "",
-  "db_name": "",
-  "db_is_docker": false,
-  "db_docker_name": "mysql",
-  "db_backup_dir": "./backup",
-  "db_backup_maxcount": 7,
   "tz_ad": "",
   "tz_api": "",
   "tz_id": [

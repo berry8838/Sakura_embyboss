@@ -10,23 +10,14 @@
 <a href="" ><img src="https://img.shields.io/badge/platform-amd64-pink" alt="plat"></a>
 </p>
 
-## 💐 Our Contributors
-
-<a href="https://github.com/berry8838/Sakura_embyboss/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=berry8838/Sakura_embyboss" />
-</a>  
-
 ## 📜 项目说明
 
-本项目是 **业余选手** 写就，结合一些我所认为优质的特点、元素，截至目前我自己都不知道有什么了，由于没有系统的学习代码，在逻辑上会比较乱包括很多的方面其实并不完美，但是能跑，练练手啦。
-
-- 推荐使用 Debian 11 - amd 的 vps 搭建，比较兼容
-- 解决不了大的技术问题，如需要，请自行fork修改，~~如果能提点有意思的pr更好啦~~
-- 反馈请尽量issue [@First Lover](https://t.me/Aaaaa_su) And [@罗宝](https://t.me/oudoudou) 看到会处理
-
+- **推荐使用 Debian 11操作系统，AMD处理器架构的vps搭建**
+- 解决不了大的技术问题（因为菜菜），如需要，请自行fork修改，~~如果能提点有意思的pr更好啦~~
+- 反馈请尽量 issue，看到会处理
 > **声明：本项目仅供学习交流使用，仅作为辅助工具借助tg平台方便用户管理自己的媒体库成员，对用户的其他行为及内容毫不知情**
 
-## 功能一览
+## 🤝功能一览
 
 <details>
 <summary>点击展开所有功能概览</summary>
@@ -53,7 +44,7 @@
 - [x] **进阶**
     - [x] 提示加群、退群删号、被拉入非授权群报警并退出
     - [x] 命令初始化根据身份显示不同的的命令
-    - [x] 各种命令管理 [部分效果图和命令看这里](https://telegra.ph/embyboss-05-29)
+    - [x] [各种命令管理](#命令帮助)
     - [x] 添加用户播放时长，媒体播放数排行榜日推周推 [EmbyTools](https://github.com/Nolovenodie/EmbyTools)
     - [x] **支持docker部署**
 - [ ] 进阶的待定想法(有些不一定做)
@@ -72,11 +63,61 @@
 
 </details>
 
-## 🤝 使用帮助
+## 命令帮助
 
-- [部分效果图和命令大全看这里](https://telegra.ph/embyboss-05-29)
-- 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符多添加三种  
-  即命令使用 ：`/start = .start = #start = !start = 。start`
+<details>
+<summary>点击以展开命令指南</summary>
+
+```
+# User Commands
+start: [私聊] 开启用户面板
+myinfo: [用户] 查看状态
+count: [用户] 媒体库数量
+red: [用户/禁言] 发红包
+srank: [用户/禁言] 查看计分
+
+# Admin Commands
+kk: 管理用户 [管理]
+score: 加/减积分 [管理]
+coins: 加/减{sakura_b} [管理]
+renew: 调整到期时间 [管理]
+rmemby: 删除用户[包括非tg] [管理]
+prouser: 增加白名单 [管理]
+revuser: 减少白名单 [管理]
+rev_white_chanel: 移除皮套人白名单 [管理]
+white_chanel: 添加皮套人白名单 [管理]
+unban_chanel: 解封皮套人 [管理]
+syncgroupm: 消灭不在群的人 [管理]
+syncunbound: 消灭未绑定bot的emby账户 [管理]
+low_activity: 手动运行活跃检测 [管理]
+check_ex: 手动到期检测 [管理]
+uranks: 召唤观影时长榜，失效时用 [管理]
+days_ranks: 召唤播放次数日榜，失效时用 [管理]
+week_ranks: 召唤播放次数周榜，失效时用 [管理]
+embyadmin: 开启emby控制台权限 [管理]
+ucr: 私聊创建非tg的emby用户 [管理]
+uinfo: 查询指定用户名 [管理]
+urm: 删除指定用户名 [管理]
+
+# Owner Commands
+restart: 重启bot [owner]
+proadmin: 添加bot管理 [owner]
+revadmin: 移除bot管理 [owner]
+renewall: 一键派送天数给所有未封禁的用户 [owner]
+coinsall: 一键派送币币给所有未封禁的用户 [owner]
+callall: 群发消息给每个人 [owner]
+bindall_id: 一键更新用户们Embyid [owner]
+backup_db: 手动备份数据库[owner]
+config: 开启bot高级控制面板 [owner]
+extraembylibs_blockall: 一键关闭所有用户的额外媒体库 [owner]
+extraembylibs_unblockall: 一键开启所有用户的额外媒体库 [owner]
+```
+
+</details>
+
+- [部分效果图看这里](https://telegra.ph/embyboss-05-29)
+- 在telegram中，默认的命令符为`/`，但是为避免群聊中普通成员乱点，embyboss将命令符支持多种前缀  
+  即命令使用 ：`/start = .start = ，start = !start = 。start`
 
 ## 配置说明
 
@@ -130,49 +171,78 @@ cp config_example.json config.json
 
 <details>
 <summary>点击以展开配置指南</summary>
+<table border="1" cellspacing="0">
+<caption><h4>必填变量的配置填写指南</h4></caption>
+<thead><tr><th>类型</th><th>变量名称</th><th>填写描述</th></tr></thead>
+<tbody>
+<tr><td rowspan="10">Telegram Bot</td><td>bot_name</td><td>bot的username，比如我的机器人@keaiji1_bot，就填<code>keaiji1_bot</code></td></tr>
+<tr><td>bot_token</td><td> bot的API token ，你在@Botfather创建bot时的api_key</td></tr>
+<tr><td>owner_api</td><td> 你的api https://my.telegram.org/auth 获取</td></tr>
+<tr><td>owner_hash</td><td> 你的api https://my.telegram.org/auth 获取</td></tr>
+<tr><td>owner</td><td> 拥有者的tgid </td></tr>
+<tr><td>group</td><td> 授权群组id，如<code>-1001869392674</code>，未授权的群组拉bot会自动退出。不在群组的成员会提示先加入群组 </td></tr>
+<tr><td>main_group</td><td> 群组的用户名(形如bot_name) 或 私密群组的邀请链接，如 <code>https://t.me/+7ZL9MbJd8h44Zjc1</code>中<code>+7ZL9MbJd8h44Zjc1</code>，没有的话就随便填个 Google.com </td></tr>
+<tr><td>chanel</td><td> 你频道username (形如bot_name)，没有的话就随便填个 Google.com 吧 </td></tr>
+<tr><td>bot_photo</td><td> 形如 <code>https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png</code> bot发送消息时的配图，可更换图片url，必要 </td></tr>
+<tr><td>admins</td><td> 默认<code>[ ]</code> 为空，可以将想要赋予权限的tg用户id填进 </td></tr>
+<tr><td rowspan="3" > Emby </td><td>emby_api</td><td> emby的api_key，<code>【Emby Service 管理】-> 【高级】->【API密钥】</code>创建一个 </td></tr>
+<tr><td>emby_url</td><td> 形如 <code>http://255.255.255.36:8096</code> or <code>https://emby.susuyyds.xyz</code> 最后不带斜杠，为发起请求emby的地址 </td></tr>
+<tr><td>emby_line</td><td> 展示给用户的emby地址和信息，仅支持telegram的MarkdownV2写法  </td></tr>
+<tr><td rowspan="4" > Database <br>(Mysql) </td><td> db_host </td><td>本机<code>localhost</code> or 数据库的ip <code>255.255.255.36</code> 端口默认<i>3306</i></td></tr>
+<tr><td> db_user </td><td>数据库用户名,默认 <code>susu</code> </td></tr>
+<tr><td> db_pwd </td><td>数据库密码,默认 <code>1234</code> </td></tr>
+<tr><td> db_name </td><td>数据库名,默认 <code>embyboss</code> </td></tr>
+</tbody>
+<tfoot></tfoot>
+</table> 
 
-| 必填变量               | 填写指南                                                                                                           |
-|--------------------|----------------------------------------------------------------------------------------------------------------|
-| bot_name           | bot的username，比如我的机器人@keaiji1_bot，就填keaiji1_bot                                                                 |
-| bot_token          | bot的API token ，你在@Botfather创建bot时的api_key                                                                      |
-| owner_api          | 你的api  https://my.telegram.org/auth 获取                                                                         |
-| owner_hash         | 你的hash  https://my.telegram.org/auth                                                                           |
-| owner              | 拥有者的tgid                                                                                                       |
-| group              | 授权群组id (如 `-1001869392674` )，未授权的群组拉bot会自动退出。不在群组的成员会提示先加入群组                                                   |
-| main_group         | 群组的用户名(形如bot_name) 或 私密群组的邀请链接(如 https://t.me/+7ZL9MbJd8h44Zjc1 中的 "+7ZL9MbJd8h44Zjc1")，没有的话就随便填个 `Google.com` |      
-| chanel             | 你频道username (形如bot_name)，没有的话就随便填个 Google.com 吧                                                                |
-| bot_photo          | 形如 https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png bot发送消息时的配图，可更换图片url，必要                                   |                
-| admins             | [] ，可 空，拥有管理权限的id，其他添加id要用英文逗号隔开，不需要将`owner`填进来                                                                |
-| emby_api           | emby的api，在后台自己创建一个                                                                                             |
-| emby_url           | 形如 http://255.255.255.36:8096 最后不带斜杠，为发起请求emby的地址                                                              |
-| emby_line          | 展示给用户的emby地址，支持telegram的markdown写法                                                                             |
-| db_host            | 本机可以直接`localhost` or 数据库的ip 如：255.255.255.36  默认`3306`端口                                                       |
-| db_user            | 数据库用户名,默认 `susu`                                                                                               |
-| db_pwd             | 数据库密码，默认`1234`                                                                                                 |
-| db_name            | 数据库库名，默认`embyboss`                                                                                             |
-| db_is_docker       | true 数据库是否为docker模式启动，or false                                                                                 |
-| db_docker_name     | 若docker模式启动的数据库，此数据库容器的名字，默认`mysql`                                                                            |
-| db_backup_dir      | 数据库备份文件所保存的目录,默认 `./backup`                                                                                    |
-| db_backup_maxcount | 数据库备份文件保留的个数,默认，`7`                                                                                            |
-
-- 如已经填完上述，您已经可以[启动bot](#4启动bot推荐-docker)了
+- 如已经填完上述，您已经可以 [启动bot](#4启动bot推荐-docker)了
 - 接下来是 【选填项目】 会自动生成，不填亦可
 
-| 选填变量            | 填写指南                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-|-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| money           | 功能货币的名称，默认`花币`                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| user_buy        | {"stat": false,"button": ["Google","https://google.com","url"]} <br> `stat` 是否开启充电按钮，默认`false`，`butoon` 按钮（依序分别 `按钮显示文本`,`网址`,固定不可变字段`url`）                                                                                                                                                                                                                                                                                             |
-| open            | { "stat": false # 注册状态，每次启动时默认关闭 <br> "all_user": 1000, # 注册人数限制 <br> "timing": 0, # 定时注册，默认为0，勿动 <br>"tem": 0, # 储存当前已注册用户数 <br>"allow_code": true, # 能否使用注册码续期，默认`true` <br> "checkin": true, # 开启签到 <br> "exchange": true, # 开启兑换续期 <br>"whitelist": true, # 开启兑换白名单<br>"invite": false, # 开启邀请功能 <br>"leave_ban": false # 退群封禁，默认关闭 <br> "exchange_cost": 300 续期 一天价格 <br>"whitelist_cost": 9999 白名单价格 <br>"invite_cost": 500 邀请价格} |
-| emby_block      | ["nsfw"] 可选，由用户能控制显示隐藏的媒体库，bot中也可设置                                                                                                                                                                                                                                                                                                                                                                                                     |
-| extra_emby_libs | ["家庭照片","我的照片"], 可选，额外媒体库但是区别于 `emby_block`，只可通过/kk指令给用户开通/关闭额外媒体库，不由用户控制，由管理决定                                                                                                                                                                                                                                                                                                                                                         |
-| tz_ad           | 探针地址，形如：https://xx.xx.xyz或http://25.25.25.25:8008 最后不带斜杠，没有请勿填                                                                                                                                                                                                                                                                                                                                                                          |
-| tz_api          | 探针后台生成的 api                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| tz_id           | 需要展示的 机器的 id []     tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。                                                                                                                                                                                                                                                                                                                                                                                 |
-| ranks           | {"logo": "SAKURA", 日榜/周榜推送榜单图片中的LOGO文字 <br> "backdrop": false 是否使用backdrop（即横版图）作为推送榜单的封面图 }                                                                                                                                                                                                                                                                                                                                            |
-| schedall        | 各种定时任务管理 <br> {"dayrank": true # 定时发送媒体播放次数日榜(18:30 <br> "weekrank": true # 定时发送媒体播放次数周榜(周日23:59 <br> "dayplayrank": false # 定时发送用户观看时长日榜(23:00 <br> "weekplayrank": false # 定时发送用户观看时长周榜(周日23:30 <br> "check_ex": true # 到期保号检测开启(每日02:30 <br> "low_activity": false # 活跃保号检测开启(每日08:30 <br> (如都不开启上述保号,则无需保号) <br> "backup_db": false # 自动定时备份数据库(每日01:30 }                                                                           |
-
-- 额外的：如果你希望你的【服务器】可以显示多机器的话，探针就有用了，api生成在nezha的管理后台，id也是，[如图](./image/fwq.png)
-
+<table border="1" cellspacing="0">
+<caption><h4>选填变量的配置填写指南</h4></caption>
+<thead><tr><th>类型</th><th>变量名称</th><th>填写描述</th></tr></thead>
+<tbody>
+<tr><td rowspan="2">user_buy<br>充电按钮</td><td>stat</td><td>是否开启充电按钮，即设置一个跳转网页的按钮<code>true</code> or <code>false</code></td></tr>
+<tr><td>button</td><td> 按钮样式<br><code>["🔋 点击充电","https://google.com","url"]</code>依序分别 “按钮显示文本”，“跳转网址”，固定不可变字段“url”</td></tr>
+<tr><td>货币</td><td>money</td><td> 功能货币的名称，默认<code>花币</code></td></tr>
+<tr><td rowspan="14">open<br>注册，兑换开关</td><td>stat</td><td>注册状态，默认 false <code>true</code> or <code>false</code></td></tr>
+<tr><td>all_user</td><td>注册人数限制，可在bot启动后进入admin设置，默认 <code>1000</code></td></tr>
+<tr><td>timing</td><td>定时注册计时参数，bot启动后开启定时注册有效，勿动，默认 <code>0</code></td></tr>
+<tr><td>tem</td><td>当前已注册用户计数，勿动，默认 <code>0</code></td></tr>
+<tr><td>allow_code</td><td>能否使用注册码续期，默认 true <code>true</code> or <code>false</code></td></tr>
+<tr><td>checkin</td><td>是否开启签到，默认 true <code>true</code> or <code>false</code></td></tr>
+<tr><td>exchange</td><td>是否开启兑换续期，默认 true <code>true</code> or <code>false</code></td></tr>
+<tr><td>exchange_cost</td><td>续期一天的价格，默认 <code>300</code></td></tr>
+<tr><td>whitelist</td><td>是否开启兑换白名单，默认 true <code>true</code> or <code>false</code></td></tr>
+<tr><td>whitelist_cost</td><td>兑换白名单价格，默认 <code>9999</code></td></tr>
+<tr><td>invite</td><td>是否开启邀请功能，默认 false <code>true</code> or <code>false</code></td></tr>
+<tr><td>invite_cost</td><td>邀请码价格 每30天，默认 <code>500</code></tr>
+<tr><td>leave_ban</td><td>是否开启退群封禁，默认 true <code>true</code> or <code>false</code></td></tr>
+<tr><td>uplays</td><td>是否开启用户播放结算奖励，默认 true <code>true</code> or <code>false</code></td></tr>
+<tr><td rowspan="2">Emby Media<br>媒体库控制</td><td>emby_block</td><td><code>["媒体库名称"]</code> 由用户能控制显示隐藏的媒体库，bot中也可设置 </td></tr>
+<tr><td>extra_emby_libs</td><td><code>["媒体库名称"]</code> 默认隐藏，不想对新用户显示的媒体库，用户无法控制显隐，管理通过命令/kk可指定开启</td></tr>
+<tr><td rowspan="3">Nezha<br>探针 <br><a href="./image/fwq.png">效果图</a></td><td>tz_ad</td><td> 探针地址 <code>https://xx.xx.xyz</code>或 <code>http://25.25.25.25:8008</code> 最后不带斜杠，没有请留空</td></tr>
+<tr><td>tz_api</td><td><a target="_blank" href="https://nezha.wiki/guide/api.html#%E5%88%9B%E5%BB%BA-token">探针后台生成的 api</a> </td></tr>
+<tr><td>tz_id</td><td> 需要展示的 机器的 id，tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。</td></tr>
+<tr><td rowspan="2">ranks </td><td>logo</td><td> 日榜/周榜推送榜单图片中的LOGO文字，默认<code>SAKURA</code></td></tr>
+<tr><td>backdrop</td><td> 是否使用backdrop（即横版图）作为推送榜单的封面图 ，默认<code>false</code></td></tr>
+<tr><td rowspan="8">schedall <br>各种定时任务管理</td><td>dayrank</td><td>默认<code>true</code>，定时发送媒体播放次数日榜，<code>每日 18:30</code></td></tr>
+<tr><td>weekrank</td><td>默认，<code>true</code>，定时发送媒体播放次数周榜，<code>每周日 23:59</code></td></tr>
+<tr><td>dayplayrank</td><td>默认，<code>false</code>定时发送用户观看时长日榜，<code>每日 23:00</code></td></tr>
+<tr><td>weekplayrank</td><td>默认，<code>false</code>定时发送用户观看时长周榜，<code>每周日23:30</code></td></tr>
+<tr><td>check_ex <br>到期保号</td><td>默认，<code>true</code>检测用户到期时间与当前utc时间大小，过期封禁，5天后未续期删号，<code>每日 01:30</code></td></tr>
+<tr><td>low_activity <br>活跃保号</td><td>默认，<code>false</code>检测用户最后一次活跃时间，间隔当前超过21天封禁，<code>每日 08:30</code></td></tr>
+<tr><td>不开启保号</td><td>如都不开启上述保号 <code>false，false</code>,则无需保号</td></tr>
+<tr><td>backup_db</td><td>默认 <code>false</code>，自动定时备份数据库，<code>每日 02:30</code></td></tr>
+<tr><td rowspan="4">backup_db <br>数据库备份详细设置</td><td>db_is_docker</td><td>默认 <code>true</code>，数据库是否为docker模式启动，or false </td></tr>
+<tr><td>db_docker_name</td><td>默认 <code>mysql</code>，若docker模式启动的数据库，此数据库容器的名字`</td></tr>
+<tr><td>db_backup_dir</td><td>默认 <code>./backup</code>数据库备份文件所保存的目录 </td></tr>
+<tr><td>db_backup_maxcount</td><td>默认 <code>7</code>数据库备份文件保留的个数 </td></tr>
+<tr><td>AntiChanel <br>反皮套白名单</td><td>w_anti_chanel_ids</td><td>本机器人默认开启反频道（杀皮套人）功能，除匿名群管皮套，如需要允许其发言请将其id或username加入列表，当然，支持命令操作，请查阅命令大全</td></tr>
+</tbody>
+<tfoot></tfoot>
+</table> 
 </details>
 
 ### 4、启动bot（推荐 Docker）
@@ -232,6 +302,13 @@ git pull origin master
 # 启动命令
 systemctl restart embyboss
 ```
+
+## 💐 Our Contributors
+
+<a href="https://github.com/berry8838/Sakura_embyboss/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=berry8838/Sakura_embyboss" />
+</a>  
+
 
 ## 特别感谢（排序不分先后）
 

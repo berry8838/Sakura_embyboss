@@ -30,7 +30,7 @@ admins = config.admins
 invite = config.invite
 sakura_b = config.money
 ranks = config.ranks
-prefixes = ['/', '!', '.', '#', '。']
+prefixes = ['/', '!', '.', '，', '。']
 schedall = config.schedall
 # emby设置
 emby_api = config.emby_api

@@ -20,10 +20,6 @@
   "db_user": "",
   "db_pwd": "",
   "db_name": "",
-  "db_is_docker": false,
-  "db_docker_name": "mysql",
-  "db_backup_dir": "./backup",
-  "db_backup_maxcount": 7,
   "user_buy": {
     "stat": false,
     "button": [
@@ -49,7 +45,11 @@
     "exchange": true,
     "whitelist": true,
     "invite": false,
-    "leave_ban": true
+    "leave_ban": true,
+    "uplays": true,
+    "exchange_cost": 300,
+    "whitelist_cost": 9999,
+    "invite_cost": 1000
   },
   "tz_ad": "",
   "tz_api": "",
@@ -67,5 +67,10 @@
     "check_ex": true,
     "low_activity": false,
     "backup_db": false
-  }
+  },
+  "db_is_docker": true,
+  "db_docker_name": "mysql",
+  "db_backup_dir": "./db_backup",
+  "db_backup_maxcount": 7,
+  "w_anti_chanel_ids": []
 }

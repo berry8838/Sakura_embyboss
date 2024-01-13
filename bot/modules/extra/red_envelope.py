@@ -13,32 +13,19 @@ from pyrogram import filters
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 from sqlalchemy import func
 
-from bot import bot, prefixes, sakura_b, group, bot_photo
+from bot import bot, prefixes, sakura_b, bot_photo
 from bot.func_helper.filters import user_in_group_on_filter
-from bot.func_helper.fix_bottons import users_iv_button, cache
+from bot.func_helper.fix_bottons import users_iv_button
 from bot.func_helper.msg_utils import sendPhoto, sendMessage, callAnswer, editMessage
-from bot.func_helper.utils import pwd_create, judge_admins
+from bot.func_helper.utils import pwd_create, judge_admins, get_users, cache
 from bot.sql_helper import Session
 from bot.sql_helper.sql_emby import Emby, sql_get_emby, sql_update_emby
 from bot.ranks_helper.ranks_draw import RanksDraw
 from bot.schemas import Yulv
-from bot.func_helper.emby import cache
 
 # 小项目，说实话不想写数据库里面。放内存里了，从字典里面每次拿分
 
 red_bags = {}
-
-
-@cache.memoize(ttl=300)
-async def get_users():
-    # 创建一个空字典来存储用户的 first_name 和 id
-    members_dict = {}
-    async for member in bot.get_chat_members(chat_id=group[0]):
-        try:
-            members_dict[member.user.id] = member.user.first_name
-        except Exception as e:
-            print(f'{e} 某名bug {member}')
-    return members_dict
 
 
 async def create_reds(money, members, first_name, flag=None, private=None):
@@ -63,7 +50,7 @@ async def send_red_envelop(_, msg):
             money = int(msg.command[1])
         except (IndexError, KeyError, ValueError):
             return await asyncio.gather(msg.delete(),
-                                        sendMessage(msg, f'**🧧 专享红包：\n\n使用请回复一位群友 + {sakura_b}'))
+                                        sendMessage(msg, f'**🧧 专享红包：\n\n使用请回复一位群友 + {sakura_b}', timer=60))
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
             if not e or e.iv < 5 or money < 5 or msg.reply_to_message.from_user.id == msg.from_user.id:
@@ -71,7 +58,7 @@ async def send_red_envelop(_, msg):
                                      msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
                                                               datetime.now() + timedelta(minutes=1)),
                                      sendMessage(msg, f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) '
-                                                      f'没币瞎发什么，禁言一分钟。\n最低5{sakura_b} ~~不许发自己~~',
+                                                      f'违反规则，禁言一分钟。\nⅰ 所持有{sakura_b}不小于5\nⅱ 发出{sakura_b}不小于5\nⅲ 不许发自己',
                                                  timer=60))
                 return
             else:
@@ -97,7 +84,10 @@ async def send_red_envelop(_, msg):
         ikb = create_reds(money=money, first_name=first_name, members=1, private=msg.reply_to_message.from_user.id)
         cover = RanksDraw.hb_test_draw(money, 1, user_pic, f'{msg.reply_to_message.from_user.first_name} 专享')
         ikb, cover = await asyncio.gather(ikb, cover)
-        await asyncio.gather(sendPhoto(msg, photo=cover, buttons=ikb), reply.delete())
+        await asyncio.gather(sendPhoto(msg, photo=cover, buttons=ikb), reply.delete(),
+                             sendMessage(msg, f'🔥 [{msg.reply_to_message.from_user.first_name}]'
+                                              f'(tg://user?id={msg.reply_to_message.from_user.id})\n'
+                                              f' 您收到一个来自 [{first_name}](tg://user?id={msg.from_user.id}) 的专属红包'))
 
     elif not msg.reply_to_message:
         try:
@@ -108,7 +98,8 @@ async def send_red_envelop(_, msg):
                                         sendMessage(msg,
                                                     f'**🧧 发红包：\n\n'
                                                     f'/red [总{sakura_b}数] [份数] [mode]**\n\n'
-                                                    f'[mode]留空为 拼手气, 任意值为 均分\n专享红包请回复 + {sakura_b}'))
+                                                    f'[mode]留空为 拼手气, 任意值为 均分\n专享红包请回复 + {sakura_b}',
+                                                    timer=60))
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
             if not all([e, e.iv >= money, money >= members, members > 0]):
@@ -194,7 +185,7 @@ async def pick_red_bag(_, call):
                                    f'恭喜，你领取到了 {bag["sender"]} の {bag["m"]}{sakura_b}', True)
             members = await get_users()
             text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
-                   f'🕶️{bag["sender"]} **的专属红包已被 [{members.get(call.from_user.id,"None")}](tg://user?id={bag["members"]}) 领取'
+                   f'🕶️{bag["sender"]} **的专属红包已被 [{members.get(call.from_user.id, "None")}](tg://user?id={bag["members"]}) 领取'
             await editMessage(call, text)
             return
         else:

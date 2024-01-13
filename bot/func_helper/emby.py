@@ -5,14 +5,11 @@ emby的api操作方法
 """
 from datetime import datetime, timedelta, timezone
 
-from cacheout import Cache
 import requests as r
 from bot import emby_url, emby_api, _open, emby_block, schedall, extra_emby_libs, LOGGER, another_line
 from bot.sql_helper.sql_emby import sql_update_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_add_emby2, sql_delete_emby2
-from bot.func_helper.utils import pwd_create, convert_runtime
-
-cache = Cache()
+from bot.func_helper.utils import pwd_create, convert_runtime, cache
 
 
 def create_policy(admin=False, disable=False, limit: int = 2, block: list = None):
@@ -508,7 +505,8 @@ class Embyservice:
                                                 photo=f'{self.url}/emby/Items/{res_item.get("Id")}/Images/Primary?maxHeight=400&maxWidth=600&quality=90',
                                                 runtime=runtime,
                                                 overview=res_item.get("Overview", "暂无更多信息"),
-                                                taglines='简介：' if not res_item.get("Taglines") else res_item.get("Taglines")[0],
+                                                taglines='简介：' if not res_item.get("Taglines") else
+                                                res_item.get("Taglines")[0],
                                                 tmdbid=item_tmdbid,
                                                 add=res_item.get("DateCreated", "None.").split('.')[0],
                                                 # studios=studios

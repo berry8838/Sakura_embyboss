@@ -1,8 +1,11 @@
 import pytz
 
-from bot import _open, save_config, owner, admins, bot_name, ranks, schedall, group
+from bot import bot, _open, save_config, owner, admins, bot_name, ranks, schedall, group
 from bot.sql_helper.sql_code import sql_add_code
 from bot.sql_helper.sql_emby import sql_get_emby
+from cacheout import Cache
+
+cache = Cache()
 
 
 def judge_admins(uid):
@@ -160,12 +163,17 @@ def convert_to_beijing_time(original_date):
     dt = beijing_tz.localize(dt)
     return dt
 
-# 定义一个函数，将北京时间转换成utc时间'%Y-%m-%dT%H:%M:%S.%fZ'
-# def convert_to_utc_time(beijing_time):
-#     dt = datetime.strptime(beijing_time, '%Y-%m-%d %H:%M:%S')
-#     dt = dt - timedelta(hours=8)
-#     return dt.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
+@cache.memoize(ttl=300)
+async def get_users():
+    # 创建一个空字典来存储用户的 first_name 和 id
+    members_dict = {}
+    async for member in bot.get_chat_members(group[0]):
+        try:
+            members_dict[member.user.id] = member.user.first_name
+        except Exception as e:
+            print(f'{e} 某名bug {member}')
+    return members_dict
 
 # import random
 # import grequests

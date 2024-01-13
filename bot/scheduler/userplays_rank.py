@@ -3,13 +3,11 @@ import cn2an
 from datetime import datetime, timezone, timedelta
 
 from bot import bot, bot_photo, group, sakura_b, LOGGER, ranks, _open
-from bot.func_helper.emby import emby, cache
-from bot.func_helper.utils import convert_to_beijing_time, convert_s
+from bot.func_helper.emby import emby
+from bot.func_helper.utils import convert_to_beijing_time, convert_s, cache, get_users
 from bot.sql_helper import Session
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_embys, Emby, sql_update_emby
 from bot.func_helper.fix_bottons import plays_list_button
-
-now = datetime.now(timezone(timedelta(hours=8)))
 
 
 class Uplaysinfo:
@@ -27,9 +25,11 @@ class Uplaysinfo:
             if not result:
                 return None, 1
             page = math.ceil(len(play_list) / 10)
+            members = await get_users()
             members_dict = {}
             for r in result:
-                members_dict[r.name] = {"name": r.name, "tg": r.tg, "lv": r.lv, "iv": r.iv}
+                members_dict[r.name] = {"name": members.get(r.tg, '未绑定bot或已删除'), "tg": r.tg, "lv": r.lv,
+                                        "iv": r.iv}
             n = 1
             ls = []
             a = []
@@ -44,18 +44,19 @@ class Uplaysinfo:
                     em = members_dict.get(p[0], None)
                     if not em:
                         emby_name = '未绑定bot或已删除'
+                        tg = 'None'
                     else:
-                        new_iv = num[e - 1] + em["iv"] + (int(p[1]) // 60) if e <= 10 else em["iv"] + (int(p[1]) // 60)
-                        emby_name = f'{p[0][:1]}░{p[0][-1:]}' if em["lv"] == 'a' else f'{p[0]}'
-                        ls.append([em["tg"], new_iv])
-                        # ls = [[em["tg"], num[e - 1] if e <= 10 else 0 + em["iv"] + (int(p[1]) // 60)] for e, p in
-                        #       enumerate(play_list[d:d + 10], start=1) if
-                        #       (em := members_dict.get(p[0], None)) is not None]
+                        emby_name = f'{em["name"][:1]}░{em["name"][-1:]}' if em["lv"] == 'a' else f'{em["name"]}'
+                        tg = em["tg"]
+
+                        iv = num[e - 1] + (int(p[1]) // 60) if e <= 10 else (int(p[1]) // 60)
+                        new_iv = em["iv"] + iv if e <= 10 else em["iv"] + iv
+                        ls.append([em["tg"], new_iv, medal + emby_name, iv])
                     ad_time = await convert_s(int(p[1]))
-                    txt += f'{medal}**第{cn2an.an2cn(e)}名** | [{emby_name}](tg://user?id=None)\n' \
+                    txt += f'{medal}**第{cn2an.an2cn(e)}名** | [{emby_name}](tg://user?id={tg})\n' \
                            f'  播放时长 | {ad_time}\n'
                     e += 1
-                txt += f'\n#UPlaysRank {now.strftime("%Y-%m-%d")}'
+                txt += f'\n#UPlaysRank {datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")}'
                 a.append(txt)
                 n += 1
             return a, page, ls
@@ -70,7 +71,14 @@ class Uplaysinfo:
         send = await bot.send_photo(chat_id=group[0], photo=bot_photo, caption=a[0], reply_markup=play_button)
         if uplays and _open.uplays:
             if sql_update_embys(some_list=ls, method='iv'):
-                await send.reply(f'**自动将观看时长转换为{sakura_b}\n请已上榜用户检查是否到账**')
+                text = f'**自动将观看时长转换为{sakura_b}**\n\n'
+                for i in ls:
+                    text += f'[{i[2]}](tg://user?id={i[0]}) 获得了 {i[3]} {sakura_b}奖励\n'
+                n = 4096
+                chunks = [text[i:i + n] for i in range(0, len(text), n)]
+                for c in chunks:
+                    await bot.send_message(chat_id=group[0],
+                                           text=c + f'\n⏱️ 当前时间 - {datetime.now().strftime("%Y-%m-%d")}')
                 LOGGER.info(f'【userplayrank】： ->成功 数据库执行批量操作{ls}')
             else:
                 await send.reply(f'**🎂！！！为用户增加{sakura_b}出错啦** @工程师看看吧~ ')
@@ -78,6 +86,7 @@ class Uplaysinfo:
 
     @staticmethod
     async def check_low_activity():
+        now = datetime.now(timezone(timedelta(hours=8)))
         success, users = await emby.users()
         if not success:
             return await bot.send_message(chat_id=group[0], text='⭕ 调用emby api失败')

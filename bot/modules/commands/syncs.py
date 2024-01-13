@@ -54,7 +54,7 @@ async def sync_emby_group(_, msg):
     n = 1000
     chunks = [text[i:i + n] for i in range(0, len(text), n)]
     for c in chunks:
-        await send.reply(c + f'\n**{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}**', quote=False)
+        await send.reply(c + f'\n当前时间：{datetime.now().strftime("%Y-%m-%d")}', quote=False)
     end = time.perf_counter()
     times = end - start
     if a != 0:
@@ -163,3 +163,27 @@ async def reload_admins(_, msg):
     else:
         LOGGER.info(f"{msg.from_user.first_name} - {msg.from_user.id} 开启 emby 后台失败")
         await sendMessage(msg, "👮🏻 授权失败。未查询到绑定账户", timer=60)
+
+
+@bot.on_message(filters.command('deleted', prefixes) & admins_on_filter)
+async def clear_deleted_account(_, msg):
+    await deleteMessage(msg)
+    send = await msg.reply("🔍 正在运行清理程序...")
+    a = b = 0
+    text = '🛡️ **检索注销账户**\n\n'
+    async for d in msg.chat.get_members():  # 使用async for循环
+        b += 1
+        try:
+            if d.user.is_deleted:  # and d.is_member or any(keyword in l.user.first_name for keyword in keywords) 关键词检索，没模板不加了
+                await msg.chat.ban_member(d.user.id)
+                a += 1
+                text += f'{a}. `[{d.user.id}](tg://user?id={d.user.id})` 已注销\n'  # [{d.user.first_name}](tg://user?id={d.user.id}) -
+        except Exception as e:
+            LOGGER.error(e)
+    await send.delete()
+    n = 1024
+    chunks = [text[i:i + n] for i in range(0, len(text), n)]
+    for c in chunks:
+        await sendMessage(msg, c)
+
+

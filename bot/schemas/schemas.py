@@ -1,7 +1,7 @@
 import json
 import os
 from pydantic import BaseModel, StrictBool, field_validator, ValidationError
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 
 
 # 嵌套式的数据设计，规范数据 config.json
@@ -87,6 +87,14 @@ class Schedall(BaseModel):
                     self.week_ranks_message_id = i.get("week_ranks_message_id", 0)
 
 
+class Proxy(BaseModel):
+    scheme: Optional[str] = ""  # "socks4", "socks5" and "http" are supported
+    hostname: Optional[str] = ""
+    port: Optional[int] = None
+    username: str = ""
+    password: str = ""
+
+
 class Config(BaseModel):
     bot_name: str
     bot_token: str
@@ -124,6 +132,7 @@ class Config(BaseModel):
     # 如果使用的是 Python 3.10+ ，|运算符能用
     # w_anti_chanel_ids: Optional[List[str | int]] = []
     w_anti_chanel_ids: Optional[List[Union[str, int]]] = []
+    proxy: Optional[Proxy] = Proxy()
 
     def __init__(self, **data):
         super().__init__(**data)

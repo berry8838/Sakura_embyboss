@@ -72,5 +72,12 @@
   "db_docker_name": "mysql",
   "db_backup_dir": "./db_backup",
   "db_backup_maxcount": 7,
-  "w_anti_chanel_ids": []
+  "w_anti_chanel_ids": [],
+  "proxy": {
+    "scheme": "",
+    "hostname": "",
+    "port": null,
+    "username": "",
+    "password": ""
+  }
 }

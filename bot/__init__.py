@@ -111,7 +111,9 @@ if len(extra_emby_libs) > 0:
 from pyrogram import enums
 from pyromod import Client
 
-bot = Client(bot_name, api_id=owner_api, api_hash=owner_hash, bot_token=bot_token,
+proxy = {} if not config.proxy.scheme else config.proxy.dict()
+
+bot = Client(bot_name, api_id=owner_api, api_hash=owner_hash, bot_token=bot_token, proxy=proxy,
              workers=300,
              max_concurrent_transmissions=1000, parse_mode=enums.ParseMode.MARKDOWN)
 

@@ -203,6 +203,10 @@ cp config_example.json config.json
 <caption><h4>选填变量的配置填写指南</h4></caption>
 <thead><tr><th>类型</th><th>变量名称</th><th>填写描述</th></tr></thead>
 <tbody>
+<tr><td rowspan="4">Proxy <br>代理设置 <br>海外机请跳过</td><td>scheme</td><td><code>"socks4", "socks5", "http"</code> 推荐 "socks5"</td></tr>
+<tr><td>hostname</td><td>代理的主机地址</td></tr>
+<tr><td>port</td><td>端口</td></tr>
+<tr><td>username <br>password</td><td>温馨提示：<em>如果以上你都不会用，请使用海外机器</em><br>如果您的代理不需要授权, 可以省略 username password 空着不填</td></tr>
 <tr><td rowspan="2">user_buy<br>充电按钮</td><td>stat</td><td>是否开启充电按钮，即设置一个跳转网页的按钮<code>true</code> or <code>false</code></td></tr>
 <tr><td>button</td><td> 按钮样式<br><code>["🔋 点击充电","https://google.com","url"]</code>依序分别 “按钮显示文本”，“跳转网址”，固定不可变字段“url”</td></tr>
 <tr><td>货币</td><td>money</td><td> 功能货币的名称，默认<code>花币</code></td></tr>

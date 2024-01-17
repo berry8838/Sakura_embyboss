@@ -73,6 +73,7 @@ admin_p = user_p + [
     BotCommand("kk", "管理用户 [管理]"),
     BotCommand("score", "加/减积分 [管理]"),
     BotCommand("coins", f"加/减{sakura_b} [管理]"),
+    BotCommand("deleted", f"清理死号 [管理]"),
     BotCommand("renew", "调整到期时间 [管理]"),
     BotCommand("rmemby", "删除用户[包括非tg] [管理]"),
     BotCommand("prouser", "增加白名单 [管理]"),

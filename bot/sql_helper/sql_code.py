@@ -114,11 +114,7 @@ def sql_count_p_code(tg_id, us):
                         Code.used != None).filter(
                         Code.tg == tg_id).order_by(Code.tg.asc(), Code.usedtime.desc()).limit(30).offset(d).all()
                 x = ''
-                e = ''
-                if d == 0:
-                    e = 1
-                if d != 0:
-                    e = d + 1
+                e = 1 if d == 0 else d + 1
                 for link in result:
                     if us == 0:
                         c = f'{e}. `' + f'{link[1]}`' + f'\n🎁 {link[4]}d - [{link[2]}](tg://user?id={link[0]})(__{link[3]}__)\n'
@@ -143,24 +139,26 @@ def sql_count_c_code(tg_id):
             p = session.query(func.count()).filter(Code.tg == tg_id).scalar()
             if p == 0:
                 return None, 1
-            i = math.ceil(p / 30)
+            i = math.ceil(p / 5)
+            a = []
             b = 1
             # 分析出页数，将检索出 分割p（总数目）的 间隔，将间隔分段，放进【】中返回
             while b <= i:
-                d = (b - 1) * 30
+                d = (b - 1) * 5
                 result = session.query(Code.tg, Code.code, Code.used, Code.usedtime, Code.us).filter(
-                        Code.tg == tg_id).order_by(Code.tg.asc(), Code.usedtime.desc()).limit(30).offset(d).all()
+                        Code.tg == tg_id).order_by(Code.tg.asc(), Code.usedtime.desc()).limit(5).offset(d).all()
                 x = ''
-                e=1 if d == 0 else d + 1
+                e = 1 if d == 0 else d + 1
                 for link in result:
                     c = f'{e}. `{link[1]}`\n' \
                         f'🎁： {link[4]} 天 | 👤[{link[2]}](tg://user?id={link[2]})\n' \
                         f'🌏：{link[3]}\n\n'
                     x += c
                     e += 1
+                a.append(x)
                 b += 1
             # a 是数量，i是页数
-            return x, i
+            return a, i
         except Exception as e:
             # 查询失败时，打印异常信息，并返回None
             print(e)

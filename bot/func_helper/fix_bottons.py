@@ -19,7 +19,7 @@ def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
     :param uid:
     :return:
     """
-    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'], ['🎟️ 使用注册码', 'exchange']]  # ['🏪 商店', 'store_all']
+    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'], ['🎟️ 使用注册码', 'exchange']]
     if _open.checkin:
         d.append([f'🎯 签到', 'checkin'])
     if user_buy.stat:
@@ -29,16 +29,6 @@ def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
         lines.append([['👮🏻‍♂️ admin', 'manage']])
     keyword = ikb(lines)
     return keyword
-
-
-# @cache.memoize(ttl=600)
-# def buy_sth_ikb() -> InlineKeyboardMarkup:
-#     """
-#     购买按钮
-#     :return:
-#     """
-#     d = [[user_buy["button"]], [["💫 回到首页", "back_start"]]]
-#     return ikb(d)
 
 
 # un_group_answer
@@ -59,7 +49,7 @@ def members_ikb(emby=False) -> InlineKeyboardMarkup:
     """
     if emby:
         method = 'storeall' if not user_buy.stat else 'exchange'
-        return ikb([[('🏪 续期兑换', method), ('🗑️ 删除账号', 'delme')],
+        return ikb([[('🏪 兑换商店', method), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
                     [('♻️ 主界面', 'back_start')]])
     else:
@@ -79,7 +69,7 @@ re_exchange_b_ikb = ikb([[('♻️ 重试', 'exchange'), ('❌ 关闭', 'closeit
 
 
 def store_ikb():
-    return ikb([[(f'⚖️ {sakura_b}续期', 'store-renew'), (f'♾️ 兑换白名单', 'store-whitelist')],
+    return ikb([[(f'♾️ 兑换白名单', 'store-whitelist')],
                 [(f'🎟️ 兑换注册码', 'store-invite'), (f'🔍 查询注册码', 'store-query')], [(f'❌ 取消', 'members')]])
 
 
@@ -174,11 +164,27 @@ async def users_iv_button(i, j, tg) -> InlineKeyboardMarkup:
     return keyboard
 
 
-async def plays_list_button(i, j,days) -> InlineKeyboardMarkup:
+async def plays_list_button(i, j, days) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboard()
-    keyboard.paginate(i, j, 'uranks:{number}'+f'_{days}')
+    keyboard.paginate(i, j, 'uranks:{number}' + f'_{days}')
     keyboard.row(
         InlineButton('❌ - Close', f'closeit')
+    )
+    return keyboard
+
+
+async def user_query_page(i, j) -> InlineKeyboardMarkup:
+    """
+    member的注册码查询分页
+    :param i: 总
+    :param j: 当前
+    :param tg: tg
+    :return:
+    """
+    keyboard = InlineKeyboard()
+    keyboard.paginate(i, j, 'store-query:{number}')
+    keyboard.row(
+        InlineButton('❌ Close', f'closeit'), InlineButton('🔙 Back', 'storeall')
     )
     return keyboard
 
@@ -189,10 +195,10 @@ def cr_renew_ikb():
     whitelist = '✔️' if _open.whitelist else '❌'
     invite = '✔️' if _open.invite else '❌'
     keyboard = InlineKeyboard(row_width=2)
-    keyboard.add(InlineButton(f'{checkin} 签到', f'set_renew-checkin'),
-                 InlineButton(f'{exchange} 续期', f'set_renew-exchange'),
-                 InlineButton(f'{whitelist} 白名单', f'set_renew-whitelist'),
-                 InlineButton(f'{invite} 邀请码', f'set_renew-invite'))
+    keyboard.add(InlineButton(f'{checkin} 每日签到', f'set_renew-checkin'),
+                 InlineButton(f'{exchange} 自动{sakura_b}续期', f'set_renew-exchange'),
+                 InlineButton(f'{whitelist} 兑换白名单', f'set_renew-whitelist'),
+                 InlineButton(f'{invite} 兑换邀请码', f'set_renew-invite'))
     keyboard.row(InlineButton(f'◀ 返回', 'manage'))
     return keyboard
 
@@ -311,7 +317,6 @@ def sched_buttons():
 
 
 """ checkin 按钮↓"""
-
 
 # def shici_button(ls: list):
 #     shici = []

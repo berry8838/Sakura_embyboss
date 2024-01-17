@@ -46,14 +46,15 @@ class Uplaysinfo:
                         emby_name = '未绑定bot或已删除'
                         tg = 'None'
                     else:
-                        emby_name = f'{em["name"][:1]}░{em["name"][-1:]}' if em["lv"] == 'a' else f'{em["name"]}'
+                        # emby_name = f'{em["name"][:1]}░{em["name"][-1:]}' if em["lv"] == 'a' else f'{em["name"]}' tg隐藏没意义
+                        emby_name = em["name"]
                         tg = em["tg"]
 
                         iv = num[e - 1] + (int(p[1]) // 60) if e <= 10 else (int(p[1]) // 60)
                         new_iv = em["iv"] + iv if e <= 10 else em["iv"] + iv
                         ls.append([em["tg"], new_iv, medal + emby_name, iv])
                     ad_time = await convert_s(int(p[1]))
-                    txt += f'{medal}**第{cn2an.an2cn(e)}名** | [{emby_name}](tg://user?id={tg})\n' \
+                    txt += f'{medal}**第{cn2an.an2cn(e)}名** | [{emby_name}](google.com?q={tg})\n' \
                            f'  播放时长 | {ad_time}\n'
                     e += 1
                 txt += f'\n#UPlaysRank {datetime.now(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")}'

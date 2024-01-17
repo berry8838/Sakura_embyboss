@@ -216,7 +216,7 @@ cp config_example.json config.json
 <tr><td>tem</td><td>当前已注册用户计数，勿动，默认 <code>0</code></td></tr>
 <tr><td>allow_code</td><td>能否使用注册码续期，默认 true <code>true</code> or <code>false</code></td></tr>
 <tr><td>checkin</td><td>是否开启签到，默认 true <code>true</code> or <code>false</code></td></tr>
-<tr><td>exchange</td><td>是否开启兑换续期，默认 true <code>true</code> or <code>false</code></td></tr>
+<tr><td>exchange</td><td>是否开启花币月度自动续期，默认 true <code>true</code> or <code>false</code></td></tr>
 <tr><td>exchange_cost</td><td>续期一天的价格，默认 <code>300</code></td></tr>
 <tr><td>whitelist</td><td>是否开启兑换白名单，默认 true <code>true</code> or <code>false</code></td></tr>
 <tr><td>whitelist_cost</td><td>兑换白名单价格，默认 <code>9999</code></td></tr>

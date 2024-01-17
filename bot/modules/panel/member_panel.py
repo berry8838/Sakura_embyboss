@@ -21,7 +21,7 @@ from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.utils import members_info, tem_alluser, cr_link_one
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
-    store_ikb, re_store_renew, re_bindtg_ikb, close_it_ikb
+    store_ikb, re_store_renew, re_bindtg_ikb, close_it_ikb, user_query_page
 from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage, ask_return, deleteMessage
 from bot.modules.commands import p_start
 from bot.modules.commands.exchange import rgs_code
@@ -513,7 +513,7 @@ async def user_emby_unblock(_, call):
             currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
             # 保留不同的元素
             currentblock = [x for x in currentblock if x not in config.emby_block] + [x for x in config.emby_block if
-                                                                               x not in currentblock]
+                                                                                      x not in currentblock]
         except KeyError:
             currentblock = ['播放列表'] + extra_emby_libs
         re = await emby.emby_block(embyid, 0, block=currentblock)
@@ -542,50 +542,51 @@ async def call_exchange(_, call):
 
 @bot.on_callback_query(filters.regex('storeall') & user_in_group_on_filter)
 async def do_store(_, call):
-    if user_buy.stat or not _open.checkin:
-        return await callAnswer(call, '🌏 Sorry，此功能仅服务于开启 到期保号 模式和开启 签到 的公益服', True)
+    if user_buy.stat:
+        return await callAnswer(call, '🌏 Sorry，此功能仅服务于公益服，其他请点击 【使用注册码】 续期', True)
     await asyncio.gather(callAnswer(call, '✔️ 欢迎进入兑换商店'),
-                         editMessage(call, '🏪 请选择想要使用的服务', buttons=store_ikb()))
+                         editMessage(call, f'**🏪 请选择想要使用的服务：**\n⚖️ 自动{sakura_b}续期：{_open.exchange}',
+                                     buttons=store_ikb()))
 
 
-@bot.on_callback_query(filters.regex('store-renew') & user_in_group_on_filter)
-async def do_store_renew(_, call):
-    if _open.exchange:
-        await callAnswer(call, '✔️ 进入兑换时长')
-        e = sql_get_emby(tg=call.from_user.id)
-        if e is None:
-            return
-        if e.iv < _open.exchange_cost:
-            return await editMessage(call,
-                                     f'**🏪 兑换规则：**\n当前兑换为 {_open.exchange_cost}{sakura_b} / 一天，**兑换者所持有积分不得低于{_open.exchange_cost}**，当前仅：{e.iv}，请好好努力。',
-                                     buttons=back_members_ikb)
-
-        await editMessage(call,
-                          f'🏪 您已满足基础{sakura_b}要求，请回复您需要兑换的时长，当前兑换为 {_open.exchange_cost}{sakura_b} / 一天，退出请 /cancel')
-        m = await callListen(call, 120, buttons=re_store_renew)
-        if m is False:
-            return
-
-        elif m.text == '/cancel':
-            await asyncio.gather(m.delete(), do_store(_, call))
-        else:
-            try:
-                await m.delete()
-                iv = int(m.text)
-            except KeyError:
-                await editMessage(call, f'❌ 请不要调戏bot，输入一个整数！！！', buttons=re_store_renew)
-            else:
-                new_us = e.iv - iv
-                if new_us < 0:
-                    sql_update_emby(Emby.tg == call.from_user.id, iv=e.iv - 10)
-                    return await editMessage(call, f'🫡，西内！输入值超出你持有的{e.iv}{sakura_b}，倒扣10。')
-                new_ex = e.ex + timedelta(days=iv / _open.exchange_cost)
-                sql_update_emby(Emby.tg == call.from_user.id, ex=new_ex, iv=new_us)
-                await asyncio.gather(emby.emby_change_policy(id=e.embyid),
-                                     editMessage(call, f'🎉 您已花费 {iv}{sakura_b}\n🌏 到期时间 **{new_ex}**'))
-                LOGGER.info(f'【兑换续期】- {call.from_user.id} 已花费 {iv}{sakura_b}，到期时间：{new_ex}')
-    else:
-        await callAnswer(call, '❌ 管理员未开启此兑换', True)
+# @bot.on_callback_query(filters.regex('store-renew') & user_in_group_on_filter)
+# async def do_store_renew(_, call):
+#     if _open.exchange:
+#         await callAnswer(call, '✔️ 进入兑换时长')
+#         e = sql_get_emby(tg=call.from_user.id)
+#         if e is None:
+#             return
+#         if e.iv < _open.exchange_cost:
+#             return await editMessage(call,
+#                                      f'**🏪 兑换规则：**\n当前兑换为 {_open.exchange_cost}{sakura_b} / 一天，**兑换者所持有积分不得低于{_open.exchange_cost}**，当前仅：{e.iv}，请好好努力。',
+#                                      buttons=back_members_ikb)
+#
+#         await editMessage(call,
+#                           f'🏪 您已满足基础{sakura_b}要求，请回复您需要兑换的时长，当前兑换为 {_open.exchange_cost}{sakura_b} / 一天，退出请 /cancel')
+#         m = await callListen(call, 120, buttons=re_store_renew)
+#         if m is False:
+#             return
+#
+#         elif m.text == '/cancel':
+#             await asyncio.gather(m.delete(), do_store(_, call))
+#         else:
+#             try:
+#                 await m.delete()
+#                 iv = int(m.text)
+#             except KeyError:
+#                 await editMessage(call, f'❌ 请不要调戏bot，输入一个整数！！！', buttons=re_store_renew)
+#             else:
+#                 new_us = e.iv - iv
+#                 if new_us < 0:
+#                     sql_update_emby(Emby.tg == call.from_user.id, iv=e.iv - 10)
+#                     return await editMessage(call, f'🫡，西内！输入值超出你持有的{e.iv}{sakura_b}，倒扣10。')
+#                 new_ex = e.ex + timedelta(days=iv / _open.exchange_cost)
+#                 sql_update_emby(Emby.tg == call.from_user.id, ex=new_ex, iv=new_us)
+#                 await asyncio.gather(emby.emby_change_policy(id=e.embyid),
+#                                      editMessage(call, f'🎉 您已花费 {iv}{sakura_b}\n🌏 到期时间 **{new_ex}**'))
+#                 LOGGER.info(f'【兑换续期】- {call.from_user.id} 已花费 {iv}{sakura_b}，到期时间：{new_ex}')
+#     else:
+#         await callAnswer(call, '❌ 管理员未开启此兑换', True)
 
 
 @bot.on_callback_query(filters.regex('store-whitelist') & user_in_group_on_filter)
@@ -594,12 +595,12 @@ async def do_store_whitelist(_, call):
         e = sql_get_emby(tg=call.from_user.id)
         if e is None:
             return
-        if e.iv < {_open.whitelist_cost} or e.lv == 'a':
+        if e.iv < _open.whitelist_cost or e.lv == 'a':
             return await callAnswer(call,
                                     f'🏪 兑换规则：\n当前兑换白名单需要 {_open.whitelist_cost} {sakura_b}，已有白名单无法再次消费。勉励',
                                     True)
         await callAnswer(call, f'🏪 您已满足 {_open.whitelist_cost} {sakura_b}要求', True)
-        sql_update_emby(Emby.tg == call.from_user.id, lv='a', iv=e.iv - {_open.whitelist_cost})
+        sql_update_emby(Emby.tg == call.from_user.id, lv='a', iv=e.iv - _open.whitelist_cost)
         send = await call.message.edit(f'**{random.choice(Yulv.load_yulv().wh_msg)}**\n\n'
                                        f'🎉 恭喜[{call.from_user.first_name}](tg://user?id={call.from_user.id}) 今日晋升，{ranks["logo"]}白名单')
         await send.forward(group[0])
@@ -667,5 +668,9 @@ async def do_store_query(_, call):
     a, b = sql_count_c_code(tg_id=call.from_user.id)
     if not a:
         return await callAnswer(call, '❌ 空', True)
-    await callAnswer(call, '📜 请等待搜索。')
-    await sendMessage(call, text=a, buttons=close_it_ikb)
+    try:
+        number = int(call.data.split(':')[1])
+    except (IndexError, KeyError, ValueError):
+        number = 1
+    await callAnswer(call, '📜 正在翻页')
+    await editMessage(call, text=a[number - 1], buttons=await user_query_page(b, number))

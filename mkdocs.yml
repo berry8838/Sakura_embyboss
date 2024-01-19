@@ -1,0 +1,155 @@
+# [Info]
+site_name: Sakura_embyboss # 左上角标题
+site_url: https://berry8838.github.io/Sakura_embyboss
+site_author: First Lover
+site_description: Emby Bot 指南
+
+
+# [UI]
+theme:
+  name: material
+#  custom_dir: overrides # 改写
+  palette: #调色板
+    # 首选自动调节模式
+    #    - media: "(prefers-color-scheme)"
+    #      toggle:
+    #        icon: material/brightness-auto
+    #        name: Switch to light mode
+
+    - scheme: default # 日间模式
+      primary: deep purple # 上方的横栏颜色
+      accent: deep orange # 链接等可交互元件的高亮色
+      toggle:
+        icon: material/brightness-7 # 图标
+        name: 切换夜间模式 # 鼠标悬浮提示
+
+    - scheme: slate # 夜间模式
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: 切换日间模式
+  font:
+    text: Roboto
+    code: Roboto code
+
+  favicon: assets/images/bot2.png
+  logo: assets/images/bot2.png
+
+  features:
+    - header.autohide #自动隐藏标题
+    - navigation.instant #即时加载
+    - navigation.instant.progress #进度指示
+    - navigation.tabs # 使用Tab来进行分类，导航选项卡
+    - navigation.top # 返回顶部的按钮 在上滑时出现
+    - navigation.sections #导航侧边栏中呈现为组，顶级分区
+    - navigation.indexes # Tab会有一个index.md 而不是在打开Tab时打开第一篇文章
+    - navigation.expand # 打开Tab时左侧目录全部展开
+    - navigation.tracking # 显示锚点
+    - navigation.path # 显示路径
+    - navigation.footer
+    - search.suggest # 搜索输入一些字母时推荐补全整个单词
+    - search.highlight # 搜索出的文章关键词加入高亮
+    - content.code.copy # 可以通过按钮复制代码
+    - content.action.edit # 点击按钮跳转到编辑页面  需要结合 edit_uri 一起使用
+    - announce.dismiss
+    - content.action.view
+    - content.code.annotate
+    - toc.follow
+  language: zh # 中文提示
+  icon:
+    repo: fontawesome/brands/github
+
+nav:
+  - 简介: index.md
+  - 如何部署:
+      - 项目简介: deploy/get_start.md
+      - 使用命令: deploy/introduce.md
+
+
+edit_uri: edit/main/docs # 编辑按钮跳转的链接
+repo_url: https://github.com/berry8838/Sakura_embyboss # 右上角点击跳转的链接
+repo_name: berry8838/Sakura_embyboss # 右上角的名字
+
+
+copyright: Copyright &copy 2023 - 2024 <a href="https://github.com/berry8838" rel="su">by First Lover</a> # #底部左边版权信息
+
+extra:
+  homepage: https://berry8838.github.io/Sakura_embyboss # 主页，点击图片跳转
+  social: # 底部右边
+    - icon: fontawesome/brands/github
+      link: https://github.com/berry8838
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/r/jingwei520/sakura_embyboss
+    - icon: fontawesome/regular/envelope #联系方式图标
+      link: mailto:<bernardinetabattkhc36@gmail.com> #邮件联系方式
+    - icon: fontawesome/brands/telegram
+      link: https://t.me/aaaaa_su
+  #  analytics:
+  #    provider: google
+  #    property:
+
+  # cookies设置（可选）
+  # consent:
+  #   title: Cookie consent
+  #   description: >-
+  #     我们也使用cookies来识别您的重复访问和偏好来衡量我们文档的有效性以及用户是否找到他们要找的东西。
+  #     如果你同意,你可以帮助我们让我们的网站更好
+
+
+
+plugins:
+  - search:
+      separator: '[\s\u200b\-]'
+      # insider已经支持中文的分词搜索了 https://squidfunk.github.io/mkdocs-material/blog/2022/chinese-search-support/
+  - tags # 给单篇文章添加标签 https://squidfunk.github.io/mkdocs-material/setup/setting-up-tags/?h=tags
+
+markdown_extensions:
+  - tables
+  - abbr
+  - attr_list # 链接转换成按钮
+  - admonition
+  - def_list
+  - footnotes
+  - md_in_html
+  - markdown.extensions.abbr # 支持Markdown文件上方自定义标题标签等
+  - pymdownx.caret
+  - pymdownx.betterem
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.snippets
+  - pymdownx.smartsymbols
+  - pymdownx.tilde
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format # 代码块高亮插件
+  - pymdownx.arithmatex: # latex支持
+      generic: true
+  - toc:
+      permalink: true # 固定标题位置为当前位置
+  - pymdownx.highlight: # 代码块高亮
+      anchor_linenums: true
+      linenums: true # 显示行号
+      # auto_title: true # 显示编程语言名称
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - toc:
+      permalink: ⚓︎ # 显示锚点
+      #slugify: !!python/name:pymdownx.slugs.slugify # 显示一些Unicode的标识符（可能是罗马希腊那些什么鬼符号）
+      slugify: !!python/object/apply:pymdownx.slugs.slugify { kwds: { case: lower } }
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+
+extra_css:
+  - stylesheets/extra.css # 其他样式

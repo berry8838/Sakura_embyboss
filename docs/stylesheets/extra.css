@@ -1,0 +1,32 @@
+/*修改note样式*/
+.md-typeset .admonition,
+.md-typeset details {
+    border-width: 0;
+    border-left-width: 4px;
+}
+
+/*!*修改底栏颜色*!*/
+/*footer {*/
+/*    background-color: hsl(199deg, 18%, 40%, .9) !important;*/
+/*    font-size: 16px;*/
+/*}*/
+
+
+/*#region1图片放大start*/
+.shadow {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.zoom {
+    transition: transform ease-in-out 0.5s;
+    cursor: zoom-in;
+}
+
+.image-zoom-large {
+    transform: scale(1.9);
+    cursor: zoom-out;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    z-index: 100;
+    position: relative;
+}
+/*#regionend1图片放大end*/

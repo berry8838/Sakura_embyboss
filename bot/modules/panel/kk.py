@@ -71,31 +71,31 @@ async def kk_user_ban(_, call):
     if e.embyid is None:
         await editMessage(call, f'💢 ta 没有注册账户。', timer=60)
     else:
+        text = f'🎯 管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 对 [{first.first_name}](tg://user?id={b}) - {e.name} 的'
         if e.lv != "c":
             if await emby.emby_change_policy(id=e.embyid, method=True) is True:
                 if sql_update_emby(Emby.tg == b, lv='c') is True:
-                    await editMessage(call,
-                                      f'🎯 管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已禁用[{first.first_name}](tg://user?id={b}) 账户 {e.name}\n'
-                                      f'此状态可在下次续期时刷新')
-                    await bot.send_message(b,
-                                           f"🎯 管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已禁用 您的账户 {e.name}\n此状态可在下次续期时刷新")
-                    LOGGER.info(f"【admin】：管理员 {call.from_user.id} 完成禁用 {b} 账户 {e.name}")
+                    text += f'封禁完成，此状态可在下次续期时刷新'
+                    LOGGER.info(text)
                 else:
-                    await editMessage(call, '⚠️ 封禁失败，服务器已执行，数据库写入错误')
+                    text += '封禁失败，已执行，但数据库写入错误'
+                    LOGGER.error(text)
             else:
-                await editMessage(call, '⚠️ 封禁失败，请检查emby服务器。响应错误')
+                text += f'封禁失败，请检查emby服务器。响应错误'
+                LOGGER.error(text)
         elif e.lv == "c":
             if await emby.emby_change_policy(id=e.embyid):
                 if sql_update_emby(Emby.tg == b, lv='b'):
-                    await editMessage(call,
-                                      f'🎯 管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已解除禁用[{first.first_name}](tg://user?id={b}) 账户 {e.name}')
-                    await bot.send_message(b,
-                                           f"🎯 管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已解除禁用 您的账户 {e.name}")
-                    LOGGER.info(f"【admin】：管理员 {call.from_user.id} 解除禁用 {b} 账户 {e.name}")
+                    text += '解禁完成'
+                    LOGGER.info(text)
                 else:
-                    await editMessage(call, '⚠️ 解封失败，服务器已执行，数据库写入错误')
+                    text += '解禁失败，服务器已执行，数据库写入错误'
+                    LOGGER.error(text)
             else:
-                await editMessage(call, '⚠️ 解封失败，请检查emby服务器。响应错误')
+                text += '解封失败，请检查emby服务器。响应错误'
+                LOGGER.error(text)
+        await editMessage(call, text)
+        await bot.send_message(b, text)
 
 
 # 开通额外媒体库
@@ -231,20 +231,8 @@ async def fuck_off_m(_, call):
                           f"⚠️ 打咩，no，机器人不可以对群组管理员出手喔，请[自己](tg://user?id={call.from_user.id})解决")
     else:
         first = await bot.get_chat(b)
-        e = sql_get_emby(tg=b)
-        if e.embyid is None:
-            await editMessage(call, f'💢 ta 还没有注册账户，但会为 [您](tg://user?id={call.from_user.id}) 执行踢出')
-            LOGGER.info(
-                f"【admin】：{call.from_user.id} 已从群组 {call.message.chat.id} 封禁 {first.first_name}-{b} ")
-        else:
-            if await emby.emby_del(e.embyid) is True:
-                await editMessage(call,
-                                  f'🎯 done，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n等级：{e.lv} - [{first.first_name}](tg://user?id={b}) '
-                                  f'账户 {e.name} 已删除并封禁')
-                await bot.send_message(b,
-                                       f"🎯 管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已删除 您 的账户 {e.name}，并将您从群组封禁。")
-                LOGGER.info(f"【admin】：{call.from_user.id} 已从群组 {call.message.chat.id} 封禁 {b} 并删除账户")
-            else:
-                await editMessage(call,
-                                  f'🎯 管理员 {call.from_user.first_name}\n等级：{e.lv} - {first.first_name}的账户 {e.name} 操作失败')
-                LOGGER.info(f"【admin】：{call.from_user.id} 对 {b} 的账户 {e.name} 删除封禁失败 ")
+        await call.chat.ban_member(b)  # 默认退群了就删号
+        await editMessage(call,
+                          f'🎯 done，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已移除 {first.first_name}')
+        LOGGER.info(
+            f"【admin】：{call.from_user.id} 已从群组 {call.message.chat.id} 封禁 {first.first_name} - {b}")

@@ -20,4 +20,4 @@ jobs: # 工作流的具体内容
           pip install mkdocs-git-revision-date-localized-plugin
           pip install mkdocs-material
           pip install mkdocs-glightbox
-      - run: mkdocs docs --force # 部署分支
+      - run: mkdocs gh-deploy --force # 部署分支

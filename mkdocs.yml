@@ -33,7 +33,7 @@ theme:
   #    text: Roboto
   #    code: Roboto code
 
-  favicon: assets/images/bot2.png
+  favicon: assets/images/favicon.ico
   logo: assets/images/bot2.png
 
   features:
@@ -73,12 +73,13 @@ nav:
           - docker-compose.yml模板: deploy/compose.md
       - 二、源码 安装:
           - 配置说明: deploy/start_systemd.md
-      - 三、使用帮助:
-          - helper: use_cases/helper.md
-      - 四、FAQ: use_cases/FAQ.md
+  - 使用帮助:
+      - Helper: use_cases/Helper.md
+      - FAQ: use_cases/FAQ.md
+  - 特别感谢: thanks/thanks.md
 
 edit_uri: edit/docs/docs # 编辑按钮跳转的链接
-repo_url: https://berry8838.github.io/Sakura_embyboss # 右上角点击跳转的链接
+repo_url: https://github.com/berry8838/Sakura_embyboss # 右上角点击跳转的链接
 repo_name: berry8838/Sakura_embyboss # 右上角的名字
 
 

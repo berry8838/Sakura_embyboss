@@ -167,3 +167,5 @@ hide:
 <hr>
 
 [开始部署 :fontawesome-solid-paper-plane:](deploy/introduce.md){ .md-button .md-button--go_start }
+
+<script src="//code.tidio.co/60kqb4lpaspbgunuswomstvslctjyjds.js" async></script>

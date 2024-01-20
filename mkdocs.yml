@@ -77,8 +77,8 @@ nav:
           - helper: use_cases/helper.md
       - 四、FAQ: use_cases/FAQ.md
 
-edit_uri: edit/main/docs # 编辑按钮跳转的链接
-repo_url: https://github.com/berry8838/Sakura_embyboss/docs # 右上角点击跳转的链接
+edit_uri: edit/docs/docs # 编辑按钮跳转的链接
+repo_url: https://berry8838.github.io/Sakura_embyboss # 右上角点击跳转的链接
 repo_name: berry8838/Sakura_embyboss # 右上角的名字
 
 

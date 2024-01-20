@@ -1,5 +1,5 @@
 # [Info]
-site_name: Sakura_embyboss # 左上角标题
+site_name: Wiki For Embybot # 左上角标题
 site_url: https://berry8838.github.io/Sakura_embyboss
 site_author: First Lover
 site_description: Emby Bot 指南
@@ -8,7 +8,7 @@ site_description: Emby Bot 指南
 # [UI]
 theme:
   name: material
-#  custom_dir: overrides # 改写
+  #  custom_dir: overrides # 改写
   palette: #调色板
     # 首选自动调节模式
     #    - media: "(prefers-color-scheme)"
@@ -18,7 +18,7 @@ theme:
 
     - scheme: default # 日间模式
       primary: deep purple # 上方的横栏颜色
-      accent: deep orange # 链接等可交互元件的高亮色
+      accent: deep orange # 链接等可交互元件的高亮色，默认色的
       toggle:
         icon: material/brightness-7 # 图标
         name: 切换夜间模式 # 鼠标悬浮提示
@@ -29,15 +29,15 @@ theme:
       toggle:
         icon: material/brightness-4
         name: 切换日间模式
-  font:
-    text: Roboto
-    code: Roboto code
+  #  font:
+  #    text: Roboto
+  #    code: Roboto code
 
   favicon: assets/images/bot2.png
   logo: assets/images/bot2.png
 
   features:
-    - header.autohide #自动隐藏标题
+    #    - header.autohide #自动隐藏标题栏
     - navigation.instant #即时加载
     - navigation.instant.progress #进度指示
     - navigation.tabs # 使用Tab来进行分类，导航选项卡
@@ -47,28 +47,38 @@ theme:
     - navigation.expand # 打开Tab时左侧目录全部展开
     - navigation.tracking # 显示锚点
     - navigation.path # 显示路径
-    - navigation.footer
-    - search.suggest # 搜索输入一些字母时推荐补全整个单词
-    - search.highlight # 搜索出的文章关键词加入高亮
-    - content.code.copy # 可以通过按钮复制代码
-    - content.action.edit # 点击按钮跳转到编辑页面  需要结合 edit_uri 一起使用
+    - navigation.footer # 页脚
+    - search.suggest # 搜索推荐补全
+    - search.highlight # 搜索关键词高亮
+    - content.code.copy # 按钮复制代码
+    - content.action.edit # 按钮跳转到编辑页面  需要结合 edit_uri 一起使用
+    - header.announce # 顶部通知
     - announce.dismiss
     - content.action.view
     - content.code.annotate
+    - content.code.select
     - toc.follow
   language: zh # 中文提示
   icon:
     repo: fontawesome/brands/github
+    annotation: material/plus-circle-outline
 
 nav:
-  - 简介: index.md
+  - Home: index.md
   - 如何部署:
-      - 项目简介: deploy/get_start.md
-      - 使用命令: deploy/introduce.md
-
+      - 流程速记: deploy/introduce.md
+      - 一、Docker 安装:
+          - 配置说明: deploy/start_docker.md
+          - confg.json模板: deploy/config_json.md
+          - docker-compose.yml模板: deploy/compose.md
+      - 二、源码 安装:
+          - 配置说明: deploy/start_systemd.md
+      - 三、使用帮助:
+          - helper: use_cases/helper.md
+      - 四、FAQ: use_cases/FAQ.md
 
 edit_uri: edit/main/docs # 编辑按钮跳转的链接
-repo_url: https://github.com/berry8838/Sakura_embyboss # 右上角点击跳转的链接
+repo_url: https://github.com/berry8838/Sakura_embyboss/docs # 右上角点击跳转的链接
 repo_name: berry8838/Sakura_embyboss # 右上角的名字
 
 
@@ -95,14 +105,41 @@ extra:
   #   description: >-
   #     我们也使用cookies来识别您的重复访问和偏好来衡量我们文档的有效性以及用户是否找到他们要找的东西。
   #     如果你同意,你可以帮助我们让我们的网站更好
+  status:
+    new: Recently added
+    deprecated: Deprecated
 
 
 
 plugins:
+  - glightbox: # 图片
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      slide_effect: slide
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: true
+      skip_classes:
+        - custom-skip-class-name
+      auto_caption: false
+      caption_position: bottom
   - search:
-      separator: '[\s\u200b\-]'
-      # insider已经支持中文的分词搜索了 https://squidfunk.github.io/mkdocs-material/blog/2022/chinese-search-support/
-  - tags # 给单篇文章添加标签 https://squidfunk.github.io/mkdocs-material/setup/setting-up-tags/?h=tags
+      separator: '[\s\u200b\-]' #pip install jieba 即可使用中文搜索
+  #  - tags # 给单篇文章添加标签 https://squidfunk.github.io/mkdocs-material/setup/setting-up-tags/?h=tags
+  - git-revision-date-localized:
+      type: timeago #时间类型
+      custom_format: "%d. %B %Y"  # 时间格式
+      timezone: Asia/Shanghai  #时区
+      locale: zh #首选语言
+      fallback_to_build_date: false #许回退到git 不可用时mkdocs build执行的时间
+      enable_creation_date: true #是否启用创建时间
+      exclude: #排除的页面
+        - index.md
+        - deploy/introduce.md
+      enabled: true #是否启用
+      strict: true
 
 markdown_extensions:
   - tables
@@ -123,7 +160,7 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.smartsymbols
   - pymdownx.tilde
-  - pymdownx.superfences:
+  - pymdownx.superfences: # 流程图
       custom_fences:
         - name: mermaid
           class: mermaid
@@ -134,8 +171,8 @@ markdown_extensions:
       permalink: true # 固定标题位置为当前位置
   - pymdownx.highlight: # 代码块高亮
       anchor_linenums: true
-      linenums: true # 显示行号
-      # auto_title: true # 显示编程语言名称
+  #      linenums: true # 显示行号
+  #      auto_title: true # 显示编程语言名称
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
@@ -145,11 +182,13 @@ markdown_extensions:
       custom_checkbox: true
   - toc:
       permalink: ⚓︎ # 显示锚点
-      #slugify: !!python/name:pymdownx.slugs.slugify # 显示一些Unicode的标识符（可能是罗马希腊那些什么鬼符号）
       slugify: !!python/object/apply:pymdownx.slugs.slugify { kwds: { case: lower } }
   - pymdownx.tasklist:
       custom_checkbox: true
 
+extra_javascript:
+  - javascripts/extra.js
 
 extra_css:
+  - https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css
   - stylesheets/extra.css # 其他样式

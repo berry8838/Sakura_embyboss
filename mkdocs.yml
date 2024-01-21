@@ -177,7 +177,9 @@ markdown_extensions:
   - pymdownx.highlight: # 代码块高亮
       anchor_linenums: true
   #      linenums: true # 显示行号
-  #      auto_title: true # 显示编程语言名称
+#      auto_title: true # 显示编程语言名称
+      pygments_lang_class: true
+  - pymdownx.superfences
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg

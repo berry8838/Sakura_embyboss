@@ -14,7 +14,7 @@
 
     === "第一步：打开 [@Botfather](https://t.me/BotFather)"
 
-        __选择你创建的 bot，进入一下页面点击 【Bot Settings】__<br>
+        __[@Botfather](https://t.me/BotFather) 选择你创建的 bot，进入一下页面点击 【Bot Settings】__<br>
          ![bot_set1](../assets/images/admin/bot_set1.png){height=300 width=300}
 
     === "第二步：开启内联模式"

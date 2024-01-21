@@ -12,6 +12,7 @@ chmod +x /usr/local/bin/docker-compose
 systemctl start docker 
 systemctl enable docker
 ```
+
 <hr>
 
 ## 2、拉取代码
@@ -22,6 +23,7 @@ systemctl enable docker
 sudo apt install python3-pip
 git clone https://github.com/berry8838/Sakura_embyboss.git && cd Sakura_embyboss && chmod +x main.py
 ```
+
 <hr>
 
 ## 3、填写config.json
@@ -73,13 +75,19 @@ docker-compose up -d
 
 !!!success success_docker "恭喜，您已经走完了创建流程！"
 <hr>
-## 5、如何更新
-- [x] `docker logs -f embyboss` 可以查看控制台输出，是否正常运行ing
-- [ ] 如需更新请删除原镜像，重新拉取启动，示例如下
 
-```shell hl_lines="1 2"
-cd ./Sakura_embyboss # 先切到工作目录
-docker-compose down # 停止Bot or docker stop embyboss
-docker-compose pull # 更新镜像
-docker-compose up -d #后台运行
+## 5、如何更新
+
+- [x] `docker logs -f embyboss` 可以查看控制台输出，是否正常运行ing
+- [ ] 如需更新请删除原镜像，重新拉取启动, 复制使用
+
+``` hl_lines="1"
+cd ./Sakura_embyboss && docker-compose down && docker-compose pull && docker-compose up -d
 ```
+
+!!!question "对上条命令详解"
+
+    * cd ./Sakura_embyboss # 先切到工作目录
+    * docker-compose down # 停止Bot or docker stop embyboss
+    * docker-compose pull # 更新镜像
+    * docker-compose up -d #后台运行

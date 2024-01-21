@@ -192,7 +192,7 @@ button.md-top:hover {
 
 /*region6鼠标效果*/
 /* 鼠标样式 */
-a, img,.all_index summary:hover ,.md-button:hover{
+a, img, .all_index summary:hover, .md-button:hover {
     cursor: url("/Sakura_embyboss/assets/cursor/pen.cur"), auto;
 }
 

@@ -1,6 +1,8 @@
 ---
 hide:
   - footer #隐藏页脚
+
+author: false
 ---
 
 # 🌸 Sakura_embyboss 初学练习版
@@ -20,6 +22,7 @@ hide:
 - **推荐使用 Debian 11操作系统，AMD处理器架构的vps搭建**
 - 解决不了大的技术问题（因为菜菜），如需要，请自行fork修改，__如果能提点有意思的pr就更好啦__
 - 反馈请尽量 issue，看到会处理
+- 再次说明，此为Emby开服管理Bot，个人请pass
 
 !!! 声明
 
@@ -124,10 +127,10 @@ hide:
 欢迎提供 ISSUE 或者 PR<br>
 <a href="https://github.com/berry8838/Sakura_embyboss/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=berry8838/Sakura_embyboss" />
-</a>  
-
+</a>
 <hr>
 
+## next
 <div class="grid cards" markdown>
 
 -   :octicons-heart-fill-24:{ .heart } __搭建快速__
@@ -166,6 +169,6 @@ hide:
 
 <hr>
 
-[开始部署 :fontawesome-solid-paper-plane:](deploy/introduce.md){ .md-button .md-button--go_start }
+[开始部署 :fontawesome-solid-paper-plane:](deploy/introduce.md#流程图){ .md-button .md-button--go_start }
 
 <script src="//code.tidio.co/60kqb4lpaspbgunuswomstvslctjyjds.js" async></script>

@@ -21,7 +21,7 @@ __数据库的搭建方式多样，本文仅截取两种来说__
 
         1. 登录宝塔
         2. 安装数据库 mysql<br>
-        ![点击 宝塔示例图片](/Sakura_embyboss/assets/images/bt.png){_blank width=400px height=200px}
+        ![点击 宝塔示例图片](../assets/images/bt.png){_blank width=400px height=200px}
 
     === "docker安装"
 

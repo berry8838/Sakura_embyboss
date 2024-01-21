@@ -6,18 +6,18 @@
 <thead><tr><th>类型</th><th>变量名称</th><th>填写描述</th></tr></thead>
 <tbody>
 <tr><td rowspan="10">Telegram Bot</td><td>bot_name</td><td>bot的username，比如我的机器人@keaiji1_bot，就填<code>keaiji1_bot</code></td></tr>
-<tr><td>bot_token</td><td> bot的API token ，你在@Botfather创建bot时的api_key</td></tr>
-<tr><td>owner_api</td><td> 你的api https://my.telegram.org/auth 获取</td></tr>
-<tr><td>owner_hash</td><td> 你的api https://my.telegram.org/auth 获取</td></tr>
+<tr><td>bot_token</td><td> bot的API token ，你在 <a href="https://t.me/BotFather" target="_blank">@Botfather</a> 创建bot时的api_key</td></tr>
+<tr><td>owner_api</td><td> 你的api <a href="https://my.telegram.org/auth" target="_blank">https://my.telegram.org/auth</a> 获取</td></tr>
+<tr><td>owner_hash</td><td> 你的api <a href="https://my.telegram.org/auth" target="_blank">https://my.telegram.org/auth</a> 获取</td></tr>
 <tr><td>owner</td><td> 拥有者的tgid </td></tr>
 <tr><td>group</td><td> 授权群组id，如<code>-1001869392674</code>，未授权的群组拉bot会自动退出。不在群组的成员会提示先加入群组 </td></tr>
-<tr><td>main_group</td><td> 群组的用户名(形如bot_name) 或 私密群组的邀请链接，如 <code>https://t.me/+7ZL9MbJd8h44Zjc1</code>中<code>+7ZL9MbJd8h44Zjc1</code>，没有的话就随便填个 Google.com </td></tr>
-<tr><td>chanel</td><td> 你频道username (形如bot_name)，没有的话就随便填个 Google.com 吧 </td></tr>
-<tr><td>bot_photo</td><td> 形如 <code>https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png</code> bot发送消息时的配图，可更换图片url，必要 </td></tr>
+<tr><td>main_group</td><td> 群组的username, 形如 <a href="https://t.me/su_yxfy" target="_blank">@su_yxfy</a> 中的 <code>su_yxfy</code><br>或私密群组的邀请链接，如 <a href="https://t.me/+7ZL9MbJd8h44Zjc1" target="_blank">https://t.me/+7ZL9MbJd8h44Zjc1</a>中<code>+7ZL9MbJd8h44Zjc1</code>，没有的话就随便填个 Google.com </td></tr>
+<tr><td>chanel</td><td>填写方式同 main_group </td></tr>
+<tr><td>bot_photo</td><td> 形如 <a href="https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png" target="_blank">https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png</a> bot发送消息时的配图，可更换图片url，重要</td></tr>
 <tr><td>admins</td><td> 默认<code>[ ]</code> 为空，可以将想要赋予权限的tg用户id填进 </td></tr>
 <tr><td rowspan="3" > Emby </td><td>emby_api</td><td> emby的api_key，<code>【Emby Service 管理】-> 【高级】->【API密钥】</code>创建一个 </td></tr>
-<tr><td>emby_url</td><td> 形如 <code>http://255.255.255.36:8096</code> or <code>https://emby.susuyyds.xyz</code> 最后不带斜杠，为发起请求emby的地址 </td></tr>
-<tr><td>emby_line</td><td> 展示给用户的emby地址和信息，仅支持telegram的MarkdownV2写法  </td></tr>
+<tr><td>emby_url</td><td> 形如 <a target="_blank" href="">http://255.255.255.36:8096（纯ip）</a> or <a href="https://emby.susuyyds.xyz" target="_blank">https://emby.susuyyds.xyz（有反代）</a> 最后不带斜杠，为发起请求emby的地址 </td></tr>
+<tr><td>emby_line</td><td> 【服务器板块】展示给用户的emby地址和信息，仅支持telegram的MarkdownV2写法  </td></tr>
 <tr><td rowspan="4" > Database <br>(Mysql) </td><td> db_host </td><td>本机<code>localhost</code> or 数据库的ip <code>255.255.255.36</code> 端口默认<i>3306</i></td></tr>
 <tr><td> db_user </td><td>数据库用户名,默认 <code>susu</code> </td></tr>
 <tr><td> db_pwd </td><td>数据库密码,默认 <code>1234</code> </td></tr>
@@ -26,10 +26,10 @@
 <tfoot></tfoot>
 </table> 
 
-- 如已经填完上述，您已经可以 [启动bot](../start_docker#4一键启动)了
-- 接下来是 【选填项目】 会自动生成，不填亦可
+- __如已经填完上述，可以直接前往 [启动bot](../deploy/start_docker.md#4一键启动)__
+- 接下来是 【选填项目】 会自动生成，不填亦可，如果填写，请认真阅读！！！
 
-## ⚖ 选填
+## :material-equalizer-outline: 选填
 <table border="1" cellspacing="0">
 <caption><h4>选填变量的配置填写指南</h4></caption>
 <thead><tr><th>类型</th><th>变量名称</th><th>填写描述</th></tr></thead>
@@ -74,7 +74,7 @@
 <tr><td>db_docker_name</td><td>默认 <code>mysql</code>，若docker模式启动的数据库，此数据库容器的名字`</td></tr>
 <tr><td>db_backup_dir</td><td>默认 <code>./backup</code>数据库备份文件所保存的目录 </td></tr>
 <tr><td>db_backup_maxcount</td><td>默认 <code>7</code>数据库备份文件保留的个数 </td></tr>
-<tr><td>AntiChanel <br>反皮套白名单</td><td>w_anti_chanel_ids</td><td>本机器人默认开启反频道（杀皮套人）功能，除匿名群管皮套，如需要允许其发言请将其id或username加入列表，当然，支持命令操作，请查阅命令大全</td></tr>
+<tr><td>AntiChanel <br>反皮套白名单</td><td>w_anti_chanel_ids</td><td>本机器人默认开启反频道（杀皮套人）功能，除匿名群管皮套，如需要允许其发言请将其id或username加入列表，当然，支持命令操作，<a href="/#命令帮助">请查阅命令大全</a></td></tr>
 </tbody>
 <tfoot></tfoot>
 </table>

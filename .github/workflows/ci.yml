@@ -20,6 +20,7 @@ jobs: # 工作流的具体内容
         run: |
           pip install jieba
           pip install mkdocs-git-revision-date-localized-plugin
+          pip install mkdocs-git-authors-plugin
           pip install mkdocs-material
           pip install mkdocs-glightbox
       - run: mkdocs gh-deploy --force

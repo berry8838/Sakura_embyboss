@@ -1,5 +1,5 @@
 # [Info]
-site_name: Wiki For Embybot # 左上角标题
+site_name: Wiki For Emby bot # 左上角标题
 site_url: https://berry8838.github.io/Sakura_embyboss
 site_author: First Lover
 site_description: Emby Bot 指南
@@ -8,7 +8,7 @@ site_description: Emby Bot 指南
 # [UI]
 theme:
   name: material
-  #  custom_dir: overrides # 改写
+  custom_dir: overrides # 改写,扩展主题
   palette: #调色板
     # 首选自动调节模式
     #    - media: "(prefers-color-scheme)"
@@ -141,6 +141,10 @@ plugins:
         - deploy/introduce.md
       enabled: true #是否启用
       strict: true
+  - git-authors:
+      exclude:
+#        - index.md
+        - deploy/introduce.md
 
 markdown_extensions:
   - tables

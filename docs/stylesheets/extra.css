@@ -56,7 +56,6 @@ body {
     /* font-family: "LXGW WenKai TC", sans-serif;*/
     /* Screen version */
     font-family: "LXGW WenKai Screen", sans-serif;
-    font-size: 14px;
 }
 
 button.md-top {
@@ -68,6 +67,10 @@ button.md-top {
 
 button.md-top:hover {
     background-color: rebeccapurple;
+}
+
+.admonition {
+    font-size: 0.9em !important;
 }
 
 /*endregion3自定义字体设置*/
@@ -189,7 +192,7 @@ button.md-top:hover {
 
 /*region6鼠标效果*/
 /* 鼠标样式 */
-a, img,.all_index summary:hover ,button:hover {
+a, img,.all_index summary:hover ,.md-button:hover{
     cursor: url("/Sakura_embyboss/assets/cursor/pen.cur"), auto;
 }
 

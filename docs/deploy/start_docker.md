@@ -37,7 +37,7 @@ cp config_example.json config.json
     === ":simple-emby: Emby"
         
         - [x] 创建 api_key
-        - [x] 在插件市场中 下载 `playback reporting` 插件<br>
+        - [x] 在插件市场中 下载 __playback reporting__ 插件<br>
         <img src="/Sakura_embyboss/assets/images/playback_reporting.png" alt="playback reporting">
 
     === ":simple-telegram: Telegram Bot"

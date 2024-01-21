@@ -1,0 +1,27 @@
+{#-
+  This file was automatically generated - do not edit
+-#}
+{% extends "base.html" %}
+{% block extrahead %}
+  <link rel="stylesheet" href="{{ 'assets/stylesheets/custom.css' | url }}">
+{% endblock %}
+{% block announce %}
+  For updates follow <strong>First Lover</strong> on
+  <a rel="me" href="https://github.com/berry8838" target="_blank">
+    <span class="twemoji mastodon">
+      {% include ".icons/fontawesome/brands/github.svg" %}
+    </span>
+    <strong>Github</strong>
+  </a>
+  and
+  <a href="https://t.me/su_yxfy" target="_blank">
+    <span class="twemoji twitter">
+      {% include ".icons/fontawesome/brands/telegram.svg" %}
+    </span>
+    <strong>Telegram</strong>
+  </a>
+{% endblock %}
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ 'assets/javascripts/custom.054acff4.min.js' | url }}"></script>
+{% endblock %}

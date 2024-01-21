@@ -1,0 +1,52 @@
+{#-
+  This file was automatically generated - do not edit
+-#}
+{% extends "main.html" %}
+{% block tabs %}
+  {{ super() }}
+  <style>
+
+    #shouye {
+      position: relative;
+      height: 100vh;
+      /*background: url('/Sakura_embyboss/assets/images/aniya.jpg') center/cover no-repeat;*/
+      color: #ffffff;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      max-width: 100%; /* 使用百分比设置最大宽度，以实现自适应 */
+      margin: 0 auto;
+    }
+
+    @media screen and (min-width: 768px) {
+      .mdx-hero {
+        background-size: cover; /* 在大屏幕上使用cover，以保持良好的可视效果 */
+      }
+    }
+
+    .md-main {
+      height: 0;
+    }
+  </style>
+  <section class="mdx-container">
+    <div id="shouye" class="md-grid md-typeset">
+      <div class="mdx-hero">
+        <div class="mdx-hero__content">
+          <h1>Welcome to Wiki for Sakura</h1>
+          <p>{{ config.site_description }}</p>
+          <a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | e }}" class="md-button md-button--primary">
+            Quick start
+          </a>
+          <a href="{{ 'use_cases/Helper/' | url }}" title="Get use help" class="md-button">
+            Get Helper
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
+{% block content %}
+{% endblock %}
+{% block footer %}{% endblock %}

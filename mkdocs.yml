@@ -10,11 +10,11 @@ theme:
   name: material
   custom_dir: overrides # 改写,扩展主题
   palette: #调色板
-    # 首选自动调节模式
-    #    - media: "(prefers-color-scheme)"
-    #      toggle:
-    #        icon: material/brightness-auto
-    #        name: Switch to light mode
+# 首选自动调节模式
+#    - media: "(prefers-color-scheme)"
+#      toggle:
+#        icon: material/brightness-auto
+#        name: Switch to light mode
 
     - scheme: default # 日间模式
       primary: deep purple # 上方的横栏颜色
@@ -65,6 +65,7 @@ theme:
 
 nav:
   - Home: index.md
+  - 简介: show.md
   - 如何部署:
       - 流程速记: deploy/introduce.md
       - 一、Docker 安装:

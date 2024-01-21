@@ -125,8 +125,9 @@ author: false
 ## 💐 贡献
 
 欢迎提供 ISSUE 或者 PR<br>
-<a href="https://github.com/berry8838/Sakura_embyboss/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=berry8838/Sakura_embyboss" />
+
+<a href="https://github.com/berry8838/Sakura_embyboss/graphs/contributors" target="_blank">
+  <img class="contributors" src="https://contrib.rocks/image?repo=berry8838/Sakura_embyboss" />
 </a>
 <hr>
 

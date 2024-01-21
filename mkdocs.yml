@@ -123,7 +123,7 @@ plugins:
       zoomable: true
       draggable: true
       skip_classes:
-        - custom-skip-class-name
+        - contributors
       auto_caption: false
       caption_position: bottom
   - search:

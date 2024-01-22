@@ -42,7 +42,7 @@ class Uplaysinfo:
                 for p in play_list[d:d + 10]:
                     medal = m[e - 1] if e < 4 else m[3]
                     em = members_dict.get(p[0], None)
-                    if not em:
+                    if not em or not em["tg"]:
                         emby_name = '未绑定bot或已删除'
                         tg = 'None'
                     else:

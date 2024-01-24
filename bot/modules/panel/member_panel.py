@@ -543,9 +543,10 @@ async def call_exchange(_, call):
 @bot.on_callback_query(filters.regex('storeall') & user_in_group_on_filter)
 async def do_store(_, call):
     if user_buy.stat:
-        return await callAnswer(call, '🌏 Sorry，此功能仅服务于公益服，其他请点击 【使用注册码】 续期', True)
+        # return await callAnswer(call, '🌏 Sorry，此功能仅服务于公益服，其他请点击 【使用注册码】 续期', True) # 公费直接转兑换码
+        return await call_exchange(_, call)
     await asyncio.gather(callAnswer(call, '✔️ 欢迎进入兑换商店'),
-                         editMessage(call, f'**🏪 请选择想要使用的服务：**\n⚖️ 自动{sakura_b}续期：{_open.exchange}',
+                         editMessage(call, f'**🏪 请选择想要使用的服务：**\n\n🤖 自动{sakura_b}续期：{_open.exchange} {_open.exchange_cost * 30}/月',
                                      buttons=store_ikb()))
 
 

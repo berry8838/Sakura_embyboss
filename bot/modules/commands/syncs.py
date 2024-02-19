@@ -11,7 +11,7 @@ Syncs 功能
 
 """
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from asyncio import sleep
 from pyrogram import filters
 from pyrogram.errors import FloodWait
@@ -195,3 +195,25 @@ async def clear_deleted_account(_, msg):
     chunks = [text[i:i + n] for i in range(0, len(text), n)]
     for c in chunks:
         await sendMessage(msg, c)
+
+
+@bot.on_message(filters.command('kick_not_emby', prefixes) & admins_on_filter & filters.group)
+async def kick_not_emby(_, msg):
+    await deleteMessage(msg)
+    try:
+        open_kick = msg.command[1]
+    except:
+        return await sendMessage(msg,
+                                 '注意: 此操作会将 当前群组中无emby账户的选手kick, 如确定使用请输入 `/kick_not_emby true`')
+    if open_kick == 'true':
+        members = get_all_emby(Emby.embyid is not None)
+        chat_members = [member.user.id async for member in bot.get_chat_members(chat_id=msg.chat.id)]
+        until_date = datetime.now() + timedelta(minutes=1)
+        for cmember in chat_members:
+            if cmember not in members:
+                try:
+                    await msg.chat.ban_member(cmember, until_date=until_date)
+                    await sendMessage(msg, f'{cmember} 已踢出')
+                except Exception as e:
+                    # print(str(e))
+                    pass

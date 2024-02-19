@@ -99,28 +99,38 @@ async def call_all(_, msg):
     await msg.delete()
     # 可以做分级 所有 b类 非群组类 ：太麻烦，随便搞搞就行
     m = await ask_return(msg,
-                         text='**🕶️ 一键公告**\n\n倒计时10min，发送您想要公告的消息，我将为您copy至数据库中每一位用户，取消请 /cancel',
+                         text='**🕶️ 一键公告**\n\n倒计时10min，发送您想要公告的消息，然后根据提示选择发送的用户组，取消请 /cancel',
                          timer=600)
 
     if m is False:
         return
     elif m.text == '/cancel':
         return
-    else:
-        reply = await msg.reply('开始执行发送......')
-        rst = get_all_emby(Emby.tg is not None)
-        a = 0
-        start = time.perf_counter()
-        for r in rst:
-            try:
-                a += 1
-                await m.copy(r.tg)
 
-            except FloodWait as f:
-                LOGGER.warning(str(f))
-                await asyncio.sleep(f.value * 1.2)
-                return await m.copy(r.tg)
-        end = time.perf_counter()
-        times = end - start
-        await reply.edit(f'消息发送完毕\n\n共计：{a} 次，用时 {times:.3f} s')
-        LOGGER.info(f'【群发消息】：{msg.from_user.first_name} 消息发送完毕 - 共计：a 次，用时 {times:.3f} s')
+    call = await ask_return(msg,
+                         text='回复 `1` - 仅公告账户的人\n回复 `2` - 公告全体成员\n取消请 /cancel',
+                         timer=600)
+
+    if call.text == '/cancel':
+        return await msg.reply('好的,您已取消操作.')
+    elif call.text == '2':
+        chat_members = get_all_emby(Emby.tg is not None)
+    elif call.text == '1':
+        chat_members = get_all_emby(Emby.embyid is not None)
+    reply = await msg.reply('开始执行发送......')
+    a = 0
+    start = time.perf_counter()
+    for member in chat_members:
+        try:
+            a += 1
+            await m.copy(member.tg)
+        except FloodWait as f:
+            LOGGER.warning(str(f))
+            await asyncio.sleep(f.value * 1.2)
+            return await m.copy(member.tg)
+        except Exception as e:
+            LOGGER.warning(str(e))
+    end = time.perf_counter()
+    times = end - start
+    await reply.edit(f'消息发送完毕\n\n共计：{a} 次，用时 {times:.3f} s')
+    LOGGER.info(f'【群发消息】：{msg.from_user.first_name} 消息发送完毕 - 共计：{a} 次，用时 {times:.3f} s')

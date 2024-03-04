@@ -44,6 +44,7 @@ db_host = config.db_host
 db_user = config.db_user
 db_pwd = config.db_pwd
 db_name = config.db_name
+db_port = config.db_port
 db_is_docker = config.db_is_docker
 db_docker_name = config.db_docker_name
 db_backup_dir = config.db_backup_dir

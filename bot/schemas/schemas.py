@@ -119,6 +119,7 @@ class Config(BaseModel):
     db_user: str
     db_pwd: str
     db_name: str
+    db_port: int = 3306
     tz_ad: Optional[str] = None
     tz_api: Optional[str] = None
     tz_id: Optional[List[int]] = []

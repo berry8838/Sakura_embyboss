@@ -3,7 +3,7 @@ from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
 from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, user_buy, sakura_b, \
-    schedall
+    schedall, config
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import judge_admins, members_info
@@ -216,6 +216,7 @@ def config_preparation() -> InlineKeyboardMarkup:
          [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
          [(f'{code} 注册码续期', 'open_allow_code'), (f'{buy_stat} 开关购买', 'set_buy')],
          [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 自动看片结算', 'set_uplays')],
+         [(f'设置赠送资格天数({config.kk_gift_days}天)', 'set_kk_gift_days')],
          [('🔙 返回', 'manage')]])
     return keyboard
 

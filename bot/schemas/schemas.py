@@ -134,6 +134,8 @@ class Config(BaseModel):
     # w_anti_chanel_ids: Optional[List[str | int]] = []
     w_anti_chanel_ids: Optional[List[Union[str, int]]] = []
     proxy: Optional[Proxy] = Proxy()
+    # kk指令中赠送资格的天数
+    kk_gift_days: int = 30
 
     def __init__(self, **data):
         super().__init__(**data)

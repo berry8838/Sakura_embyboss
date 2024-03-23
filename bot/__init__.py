@@ -55,6 +55,7 @@ tz_api = config.tz_api
 tz_id = config.tz_id
 
 w_anti_chanel_ids = config.w_anti_chanel_ids
+kk_gift_days = config.kk_gift_days
 save_config()
 
 LOGGER.info("配置文件加载完毕")

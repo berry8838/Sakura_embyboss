@@ -5,7 +5,7 @@ kk - 纯装x
 import pyrogram
 from pyrogram import filters
 from pyrogram.errors import BadRequest
-from bot import bot, prefixes, owner, bot_photo, admins, LOGGER, extra_emby_libs
+from bot import bot, prefixes, owner, bot_photo, admins, LOGGER, extra_emby_libs, config
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import cr_kk_ikb, gog_rester_ikb
@@ -171,7 +171,7 @@ async def gift(_, call):
     first = await bot.get_chat(b)
     e = sql_get_emby(tg=b)
     if e.embyid is None:
-        link = await cr_link_two(tg=call.from_user.id, for_tg=b, days=30)
+        link = await cr_link_two(tg=call.from_user.id, for_tg=b, days=config.kk_gift_days)
         await editMessage(call, f"🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n"
                                 f'已为 [{first.first_name}](tg://user?id={b}) 赠予资格。前往bot进行下一步操作：',
                           buttons=gog_rester_ikb(link))

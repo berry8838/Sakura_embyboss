@@ -105,11 +105,14 @@ async def favorite_item(_, call):
                                               emby.item_id_namme(user_id=e, item_id=item_id))
         if success:
             _url = f"{emby.url}/emby/Items/{item_id}/Images/Primary?maxHeight=400&maxWidth=600&quality=90"
-            await bot.send_photo(chat_id=call.from_user.id, photo=_url, caption=f'**{title} 收藏成功！💘**')
+            try:
+                await bot.send_photo(chat_id=call.from_user.id, photo=_url, caption=f'**{title} 收藏成功！💘**')
+            except:
+                await bot.send_message(chat_id=call.from_user.id, text=f'**{title} 收藏成功！💘**')
             await callAnswer(call, f'{title} 收藏成功！💘', True)
         else:
             await callAnswer(call, f'⚠️ 收藏失败！项目 {item_id}', True)
-    except:
+    except Exception as e:
         await callAnswer(call, '🤺 没有账户怎么收藏？', True)
 
 # @bot.on_chosen_inline_result(user_in_group_on_filter)

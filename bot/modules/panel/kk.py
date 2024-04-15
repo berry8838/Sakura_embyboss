@@ -11,7 +11,7 @@ from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import cr_kk_ikb, gog_rester_ikb
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, editMessage
 from bot.func_helper.utils import judge_admins, cr_link_two
-from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
+from bot.sql_helper.sql_emby import sql_add_emby, sql_get_emby, sql_update_emby, Emby
 
 
 # 管理用户
@@ -36,8 +36,9 @@ async def user_info(_, msg):
         except AttributeError:
             pass
         else:
+            sql_add_emby(uid)
             text, keyboard = await cr_kk_ikb(uid, first.first_name)
-            await sendPhoto(msg, photo=bot_photo, caption=text, buttons=keyboard)  # protect_content=True 移除禁止复制
+            await sendMessage(msg, text=text, buttons=keyboard)  # protect_content=True 移除禁止复制
 
     else:
         uid = msg.reply_to_message.from_user.id
@@ -48,7 +49,7 @@ async def user_info(_, msg):
         except AttributeError:
             pass
 
-        # first = await bot.get_chat(uid)
+        sql_add_emby(uid)
         text, keyboard = await cr_kk_ikb(uid, msg.reply_to_message.from_user.first_name)
         await sendMessage(msg, text=text, buttons=keyboard)
 

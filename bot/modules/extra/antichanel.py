@@ -17,12 +17,12 @@ async def get_user_input(msg):
     gm = msg.sender_chat.title if msg.sender_chat else f'管理员 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
     if msg.reply_to_message is None:
         try:
-            a = msg.command[1]
+            chatid = int(msg.command[1])
         except (IndexError, KeyError, ValueError, AttributeError):
             return None, gm
     else:
-        a = msg.reply_to_message.sender_chat.id
-    return a, gm
+        chatid = msg.reply_to_message.sender_chat.id
+    return chatid, gm
 
 
 @bot.on_message(filters.command('unban_chanel', prefixes) & admins_on_filter)
@@ -38,14 +38,14 @@ async def un_fukk_pitao(_, msg):
 
 @bot.on_message(filters.command('white_chanel', prefixes) & admins_on_filter)
 async def allow_pitao(_, msg):
-    a, gm = await get_user_input(msg)
-    if not a:
+    chatid, gm = await get_user_input(msg)
+    if not chatid:
         return await msg.reply('使用 /white_chanel 回复 或 /white_chanel + [id/用户名] 加入皮套人白名单')
-    if a not in w_anti_chanel_ids:
-        w_anti_chanel_ids.append(a)
+    if chatid not in w_anti_chanel_ids:
+        w_anti_chanel_ids.append(chatid)
         save_config()
-    await asyncio.gather(msg.reply(f'🎁 {gm} 已为 {a} 添加皮套人白名单'), msg.chat.unban_member(a))
-    LOGGER.info(f'【AntiChanel】- {gm} 豁免皮套 ——> {a}')
+    await asyncio.gather(msg.reply(f'🎁 {gm} 已为 {chatid} 添加皮套人白名单'), msg.chat.unban_member(chatid))
+    LOGGER.info(f'【AntiChanel】- {gm} 豁免皮套 ——> {chatid}')
 
 
 @bot.on_message(filters.command('rev_white_chanel', prefixes) & admins_on_filter)
@@ -64,7 +64,7 @@ custom_message_filter = filters.create(
     lambda _, __, message: False if message.forward_from_chat or message.from_user else True)
 custom_chat_filter = filters.create(
     lambda _, __,
-           message: True if message.sender_chat.id != message.chat.id and message.sender_chat.id not in w_anti_chanel_ids else False)
+           message: True if message.sender_chat.id != message.chat.id and message.sender_chat.id  not in w_anti_chanel_ids else False)
 
 
 # message.sender_chat and
@@ -72,7 +72,6 @@ custom_chat_filter = filters.create(
 # 直接拉黑皮套
 @bot.on_message(custom_message_filter & custom_chat_filter & filters.group)
 async def fuxx_pitao(_, msg):
-    # print(msg)
     try:
         await asyncio.gather(msg.delete(),
                              msg.chat.ban_member(msg.sender_chat.id),
@@ -81,13 +80,3 @@ async def fuxx_pitao(_, msg):
     except:
         pass
 
-# custom_chanel_filter = filters.create(
-#     lambda _, __, message: True if message.forward_from_chat.id == chanel_id else False)
-#
-#
-# @bot.on_message(custom_chanel_filter & filters.group)
-# async def anti_chanel_forward(_, msg):
-#     try:
-#         await msg.unpin()
-#     except:
-#         pass

@@ -54,7 +54,7 @@ tz_ad = config.tz_ad
 tz_api = config.tz_api
 tz_id = config.tz_id
 
-w_anti_chanel_ids = config.w_anti_chanel_ids
+w_anti_channel_ids = config.w_anti_channel_ids
 kk_gift_days = config.kk_gift_days
 save_config()
 

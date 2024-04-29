@@ -219,6 +219,19 @@ class Embyservice:
         if _policy.status_code == 200 or 204:
             return True
         return False
+    async def get_emby_libs(self):
+        """
+        获取所有媒体库
+        :return: list
+        """
+        response = r.get(f"{self.url}/emby/Library/VirtualFolders?api_key={self.api_key}", headers=self.headers)
+        if response.status_code == 200:
+            tmp = []
+            for lib in response.json():
+                tmp.append(lib['Name'])
+            return tmp
+        else:
+            return None
 
     @cache.memoize(ttl=120)
     def get_current_playing_count(self) -> int:

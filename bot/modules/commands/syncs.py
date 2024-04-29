@@ -206,11 +206,15 @@ async def kick_not_emby(_, msg):
         return await sendMessage(msg,
                                  '注意: 此操作会将 当前群组中无emby账户的选手kick, 如确定使用请输入 `/kick_not_emby true`')
     if open_kick == 'true':
-        members = get_all_emby(Emby.embyid is not None)
+        embyusers = get_all_emby(Emby.embyid is not None)
+        # get tgid
+        embytgs = []
+        if embyusers:
+            embytgs = [i.tg for i in embyusers]
         chat_members = [member.user.id async for member in bot.get_chat_members(chat_id=msg.chat.id)]
         until_date = datetime.now() + timedelta(minutes=1)
         for cmember in chat_members:
-            if cmember not in members:
+            if cmember not in embytgs:
                 try:
                     await msg.chat.ban_member(cmember, until_date=until_date)
                     await sendMessage(msg, f'{cmember} 已踢出')

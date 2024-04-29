@@ -119,6 +119,7 @@ class Config(BaseModel):
     db_user: str
     db_pwd: str
     db_name: str
+    db_port: int = 3306
     tz_ad: Optional[str] = None
     tz_api: Optional[str] = None
     tz_id: Optional[List[int]] = []
@@ -130,9 +131,11 @@ class Config(BaseModel):
     db_backup_maxcount: int = 7
     another_line: Optional[List[str]] = []
     # 如果使用的是 Python 3.10+ ，|运算符能用
-    # w_anti_chanel_ids: Optional[List[str | int]] = []
-    w_anti_chanel_ids: Optional[List[Union[str, int]]] = []
+    # w_anti_channel_ids: Optional[List[str | int]] = []
+    w_anti_channel_ids: Optional[List[Union[str, int]]] = []
     proxy: Optional[Proxy] = Proxy()
+    # kk指令中赠送资格的天数
+    kk_gift_days: int = 30
 
     def __init__(self, **data):
         super().__init__(**data)

@@ -44,6 +44,7 @@ db_host = config.db_host
 db_user = config.db_user
 db_pwd = config.db_pwd
 db_name = config.db_name
+db_port = config.db_port
 db_is_docker = config.db_is_docker
 db_docker_name = config.db_docker_name
 db_backup_dir = config.db_backup_dir
@@ -53,7 +54,8 @@ tz_ad = config.tz_ad
 tz_api = config.tz_api
 tz_id = config.tz_id
 
-w_anti_chanel_ids = config.w_anti_chanel_ids
+w_anti_channel_ids = config.w_anti_channel_ids
+kk_gift_days = config.kk_gift_days
 save_config()
 
 LOGGER.info("配置文件加载完毕")
@@ -79,9 +81,9 @@ admin_p = user_p + [
     BotCommand("rmemby", "删除用户[包括非tg] [管理]"),
     BotCommand("prouser", "增加白名单 [管理]"),
     BotCommand("revuser", "减少白名单 [管理]"),
-    BotCommand("rev_white_chanel", "移除皮套人白名单 [管理]"),
-    BotCommand("white_chanel", "添加皮套人白名单 [管理]"),
-    BotCommand("unban_chanel", "解封皮套人 [管理]"),
+    BotCommand("rev_white_channel", "移除皮套人白名单 [管理]"),
+    BotCommand("white_channel", "添加皮套人白名单 [管理]"),
+    BotCommand("unban_channel", "解封皮套人 [管理]"),
     BotCommand("syncgroupm", "消灭不在群的人 [管理]"),
     BotCommand("syncunbound", "消灭未绑定bot的emby账户 [管理]"),
     BotCommand("low_activity", "手动运行活跃检测 [管理]"),
@@ -104,7 +106,9 @@ owner_p = admin_p + [
     BotCommand("callall", "群发消息给每个人 [owner]"),
     BotCommand("bindall_id", "一键更新用户们Embyid [owner]"),
     BotCommand("backup_db", "手动备份数据库[owner]"),
-    BotCommand("config", "开启bot高级控制面板 [owner]")
+    BotCommand("config", "开启bot高级控制面板 [owner]"),
+    BotCommand("embylibs_unblockall", "一键开启所有用户的媒体库 [owner]"),
+    BotCommand("embylibs_blockall", "一键关闭所有用户的媒体库 [owner]")
 ]
 if len(extra_emby_libs) > 0:
     owner_p += [BotCommand("extraembylibs_blockall", "一键关闭所有用户的额外媒体库 [owner]"),

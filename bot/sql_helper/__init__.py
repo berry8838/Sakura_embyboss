@@ -1,13 +1,13 @@
 """
 初始化数据库
 """
-from bot import db_host, db_user, db_pwd, db_name
+from bot import db_host, db_user, db_pwd, db_name, db_port
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 # 创建engine对象
-engine = create_engine(f"mysql+pymysql://{db_user}:{db_pwd}@{db_host}:3306/{db_name}?utf8mb4", echo=False,
+engine = create_engine(f"mysql+pymysql://{db_user}:{db_pwd}@{db_host}:{db_port}/{db_name}?utf8mb4", echo=False,
                        echo_pool=False,
                        pool_size=16,
                        pool_recycle=60 * 30,

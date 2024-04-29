@@ -5,13 +5,13 @@ kk - 纯装x
 import pyrogram
 from pyrogram import filters
 from pyrogram.errors import BadRequest
-from bot import bot, prefixes, owner, bot_photo, admins, LOGGER, extra_emby_libs
+from bot import bot, prefixes, owner, bot_photo, admins, LOGGER, extra_emby_libs, config
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import cr_kk_ikb, gog_rester_ikb
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, editMessage
 from bot.func_helper.utils import judge_admins, cr_link_two
-from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
+from bot.sql_helper.sql_emby import sql_add_emby, sql_get_emby, sql_update_emby, Emby
 
 
 # 管理用户
@@ -36,8 +36,9 @@ async def user_info(_, msg):
         except AttributeError:
             pass
         else:
+            sql_add_emby(uid)
             text, keyboard = await cr_kk_ikb(uid, first.first_name)
-            await sendPhoto(msg, photo=bot_photo, caption=text, buttons=keyboard)  # protect_content=True 移除禁止复制
+            await sendMessage(msg, text=text, buttons=keyboard)  # protect_content=True 移除禁止复制
 
     else:
         uid = msg.reply_to_message.from_user.id
@@ -48,7 +49,7 @@ async def user_info(_, msg):
         except AttributeError:
             pass
 
-        # first = await bot.get_chat(uid)
+        sql_add_emby(uid)
         text, keyboard = await cr_kk_ikb(uid, msg.reply_to_message.from_user.first_name)
         await sendMessage(msg, text=text, buttons=keyboard)
 
@@ -171,7 +172,7 @@ async def gift(_, call):
     first = await bot.get_chat(b)
     e = sql_get_emby(tg=b)
     if e.embyid is None:
-        link = await cr_link_two(tg=call.from_user.id, for_tg=b, days=30)
+        link = await cr_link_two(tg=call.from_user.id, for_tg=b, days=config.kk_gift_days)
         await editMessage(call, f"🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n"
                                 f'已为 [{first.first_name}](tg://user?id={b}) 赠予资格。前往bot进行下一步操作：',
                           buttons=gog_rester_ikb(link))

@@ -18,7 +18,7 @@ def create_policy(admin=False, disable=False, limit: int = 2, block: list = None
     :param disable: bool 是否禁用
     :param limit: int 同时播放流的默认值，修改2 -> 3 any都可以
     :param block: list 默认将 播放列表 屏蔽
-    :return: plocy 用户策略
+    :return: policy 用户策略
     """
     if block is None:
         block = ['播放列表'] + extra_emby_libs
@@ -58,7 +58,7 @@ def pwd_policy(embyid, stats=False, new=None):
     :param embyid: str 修改的emby_id
     :param stats: bool 是否重置密码
     :param new: str 新密码
-    :return: plocy 密码策略
+    :return: policy 密码策略
     """
     if new is None:
         policy = {
@@ -104,7 +104,7 @@ class Embyservice:
         :param name: emby_name
         :param pwd2: pwd2 安全码
         :param us: us 积分
-        :param stats: plocy 策略
+        :param stats: policy 策略
         :return: bool
         """
         if _open.tem >= _open.all_user:
@@ -205,7 +205,7 @@ class Embyservice:
         """
         显示、隐藏媒体库
         :param id: emby_id
-        :param stats: plocy
+        :param stats: policy
         :return:bool
         """
         if stats == 0:

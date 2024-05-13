@@ -154,7 +154,6 @@ def sql_update_emby(condition, **kwargs):
                 return False
             # 然后用setattr方法来更新其他的字段，如果有就更新，如果没有就保持原样
             for k, v in kwargs.items():
-                LOGGER.info(f"{k} {v}")
                 setattr(emby, k, v)
             session.commit()
             return True

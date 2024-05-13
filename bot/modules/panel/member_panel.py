@@ -226,7 +226,7 @@ async def change_tg(_, call):
 
         else:
             if emby_pwd != e.pwd2:
-                print(emby_pwd, e.pwd2)
+                LOGGER.info(f'emby_pwd: {emby_pwd}, e.pwd2: {e.pwd2}')
                 success, embyid = await emby.authority_account(call.from_user.id, emby_name, emby_pwd)
                 if not success:
                     return await editMessage(call,
@@ -261,9 +261,9 @@ async def change_tg(_, call):
                                          f'⚠️ **你所要换绑的[tg](tg://user?id={e.tg}) - {e.tg}\n\n用户状态正常！无须换绑。**',
                                          buttons=back_members_ikb)
             if sql_delete_emby(tg=call.from_user.id) is True:
-                print('delete old tgid', call.from_user.id)
+                LOGGER.info(f'delete old tgid {call.from_user.id}')
                 if sql_update_emby(Emby.embyid == e.embyid, tg=call.from_user.id):
-                    print('update to new tgid', call.from_user.id)
+                    LOGGER.info(f'update to new tgid {call.from_user.id}')
                     await sendMessage(call,
                                     f'⭕#TG改绑 原emby账户 #{emby_name} \n\n已绑定至 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) - {call.from_user.id}',
                                     send=True)

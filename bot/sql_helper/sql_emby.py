@@ -5,6 +5,8 @@ from bot.sql_helper import Base, Session, engine
 from sqlalchemy import Column, BigInteger, String, DateTime, Integer, case
 from sqlalchemy import func
 from sqlalchemy import or_
+from bot import LOGGER
+
 
 
 class Emby(Base):
@@ -152,12 +154,12 @@ def sql_update_emby(condition, **kwargs):
                 return False
             # 然后用setattr方法来更新其他的字段，如果有就更新，如果没有就保持原样
             for k, v in kwargs.items():
-                print(k,v)
+                LOGGER.info(f"{k} {v}")
                 setattr(emby, k, v)
             session.commit()
             return True
         except Exception as e:
-            print(e)
+            LOGGER.error(e)
             return False
 
 

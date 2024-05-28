@@ -206,7 +206,8 @@ async def kick_not_emby(_, msg):
         return await sendMessage(msg,
                                  '注意: 此操作会将 当前群组中无emby账户的选手kick, 如确定使用请输入 `/kick_not_emby true`')
     if open_kick == 'true':
-        embyusers = get_all_emby(Emby.embyid is not None)
+        LOGGER.info(f"{msg.from_user.first_name} - {msg.from_user.id} 执行了踢出非emby用户的操作")
+        embyusers = get_all_emby(Emby.embyid is not None and Emby.embyid != '')
         # get tgid
         embytgs = []
         if embyusers:
@@ -217,7 +218,8 @@ async def kick_not_emby(_, msg):
             if cmember not in embytgs:
                 try:
                     await msg.chat.ban_member(cmember, until_date=until_date)
-                    await sendMessage(msg, f'{cmember} 已踢出')
+                    await sendMessage(msg, f'{cmember} 已踢出', send=True)
+                    LOGGER.info(f"{cmember} 已踢出")
                 except Exception as e:
-                    # print(str(e))
+                    LOGGER.info(f"踢出 {cmember} 失败，原因: {e}")
                     pass

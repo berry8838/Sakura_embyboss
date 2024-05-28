@@ -10,13 +10,13 @@ class BackupDBUtils:
 
     @staticmethod
     # 数据库备份(mysql直装/本机含有mysql)
-    async def backup_mysql_db(host, user, password, database_name, backup_dir, max_backup_count):
+    async def backup_mysql_db(host, port, user, password, database_name, backup_dir, max_backup_count):
         # 如果文件夹不存在，就创建它
         if not os.path.exists(backup_dir):
             os.makedirs(backup_dir)
         # 根据时间创建当前备份文件
         backup_file = os.path.join(backup_dir, f'{database_name}-{datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.sql')
-        command = f"mysqldump -h{host} -u{user} -p\'{password}\' {database_name} > {backup_file}"
+        command = f"mysqldump -h{host} -P{port} -u{user} -p\'{password}\' {database_name} > {backup_file}"
         process = await asyncio.create_subprocess_shell(command)
         try:
             await process.communicate()

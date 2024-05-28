@@ -3,7 +3,7 @@ import os
 import asyncio
 
 from bot import bot, owner, LOGGER, db_is_docker, db_docker_name, db_host, db_name, db_user, db_pwd, \
-    db_backup_dir, db_backup_maxcount
+    db_backup_dir, db_backup_maxcount, db_port
 from bot.func_helper.backup_db_utils import BackupDBUtils
 
 
@@ -11,6 +11,7 @@ class DbBackupUtils:
     # 数据库的相关配置
     host = db_host
     user = db_user
+    port = db_port
     password = db_pwd
     database_name = db_name
     backup_dir = db_backup_dir
@@ -25,6 +26,7 @@ class DbBackupUtils:
         if os.environ.get('DOCKER_MODE') == "1" or not db_is_docker:
             backup_file = await BackupDBUtils.backup_mysql_db(
                 host=db_host,
+                port=db_port,
                 user=db_user,
                 password=db_pwd,
                 database_name=db_name,

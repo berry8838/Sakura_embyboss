@@ -166,11 +166,18 @@ async def pick_red_bag(_, call):
             red_bags.pop(red_id, '不存在的红包')
             text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
                    f'🕶️{bag["sender"]} **的红包已经被抢光啦~\n\n'
-            top_five_scores = sorted(bag["flag"].items(), key=lambda x: x[1], reverse=True)[:5]
             members = await get_users()
-            for i, score in enumerate(top_five_scores):
-                text += f'**🎖️ [{members.get(score[0], "None")}](tg://user?id={score[0]}) 获得了 {score[1]} {sakura_b}**'
-            await editMessage(call, text)
+            keys = [key for item in bag["used"] for key in item]
+            for key in keys:
+                text += f'**🎖️ [{members.get(key, "None")}](tg://user?id={key}) 获得了 {bag["num"]} {sakura_b}**\n'
+            n = 2048
+            chunks = [text[i:i + n] for i in range(0, len(text), n)]
+            for c in chunks:
+                if n == 0:
+                    await call.message.reply(c)
+                    continue
+                await editMessage(call, text)
+                n = 0
 
         await callAnswer(call, f'🧧 {random.choice(Yulv.load_yulv().red_bag)}\n\n'
                                f'恭喜，你领取到了 {bag["sender"]} の {bag["num"]}{sakura_b}', True)
@@ -215,7 +222,7 @@ async def pick_red_bag(_, call):
             red_bags.pop(red_id, '不存在的红包')
             # 找出运气王
             # 对用户按照积分从高到低进行排序，并取出前六名
-            top_five_scores = sorted(bag["flag"].items(), key=lambda x: x[1], reverse=True)[:6]
+            top_five_scores = sorted(bag["flag"].items(), key=lambda x: x[1], reverse=True)  # [:6]
             text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
                    f'🕶️{bag["sender"]} **的红包已经被抢光啦~ \n\n'
             members = await get_users()
@@ -223,8 +230,15 @@ async def pick_red_bag(_, call):
                 if i == 0:
                     text += f'**🏆 手气最佳 [{members.get(score[0], "None")}](tg://user?id={score[0]}) **获得了 {score[1]} {sakura_b}'
                 else:
-                    text += f'\n**🏅 [{members.get(score[0], "None")}](tg://user?id={score[0]})** 获得了 {score[1]} {sakura_b}'
-            await editMessage(call, text)
+                    text += f'\n**[{members.get(score[0], "None")}](tg://user?id={score[0]})** 获得了 {score[1]} {sakura_b}'
+            n = 2048
+            chunks = [text[i:i + n] for i in range(0, len(text), n)]
+            for c in chunks:
+                if n == 0:
+                    await call.message.reply(c)
+                    continue
+                await editMessage(call, text)
+                n = 0
 
 
 @bot.on_message(filters.command("srank", prefixes) & user_in_group_on_filter & filters.group)

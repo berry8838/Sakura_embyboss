@@ -8,7 +8,7 @@ import asyncio
 
 from pyrogram import filters
 
-from bot import bot, prefixes, w_anti_channel_ids, LOGGER, save_config
+from bot import bot, prefixes, w_anti_channel_ids, LOGGER, save_config, config
 from bot.func_helper.filters import admins_on_filter
 
 
@@ -65,16 +65,15 @@ custom_chat_filter = filters.create(
            message: True if message.sender_chat.id != message.chat.id and message.sender_chat.id  not in w_anti_channel_ids else False)
 
 
-# message.sender_chat and
-
-# 直接拉黑皮套
 @bot.on_message(custom_message_filter & custom_chat_filter & filters.group)
 async def fuxx_pitao(_, msg):
-    try:
-        await asyncio.gather(msg.delete(),
-                             msg.chat.ban_member(msg.sender_chat.id),
-                             msg.reply(f'🎯 自动狙杀皮套人！{msg.sender_chat.title} - `{msg.sender_chat.id}`'))
-        LOGGER.info(f'【AntiChannel】- {msg.sender_chat.title} - {msg.sender_chat.id} 被封禁')
-    except:
-        pass
-
+    # 如果开启了狙杀皮套人功能
+    if config.fuxx_pitao:
+        try:
+            await asyncio.gather(msg.delete(),
+                                 msg.reply(f'🎯 自动狙杀皮套人！{msg.sender_chat.title} - `{msg.sender_chat.id}`'))
+            await msg.chat.ban_member(msg.sender_chat.id)
+            LOGGER.info(
+                f'【AntiChannel】- {msg.sender_chat.title} - {msg.sender_chat.id} 被封禁')
+        except:
+            pass

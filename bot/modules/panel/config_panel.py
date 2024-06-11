@@ -245,3 +245,17 @@ async def set_kk_gift_days(_, call):
                               f"🤝 【赠送资格天数】\n\n{days}天 **Done!**",
                               buttons=back_config_p_ikb)
             LOGGER.info(f"【admin】：{call.from_user.id} - 更新赠送资格天数完成")
+@bot.on_callback_query(filters.regex('set_fuxx_pitao') & admins_on_filter)
+async def set_fuxx_pitao(_, call):
+    if config.fuxx_pitao:
+        config.fuxx_pitao = False
+        await callAnswer(call, '👮🏻‍♂️ 您已关闭 皮套过滤功能，现在皮套人的消息不会被处理', True)
+        await config_p_re(_, call)
+        save_config()
+        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 皮套过滤功能 False")
+    else:
+        config.fuxx_pitao = True
+        await callAnswer(call, '👮🏻‍♂️ 您已开启 皮套过滤功能，现在皮套人的消息将会被狙杀', True)
+        await config_p_re(_, call)
+        save_config()
+        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 皮套过滤功能 True")

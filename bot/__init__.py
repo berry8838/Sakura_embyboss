@@ -56,6 +56,8 @@ tz_id = config.tz_id
 
 w_anti_channel_ids = config.w_anti_channel_ids
 kk_gift_days = config.kk_gift_days
+fuxx_pitao = config.fuxx_pitao
+
 save_config()
 
 LOGGER.info("配置文件加载完毕")

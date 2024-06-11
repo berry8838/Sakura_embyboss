@@ -136,6 +136,8 @@ class Config(BaseModel):
     proxy: Optional[Proxy] = Proxy()
     # kk指令中赠送资格的天数
     kk_gift_days: int = 30
+    # 是否狙杀皮套人
+    fuxx_pitao: bool = True
 
     def __init__(self, **data):
         super().__init__(**data)

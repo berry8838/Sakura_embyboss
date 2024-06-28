@@ -64,6 +64,8 @@ async def rgs_code(_, msg, register_code):
             LOGGER.info(f"【注册码】：{msg.from_user.first_name}[{msg.chat.id}] 使用了 {register_code}，到期时间：{ex_new}")
 
     else:
+        if data.us > 0:
+            return await sendMessage(msg, "已有注册资格，请先使用【注册】，勿重复其他注册码。")
         with Session() as session:
             # 我勒个豆，终于用 原子操作 + 排他锁 成功防止了并发更新
             # 在 UPDATE 语句中添加一个条件，只有当注册码未被使用时，才更新数据。这样，如果有两个用户同时尝试使用同一条注册码，只有一个用户的 UPDATE 语句会成功，因为另一个用户的 UPDATE 语句会发现注册码已经被使用。

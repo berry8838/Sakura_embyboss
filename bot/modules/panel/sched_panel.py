@@ -14,8 +14,8 @@ scheduler = Scheduler()
 
 # 初始化命令 开机检查重启
 loop = asyncio.get_event_loop()
-loop.call_later(5, lambda: loop.create_task(BotCommands.set_commands(client=bot)))
-loop.call_later(5, lambda: loop.create_task(check_restart()))
+loop.call_later(10, lambda: loop.create_task(BotCommands.set_commands(client=bot)))
+loop.call_later(10, lambda: loop.create_task(check_restart()))
 
 # 启动定时任务
 auto_backup_db = DbBackupUtils.auto_backup_db

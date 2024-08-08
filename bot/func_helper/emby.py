@@ -421,7 +421,7 @@ class Embyservice:
             if user_id:
                 sql += f"AND UserId = '{user_id}' "
             sql += "GROUP BY name "
-            sql += "ORDER BY play_count DESC "
+            sql += "ORDER BY total_duarion DESC "
             sql += "LIMIT " + str(limit)
             _url = f'{self.url}/emby/user_usage_stats/submit_custom_query'
             data = {

@@ -58,15 +58,7 @@ async def send_red_envelop(_, msg):
             return await asyncio.gather(msg.delete(),
                                         sendMessage(msg, f'**🧧 专享红包：\n\n请回复某 [数额][空格][个性化留言（可选）]',
                                                     timer=60))
-        if msg.sender_chat.id == msg.chat.id:
-            if not msg.reply_to_message.from_user.photo:
-                user_pic = None
-            else:
-                user_pic = await bot.download_media(message=msg.reply_to_message.from_user.photo.big_file_id,
-                                                    in_memory=True)
-            first_name = msg.chat.title
-
-        elif not msg.sender_chat:
+        if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
             if judge_admins(msg.from_user.id):
                 pass
@@ -85,6 +77,13 @@ async def send_red_envelop(_, msg):
             else:
                 user_pic = await bot.download_media(msg.reply_to_message.from_user.photo.big_file_id, in_memory=True)
             first_name = msg.from_user.first_name
+        elif msg.sender_chat.id == msg.chat.id:
+            if not msg.reply_to_message.from_user.photo:
+                user_pic = None
+            else:
+                user_pic = await bot.download_media(message=msg.reply_to_message.from_user.photo.big_file_id,
+                                                    in_memory=True)
+            first_name = msg.chat.title
         reply, delete = await asyncio.gather(msg.reply('正在准备专享红包，稍等'), msg.delete())
         ikb = create_reds(money=money, first_name=first_name, members=1, private=msg.reply_to_message.from_user.id,
                           private_text=private_text)
@@ -249,13 +248,11 @@ async def pick_red_bag(_, call):
 @bot.on_message(filters.command("srank", prefixes) & user_in_group_on_filter & filters.group)
 async def s_rank(_, msg):
     await msg.delete()
-    if msg.sender_chat.id == msg.chat.id:
-        sender = msg.chat.id
-    elif judge_admins(msg.from_user.id):
-        sender = msg.from_user.id
-    elif not msg.sender_chat:
+    if not msg.sender_chat:
         e = sql_get_emby(tg=msg.from_user.id)
-        if not e or e.iv < 5:
+        if judge_admins(msg.from_user.id):
+            sender = msg.from_user.id
+        elif not e or e.iv < 5:
             await asyncio.gather(msg.delete(),
                                  msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
                                                           datetime.now() + timedelta(minutes=1)),
@@ -265,6 +262,8 @@ async def s_rank(_, msg):
         else:
             sql_update_emby(Emby.tg == msg.from_user.id, iv=e.iv - 5)
             sender = msg.from_user.id
+    elif msg.sender_chat.id == msg.chat.id:
+        sender = msg.chat.id
     reply = await msg.reply(f"已扣除手续5{sakura_b}, 请稍等......加载中")
     text, i = await users_iv_rank()
     t = '❌ 数据库操作失败' if not text else text[0]

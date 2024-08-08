@@ -4,6 +4,7 @@
 from pyrogram import enums
 from datetime import date
 
+from bot.func_helper.utils import convert_s
 from bot.func_helper.emby import emby
 from bot.ranks_helper import ranks_draw
 from bot import bot, group, ranks, LOGGER, schedall, save_config
@@ -35,13 +36,15 @@ async def day_ranks(pin_mode=True):
         tmp = "**▎电影:**\n\n"
         for i, movie in enumerate(movies[:10]):
             user_id, item_id, item_type, name, count, duarion = tuple(movie)
-            tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
+            time = await convert_s(int(duarion))
+            tmp += str(i + 1) + ". " + name + "\n播放次数: " + str(count) + "  时长:" + time + "\n"
         payload = tmp
     if tvs:
         tmp = "\n**▎电视剧:**\n\n"
         for i, tv in enumerate(tvs[:10]):
             user_id, item_id, item_type, name, count, duarion = tuple(tv)
-            tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
+            time = await convert_s(int(duarion))
+            tmp += str(i + 1) + ". " + name + "\n播放次数: " + str(count) + "  时长:" + time + "\n"
         payload += tmp
     payload = f"**【{ranks.logo} 播放日榜】**\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime('%Y-%m-%d')
     message_info = await bot.send_photo(chat_id=group[0], photo=open(path, "rb"), caption=payload,
@@ -79,13 +82,15 @@ async def week_ranks(pin_mode=True):
         tmp = "**▎电影:**\n\n"
         for i, movie in enumerate(movies[:10]):
             user_id, item_id, item_type, name, count, duarion = tuple(movie)
-            tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
+            time = await convert_s(int(duarion))
+            tmp += str(i + 1) + ". " + name + "\n播放次数: " + str(count) + "  时长:" + time + "\n"
         payload = tmp
     if tvs:
         tmp = "\n**▎电视剧:**\n\n"
         for i, tv in enumerate(tvs[:10]):
             user_id, item_id, item_type, name, count, duarion = tuple(tv)
-            tmp += str(i + 1) + "." + name + " - " + str(count) + "\n"
+            time = await convert_s(int(duarion))
+            tmp += str(i + 1) + ". " + name + "\n播放次数: " + str(count) + "  时长:" + time + "\n"
         payload += tmp
     payload = f"**【{ranks.logo} 播放周榜】**\n\n" + payload + "\n#WeekRanks" + "  " + date.today().strftime(
         '%Y-%m-%d')

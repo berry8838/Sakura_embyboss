@@ -11,7 +11,6 @@
   "chanel": "su_yxfy",
   "bot_photo": "https://telegra.ph/file/3b6cd2a89b652e72e0d3b.png",
   "admins": [],
-  "invite": "n",
   "money": "花币",
   "emby_api": "xxxxx",
   "emby_url": "http://255.255.255.255:8096",
@@ -20,15 +19,6 @@
   "db_user": "",
   "db_pwd": "",
   "db_name": "",
-  "user_buy": {
-    "stat": false,
-    "button": [
-      "💰 点击购买",
-      "https://google.com",
-      "url"
-    ],
-    "text": false
-  },
   "emby_block": [
     "nsfw"
   ],

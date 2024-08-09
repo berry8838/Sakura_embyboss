@@ -4,7 +4,7 @@
 部分目前有 导出日志，更改探针，更改emby线路，设置购买按钮
 
 """
-from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open, user_buy
+from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open
 from pyrogram import filters
 
 from bot.func_helper.filters import admins_on_filter
@@ -127,63 +127,63 @@ async def set_block(_, call):
         LOGGER.info(f"【admin】：{call.from_user.id} - 更新指定显示/隐藏内容库为 {config.emby_block} 设置完成")
 
 
-@bot.on_callback_query(filters.regex("set_buy") & admins_on_filter)
-async def set_buy(_, call):
-    if user_buy.stat:
-        user_buy.stat = False
-        save_config()
-        await callAnswer(call, '**👮🏻‍♂️ 已经为您关闭购买按钮啦！**')
-        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} - 关闭了购买按钮")
-        return await config_p_re(_, call)
+# @bot.on_callback_query(filters.regex("set_buy") & admins_on_filter)
+# async def set_buy(_, call):
+#     if user_buy.stat:
+#         user_buy.stat = False
+#         save_config()
+#         await callAnswer(call, '**👮🏻‍♂️ 已经为您关闭购买按钮啦！**')
+#         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} - 关闭了购买按钮")
+#         return await config_p_re(_, call)
+#
+#     user_buy.stat = True
+#     await editMessage(call, '**👮🏻‍♂️ 已经为您开启购买按钮啦！目前默认只使用一个按钮，如果需求请github联系**\n'
+#                             '- 更换按钮请输入格式形如： \n\n`[按钮文字描述] - http://xxx`\n'
+#                             '- 退出状态请按 /cancel，需要markdown效果的话请在配置文件更改')
+#     save_config()
+#     LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} - 开启了购买按钮")
+#
+#     txt = await callListen(call, 120, buttons=back_set_ikb('set_buy'))
+#     if txt is False:
+#         return
+#
+#     elif txt.text == '/cancel':
+#         await txt.delete()
+#         await editMessage(call, '__您已经取消输入__ 退出状态。', buttons=back_config_p_ikb)
+#     else:
+#         await txt.delete()
+#         try:
+#             buy_text, buy_button = txt.text.replace(' ', '').split('-')
+#         except (IndexError, TypeError):
+#             await editMessage(call, f"**格式有误，您的输入：**\n\n{txt.text}", buttons=back_set_ikb('set_buy'))
+#         else:
+#             d = [buy_text, buy_button, 'url']
+#             keyboard = try_set_buy(d)
+#             edt = await editMessage(call, "**🫡 按钮效果如下：**\n可点击尝试，确认后返回",
+#                                     buttons=keyboard)
+#             if edt is False:
+#                 LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 失败')
+#                 return await editMessage(call, "可能输入的link格式错误，请重试。http/https+link",
+#                                          buttons=back_config_p_ikb)
+#             user_buy.button = d
+#             save_config()
+#             LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 {user_buy.button}')
 
-    user_buy.stat = True
-    await editMessage(call, '**👮🏻‍♂️ 已经为您开启购买按钮啦！目前默认只使用一个按钮，如果需求请github联系**\n'
-                            '- 更换按钮请输入格式形如： \n\n`[按钮文字描述] - http://xxx`\n'
-                            '- 退出状态请按 /cancel，需要markdown效果的话请在配置文件更改')
-    save_config()
-    LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} - 开启了购买按钮")
 
-    txt = await callListen(call, 120, buttons=back_set_ikb('set_buy'))
-    if txt is False:
-        return
-
-    elif txt.text == '/cancel':
-        await txt.delete()
-        await editMessage(call, '__您已经取消输入__ 退出状态。', buttons=back_config_p_ikb)
-    else:
-        await txt.delete()
-        try:
-            buy_text, buy_button = txt.text.replace(' ', '').split('-')
-        except (IndexError, TypeError):
-            await editMessage(call, f"**格式有误，您的输入：**\n\n{txt.text}", buttons=back_set_ikb('set_buy'))
-        else:
-            d = [buy_text, buy_button, 'url']
-            keyboard = try_set_buy(d)
-            edt = await editMessage(call, "**🫡 按钮效果如下：**\n可点击尝试，确认后返回",
-                                    buttons=keyboard)
-            if edt is False:
-                LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 失败')
-                return await editMessage(call, "可能输入的link格式错误，请重试。http/https+link",
-                                         buttons=back_config_p_ikb)
-            user_buy.button = d
-            save_config()
-            LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 {user_buy.button}')
-
-
-@bot.on_callback_query(filters.regex('open_allow_code') & admins_on_filter)
-async def open_allow_code(_, call):
-    if _open.allow_code:
-        _open.allow_code = False
-        await callAnswer(call, '**👮🏻‍♂️ 您已调整 注册码续期 Falese（关闭）**', True)
-        await config_p_re(_, call)
-        save_config()
-        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 注册码续期 Falese")
-    elif not _open.allow_code:
-        _open.allow_code = True
-        await callAnswer(call, '**👮🏻‍♂️ 您已调整 注册码续期 True（开启）**', True)
-        await config_p_re(_, call)
-        save_config()
-        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 注册码续期 True")
+# @bot.on_callback_query(filters.regex('open_allow_code') & admins_on_filter)
+# async def open_allow_code(_, call):
+#     if _open.allow_code:
+#         _open.allow_code = False
+#         await callAnswer(call, '**👮🏻‍♂️ 您已调整 注册码续期 Falese（关闭）**', True)
+#         await config_p_re(_, call)
+#         save_config()
+#         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 注册码续期 Falese")
+#     elif not _open.allow_code:
+#         _open.allow_code = True
+#         await callAnswer(call, '**👮🏻‍♂️ 您已调整 注册码续期 True（开启）**', True)
+#         await config_p_re(_, call)
+#         save_config()
+#         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 注册码续期 True")
 
 
 @bot.on_callback_query(filters.regex('leave_ban') & admins_on_filter)
@@ -245,6 +245,8 @@ async def set_kk_gift_days(_, call):
                               f"🤝 【赠送资格天数】\n\n{days}天 **Done!**",
                               buttons=back_config_p_ikb)
             LOGGER.info(f"【admin】：{call.from_user.id} - 更新赠送资格天数完成")
+
+
 @bot.on_callback_query(filters.regex('set_fuxx_pitao') & admins_on_filter)
 async def set_fuxx_pitao(_, call):
     if config.fuxx_pitao:

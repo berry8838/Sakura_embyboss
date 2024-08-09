@@ -60,8 +60,7 @@ async def open_check():
     all_user = _open.all_user
     tem = _open.tem
     timing = _open.timing
-    allow_code = _open.allow_code
-    return open_stats, all_user, tem, timing, allow_code
+    return open_stats, all_user, tem, timing
 
 
 async def tem_alluser():
@@ -85,6 +84,7 @@ async def pwd_create(length=8, chars=string.ascii_letters + string.digits):
     return ''.join([choice(chars) for i in range(length)])
 
 
+# 创建注册
 async def cr_link_one(tg: int, times, count, days: int, method: str):
     """
     创建连接
@@ -101,7 +101,7 @@ async def cr_link_one(tg: int, times, count, days: int, method: str):
     if method == 'code':
         while i <= count:
             p = await pwd_create(10)
-            uid = f'{ranks.logo}-{times}-{p}'
+            uid = f'{ranks.logo}-{times}-Register_{p}'
             code_list.append(uid)
             link = f'`{uid}`\n'
             links += link
@@ -109,7 +109,42 @@ async def cr_link_one(tg: int, times, count, days: int, method: str):
     elif method == 'link':
         while i <= count:
             p = await pwd_create(10)
-            uid = f'{ranks.logo}-{times}-{p}'
+            uid = f'{ranks.logo}-{times}-Register_{p}'
+            code_list.append(uid)
+            link = f't.me/{bot_name}?start={uid}\n'
+            links += link
+            i += 1
+    if sql_add_code(code_list, tg, days) is False:
+        return None
+    return links
+
+
+# 创建续期
+async def rn_link_one(tg: int, times, count, days: int, method: str):
+    """
+    创建连接
+    :param tg:
+    :param times:
+    :param count:
+    :param days:
+    :param method:
+    :return:
+    """
+    links = ''
+    code_list = []
+    i = 1
+    if method == 'code':
+        while i <= count:
+            p = await pwd_create(10)
+            uid = f'{ranks.logo}-{times}-Renew_{p}'
+            code_list.append(uid)
+            link = f'`{uid}`\n'
+            links += link
+            i += 1
+    elif method == 'link':
+        while i <= count:
+            p = await pwd_create(10)
+            uid = f'{ranks.logo}-{times}-Renew_{p}'
             code_list.append(uid)
             link = f't.me/{bot_name}?start={uid}\n'
             links += link

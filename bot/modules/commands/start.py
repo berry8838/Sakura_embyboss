@@ -57,12 +57,11 @@ async def p_start(_, msg):
         else:
             await asyncio.gather(sendMessage(msg, '🤺 你也想和bot击剑吗 ?'), msg.delete())
     except (IndexError, TypeError):
-        if await user_in_group_filter(_, msg):
-            await asyncio.gather(deleteMessage(msg),
-                                 sendPhoto(msg, bot_photo,
-                                           f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 请选择功能__👇",
-                                           buttons=judge_start_ikb(msg.from_user.id)))
-            sql_add_emby(msg.from_user.id)
+        await asyncio.gather(deleteMessage(msg),
+                             sendPhoto(msg, bot_photo,
+                                       f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 请选择功能__👇",
+                                       buttons=judge_start_ikb(msg.from_user.id)))
+        sql_add_emby(msg.from_user.id)
 
 
 # 返回面板

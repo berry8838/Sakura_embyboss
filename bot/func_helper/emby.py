@@ -6,9 +6,9 @@ emby的api操作方法
 from datetime import datetime, timedelta, timezone
 
 import requests as r
-from bot import emby_url, emby_api, _open, emby_block, schedall, extra_emby_libs, LOGGER, another_line
+from bot import emby_url, emby_api, emby_block, extra_emby_libs, LOGGER
 from bot.sql_helper.sql_emby import sql_update_emby, Emby
-from bot.sql_helper.sql_emby2 import sql_add_emby2, sql_delete_emby2
+from bot.sql_helper.sql_emby2 import sql_delete_emby2
 from bot.func_helper.utils import pwd_create, convert_runtime, cache
 
 
@@ -97,18 +97,13 @@ class Embyservice:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.82'
         }
 
-    async def emby_create(self, tg: int, name, pwd2, us: int, stats):
+    async def emby_create(self, name, us: int):
         """
         创建账户
-        :param tg: tg_id
         :param name: emby_name
-        :param pwd2: pwd2 安全码
         :param us: us 积分
-        :param stats: policy 策略
         :return: bool
         """
-        if _open.tem >= _open.all_user:
-            return 403
         ex = (datetime.now() + timedelta(days=us))
         name_data = ({"Name": name})
         new_user = r.post(f'{self.url}/emby/Users/New',
@@ -117,38 +112,21 @@ class Embyservice:
         if new_user.status_code == 200 or 204:
             try:
                 id = new_user.json()["Id"]
-                pwd = await pwd_create(8) if stats != 'o' else 5210
+                pwd = await pwd_create(8)
                 pwd_data = pwd_policy(id, new=pwd)
                 _pwd = r.post(f'{self.url}/emby/Users/{id}/Password',
                               headers=self.headers,
                               json=pwd_data)
             except:
-                return 100
+                return False
             else:
                 policy = create_policy(False, False)
                 _policy = r.post(f'{self.url}/emby/Users/{id}/Policy',
                                  headers=self.headers,
                                  json=policy)  # .encode('utf-8')
-                if _policy.status_code == 200 or 204:
-                    if stats == 'y':
-                        sql_update_emby(Emby.tg == tg, embyid=id, name=name, pwd=pwd, pwd2=pwd2, lv='b',
-                                        cr=datetime.now(), ex=ex)
-                    elif stats == 'n':
-                        sql_update_emby(Emby.tg == tg, embyid=id, name=name, pwd=pwd, pwd2=pwd2, lv='b',
-                                        cr=datetime.now(), ex=ex,
-                                        us=0)
-                    elif stats == 'o':
-                        sql_add_emby2(embyid=id, name=name, cr=datetime.now(), ex=ex)
-
-                    if schedall.check_ex:
-                        ex = ex.strftime("%Y-%m-%d %H:%M:%S")
-                    elif schedall.low_activity:
-                        ex = '__若21天无观看将封禁__'
-                    else:
-                        ex = '__无需保号，放心食用__'
-                    return pwd, ex
-        elif new_user.status_code == 400:
-            return 400
+                return id, pwd, ex if _policy.status_code == 200 or 204 else False
+        else:
+            return False
 
     async def emby_del(self, id, stats=None):
         """
@@ -249,20 +227,6 @@ class Embyservice:
                     count += 1
             except KeyError:
                 pass
-        try:
-            response1 = r.get(f"{another_line[0]}/emby/Sessions?api_key={another_line[1]}")
-            sessions1 = response1.json()
-            # print(sessions1)
-        except Exception as e:
-            # print(e)
-            return count
-        else:
-            for session1 in sessions1:
-                try:
-                    if session1["NowPlayingItem"]:
-                        count += 1
-                except KeyError:
-                    pass
         return count
 
     async def emby_change_policy(self, id=id, admin=False, method=False):

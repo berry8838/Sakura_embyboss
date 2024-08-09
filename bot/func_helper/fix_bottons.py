@@ -2,7 +2,7 @@ from cacheout import Cache
 from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
-from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, user_buy, sakura_b, \
+from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, sakura_b, \
     schedall, config
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
@@ -22,8 +22,6 @@ def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
     d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'], ['🎟️ 使用注册码', 'exchange']]
     if _open.checkin:
         d.append([f'🎯 签到', 'checkin'])
-    if user_buy.stat:
-        d.append(user_buy.button)
     lines = array_chunk(d, 2)
     if judge_admins(uid):
         lines.append([['👮🏻‍♂️ admin', 'manage']])
@@ -48,8 +46,8 @@ def members_ikb(emby=False) -> InlineKeyboardMarkup:
     :return:
     """
     if emby:
-        method = 'storeall' if not user_buy.stat else 'exchange'
-        return ikb([[('🏪 兑换商店', method), ('🗑️ 删除账号', 'delme')],
+        # method = 'storeall' if not user_buy.stat else 'exchange'
+        return ikb([[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
                     [('♻️ 主界面', 'back_start')]])
     else:
@@ -66,11 +64,12 @@ re_bindtg_ikb = ikb([[('✨ 绑定TG', 'bindtg'), ('💫 用户主页', 'members
 re_delme_ikb = ikb([[('♻️ 重试', 'delme')], [('🔙 返回', 'members')]])
 re_reset_ikb = ikb([[('♻️ 重试', 'reset')], [('🔙 返回', 'members')]])
 re_exchange_b_ikb = ikb([[('♻️ 重试', 'exchange'), ('❌ 关闭', 'closeit')]])
-
+re_born_ikb = ikb([[('✨ 重输', 'store-reborn'), ('💫 返回', 'storeall')]])
 
 def store_ikb():
-    return ikb([[(f'♾️ 兑换白名单', 'store-whitelist')],
-                [(f'🎟️ 兑换注册码', 'store-invite'), (f'🔍 查询注册码', 'store-query')], [(f'❌ 取消', 'members')]])
+    return ikb([[(f'♾️ 兑换白名单', 'store-whitelist'), (f'🔥 兑换解封禁', 'store-reborn')],
+                [(f'🎟️ 兑换注册码', 'store-invite'), (f'🔍 查询注册码', 'store-query')],
+                [(f'❌ 取消', 'members')]])
 
 
 re_store_renew = ikb([[('✨ 重新输入', 'changetg'), ('💫 取消输入', 'storeall')]])
@@ -178,7 +177,6 @@ async def user_query_page(i, j) -> InlineKeyboardMarkup:
     member的注册码查询分页
     :param i: 总
     :param j: 当前
-    :param tg: tg
     :return:
     """
     keyboard = InlineKeyboard()
@@ -207,17 +205,18 @@ def cr_renew_ikb():
 
 
 def config_preparation() -> InlineKeyboardMarkup:
-    code = '✅' if _open.allow_code else '❎'
-    buy_stat = '✅' if user_buy.stat else '❎'
+    # code = '✅' if _open.allow_code else '❎'
+    # buy_stat = '✅' if user_buy.stat else '❎'
     leave_ban = '✅' if _open.leave_ban else '❎'
     uplays = '✅' if _open.uplays else '❎'
     fuxx_pitao = '✅' if config.fuxx_pitao else '❎'
     keyboard = ikb(
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
          [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
-         [(f'{code} 注册码续期', 'open_allow_code'), (f'{buy_stat} 开关购买', 'set_buy')],
+         # [(f'{code} 注册码续期', 'open_allow_code'), (f'{buy_stat} 开关购买', 'set_buy')],
          [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 自动看片结算', 'set_uplays')],
-         [(f'设置赠送资格天数({config.kk_gift_days}天)', 'set_kk_gift_days'),(f'{fuxx_pitao} 皮套人过滤功能', 'set_fuxx_pitao')],
+         [(f'设置赠送资格天数({config.kk_gift_days}天)', 'set_kk_gift_days'),
+          (f'{fuxx_pitao} 皮套人过滤功能', 'set_fuxx_pitao')],
          [('🔙 返回', 'manage')]])
     return keyboard
 

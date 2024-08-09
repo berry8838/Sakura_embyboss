@@ -16,18 +16,18 @@ class ExDate(BaseModel):
     link: str = 'link'
 
 
-class UserBuy(BaseModel):
-    stat: StrictBool
-
-    # 转换 字符串为布尔
-    @field_validator('stat', mode='before')
-    def convert_to_bool(cls, v):
-        if isinstance(v, str):
-            return v.lower() == 'y'
-        return v
-
-    text: bool
-    button: List[str]
+# class UserBuy(BaseModel):
+#     stat: StrictBool
+#
+#     # 转换 字符串为布尔
+#     @field_validator('stat', mode='before')
+#     def convert_to_bool(cls, v):
+#         if isinstance(v, str):
+#             return v.lower() == 'y'
+#         return v
+#
+#     text: bool
+#     button: List[str]
 
 
 class Open(BaseModel):
@@ -35,13 +35,12 @@ class Open(BaseModel):
     all_user: int
     timing: int = 0
     tem: Optional[int] = 0
-    allow_code: StrictBool
-
-    @field_validator('allow_code', mode='before')
-    def convert_to_bool(cls, v):
-        if isinstance(v, str):
-            return v.lower() == 'y'
-        return v
+    # allow_code: StrictBool
+    # @field_validator('allow_code', mode='before')
+    # def convert_to_bool(cls, v):
+    #     if isinstance(v, str):
+    #         return v.lower() == 'y'
+    #     return v
 
     checkin: bool
     exchange: bool
@@ -105,7 +104,7 @@ class Config(BaseModel):
     main_group: str
     chanel: str
     bot_photo: str
-    user_buy: UserBuy
+    # user_buy: UserBuy
     open: Open
     admins: Optional[List[int]] = []
     invite: str
@@ -129,7 +128,7 @@ class Config(BaseModel):
     db_docker_name: str = "mysql"
     db_backup_dir: str = "./db_backup"
     db_backup_maxcount: int = 7
-    another_line: Optional[List[str]] = []
+    # another_line: Optional[List[str]] = []
     # 如果使用的是 Python 3.10+ ，|运算符能用
     # w_anti_channel_ids: Optional[List[str | int]] = []
     w_anti_channel_ids: Optional[List[Union[str, int]]] = []

@@ -24,7 +24,6 @@ group = config.group
 main_group = config.main_group
 chanel = config.chanel
 bot_photo = config.bot_photo
-user_buy = config.user_buy
 _open = config.open
 admins = config.admins
 invite = config.invite
@@ -38,7 +37,6 @@ emby_url = config.emby_url
 emby_line = config.emby_line
 emby_block = config.emby_block
 extra_emby_libs = config.extra_emby_libs
-another_line = config.another_line
 # # 数据库
 db_host = config.db_host
 db_user = config.db_user
@@ -68,10 +66,9 @@ user_p = [
     BotCommand("start", "[私聊] 开启用户面板"),
     BotCommand("myinfo", "[用户] 查看状态"),
     BotCommand("count", "[用户] 媒体库数量"),
-]
-if not user_buy.stat:
-    user_p += [BotCommand("red", "[用户/禁言] 发红包"),
-               BotCommand("srank", "[用户/禁言] 查看计分")]
+    BotCommand("red", "[用户/禁言] 发红包"),
+    BotCommand("srank", "[用户/禁言] 查看计分")]
+
 # 取消 BotCommand("exchange", "[私聊] 使用注册码")
 admin_p = user_p + [
     BotCommand("kk", "管理用户 [管理]"),

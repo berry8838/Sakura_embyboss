@@ -5,7 +5,6 @@
 import asyncio
 
 from pyrogram import filters
-from pyrogram.errors import BadRequest
 
 from bot import bot, _open, save_config, bot_photo, LOGGER, bot_name, admins, owner
 from bot.func_helper.filters import admins_on_filter
@@ -16,19 +15,17 @@ from bot.func_helper.fix_bottons import gm_ikb_content, open_menu_ikb, gog_reste
     back_free_ikb, \
     re_cr_link_ikb, close_it_ikb, ch_link_ikb, date_ikb, cr_paginate, cr_renew_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, sendPhoto, callListen, deleteMessage, sendMessage
-from bot.func_helper.utils import open_check, cr_link_one
+from bot.func_helper.utils import open_check, cr_link_one,rn_link_one
 
 
 @bot.on_callback_query(filters.regex('manage') & admins_on_filter)
 async def gm_ikb(_, call):
     await callAnswer(call, '✔️ manage面板')
-    stat, all_user, tem, timing, allow_code = await open_check()
+    stat, all_user, tem, timing = await open_check()
     stat = "True" if stat else "False"
-    allow_code = 'True' if allow_code else 'False'
     timing = 'Turn off' if timing == 0 else str(timing) + ' min'
     tg, emby, white = sql_count_emby()
     gm_text = f'⚙️ 欢迎您，亲爱的管理员 {call.from_user.first_name}\n\n· ®️ 注册状态 | **{stat}**\n· ⏳ 定时注册 | **{timing}**\n' \
-              f'· 🔖 注册码续期 | **{allow_code}**\n' \
               f'· 🎫 总注册限制 | **{all_user}**\n· 🎟️ 已注册人数 | **{emby}** • WL **{white}**\n· 🤖 bot使用人数 | {tg}'
 
     await editMessage(call, gm_text, buttons=gm_ikb_content)
@@ -39,7 +36,7 @@ async def gm_ikb(_, call):
 async def open_menu(_, call):
     await callAnswer(call, '®️ register面板')
     # [开关，注册总数，定时注册] 此间只对emby表中tg用户进行统计
-    stat, all_user, tem, timing, allow_code = await open_check()
+    stat, all_user, tem, timing = await open_check()
     tg, emby, white = sql_count_emby()
     openstats = '✅' if stat else '❎'  # 三元运算
     timingstats = '❎' if timing == 0 else '✅'
@@ -53,7 +50,7 @@ async def open_menu(_, call):
 
 @bot.on_callback_query(filters.regex('open_stat') & admins_on_filter)
 async def open_stats(_, call):
-    stat, all_user, tem, timing, allow_code = await open_check()
+    stat, all_user, tem, timing = await open_check()
     if timing != 0:
         return await callAnswer(call, "🔴 目前正在运行定时注册。\n无法调用，请再次点击，【定时注册】关闭状态", True)
 
@@ -197,12 +194,13 @@ async def open_all_user_l(_, call):
 # 生成注册链接
 @bot.on_callback_query(filters.regex('cr_link') & admins_on_filter)
 async def cr_link(_, call):
-    await callAnswer(call, '✔️ 创建注册码')
+    await callAnswer(call, '✔️ 创建注册续期码')
     send = await editMessage(call,
-                             f'🎟️ 请回复创建 [天数] [数量] [模式]\n\n'
+                             f'🎟️ 请回复创建 [天数] [数量] [模式] [续期]\n\n'
                              f'**天数**：月30，季90，半年180，年365\n'
                              f'**模式**： link -深链接 | code -码\n'
-                             f'**示例**：`1 20 link` 记作 20条 1天注册码链接\n'
+                             f'**续期**： F - 注册码，T - 续期码\n'
+                             f'**示例**：`30 1 link T` 记作 30天一条注册深链接，仅续期\n'
                              f'__取消本次操作，请 /cancel__')
     if send is False:
         return
@@ -215,7 +213,7 @@ async def cr_link(_, call):
         return await editMessage(call, '⭕ 您已经取消操作了。', buttons=re_cr_link_ikb)
     try:
         await content.delete()
-        times, count, method = content.text.split()
+        times, count, method, renew = content.text.split()
         count = int(count)
         days = int(times)
         if method != 'code' and method != 'link':
@@ -223,15 +221,27 @@ async def cr_link(_, call):
     except (ValueError, IndexError):
         return await editMessage(call, '⚠️ 检查输入，有误。', buttons=re_cr_link_ikb)
     else:
-        links = await cr_link_one(call.from_user.id, times, count, days, method)
-        if links is None:
-            return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库。', buttons=re_cr_link_ikb)
-        links = f"🎯 {bot_name}已为您生成了 **{days}天** 邀请码 {count} 个\n\n" + links
-        chunks = [links[i:i + 4096] for i in range(0, len(links), 4096)]
-        for chunk in chunks:
-            await sendMessage(content, chunk, buttons=close_it_ikb)
-        await editMessage(call, f'📂 {bot_name}已为 您 生成了 {count} 个 {days} 天邀请码', buttons=re_cr_link_ikb)
-        LOGGER.info(f"【admin】：{bot_name}已为 {content.from_user.id} 生成了 {count} 个 {days} 天邀请码")
+        if renew == 'F':
+            links = await cr_link_one(call.from_user.id, times, count, days, method)
+            if links is None:
+                return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库。', buttons=re_cr_link_ikb)
+            links = f"🎯 {bot_name}已为您生成了 **{days}天** 注册码 {count} 个\n\n" + links
+            chunks = [links[i:i + 4096] for i in range(0, len(links), 4096)]
+            for chunk in chunks:
+                await sendMessage(content, chunk, buttons=close_it_ikb)
+            await editMessage(call, f'📂 {bot_name}已为 您 生成了 {count} 个 {days} 天注册码', buttons=re_cr_link_ikb)
+            LOGGER.info(f"【admin】：{bot_name}已为 {content.from_user.id} 生成了 {count} 个 {days} 天注册码")
+
+        else:
+            links = await rn_link_one(call.from_user.id, times, count, days, method)
+            if links is None:
+                return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库。', buttons=re_cr_link_ikb)
+            links = f"🎯 {bot_name}已为您生成了 **{days}天** 续期码 {count} 个\n\n" + links
+            chunks = [links[i:i + 4096] for i in range(0, len(links), 4096)]
+            for chunk in chunks:
+                await sendMessage(content, chunk, buttons=close_it_ikb)
+            await editMessage(call, f'📂 {bot_name}已为 您 生成了 {count} 个 {days} 天续期码', buttons=re_cr_link_ikb)
+            LOGGER.info(f"【admin】：{bot_name}已为 {content.from_user.id} 生成了 {count} 个 {days} 天续期码")
 
 
 # 检索

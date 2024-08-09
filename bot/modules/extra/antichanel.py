@@ -59,21 +59,21 @@ async def remove_pitao(_, msg):
 
 
 custom_message_filter = filters.create(
-    lambda _, __, message: False if message.forward_from_chat or message.from_user else True)
+    lambda _, __, message: False if message.forward_from_chat or message.from_user or not config.fuxx_pitao else True)
 custom_chat_filter = filters.create(
     lambda _, __,
-           message: True if message.sender_chat.id != message.chat.id and message.sender_chat.id  not in w_anti_channel_ids else False)
+           message: True if message.sender_chat.id != message.chat.id and message.sender_chat.id not in w_anti_channel_ids else False)
 
 
 @bot.on_message(custom_message_filter & custom_chat_filter & filters.group)
 async def fuxx_pitao(_, msg):
     # 如果开启了狙杀皮套人功能
-    if config.fuxx_pitao:
-        try:
-            await asyncio.gather(msg.delete(),
-                                 msg.reply(f'🎯 自动狙杀皮套人！{msg.sender_chat.title} - `{msg.sender_chat.id}`'))
-            await msg.chat.ban_member(msg.sender_chat.id)
-            LOGGER.info(
-                f'【AntiChannel】- {msg.sender_chat.title} - {msg.sender_chat.id} 被封禁')
-        except:
-            pass
+    # if config.fuxx_pitao:
+    try:
+        await asyncio.gather(msg.delete(),
+                             msg.reply(f'🎯 自动狙杀皮套人！{msg.sender_chat.title} - `{msg.sender_chat.id}`'))
+        await msg.chat.ban_member(msg.sender_chat.id)
+        LOGGER.info(
+            f'【AntiChannel】- {msg.sender_chat.title} - {msg.sender_chat.id} 被封禁')
+    except:
+        pass

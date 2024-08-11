@@ -40,8 +40,8 @@ async def check_expired():
             except Exception as e:
                 LOGGER.error(e)
 
-        elif _open.exchange and r.iv >= _open.exchange_cost * 30:
-            b = r.iv - _open.exchange_cost * 30
+        elif _open.exchange and r.iv >= _open.exchange_cost:
+            b = r.iv - _open.exchange_cost
             if sql_update_emby(Emby.tg == r.tg, ex=ext, iv=b):
                 text = f'【到期检测】\n#id{r.tg} 续期账户 [{r.name}](tg://user?id={r.tg})\n' \
                        f'在当前时间自动续期30天\n' \
@@ -107,8 +107,8 @@ async def check_expired():
             except Exception as e:
                 LOGGER.error(e)
 
-        elif _open.exchange and c.iv >= _open.exchange_cost * 30:
-            c_iv = c.iv - _open.exchange_cost * 30
+        elif _open.exchange and c.iv >= _open.exchange_cost:
+            c_iv = c.iv - _open.exchange_cost
             if await emby.emby_change_policy(id=c.embyid, method=False):
                 if sql_update_emby(Emby.tg == c.tg, lv='b', ex=ext, iv=c_iv):
                     text = f'【到期检测】\n#id{c.tg} 解封账户 [{c.name}](tg://user?id={c.tg})\n在当前时间自动续期30天\n📅实时到期：{ext.strftime("%Y-%m-%d %H:%M:%S")}'

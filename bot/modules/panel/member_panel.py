@@ -556,9 +556,9 @@ async def do_store_reborn(_, call):
     e = sql_get_emby(tg=call.from_user.id)
     if not e:
         return
-    if e.lv == 'c' and e.iv >= _open.invite_cost:
+    if e.lv == 'c' and e.iv >= _open.exchange_cost:
         await editMessage(call,
-                          f'🏪 您已满足基础要求，此次将花费 {_open.invite_cost}{sakura_b} 解除未活跃的封禁，确认请回复 /ok，退出 /cancel')
+                          f'🏪 您已满足基础要求，此次将花费 {_open.exchange_cost}{sakura_b} 解除未活跃的封禁，确认请回复 /ok，退出 /cancel')
         m = await callListen(call, 120, buttons=re_born_ikb)
         if m is False:
             return
@@ -566,14 +566,14 @@ async def do_store_reborn(_, call):
         elif m.text == '/cancel':
             await asyncio.gather(m.delete(), do_store(_, call))
         else:
-            sql_update_emby(Emby.tg == call.from_user.id, iv=e.iv - _open.invite_cost, lv='b')
-            LOGGER.info(f'【兑换解封】- {call.from_user.id} 已花费 {_open.invite_cost}{sakura_b},解除封禁')
+            sql_update_emby(Emby.tg == call.from_user.id, iv=e.iv - _open.exchange_cost, lv='b')
+            LOGGER.info(f'【兑换解封】- {call.from_user.id} 已花费 {_open.exchange_cost}{sakura_b},解除封禁')
             await asyncio.gather(m.delete(), do_store(_, call),
                                  sendMessage(call, '解封成功<(￣︶￣)↗[GO!]\n此消息将在20s后自焚', timer=20))
     else:
         await sendMessage(call, '❌ 不满足要求！ヘ(￣ω￣ヘ)\n\n'
-                                '1. 被封禁账户'
-                                f'2. 至少持有 {_open.invite_cost}{sakura_b}\n'
+                                '1. 被封禁账户\n'
+                                f'2. 至少持有 {_open.exchange_cost}{sakura_b}\n'
                                 f'此消息将在20s后自焚', timer=20)
 
 

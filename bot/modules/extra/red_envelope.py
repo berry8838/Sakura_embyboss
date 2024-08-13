@@ -61,7 +61,7 @@ async def send_red_envelop(_, msg):
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
             if judge_admins(msg.from_user.id):
-                money = 0  # 不沾因果
+                admin_status = True
             elif not e or money < 5 or e.iv < money or msg.reply_to_message.from_user.id == msg.from_user.id:  # 不得少于余额
                 await asyncio.gather(msg.delete(),
                                      msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
@@ -71,12 +71,13 @@ async def send_red_envelop(_, msg):
                                                  timer=60))
                 return
             new_iv = e.iv - money
-            sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
+            if not admin_status: sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
             user_pic = None if not msg.reply_to_message.from_user.photo else await bot.download_media(
                 msg.reply_to_message.from_user.photo.big_file_id, in_memory=True)
             first_name = msg.from_user.first_name
         elif msg.sender_chat.id == msg.chat.id:
-            user_pic = None if not msg.reply_to_message.from_user.photo else await bot.download_media(message=msg.reply_to_message.from_user.photo.big_file_id, in_memory=True)
+            user_pic = None if not msg.reply_to_message.from_user.photo else await bot.download_media(
+                message=msg.reply_to_message.from_user.photo.big_file_id, in_memory=True)
             first_name = msg.chat.title
         reply, delete = await asyncio.gather(msg.reply('正在准备专享红包，稍等'), msg.delete())
         ikb = create_reds(money=money, first_name=first_name, members=1, private=msg.reply_to_message.from_user.id,
@@ -102,7 +103,7 @@ async def send_red_envelop(_, msg):
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
             if judge_admins(msg.from_user.id):
-                money = 0
+                admin_status = True
             elif not all([e, e.iv >= money, money >= members, members > 0]):
                 await asyncio.gather(msg.delete(),
                                      msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
@@ -111,12 +112,14 @@ async def send_red_envelop(_, msg):
                                                       f'未私聊过bot或{sakura_b}不足，禁言一分钟。', timer=60))
                 return
             new_iv = e.iv - money
-            sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
-            user_pic = None if not msg.from_user.photo else await bot.download_media(msg.from_user.photo.big_file_id, in_memory=True)
+            if not admin_status: sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
+            user_pic = None if not msg.from_user.photo else await bot.download_media(msg.from_user.photo.big_file_id,
+                                                                                     in_memory=True)
             first_name = msg.from_user.first_name
 
         elif msg.sender_chat.id == msg.chat.id:
-            user_pic = None if not msg.chat.photo else await bot.download_media(message=msg.chat.photo.big_file_id, in_memory=True)
+            user_pic = None if not msg.chat.photo else await bot.download_media(message=msg.chat.photo.big_file_id,
+                                                                                in_memory=True)
             first_name = msg.chat.title
         else:
             return
@@ -182,7 +185,9 @@ async def pick_red_bag(_, call):
             red_bags.pop(red_id, '不存在的红包')
             new_iv = e.iv + bag["money"]
             sql_update_emby(Emby.tg == call.from_user.id, iv=new_iv)
-            await callAnswer(call, f'🧧恭喜，你领取到了\n{bag["sender"]} の {bag["m"]}{sakura_b}\n\n{bag["private_text"]}', True)
+            await callAnswer(call,
+                             f'🧧恭喜，你领取到了\n{bag["sender"]} の {bag["m"]}{sakura_b}\n\n{bag["private_text"]}',
+                             True)
             members = await get_users()
             text = f'🧧 {sakura_b}红包\n\n**{bag["private_text"]}\n\n' \
                    f'🕶️{bag["sender"]} **的专属红包已被 [{members.get(call.from_user.id, "None")}](tg://user?id={bag["members"]}) 领取'

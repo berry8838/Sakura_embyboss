@@ -1,5 +1,7 @@
 #! /usr/bin/python3
 # -*- coding: utf-8 -*-
+import contextlib
+
 from .func_helper.logger_config import logu, Now
 
 LOGGER = logu(__name__)
@@ -26,7 +28,6 @@ chanel = config.chanel
 bot_photo = config.bot_photo
 _open = config.open
 admins = config.admins
-invite = config.invite
 sakura_b = config.money
 ranks = config.ranks
 prefixes = ['/', '!', '.', '，', '。']
@@ -55,6 +56,8 @@ tz_id = config.tz_id
 w_anti_channel_ids = config.w_anti_channel_ids
 kk_gift_days = config.kk_gift_days
 fuxx_pitao = config.fuxx_pitao
+
+# mp = config.moviepilot
 
 save_config()
 
@@ -113,9 +116,9 @@ if len(extra_emby_libs) > 0:
     owner_p += [BotCommand("extraembylibs_blockall", "一键关闭所有用户的额外媒体库 [owner]"),
                 BotCommand("extraembylibs_unblockall", "一键开启所有用户的额外媒体库 [owner]")]
 
-import uvloop
-
-uvloop.install()
+with contextlib.suppress(ImportError):
+    import uvloop
+    uvloop.install()
 from pyrogram import enums
 from pyromod import Client
 

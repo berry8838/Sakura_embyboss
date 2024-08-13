@@ -94,6 +94,15 @@ class Proxy(BaseModel):
     password: str = ""
 
 
+# class MP(BaseModel):
+#     status: bool = False
+#     host: Optional[str]
+#     username: Optional[str]
+#     password: Optional[str]
+#     access_token: Optional[str]
+#     price: str = 1
+
+
 class Config(BaseModel):
     bot_name: str
     bot_token: str
@@ -107,7 +116,6 @@ class Config(BaseModel):
     # user_buy: UserBuy
     open: Open
     admins: Optional[List[int]] = []
-    invite: str
     money: str
     emby_api: str
     emby_url: str
@@ -137,6 +145,7 @@ class Config(BaseModel):
     kk_gift_days: int = 30
     # 是否狙杀皮套人
     fuxx_pitao: bool = True
+    # moviepilot: MP
 
     def __init__(self, **data):
         super().__init__(**data)

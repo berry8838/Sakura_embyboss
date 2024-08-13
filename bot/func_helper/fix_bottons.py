@@ -19,7 +19,7 @@ def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
     :param uid:
     :return:
     """
-    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'], ['🎟️ 使用注册码', 'exchange']]
+    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'], ['🎟️ 使用注册/续期码', 'exchange']]
     if _open.checkin:
         d.append([f'🎯 签到', 'checkin'])
     lines = array_chunk(d, 2)
@@ -110,7 +110,7 @@ async def cr_page_server():
 
 """admins ↓"""
 
-gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 生成注册', 'cr_link')],
+gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 注册/续期码', 'cr_link')],
                       [('💊 查询注册', 'ch_link'), ('🏬 兑换设置', 'set_renew')],
                       [('🌏 定时', 'schedall'), ('🕹️ 主界面', 'back_start'), ('其他 🪟', 'back_config')]])
 

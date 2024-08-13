@@ -15,10 +15,10 @@ from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emb
 from pyrogram import filters
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import user_in_group_on_filter
-from bot.func_helper.utils import members_info, tem_alluser, cr_link_one, rn_link_one
+from bot.func_helper.utils import members_info, tem_alluser, cr_link_one
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
-    store_ikb, re_store_renew, re_bindtg_ikb, close_it_ikb, user_query_page, re_born_ikb
+    store_ikb, re_bindtg_ikb, close_it_ikb, user_query_page, re_born_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage, ask_return, deleteMessage
 from bot.modules.commands import p_start
 from bot.modules.commands.exchange import rgs_code
@@ -528,9 +528,9 @@ async def user_emby_unblock(_, call):
 
 @bot.on_callback_query(filters.regex('exchange') & user_in_group_on_filter)
 async def call_exchange(_, call):
-    await asyncio.gather(callAnswer(call, '🔋 使用注册码'), deleteMessage(call))
-    msg = await ask_return(call, text='🔋 **【使用注册码】**：\n\n'
-                                      f'- 请在120s内对我发送你的注册码，形如\n`{ranks.logo}-xx-xxxx`\n退出点 /cancel',
+    await asyncio.gather(callAnswer(call, '🔋 使用注册/续期码'), deleteMessage(call))
+    msg = await ask_return(call, text='🔋 **【使用注册/续期码】**：\n\n'
+                                      f'- 请在120s内对我发送你的注册/续期码，形如\n`{ranks.logo}-xx-xxxx`\n退出点 /cancel',
                            button=re_exchange_b_ikb)
     if msg is False:
         return
@@ -605,14 +605,14 @@ async def do_store_invite(_, call):
             return callAnswer(call, '❌ 仅持有账户可兑换此选项', True)
         if e.iv < _open.invite_cost:
             return await callAnswer(call,
-                                    f'🏪 兑换规则：\n当前兑换邀请码至少需要 {_open.invite_cost} {sakura_b}。勉励',
+                                    f'🏪 兑换规则：\n当前兑换注册码至少需要 {_open.invite_cost} {sakura_b}。勉励',
                                     True)
         await editMessage(call,
-                          f'🎟️ 请回复创建 [类型] [数量] [模式] [续期]\n\n'
+                          f'🎟️ 请回复创建 [类型] [数量] [模式]\n\n'
                           f'**类型**：月mon，季sea，半年half，年year\n'
                           f'**模式**： link -深链接 | code -码\n'
-                          f'**续期**： F - 注册码，T - 续期码\n'
-                          f'**示例**：`sea 1 link T` 记作 1条 季度注册码链接\n'
+                          # f'**续期**： F - 注册码，T - 续期码\n'
+                          f'**示例**：`sea 1 link` 记作 1条 季度注册链接\n'
                           f'**注意**：兑率 30天 = {_open.invite_cost}{sakura_b}\n'
                           f'__取消本次操作，请 /cancel__')
         content = await callListen(call, 120)
@@ -622,7 +622,7 @@ async def do_store_invite(_, call):
         elif content.text == '/cancel':
             return await asyncio.gather(content.delete(), do_store(_, call))
         try:
-            times, count, method, renew = content.text.split()
+            times, count, method = content.text.split()
             days = getattr(ExDate(), times)
             count = int(count)
             cost = math.floor((days * count / 30) * _open.invite_cost)
@@ -639,25 +639,14 @@ async def do_store_invite(_, call):
                                         content.delete())
         else:
             sql_update_emby(Emby.tg == call.from_user.id, iv=e.iv - cost)
-            if renew == 'F':
-                links = await cr_link_one(call.from_user.id, times, count, days, method)
-                if links is None:
-                    return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库。')
-                links = f"🎯 {bot_name}已为您生成了 **{days}天** 注册码 {count} 个\n\n" + links
-                chunks = [links[i:i + 4096] for i in range(0, len(links), 4096)]
-                for chunk in chunks:
-                    await sendMessage(content, chunk)
-                LOGGER.info(f"【注册码兑换】：{bot_name}已为 {content.from_user.id} 兑换了 {count} 个 {days} 天注册码码")
-            else:
-                links = await rn_link_one(call.from_user.id, days, count, days, method)
-                if links is None:
-                    return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库')
-                links = f"🎯 {bot_name}已为您生成了 **{days}天** 续期码 {count} 个\n\n" + links
-                chunks = [links[i:i + 4096] for i in range(0, len(links), 4096)]
-                for chunk in chunks:
-                    await sendMessage(content, chunk)
-                LOGGER.info(f"【续期码兑换】：{bot_name}已为 {content.from_user.id} 兑换了 {count} 个 {days} 天续期码")
-
+            links = await cr_link_one(call.from_user.id, days, count, days, method)
+            if links is None:
+                return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库')
+            links = f"🎯 {bot_name}已为您生成了 **{days}天** 注册码 {count} 个\n\n" + links
+            chunks = [links[i:i + 4096] for i in range(0, len(links), 4096)]
+            for chunk in chunks:
+                await sendMessage(content, chunk)
+            LOGGER.info(f"【注册码兑换】：{bot_name}已为 {content.from_user.id} 兑换了 {count} 个 {days} 天注册码")
     else:
         await callAnswer(call, '❌ 管理员未开启此兑换', True)
 

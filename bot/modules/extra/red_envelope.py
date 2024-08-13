@@ -106,12 +106,13 @@ async def send_red_envelop(_, msg):
             admin_status = False
             if judge_admins(msg.from_user.id):
                 admin_status = True
-            elif not all([e, e.iv >= money, money >= members, members > 0]):
+            elif not all([e, e.iv >= money, money >= members, members > 0, money >= 5, e.iv >= 5]):
                 await asyncio.gather(msg.delete(),
                                      msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
                                                               datetime.now() + timedelta(minutes=1)),
                                      sendMessage(msg, f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) '
-                                                      f'未私聊过bot或{sakura_b}不足，禁言一分钟。', timer=60))
+                                                      f'违反规则，禁言一分钟。\nⅰ 所持有{sakura_b}不小于5\nⅱ 发出{sakura_b}不小于5\nⅲ 未私聊过bot',
+                                                 timer=60))
                 return
             new_iv = e.iv - money
             if not admin_status: sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)

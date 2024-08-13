@@ -60,6 +60,7 @@ async def send_red_envelop(_, msg):
                                                     timer=60))
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
+            admin_status = False
             if judge_admins(msg.from_user.id):
                 admin_status = True
             elif not e or money < 5 or e.iv < money or msg.reply_to_message.from_user.id == msg.from_user.id:  # 不得少于余额
@@ -102,6 +103,7 @@ async def send_red_envelop(_, msg):
                                                     timer=60))
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
+            admin_status = False
             if judge_admins(msg.from_user.id):
                 admin_status = True
             elif not all([e, e.iv >= money, money >= members, members > 0]):

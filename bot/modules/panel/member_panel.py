@@ -567,6 +567,7 @@ async def do_store_reborn(_, call):
             await asyncio.gather(m.delete(), do_store(_, call))
         else:
             sql_update_emby(Emby.tg == call.from_user.id, iv=e.iv - _open.exchange_cost, lv='b')
+            await emby.emby_change_policy(e.embyid)
             LOGGER.info(f'【兑换解封】- {call.from_user.id} 已花费 {_open.exchange_cost}{sakura_b},解除封禁')
             await asyncio.gather(m.delete(), do_store(_, call),
                                  sendMessage(call, '解封成功<(￣︶￣)↗[GO!]\n此消息将在20s后自焚', timer=20))

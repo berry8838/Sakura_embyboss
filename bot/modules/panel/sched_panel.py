@@ -1,8 +1,9 @@
 import asyncio
 import os
 
+import requests
 from pyrogram import filters
-from bot import bot, sakura_b, schedall, save_config, prefixes, _open, owner, LOGGER
+from bot import bot, sakura_b, schedall, save_config, prefixes, _open, owner, LOGGER, auto_update, group
 from bot.func_helper.filters import admins_on_filter, user_in_group_on_filter
 from bot.func_helper.fix_bottons import sched_buttons, plays_list_button
 from bot.func_helper.msg_utils import callAnswer, editMessage, deleteMessage
@@ -67,7 +68,7 @@ set_all_sche()
 async def sched_panel(_, msg):
     # await deleteMessage(msg)
     await editMessage(msg,
-                      text=f'🎮 **管理定时任务面板**\n\n默认关闭**看片榜单**，开启请在日与周中二选一，以免重复{sakura_b}的计算，谨慎',
+                      text=f'🎮 **管理定时任务面板**\n\n',
                       buttons=sched_buttons())
 
 
@@ -156,3 +157,64 @@ async def page_uplayrank(_, call):
     button = await plays_list_button(b, j, days)
     text = a[j - 1]
     await editMessage(call, text, buttons=button)
+
+
+from asyncio import create_subprocess_shell
+
+from asyncio.subprocess import PIPE
+
+
+async def execute(command, pass_error=True):
+    """执行"""
+    executor = await create_subprocess_shell(
+        command, stdout=PIPE, stderr=PIPE, stdin=PIPE
+    )
+
+    stdout, stderr = await executor.communicate()
+    if pass_error:
+        try:
+            result = str(stdout.decode().strip()) + str(stderr.decode().strip())
+        except UnicodeDecodeError:
+            result = str(stdout.decode("gbk").strip()) + str(stderr.decode("gbk").strip())
+    else:
+        try:
+            result = str(stdout.decode().strip())
+        except UnicodeDecodeError:
+            result = str(stdout.decode("gbk").strip())
+    return result
+
+
+from sys import executable, argv
+
+
+@scheduler.SCHEDULER.scheduled_job('cron', hour='12', minute='30', id='update_bot')
+async def update_bot(force: bool = False):
+    """
+    此为未被测试的代码片段。
+    """
+    # print("update")
+    if not auto_update.status: return
+    commit_url = f"https://api.github.com/repos/{auto_update.git_repo}/commits?per_page=1"
+    resp = requests.get(commit_url)
+    if resp.status_code == 200:
+        latest_commit = resp.json()[0]["sha"]
+        if latest_commit != auto_update.commit_sha:
+            await execute("git fetch --all")
+            if force:
+                await execute("git reset --hard origin/master")
+            await execute("git pull --all")
+            await execute(f"{executable} -m pip install --upgrade -r requirements.txt")
+            await execute(f"{executable} -m pip install -r requirements.txt")
+            text = '【AutoUpdate_Bot】运行成功，已更新bot代码。重启bot中'
+            await bot.send_message(chat_id=group[0], text=text)
+            LOGGER.info(text)
+            auto_update.commit_sha = latest_commit
+            save_config()
+            os.execl(executable, executable, *argv)
+        else:
+            LOGGER.info("【AutoUpdate_Bot】运行成功，未检测到更新，结束")
+
+    else:
+        text = '【AutoUpdate_Bot】失败，请检查 git_repo 是否正确，形如 `berry8838/Sakura_embyboss`'
+        await bot.send_message(chat_id=group[0], text=text)
+        LOGGER.info(text)

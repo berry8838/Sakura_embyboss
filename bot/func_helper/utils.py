@@ -210,6 +210,30 @@ async def get_users():
             print(f'{e} 某名bug {member}')
     return members_dict
 
+
+def bytes_to_gb(size_in_bytes):
+    # 1 GB = 1024^3 字节
+    size_in_gb = size_in_bytes / (1024 ** 3)
+    return f"{round(size_in_gb)} G"
+
+
+import abc
+
+
+class Singleton(abc.ABCMeta, type):
+    """
+    类单例
+    """
+
+    _instances: dict = {}
+
+    def __call__(cls, *args, **kwargs):
+        key = (cls, args, frozenset(kwargs.items()))
+        if key not in cls._instances:
+            cls._instances[key] = super().__call__(*args, **kwargs)
+        return cls._instances[key]
+
+
 # import random
 # import grequests
 

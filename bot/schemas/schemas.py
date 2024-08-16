@@ -1,7 +1,7 @@
 import json
 import os
-from pydantic import BaseModel, StrictBool, field_validator, ValidationError
-from typing import List, Optional, Union, Dict
+from pydantic import BaseModel, Field
+from typing import List, Optional, Union
 
 
 # 嵌套式的数据设计，规范数据 config.json
@@ -94,13 +94,19 @@ class Proxy(BaseModel):
     password: str = ""
 
 
-# class MP(BaseModel):
-#     status: bool = False
-#     host: Optional[str]
-#     username: Optional[str]
-#     password: Optional[str]
-#     access_token: Optional[str]
-#     price: str = 1
+class MP(BaseModel):
+    status: bool = False
+    host: Optional[str] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+    access_token: Optional[str] = None
+    price: int = 1
+
+
+class AutoUpdate(BaseModel):
+    status: bool = False
+    git_repo: Optional[str] = None  # github仓库名
+    commit_sha: Optional[str] = None  # 最近一次commit
 
 
 class Config(BaseModel):
@@ -113,7 +119,6 @@ class Config(BaseModel):
     main_group: str
     chanel: str
     bot_photo: str
-    # user_buy: UserBuy
     open: Open
     admins: Optional[List[int]] = []
     money: str
@@ -145,7 +150,8 @@ class Config(BaseModel):
     kk_gift_days: int = 30
     # 是否狙杀皮套人
     fuxx_pitao: bool = True
-    # moviepilot: MP
+    moviepilot: MP = Field(default_factory=MP)
+    auto_update: AutoUpdate = Field(default_factory=AutoUpdate)
 
     def __init__(self, **data):
         super().__init__(**data)

@@ -6,7 +6,8 @@ COPY requirements.txt requirements.txt
 RUN apk add --no-cache \
     mysql-client \
     mariadb-connector-c \
-    tzdata
+    tzdata \
+    git
 RUN pip install --no-cache-dir -r requirements.txt
 COPY bot ./bot
 RUN mkdir ./log

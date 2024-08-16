@@ -69,5 +69,18 @@
     "port": null,
     "username": "",
     "password": ""
+  },
+  "moviepilot": {
+    "status": false,
+    "host": null,
+    "username": null,
+    "password": null,
+    "access_token": null,
+    "price": 1
+  },
+  "auto_update": {
+    "status": false,
+    "git_repo": null,
+    "commit_sha": null
   }
 }

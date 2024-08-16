@@ -96,10 +96,10 @@ async def rgs_code(_, msg, register_code):
                             buttons=register_code_ikb)
             new_code = register_code[:-7] + "░" * 7
             await sendMessage(msg,
-                              f'· 🎟️ 注册码使用 - [{msg.from_user.first_name}](tg://user?id={msg.chat.id}) [{msg.from_user.id}] 使用了 {new_code} 可以创建{us1}天账户咯~',
+                              f'· 🎟️ 注册码使用 - [{msg.from_user.first_name}](tg://user?id={msg.chat.id}) [{msg.from_user.id}] 使用了 {new_code}',
                               send=True)
             LOGGER.info(
-                f"【注册码】：{msg.from_user.first_name}[{msg.chat.id}] 使用了 {register_code} - 可创建 {us1}天账户")
+                f"【注册码】：{msg.from_user.first_name}[{msg.chat.id}] 使用了 {register_code} - {us1}")
 
 # @bot.on_message(filters.regex('exchange') & filters.private & user_in_group_on_filter)
 # async def exchange_buttons(_, call):

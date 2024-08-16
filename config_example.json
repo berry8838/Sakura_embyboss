@@ -80,7 +80,7 @@
   },
   "auto_update": {
     "status": false,
-    "git_repo": null,
+    "git_repo": "berry8838/Sakura_embyboss",
     "commit_sha": null
   }
 }

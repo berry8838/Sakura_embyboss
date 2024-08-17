@@ -8,12 +8,13 @@ import asyncio
 from pyrogram import filters
 
 from bot.func_helper.emby import Embyservice
+from bot.func_helper.utils import judge_admins, members_info
 from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_emby import sql_add_emby
 from bot.func_helper.filters import user_in_group_filter, user_in_group_on_filter
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, callAnswer, editMessage
 from bot.func_helper.fix_bottons import group_f, judge_start_ikb, judge_group_ikb, cr_kk_ikb
-from bot import bot, prefixes, group, bot_photo, ranks
+from bot import bot, prefixes, group, bot_photo, ranks, sakura_b
 
 
 # 反命令提示
@@ -57,22 +58,40 @@ async def p_start(_, msg):
         else:
             await asyncio.gather(sendMessage(msg, '🤺 你也想和bot击剑吗 ?'), msg.delete())
     except (IndexError, TypeError):
-        await asyncio.gather(deleteMessage(msg),
-                             sendPhoto(msg, bot_photo,
-                                       f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 请选择功能__👇",
-                                       buttons=judge_start_ikb(msg.from_user.id)))
-        sql_add_emby(msg.from_user.id)
+        data = await members_info(tg=msg.from_user.id)
+        is_admin = judge_admins(msg.from_user.id)
+        if not data:
+            sql_add_emby(msg.from_user.id)
+            await asyncio.gather(deleteMessage(msg),
+                                 sendPhoto(msg, bot_photo,
+                                           f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) \n\n初次使用，录入数据库完成，请点击 /start 重新召唤面板"))
+            return
+        name, lv, ex, us, embyid, pwd2 = data
+        text = f"▎__欢迎进入用户面板！{msg.from_user.first_name}__\n\n" \
+               f"**· 🆔 用户のID** | `{msg.from_user.id}`\n" \
+               f"**· 📊 当前状态** | {lv}\n" \
+               f"**· 🍒 积分{sakura_b}** | {us[0]} · {us[1]}\n" \
+               f"**· 💠 账号名称** | [{name}](tg://user?id={msg.from_user.id})\n" \
+               f"**· 🚨 到期时间** | {ex}"
+        if not embyid:
+            await asyncio.gather(deleteMessage(msg),
+                                 sendPhoto(msg, bot_photo, caption=text, buttons=judge_start_ikb(is_admin, False)))
+        else:
+            await asyncio.gather(deleteMessage(msg),
+                                 sendPhoto(msg, bot_photo,
+                                           f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 请选择功能__👇",
+                                           buttons=judge_start_ikb(is_admin, True)))
 
 
 # 返回面板
 @bot.on_callback_query(filters.regex('back_start'))
 async def b_start(_, call):
     if await user_in_group_filter(_, call):
+        is_admin = judge_admins(call.from_user.id)
         await asyncio.gather(callAnswer(call, "⭐ 返回start"),
                              editMessage(call,
                                          text=f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 请选择功能__👇",
-                                         buttons=judge_start_ikb(
-                                             call.from_user.id)))
+                                         buttons=judge_start_ikb(is_admin, account=True)))
     elif not await user_in_group_filter(_, call):
         await asyncio.gather(callAnswer(call, "⭐ 返回start"),
                              editMessage(call, text='💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？',

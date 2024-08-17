@@ -15,7 +15,7 @@ from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emb
 from pyrogram import filters
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import user_in_group_on_filter
-from bot.func_helper.utils import members_info, tem_alluser, cr_link_one
+from bot.func_helper.utils import members_info, tem_alluser, cr_link_one, judge_admins
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
     store_ikb, re_bindtg_ikb, close_it_ikb, user_query_page, re_born_ikb
@@ -101,9 +101,10 @@ async def members(_, call):
            f"**· 💠 账号名称** | [{name}](tg://user?id={call.from_user.id})\n" \
            f"**· 🚨 到期时间** | {ex}"
     if not embyid:
-        await editMessage(call, text, members_ikb(False))
+        is_admin = judge_admins(call.from_user.id)
+        await editMessage(call, text, members_ikb(is_admin, False))
     else:
-        await editMessage(call, text, members_ikb(True))
+        await editMessage(call, text, members_ikb(account=True))
 
 
 # 创建账户

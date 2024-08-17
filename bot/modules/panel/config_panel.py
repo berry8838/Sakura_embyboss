@@ -4,11 +4,11 @@
 部分目前有 导出日志，更改探针，更改emby线路，设置购买按钮
 
 """
-from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open
+from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open, auto_update
 from pyrogram import filters
 
 from bot.func_helper.filters import admins_on_filter
-from bot.func_helper.fix_bottons import config_preparation, close_it_ikb, back_config_p_ikb, back_set_ikb, try_set_buy
+from bot.func_helper.fix_bottons import config_preparation, close_it_ikb, back_config_p_ikb, back_set_ikb
 from bot.func_helper.msg_utils import deleteMessage, editMessage, callAnswer, callListen, sendPhoto, sendFile
 
 
@@ -170,52 +170,58 @@ async def set_block(_, call):
 #             LOGGER.info(f'【admin】：{txt.from_user.id} - 更新了购买按钮设置 {user_buy.button}')
 
 
-# @bot.on_callback_query(filters.regex('open_allow_code') & admins_on_filter)
-# async def open_allow_code(_, call):
-#     if _open.allow_code:
-#         _open.allow_code = False
-#         await callAnswer(call, '**👮🏻‍♂️ 您已调整 注册码续期 Falese（关闭）**', True)
-#         await config_p_re(_, call)
-#         save_config()
-#         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 注册码续期 Falese")
-#     elif not _open.allow_code:
-#         _open.allow_code = True
-#         await callAnswer(call, '**👮🏻‍♂️ 您已调整 注册码续期 True（开启）**', True)
-#         await config_p_re(_, call)
-#         save_config()
-#         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 注册码续期 True")
+@bot.on_callback_query(filters.regex('set_update') & admins_on_filter)
+async def set_auto_update(_, call):
+    try:
+        # 简化逻辑，只设置一次
+        auto_update.status = not auto_update.status
+        if auto_update.status:
+            message = '👮🏻‍♂️您已开启 auto_update自动更新bot代码\n\n运行时间：12:30UTC+0800**'
+            LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已启用 auto_update自动更新bot代码")
+        else:
+            message = '👮🏻‍♂️ 您已关闭 auto_update自动更新bot代码，如您需要更换仓库，请于配置文件中git_repo填写'
+            LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已关闭 auto_update自动更新bot代码")
+
+        await callAnswer(call, message, True)
+        await config_p_re(_, call)
+        save_config()
+    except Exception as e:
+        # 异常处理，记录错误信息
+        LOGGER.error(f"【admin】：管理员 {call.from_user.first_name} 尝试更改 auto_update状态时出错: {e}")
 
 
 @bot.on_callback_query(filters.regex('leave_ban') & admins_on_filter)
 async def open_leave_ban(_, call):
+    # 切换状态
+    _open.leave_ban = not _open.leave_ban
+    # 根据当前状态发送消息
     if _open.leave_ban:
-        _open.leave_ban = False
-        await callAnswer(call, '**👮🏻‍♂️ 您已关闭 退群封禁，用户退群bot将不会被封印了**', True)
-        await config_p_re(_, call)
-        save_config()
-        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 退群封禁设置 Falese")
-    elif not _open.leave_ban:
-        _open.leave_ban = True
-        await callAnswer(call, '**👮🏻‍♂️ 您已开启 退群封禁，用户退群bot将会被封印，禁止入群**', True)
-        await config_p_re(_, call)
-        save_config()
-        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 退群封禁设置 True")
+        message = '**👮🏻‍♂️ 您已开启 退群封禁，用户退群bot将会被封印，禁止入群**'
+        log_message = "【admin】：管理员 {} 已调整 退群封禁设置为 True".format(call.from_user.first_name)
+    else:
+        message = '**👮🏻‍♂️ 您已关闭 退群封禁，用户退群bot将不会被封印了**'
+        log_message = "【admin】：管理员 {} 已调整 退群封禁设置为 False".format(call.from_user.first_name)
+
+    await callAnswer(call, message, True)
+    await config_p_re(_, call)
+    save_config()
+    LOGGER.info(log_message)
 
 
 @bot.on_callback_query(filters.regex('set_uplays') & admins_on_filter)
-async def open_leave_ban(_, call):
-    if _open.uplays:
-        _open.uplays = False
-        await callAnswer(call, '**👮🏻‍♂️ 您已关闭 看片榜结算，自动召唤看片榜将不被计算积分**', True)
-        await config_p_re(_, call)
-        save_config()
-        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 看片榜结算 Falese")
-    elif not _open.uplays:
-        _open.uplays = True
-        await callAnswer(call, '**👮🏻‍♂️ 您已开启 看片榜结算，自动召唤看片榜将会被计算积分**', True)
-        await config_p_re(_, call)
-        save_config()
-        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 看片榜结算 True")
+async def set_user_playrank(_, call):
+    _open.uplays = not _open.uplays
+    if not _open.uplays:
+        message = '👮🏻‍♂️ 您已关闭 观影榜结算，自动召唤观影榜将不被计算积分'
+        log_message = f"【admin】：管理员 {call.from_user.first_name} 已关闭 观影榜结算"
+    else:
+        message = '👮🏻‍♂️ 您已开启 观影榜结算，自动召唤观影榜将会被计算积分'
+        log_message = f"【admin】：管理员 {call.from_user.first_name} 已启用 观影榜结算"
+
+    await callAnswer(call, message, True)
+    await config_p_re(_, call)
+    save_config()
+    LOGGER.info(log_message)
 
 
 @bot.on_callback_query(filters.regex('set_kk_gift_days') & admins_on_filter)
@@ -237,7 +243,8 @@ async def set_kk_gift_days(_, call):
         try:
             days = int(txt.text)
         except ValueError:
-            await editMessage(call, f"请注意格式! 您的输入如下: \n\n`{txt.text}`", buttons=back_set_ikb('set_kk_gift_days'))
+            await editMessage(call, f"请注意格式! 您的输入如下: \n\n`{txt.text}`",
+                              buttons=back_set_ikb('set_kk_gift_days'))
         else:
             config.kk_gift_days = days
             save_config()
@@ -249,15 +256,15 @@ async def set_kk_gift_days(_, call):
 
 @bot.on_callback_query(filters.regex('set_fuxx_pitao') & admins_on_filter)
 async def set_fuxx_pitao(_, call):
-    if config.fuxx_pitao:
-        config.fuxx_pitao = False
-        await callAnswer(call, '👮🏻‍♂️ 您已关闭 皮套过滤功能，现在皮套人的消息不会被处理', True)
-        await config_p_re(_, call)
-        save_config()
-        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 皮套过滤功能 False")
+    config.fuxx_pitao = not config.fuxx_pitao
+    if not config.fuxx_pitao:
+        message = '👮🏻‍♂️ 您已关闭 皮套过滤功能，现在皮套人的消息不会被处理'
+        log_message = f"【admin】：管理员 {call.from_user.first_name} 已调整 皮套过滤功能 False"
     else:
-        config.fuxx_pitao = True
-        await callAnswer(call, '👮🏻‍♂️ 您已开启 皮套过滤功能，现在皮套人的消息将会被狙杀', True)
-        await config_p_re(_, call)
-        save_config()
-        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已调整 皮套过滤功能 True")
+        message = '👮🏻‍♂️ 您已开启 皮套过滤功能，现在皮套人的消息将会被狙杀'
+        log_message = f"【admin】：管理员 {call.from_user.first_name} 已调整 皮套过滤功能 True"
+
+    await callAnswer(call, message, True)
+    await config_p_re(_, call)
+    save_config()
+    LOGGER.info(log_message)

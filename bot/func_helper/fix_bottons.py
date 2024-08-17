@@ -3,28 +3,29 @@ from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
 from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, sakura_b, \
-    schedall, config
+    schedall, auto_update, fuxx_pitao, kk_gift_days, mp
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
-from bot.func_helper.utils import judge_admins, members_info
+from bot.func_helper.utils import members_info
 
 cache = Cache()
 
 """start面板 ↓"""
 
 
-def judge_start_ikb(uid: int) -> InlineKeyboardMarkup:
+def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
     """
     start面板按钮
-    :param uid:
-    :return:
     """
-    d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server'], ['🎟️ 使用注册/续期码', 'exchange']]
-    if _open.checkin:
-        d.append([f'🎯 签到', 'checkin'])
+    if not account:
+        d = [['⭕ 换绑TG', 'changetg'], ['🔍 绑定TG', 'bindtg']]
+        d.append(['🎟️ 使用注册码', 'exchange']) if not _open.stat else d.append(['👑 创建账户', 'create'])
+    else:
+        d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server']]
+    if schedall.check_ex: d.append(['🎟️ 使用续期码', 'exchange'])
+    if _open.checkin: d.append([f'🎯 签到', 'checkin'])
     lines = array_chunk(d, 2)
-    if judge_admins(uid):
-        lines.append([['👮🏻‍♂️ admin', 'manage']])
+    if is_admin: lines.append([['👮🏻‍♂️ admin', 'manage']])
     keyword = ikb(lines)
     return keyword
 
@@ -39,21 +40,19 @@ judge_group_ikb = ikb([[('🌟 频道入口 ', f't.me/{chanel}', 'url'),
 """members ↓"""
 
 
-def members_ikb(emby=False) -> InlineKeyboardMarkup:
+def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboardMarkup:
     """
     判断用户面板
-    :param emby:
-    :return:
     """
-    if emby:
-        # method = 'storeall' if not user_buy.stat else 'exchange'
+    if account:
         return ikb([[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
                     [('♻️ 主界面', 'back_start')]])
     else:
-        return ikb(
-            [[('👑 创建账户', 'create')], [('⭕ 换绑TG', 'changetg'), ('🔍 绑定TG', 'bindtg')],
-             [('♻️ 主界面', 'back_start')]])
+        return judge_start_ikb(is_admin, account)
+        # return ikb(
+        #     [[('👑 创建账户', 'create')], [('⭕ 换绑TG', 'changetg'), ('🔍 绑定TG', 'bindtg')],
+        #      [('♻️ 主界面', 'back_start')]])
 
 
 back_start_ikb = ikb([[('💫 回到首页', 'back_start')]])
@@ -65,6 +64,7 @@ re_delme_ikb = ikb([[('♻️ 重试', 'delme')], [('🔙 返回', 'members')]])
 re_reset_ikb = ikb([[('♻️ 重试', 'reset')], [('🔙 返回', 'members')]])
 re_exchange_b_ikb = ikb([[('♻️ 重试', 'exchange'), ('❌ 关闭', 'closeit')]])
 re_born_ikb = ikb([[('✨ 重输', 'store-reborn'), ('💫 返回', 'storeall')]])
+
 
 def store_ikb():
     return ikb([[(f'♾️ 兑换白名单', 'store-whitelist'), (f'🔥 兑换解封禁', 'store-reborn')],
@@ -205,18 +205,18 @@ def cr_renew_ikb():
 
 
 def config_preparation() -> InlineKeyboardMarkup:
-    # code = '✅' if _open.allow_code else '❎'
-    # buy_stat = '✅' if user_buy.stat else '❎'
+    mp_set = '✅' if mp.status else '❎'
+    auto_up = '✅' if auto_update.status else '❎'
     leave_ban = '✅' if _open.leave_ban else '❎'
     uplays = '✅' if _open.uplays else '❎'
-    fuxx_pitao = '✅' if config.fuxx_pitao else '❎'
+    fuxx_pt = '✅' if fuxx_pitao else '❎'
     keyboard = ikb(
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
          [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
-         # [(f'{code} 注册码续期', 'open_allow_code'), (f'{buy_stat} 开关购买', 'set_buy')],
-         [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 自动看片结算', 'set_uplays')],
-         [(f'设置赠送资格天数({config.kk_gift_days}天)', 'set_kk_gift_days'),
-          (f'{fuxx_pitao} 皮套人过滤功能', 'set_fuxx_pitao')],
+         [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 观影奖励结算', 'set_uplays')],
+         [(f'{auto_up} 自动更新bot', 'set_update'), (f'{mp_set} Moviepilot求片', 'set_mp')],
+         [(f'设置赠送资格天数({kk_gift_days}天)', 'set_kk_gift_days'),
+          (f'{fuxx_pt} 皮套人过滤功能', 'set_fuxx_pitao')],
          [('🔙 返回', 'manage')]])
     return keyboard
 
@@ -307,8 +307,8 @@ def sched_buttons():
     keyboard = InlineKeyboard(row_width=2)
     keyboard.add(InlineButton(f'{dayrank} 播放日榜', f'sched-dayrank'),
                  InlineButton(f'{weekrank} 播放周榜', f'sched-weekrank'),
-                 InlineButton(f'{dayplayrank} 看片日榜', f'sched-dayplayrank'),
-                 InlineButton(f'{weekplayrank} 看片周榜', f'sched-weekplayrank'),
+                 InlineButton(f'{dayplayrank} 观影日榜', f'sched-dayplayrank'),
+                 InlineButton(f'{weekplayrank} 观影周榜', f'sched-weekplayrank'),
                  InlineButton(f'{check_ex} 到期保号', f'sched-check_ex'),
                  InlineButton(f'{low_activity} 活跃保号', f'sched-low_activity'),
                  InlineButton(f'{backup_db} 自动备份数据库', f'sched-backup_db'),

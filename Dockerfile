@@ -8,7 +8,6 @@ ENV TZ=Asia/Shanghai \
     PYTHONUNBUFFERED=1 \
     WORKDIR=/app
 
-WORKDIR=$WORKDIR
 # 安装必要的包
 RUN apk add --no-cache \
     mariadb-connector-c \

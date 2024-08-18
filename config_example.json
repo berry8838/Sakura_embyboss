@@ -37,7 +37,7 @@
     "invite": false,
     "leave_ban": true,
     "uplays": true,
-    "exchange_cost": 300,
+    "exchange_cost": 100,
     "whitelist_cost": 9999,
     "invite_cost": 1000
   },
@@ -79,7 +79,7 @@
     "price": 1
   },
   "auto_update": {
-    "status": false,
+    "status": true,
     "git_repo": "berry8838/Sakura_embyboss",
     "commit_sha": null
   }

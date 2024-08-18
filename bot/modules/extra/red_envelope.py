@@ -85,10 +85,10 @@ async def send_red_envelop(_, msg):
                           private_text=private_text)
         cover = RanksDraw.hb_test_draw(money, 1, user_pic, f'{msg.reply_to_message.from_user.first_name} 专享')
         ikb, cover = await asyncio.gather(ikb, cover)
-        await asyncio.gather(sendPhoto(msg, photo=cover, buttons=ikb), reply.delete(),
-                             sendMessage(msg, f'🔥 [{msg.reply_to_message.from_user.first_name}]'
-                                              f'(tg://user?id={msg.reply_to_message.from_user.id})\n'
-                                              f' 您收到一个来自 [{first_name}](tg://user?id={msg.from_user.id}) 的专属红包'))
+        await asyncio.gather(sendPhoto(msg, photo=cover, buttons=ikb),
+                             reply.edit(f'🔥 [{msg.reply_to_message.from_user.first_name}]'
+                                        f'(tg://user?id={msg.reply_to_message.from_user.id})\n'
+                                        f' 您收到一个来自 [{first_name}](tg://user?id={msg.from_user.id}) 的专属红包'))
     # 非回复某人 - 普通红包
     elif not msg.reply_to_message:
         try:

@@ -21,7 +21,7 @@ class RanksDraw:
     red_bg_path = os.path.join('bot', 'ranks_helper', 'red', 'bg')
     red_bg_list = os.listdir(red_bg_path)
     red_mask = Image.open(os.path.join('bot', 'ranks_helper', 'red', 'red_mask.png')).convert('RGBA')
-    shouji_font = os.path.join('bot', 'ranks_helper', "resource", 'font', "shouji.ttf")
+    zimu_font = os.path.join('bot', 'ranks_helper', "resource", 'font', "Provicali.otf")
     bold_font = os.path.join('bot', 'ranks_helper', "resource", 'font', "PingFang Bold.ttf")
 
     def __init__(self, embyname=None, weekly=False, backdrop=False):
@@ -292,10 +292,10 @@ async def convert_bgcc(_pic, bg_color):
 
 async def draw_cover_text(cover, first_name, money, members):
     draw = ImageDraw.Draw(cover)
-    draw.text((cover.width // 2, 550), f'{first_name} の 红包',
-              font=ImageFont.truetype(RanksDraw.shouji_font, 60), anchor='mm', fill=(249, 219, 160))
-    draw.text((cover.width // 2, cover.height - 50), f'{money} / {members}',
-              font=ImageFont.truetype(RanksDraw.bold_font, 60), anchor='mm', fill=(249, 219, 160))
+    draw.text((cover.width // 2, 550), f'{first_name}红包',
+              font=ImageFont.truetype(RanksDraw.bold_font, 50), anchor='mm', fill=(249, 219, 160))
+    draw.text((cover.width // 2, cover.height - 100), f'{money} / {members}',
+              font=ImageFont.truetype(RanksDraw.zimu_font, 60), anchor='mm', fill=(249, 219, 160))
     return cover
 
 

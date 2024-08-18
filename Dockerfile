@@ -1,9 +1,8 @@
-FROM python:3.10.11-alpine AS builder
-WORKDIR /app
-COPY requirements.txt .
-
+# 使用包含Python 3.10.11的Alpine镜像作为构建和运行环境
+FROM python:3.10.11-alpine
 # 安装必要的构建依赖
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev openssl-dev coreutils
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN find . -type f -name "*.pyc" -delete
 
@@ -11,23 +10,20 @@ RUN find . -type f -name "*.pyc" -delete
 RUN apk del --purge .build-deps
 RUN rm -rf /tmp/* /root/.cache /var/cache/apk/*
 
-FROM python:3.10.11-alpine
-WORKDIR /app
-ENV TZ=Asia/Shanghai
-ENV DOCKER_MODE=1
-ENV PYTHONUNBUFFERED=1
-
+ENV TZ=Asia/Shanghai \
+    DOCKER_MODE=1 \
+    PYTHONUNBUFFERED=1 \
+    WORKDIR=/app
 # 安装必要的包
 RUN apk add --no-cache \
     mariadb-connector-c \
     tzdata \
-    git
+    git && \
+    ln -snf Asia/Shanghai /etc/localtime && echo Asia/Shanghai > /etc/timezone
 
-# 设置时区
-RUN ln -snf Asia/Shanghai /etc/localtime && echo Asia/Shanghai > /etc/timezone
-
+# 设置默认工作目录
+WORKDIR ${WORKDIR}
 # 复制依赖和应用代码
-COPY --from=builder /app/ .
 COPY bot ./bot
 RUN mkdir ./log
 COPY *.py ./

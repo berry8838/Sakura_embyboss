@@ -14,7 +14,7 @@
 ## 📜 项目说明
 
 - **用Telegram管理Emby用户**（开服） 安装使用 👉 [项目文档](https://berry8838.github.io/Sakura_embyboss)
-- **推荐使用 Debian 11操作系统，AMD处理器架构的vps搭建**
+- **推荐使用 Debian 11操作系统，AMD处理器架构。目前ARM也支持（如有问题请反馈issue）**
 - 解决不了大的技术问题（因为菜菜），如需要，请自行fork修改，~~如果能提点有意思的pr更好啦~~
 - 反馈请尽量 issue，看到会处理
 

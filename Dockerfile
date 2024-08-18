@@ -13,7 +13,7 @@ RUN apk add --no-cache \
     tzdata \
     git && \
     ln -snf Asia/Shanghai /etc/localtime && echo Asia/Shanghai > /etc/timezone
-
+RUN rm -rf ./*
 # 克隆仓库
 RUN git clone https://github.com/berry8838/Sakura_embyboss .
 # 安装依赖

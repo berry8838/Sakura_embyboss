@@ -7,6 +7,8 @@ ENV TZ=Asia/Shanghai \
     DOCKER_MODE=1 \
     PYTHONUNBUFFERED=1 \
     WORKDIR=/app
+
+WORKDIR=$WORKDIR
 # 安装必要的包
 RUN apk add --no-cache \
     mariadb-connector-c \
@@ -22,7 +24,7 @@ RUN find . -type f -name "*.pyc" -delete
 
 # 清理构建依赖
 RUN apk del --purge .build-deps
-RUN rm -rf /tmp/* /root/.cache /var/cache/apk/* ./image
+RUN rm -rf /tmp/* /root/.cache /var/cache/apk/* /app/image
 
 # 设置启动命令
 ENTRYPOINT [ "python3" ]

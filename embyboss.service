@@ -7,7 +7,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=此处填写你在服务器上存放Bot的目录 # 例如/root/Sakura_embyboss/
-ExecStart=python3 你放Bot的目录 # 例如 /root/Sakura_embyboss/main.py
+ExecStart=python3 此处填写入口程序 # 例如/root/Sakura_embyboss/main.py
 Restart=on-abnormal
 PrivateTmp=True
 RestartSec=5s

@@ -24,7 +24,7 @@ RUN apk add --no-cache \
 # 设置默认工作目录
 WORKDIR ${WORKDIR}
 RUN git clone https://github.com/berry8838/Sakura_embyboss .
-
+RUN rm -rf ./image
 # 设置启动命令
 ENTRYPOINT [ "python3" ]
 CMD [ "main.py" ]

@@ -2,13 +2,11 @@
 ## 拉取到de代码中有，不需要从此处复制 :fontawesome-solid-ban:
 
 ```docker-compose.yml
-#（此处请注意，拉取的镜像仅适用于amd架构，arm请注意修改配置包括但不仅限于镜像等）
-#mysql，如环境中已带有可以注释
-
+#（此处请注意，arm架构请注意修改镜像名称以免拉错无法启动）
 version: '3'
 services:
   mysql:
-    image: mysql:5.7
+    image: mysql:5.7 # 镜像名称，ARM架构镜像名为 mysql:5.7-arm
     container_name: mysql # 容器名
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci # 设置utf8字符集
     restart: always
@@ -24,7 +22,7 @@ services:
     volumes:
       - /root/Sakura_embyboss/db:/var/lib/mysql
 
-# phpmyadmin 主要是为了更为直观的供owner翻阅数据，不影响bot运行，如有其他合适软件，可注释内容 # xxxx
+# 以下 phpmyadmin 主要是为了更为直观的供owner翻阅数据，不影响bot运行，如有其他合适软件，可注释内容 # xxxx
 #  phpmyadmin:
 #    image: phpmyadmin/phpmyadmin
 #    container_name: phpmyadmin
@@ -39,7 +37,7 @@ services:
 #      - mysql
 
   sakura_embyboss:
-    image: jingwei520/sakura_embyboss:latest
+    image: jingwei520/sakura_embyboss:latest # ARM与AMD镜像名称相同，会自动加载适合的镜像
     container_name: embyboss
     restart: always
     network_mode: host #网络模式host

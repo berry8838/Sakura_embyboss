@@ -68,7 +68,7 @@
 <tr><td rowspan="3">Nezha<br>探针 <br><a href="./image/fwq.png">效果图</a></td><td>tz_ad</td><td> 探针地址 <code>https://xx.xx.xyz</code>或 <code>http://25.25.25.25:8008</code> 最后不带斜杠，没有请留空</td></tr>
 <tr><td>tz_api</td><td><a target="_blank" href="https://nezha.wiki/guide/api.html#%E5%88%9B%E5%BB%BA-token">探针后台生成的 api</a> </td></tr>
 <tr><td>tz_id</td><td> 需要展示的 机器的 id，tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。</td></tr>
-<tr><td rowspan="2">ranks </td><td>logo</td><td> 日榜/周榜推送榜单图片中的LOGO文字，默认<code>SAKURA</code></td></tr>
+<tr><td rowspan="2">ranks </td><td>logo</td><td> 日榜/周榜推送榜单图片中的LOGO文字，同时也是注册、续期码的前缀，请尽量保持中间没有空格，影响体验。默认<code>SAKURA</code></td></tr>
 <tr><td>backdrop</td><td> 是否使用backdrop（即横版图）作为推送榜单的封面图 ，默认<code>false</code></td></tr>
 <tr><td rowspan="8">schedall <br>各种定时任务管理</td><td>dayrank</td><td>默认<code>true</code>，定时发送媒体播放次数日榜，<code>每日 18:30</code></td></tr>
 <tr><td>weekrank</td><td>默认，<code>true</code>，定时发送媒体播放次数周榜，<code>每周日 23:59</code></td></tr>
@@ -86,12 +86,13 @@
 <tr><td rowspan="3">AutoUpdate<br>自动更新Bot代码</td><td>status</td><td>默认<code>false</code>，是否开启自动更新程序，<code>每日 12:30</code></td></tr>
 <tr><td>git_repo<br>拉取的代码仓库名称</td><td>默认<code>berry8838/Sakura_embyboss</code>，如有魔改请填写自己的仓库，以免代码覆盖</td></tr>
 <tr><td>commit_sha<br>所获取的latest commit sha</td><td>默认<code>null</code>，无需动，自动更新时会保存进此处以便下次比对</td></tr>
-<tr><td rowspan="6">MoviePilotService<br>点播功能</td><td>status</td><td>默认<code>false</code>，是否开启求片程序</td></tr>
+<tr><td rowspan="7">MoviePilotService<br>点播功能</td><td>status</td><td>默认<code>false</code>，是否开启求片程序</td></tr>
 <tr><td>host</td><td>默认<code>null</code>，形如：<a>http://xxx.xxx.xxx.xxx:3001</a> 的moviepilot的api地址</td></tr>
 <tr><td>username</td><td>默认<code>null</code>，登录的用户名</td></tr>
 <tr><td>password</td><td>默认<code>null</code>，登录的密码</td></tr>
 <tr><td>access_token</td><td>默认<code>null</code>，验证身份以后的token，会自动更新，勿动</td></tr>
 <tr><td>price</td><td>默认<code>1</code>，按体积计算，每1G 收取的花币</td></tr>
+<tr><td>photo_url</td><td>此为求片界面图，可自定义更改</td></tr>
 </tbody>
 <tfoot></tfoot>
 </table>

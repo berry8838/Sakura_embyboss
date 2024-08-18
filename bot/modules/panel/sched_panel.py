@@ -3,6 +3,8 @@ import os
 
 import requests
 from pyrogram import filters
+from pyrogram.types import Message
+
 from bot import bot, sakura_b, schedall, save_config, prefixes, _open, owner, LOGGER, auto_update, group
 from bot.func_helper.filters import admins_on_filter, user_in_group_on_filter
 from bot.func_helper.fix_bottons import sched_buttons, plays_list_button
@@ -218,3 +220,19 @@ async def update_bot(force: bool = False):
         text = '【AutoUpdate_Bot】失败，请检查 git_repo 是否正确，形如 `berry8838/Sakura_embyboss`'
         await bot.send_message(chat_id=group[0], text=text)
         LOGGER.info(text)
+
+
+@bot.on_message(filters.command('update_bot', prefixes) & admins_on_filter)
+async def get_update_bot(_, msg: Message):
+    delete_task = msg.delete()
+    send_task = bot.send_message(chat_id=msg.chat.id, text='正在更新bot代码，请稍等。。。')
+    results = await asyncio.gather(delete_task, send_task)
+    # results[1] 是发送消息的结果，从中提取 chat_id 和 message_id
+    if len(results) == 2 and isinstance(results[1], Message):
+        reply = results[1]
+        schedall.restart_chat_id = reply.chat.id
+        schedall.restart_msg_id = reply.id
+        save_config()
+        await update_bot()
+
+

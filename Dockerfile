@@ -6,10 +6,6 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN find . -type f -name "*.pyc" -delete
 
-# 清理构建依赖
-RUN apk del --purge .build-deps
-RUN rm -rf /tmp/* /root/.cache /var/cache/apk/*
-
 ENV TZ=Asia/Shanghai \
     DOCKER_MODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -24,7 +20,9 @@ RUN apk add --no-cache \
 # 设置默认工作目录
 WORKDIR ${WORKDIR}
 RUN git clone https://github.com/berry8838/Sakura_embyboss .
-RUN rm -rf ./image
+# 清理构建依赖
+RUN apk del --purge .build-deps
+RUN rm -rf /tmp/* /root/.cache /var/cache/apk/* ./image
 # 设置启动命令
 ENTRYPOINT [ "python3" ]
 CMD [ "main.py" ]

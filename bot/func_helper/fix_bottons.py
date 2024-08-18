@@ -18,8 +18,8 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
     start面板按钮
     """
     if not account:
-        d = [['⭕ 换绑TG', 'changetg'], ['🔍 绑定TG', 'bindtg']]
-        d.append(['🎟️ 使用注册码', 'exchange']) if not _open.stat else d.append(['👑 创建账户', 'create'])
+        d = [['🎟️ 使用注册码', 'exchange'], ['👑 创建账户', 'create'], ['⭕ 换绑TG', 'changetg'], ['🔍 绑定TG', 'bindtg']]
+        # d.append(['🎟️ 使用注册码', 'exchange']) if not _open.stat else d.append(['👑 创建账户', 'create'])
     else:
         d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server']]
     if schedall.check_ex: d.append(['🎟️ 使用续期码', 'exchange'])

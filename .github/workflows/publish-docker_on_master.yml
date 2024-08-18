@@ -28,11 +28,15 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push images
+      - name: Build and push multi-architecture images
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64
           file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/sakura_embyboss:latest
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/sakura_embyboss:latest
+            ${{ secrets.DOCKER_USERNAME }}/sakura_embyboss:amd64-latest
+            ${{ secrets.DOCKER_USERNAME }}/sakura_embyboss:arm64-latest
+

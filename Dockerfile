@@ -13,12 +13,13 @@ RUN apk add --no-cache \
     mariadb-connector-c \
     tzdata \
     git && \
-    ln -snf Asia/Shanghai /etc/localtime && echo Asia/Shanghai > /etc/timezone \
+    ln -snf Asia/Shanghai /etc/localtime && echo Asia/Shanghai > /etc/timezone
 
 # 克隆仓库
-RUN git clone https://github.com/berry8838/Sakura_embyboss /app
+RUN git clone https://github.com/berry8838/Sakura_embyboss .
+
 # 安装依赖
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN pip install --no-cache-dir --verbose --upgrade -r requirements.txt
 RUN find . -type f -name "*.pyc" -delete
 
 # 清理构建依赖

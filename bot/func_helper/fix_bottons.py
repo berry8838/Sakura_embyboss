@@ -139,51 +139,88 @@ def date_ikb(i) -> InlineKeyboardMarkup:
 
 
 # 翻页按钮
-async def cr_paginate(i, j, n) -> InlineKeyboardMarkup:
+async def cr_paginate(total_page: int, current_page: int, n) -> InlineKeyboardMarkup:
     """
-    :param i: 总数
-    :param j: 目前
+    :param total_page: 总数
+    :param current_page: 目前
     :param n: mode 可变项
     :return:
     """
     keyboard = InlineKeyboard()
-    keyboard.paginate(i, j, 'pagination_keyboard:{number}' + f'-{n}')
-    keyboard.row(
-        InlineButton('❌ - Close', 'closeit')
-    )
+    keyboard.paginate(total_page, current_page, 'pagination_keyboard:{number}' + f'-{n}')
+    next = InlineButton('⏭️ 后退+5', f'users_iv:{current_page + 5}-{n}')
+    previous = InlineButton('⏮️ 前进-5', f'users_iv:{current_page - 5}-{n}')
+    followUp = [InlineButton('❌ 关闭', f'closeit')]
+    if total_page > 5:
+        if current_page - 5 >= 1:
+            followUp.append(previous)
+        if current_page + 5 < total_page:
+            followUp.append(next)
+    keyboard.row(*followUp)
     return keyboard
 
 
-async def users_iv_button(i, j, tg) -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboard()
-    keyboard.paginate(i, j, 'users_iv:{number}' + f'_{tg}')
-    keyboard.row(
-        InlineButton('❌ - Close', f'closeit_{tg}')
-    )
-    return keyboard
-
-
-async def plays_list_button(i, j, days) -> InlineKeyboardMarkup:
-    keyboard = InlineKeyboard()
-    keyboard.paginate(i, j, 'uranks:{number}' + f'_{days}')
-    keyboard.row(
-        InlineButton('❌ - Close', f'closeit')
-    )
-    return keyboard
-
-
-async def user_query_page(i, j) -> InlineKeyboardMarkup:
+async def users_iv_button(total_page: int, current_page: int, tg) -> InlineKeyboardMarkup:
     """
-    member的注册码查询分页
-    :param i: 总
-    :param j: 当前
+    :param total_page: 总页数
+    :param current_page: 当前页数
+    :param tg: 可操作的tg_id
     :return:
     """
     keyboard = InlineKeyboard()
-    keyboard.paginate(i, j, 'store-query:{number}')
-    keyboard.row(
-        InlineButton('❌ Close', f'closeit'), InlineButton('🔙 Back', 'storeall')
-    )
+    keyboard.paginate(total_page, current_page, 'users_iv:{number}' + f'_{tg}')
+    next = InlineButton('⏭️ 后退+5', f'users_iv:{current_page + 5}_{tg}')
+    previous = InlineButton('⏮️ 前进-5', f'users_iv:{current_page - 5}_{tg}')
+    followUp = [InlineButton('❌ 关闭', f'closeit')]
+    if total_page > 5:
+        if current_page - 5 >= 1:
+            followUp.append(previous)
+        if current_page + 5 < total_page:
+            followUp.append(next)
+    keyboard.row(*followUp)
+    return keyboard
+
+
+async def plays_list_button(total_page: int, current_page: int, days) -> InlineKeyboardMarkup:
+    """
+    :param total_page: 总页数
+    :param current_page: 当前页数
+    :param days: 请求获取多少天
+    :return:
+    """
+    keyboard = InlineKeyboard()
+    keyboard.paginate(total_page, current_page, 'uranks:{number}' + f'_{days}')
+    # 添加按钮,前进5, 后退5
+    next = InlineButton('⏭️ 后退+5', f'uranks:{current_page + 5}_{days}')
+    previous = InlineButton('⏮️ 前进-5', f'uranks:{current_page - 5}_{days}')
+    followUp = [InlineButton('❌ 关闭', f'closeit')]
+    if total_page > 5:
+        if current_page - 5 >= 1:
+            followUp.append(previous)
+        if current_page + 5 < total_page:
+            followUp.append(next)
+    keyboard.row(*followUp)
+    return keyboard
+
+
+async def user_query_page(total_page: int, current_page: int) -> InlineKeyboardMarkup:
+    """
+    member的注册码查询分页
+    :param total_page: 总
+    :param current_page: 当前
+    :return:
+    """
+    keyboard = InlineKeyboard()
+    keyboard.paginate(total_page, current_page, 'store-query:{number}')
+    next = InlineButton('⏭️ 后退+5', f'store-query:{current_page + 5}')
+    previous = InlineButton('⏮️ 前进-5', f'store-query:{current_page - 5}')
+    followUp = [InlineButton('🔙 Back', 'storeall')]
+    if total_page > 5:
+        if current_page - 5 >= 1:
+            followUp.append(previous)
+        if current_page + 5 < total_page:
+            followUp.append(next)
+    keyboard.row(*followUp)
     return keyboard
 
 

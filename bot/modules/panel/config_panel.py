@@ -4,7 +4,7 @@
 部分目前有 导出日志，更改探针，更改emby线路，设置购买按钮
 
 """
-from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open, auto_update
+from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open, auto_update, mp
 from pyrogram import filters
 
 from bot.func_helper.filters import admins_on_filter
@@ -176,7 +176,7 @@ async def set_auto_update(_, call):
         # 简化逻辑，只设置一次
         auto_update.status = not auto_update.status
         if auto_update.status:
-            message = '👮🏻‍♂️您已开启 auto_update自动更新bot代码\n\n运行时间：12:30UTC+0800**'
+            message = '👮🏻‍♂️您已开启 auto_update自动更新bot代码\n\n运行时间：12:30UTC+0800'
             LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已启用 auto_update自动更新bot代码")
         else:
             message = '👮🏻‍♂️ 您已关闭 auto_update自动更新bot代码，如您需要更换仓库，请于配置文件中git_repo填写'
@@ -188,6 +188,26 @@ async def set_auto_update(_, call):
     except Exception as e:
         # 异常处理，记录错误信息
         LOGGER.error(f"【admin】：管理员 {call.from_user.first_name} 尝试更改 auto_update状态时出错: {e}")
+
+
+@bot.on_callback_query(filters.regex('set_mp') & admins_on_filter)
+async def set_mp_status(_, call):
+    try:
+        # 简化逻辑，只设置一次
+        mp.status = not mp.status
+        if mp.status:
+            message = '👮🏻‍♂️您已开启 Moviepilot求片功能'
+            LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} Moviepilot求片功能")
+        else:
+            message = '👮🏻‍♂️ 您已关闭 Moviepilot求片功能'
+            LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已关闭 Moviepilot求片功能")
+
+        await callAnswer(call, message, True)
+        await config_p_re(_, call)
+        save_config()
+    except Exception as e:
+        # 异常处理，记录错误信息
+        LOGGER.error(f"【admin】：管理员 {call.from_user.first_name} 尝试更改 Moviepilot求片 状态时出错: {e}")
 
 
 @bot.on_callback_query(filters.regex('leave_ban') & admins_on_filter)

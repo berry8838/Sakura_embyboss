@@ -533,7 +533,7 @@ async def call_exchange(_, call):
     msg = await ask_return(call, text='🔋 **【使用注册/续期码】**：\n\n'
                                       f'- 请在120s内对我发送你的注册/续期码，形如\n`{ranks.logo}-xx-xxxx`\n退出点 /cancel',
                            button=re_exchange_b_ikb)
-    if msg is False:
+    if not msg:
         return
     elif msg.text == '/cancel':
         await asyncio.gather(msg.delete(), p_start(_, msg))

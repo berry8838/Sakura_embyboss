@@ -207,7 +207,7 @@ async def callListen(callbackquery, timer: int = 120, buttons=None):
         return False
 
 
-async def call_dice_Listen(callbackquery, timer: int = 120, buttons=None):
+async def call_dice_listen(callbackquery, timer: int = 120, buttons=None):
     try:
         return await callbackquery.message.chat.listen(filters.dice, timeout=timer)
     except ListenerTimeout:
@@ -231,7 +231,7 @@ async def ask_return(update, text, timer: int = 120, button=None):
         return await update.chat.ask(text=text, timeout=timer)
     except ListenerTimeout:
         await sendMessage(update, '💦 __没有获取到您的输入__ **会话状态自动取消！**', buttons=button)
-        return False
+        return None
 
 
 import re

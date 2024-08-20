@@ -102,7 +102,7 @@ async def call_all(_, msg):
                          text='**🕶️ 一键公告**\n\n倒计时10min，发送您想要公告的消息，然后根据提示选择发送的用户组，取消请 /cancel',
                          timer=600)
 
-    if m is False:
+    if not m:
         return
     elif m.text == '/cancel':
         return
@@ -111,7 +111,7 @@ async def call_all(_, msg):
                          text='回复 `1` - 仅公告账户的人\n回复 `2` - 公告全体成员\n取消请 /cancel',
                          timer=600)
 
-    if call.text == '/cancel':
+    if not call or call.text == '/cancel':
         return await msg.reply('好的,您已取消操作.')
     elif call.text == '2':
         chat_members = get_all_emby(Emby.tg is not None)

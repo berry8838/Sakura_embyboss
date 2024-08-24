@@ -66,6 +66,15 @@ re_exchange_b_ikb = ikb([[('♻️ 重试', 'exchange'), ('❌ 关闭', 'closeit
 re_born_ikb = ikb([[('✨ 重输', 'store-reborn'), ('💫 返回', 'storeall')]])
 
 
+def send_changetg_ikb(cr_id, rp_id):
+    """
+    :param cr_id: 当前操作id
+    :param rp_id: 替换id
+    :return:
+    """
+    return ikb([[('✅ 通过', f'changetg_{cr_id}_{rp_id}'), ('❎ 驳回', f'nochangetg_{cr_id}_{rp_id}')]])
+
+
 def store_ikb():
     return ikb([[(f'♾️ 兑换白名单', 'store-whitelist'), (f'🔥 兑换解封禁', 'store-reborn')],
                 [(f'🎟️ 兑换注册码', 'store-invite'), (f'🔍 查询注册码', 'store-query')],

@@ -205,8 +205,8 @@ async def update_bot(force: bool = False, msg: Message = None):
             if force:  # 默认不重置，保留本地更改
                 await execute("git reset --hard origin/master")
             await execute("git pull --all")
-            await execute(f"{executable} -m pip install --upgrade -r requirements.txt")
-            await execute(f"{executable} -m pip install -r requirements.txt")
+            # await execute(f"{executable} -m pip install --upgrade -r requirements.txt")
+            await execute(f"{executable} -m pip install  -r requirements.txt")
             text = '【AutoUpdate_Bot】运行成功，已更新bot代码。重启bot中...'
             if not msg:
                 reply = await bot.send_message(chat_id=group[0], text=text)

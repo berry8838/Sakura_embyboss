@@ -49,7 +49,8 @@ async def p_start(_, msg):
     if not await user_in_group_filter(_, msg):
         return await asyncio.gather(deleteMessage(msg),
                                     sendMessage(msg,
-                                                '💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？',
+                                                '💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？\n\n'
+                                                '⁉️ ps：如果您已在群组中且收到此消息，请联系管理员解除您的权限限制，因为被限制用户无法使用本bot。',
                                                 buttons=judge_group_ikb))
     try:
         u = msg.command[1].split('-')[0]
@@ -94,7 +95,8 @@ async def b_start(_, call):
                                          buttons=judge_start_ikb(is_admin, account=True)))
     elif not await user_in_group_filter(_, call):
         await asyncio.gather(callAnswer(call, "⭐ 返回start"),
-                             editMessage(call, text='💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？',
+                             editMessage(call, text='💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？\n\n'
+                                                    '⁉️ ps：如果您已在群组中且收到此消息，请联系管理员解除您的权限限制，因为被限制用户无法使用本bot。',
                                          buttons=judge_group_ikb))
 
 

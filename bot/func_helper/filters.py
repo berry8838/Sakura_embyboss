@@ -81,25 +81,7 @@ async def user_in_group_on_filter(filt, client, update):
             u = await client.get_chat_member(chat_id=int(i), user_id=uid)
             if u.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER,
                             ChatMemberStatus.OWNER]:  # 移除了 'ChatMemberStatus.RESTRICTED' 防止有人进群直接注册不验证
-                return True
-        except BadRequest as e:
-            if e.ID == 'USER_NOT_PARTICIPANT':
-                return False
-            elif e.ID == 'CHAT_ADMIN_REQUIRED':
-                LOGGER.error(f"bot不能在 {i} 中工作，请检查bot是否在群组及其权限设置")
-                return False
-            else:
-                return False
-    return False
-
-
-async def judge_uid_ingroup(client, uid):
-    for i in group:
-        try:
-            u = await client.get_chat_member(chat_id=int(i), user_id=uid)
-            if u.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER,
-                            ChatMemberStatus.OWNER]:  # 移除了 'ChatMemberStatus.RESTRICTED' 防止有人进群直接注册不验证
-                return True
+                return True  # 因为被限制用户无法使用bot，所以需要检查权限。
         except BadRequest as e:
             if e.ID == 'USER_NOT_PARTICIPANT':
                 return False

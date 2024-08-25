@@ -5,11 +5,11 @@ kk - 纯装x
 import pyrogram
 from pyrogram import filters
 from pyrogram.errors import BadRequest
-from bot import bot, prefixes, owner, bot_photo, admins, LOGGER, extra_emby_libs, config
+from bot import bot, prefixes, owner, admins, LOGGER, extra_emby_libs, config
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import cr_kk_ikb, gog_rester_ikb
-from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, editMessage
+from bot.func_helper.msg_utils import deleteMessage, sendMessage, editMessage
 from bot.func_helper.utils import judge_admins, cr_link_two
 from bot.sql_helper.sql_emby import sql_add_emby, sql_get_emby, sql_update_emby, Emby
 
@@ -217,23 +217,21 @@ async def fuck_off_m(_, call):
         return await call.answer("请不要以下犯上 ok？", show_alert=True)
 
     await call.answer("✅ ok")
-    b = int(call.data.split("-")[1])
-    if b in admins and b != call.from_user.id:
+    user_id = int(call.data.split("-")[1])
+    if user_id in admins and user_id != call.from_user.id:
         return await editMessage(call,
                                  f"⚠️ 打咩，no，机器人不可以对bot管理员出手喔，请[自己](tg://user?id={call.from_user.id})解决",
                                  timer=60)
     try:
-        await bot.ban_chat_member(call.message.chat.id, b)
+        user = await bot.get_chat(user_id)
+        await call.message.chat.ban_member(user_id)  # 默认退群了就删号    fix：call 没有对象chat
+        await editMessage(call,
+                          f'🎯 done，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已移除 [{user.first_name}](tg://user?id={user_id})[{user_id}]')
+        LOGGER.info(
+            f"【admin】：{call.from_user.id} 已从群组 {call.message.chat.id} 封禁 {user.first_name} - {user.id}")
     except pyrogram.errors.ChatAdminRequired:
         await editMessage(call,
                           f"⚠️ 请赋予我踢出成员的权限 [{call.from_user.first_name}](tg://user?id={call.from_user.id})")
     except pyrogram.errors.UserAdminInvalid:
         await editMessage(call,
                           f"⚠️ 打咩，no，机器人不可以对群组管理员出手喔，请[自己](tg://user?id={call.from_user.id})解决")
-    else:
-        first = await bot.get_chat(b)
-        await call.chat.ban_member(b)  # 默认退群了就删号
-        await editMessage(call,
-                          f'🎯 done，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已移除 {first.first_name}')
-        LOGGER.info(
-            f"【admin】：{call.from_user.id} 已从群组 {call.message.chat.id} 封禁 {first.first_name} - {b}")

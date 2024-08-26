@@ -65,13 +65,16 @@ async def p_start(_, msg):
             sql_add_emby(msg.from_user.id)
             await asyncio.gather(deleteMessage(msg),
                                  sendPhoto(msg, bot_photo,
-                                           f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) \n\n初次使用，录入数据库完成，请点击 /start 重新召唤面板"))
+                                           f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n"
+                                           f"🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) \n\n"
+                                           f"初次使用，录入数据库完成\n。"
+                                           f"请点击 /start 重新召唤面板"))
             return
         name, lv, ex, us, embyid, pwd2 = data
         text = f"▎__欢迎进入用户面板！{msg.from_user.first_name}__\n\n" \
                f"**· 🆔 用户のID** | `{msg.from_user.id}`\n" \
                f"**· 📊 当前状态** | {lv}\n" \
-               f"**· 🍒 积分{sakura_b}** | {us[0]} · {us[1]}\n" \
+               f"**· 🍒 积分{sakura_b}** | {us}\n" \
                f"**· 💠 账号名称** | [{name}](tg://user?id={msg.from_user.id})\n" \
                f"**· 🚨 到期时间** | {ex}"
         if not embyid:

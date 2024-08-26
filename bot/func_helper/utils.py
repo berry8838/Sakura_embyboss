@@ -37,7 +37,7 @@ async def members_info(tg=None, name=None):
         name = data.name or '无账户信息'
         pwd2 = data.pwd2
         embyid = data.embyid
-        us = [data.us, data.iv]
+        us = data.iv
         lv_dict = {'a': '白名单', 'b': '**正常**', 'c': '**已禁用**', 'd': '未注册'}  # , 'e': '**21天未活跃/无信息**'
         lv = lv_dict.get(data.lv, '未知')
         if lv == '白名单':

@@ -25,8 +25,12 @@ async def gm_ikb(_, call):
     stat = "True" if stat else "False"
     timing = 'Turn off' if timing == 0 else str(timing) + ' min'
     tg, emby, white = sql_count_emby()
-    gm_text = f'⚙️ 欢迎您，亲爱的管理员 {call.from_user.first_name}\n\n· ®️ 注册状态 | **{stat}**\n· ⏳ 定时注册 | **{timing}**\n' \
-              f'· 🎫 总注册限制 | **{all_user}**\n· 🎟️ 已注册人数 | **{emby}** • WL **{white}**\n· 🤖 bot使用人数 | {tg}'
+    gm_text = f'⚙️ 欢迎您，亲爱的管理员 {call.from_user.first_name}\n\n' \
+              f'· ®️ 注册状态 | **{stat}**\n' \
+              f'· ⏳ 定时注册 | **{timing}**\n' \
+              f'· 🎫 总注册限制 | **{all_user}**\n'\
+              f'· 🎟️ 已注册人数 | **{emby}** • WL **{white}**\n' \
+              f'· 🤖 bot使用人数 | {tg}'
 
     await editMessage(call, gm_text, buttons=gm_ikb_content)
 

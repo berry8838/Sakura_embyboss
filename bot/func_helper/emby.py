@@ -9,7 +9,7 @@ import requests as r
 from bot import emby_url, emby_api, emby_block, extra_emby_libs, LOGGER
 from bot.sql_helper.sql_emby import sql_update_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_delete_emby2
-from bot.func_helper.utils import pwd_create, convert_runtime, cache
+from bot.func_helper.utils import pwd_create, convert_runtime, cache, tem_deluser
 
 
 def create_policy(admin=False, disable=False, limit: int = 2, block: list = None):
@@ -139,6 +139,7 @@ class Embyservice:
             if stats is None:
                 if sql_update_emby(Emby.embyid == id, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
                                    ex=None):
+                    tem_deluser()
                     return True
                 else:
                     return False

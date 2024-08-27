@@ -14,8 +14,8 @@ from bot.schemas import ExDate, Yulv
 from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emby_libs, config, bot_name, schedall
 from pyrogram import filters
 from bot.func_helper.emby import emby
-from bot.func_helper.filters import user_in_group_on_filter, admins_on_filter
-from bot.func_helper.utils import members_info, tem_alluser, cr_link_one, judge_admins
+from bot.func_helper.filters import user_in_group_on_filter
+from bot.func_helper.utils import members_info, tem_adduser, cr_link_one, judge_admins
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
     store_ikb, re_bindtg_ikb, close_it_ikb, user_query_page, re_born_ikb, send_changetg_ikb
@@ -83,7 +83,7 @@ async def create_user(_, call, us, stats):
                               f'**·【服务器】 - 查看线路和密码**')
             LOGGER.info(f"【创建账户】[开注状态]：{call.from_user.id} - 建立了 {emby_name} ") if stats else LOGGER.info(
                 f"【创建账户】：{call.from_user.id} - 建立了 {emby_name} ")
-            await tem_alluser()
+            tem_adduser()
 
 
 # 键盘中转

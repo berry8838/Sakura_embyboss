@@ -63,10 +63,15 @@ async def open_check():
     return open_stats, all_user, tem, timing
 
 
-async def tem_alluser():
+def tem_adduser():
     _open.tem = _open.tem + 1
     if _open.tem >= _open.all_user:
         _open.stat = False
+    save_config()
+
+
+def tem_deluser():
+    _open.tem = _open.tem - 1
     save_config()
 
 
@@ -232,7 +237,6 @@ class Singleton(abc.ABCMeta, type):
         if key not in cls._instances:
             cls._instances[key] = super().__call__(*args, **kwargs)
         return cls._instances[key]
-
 
 # import random
 # import grequests

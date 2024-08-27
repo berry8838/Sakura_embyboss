@@ -8,7 +8,7 @@ import asyncio
 from pyrogram import filters
 
 from bot.func_helper.emby import Embyservice
-from bot.func_helper.utils import judge_admins, members_info
+from bot.func_helper.utils import judge_admins, members_info, open_check
 from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_emby import sql_add_emby
 from bot.func_helper.filters import user_in_group_filter, user_in_group_on_filter
@@ -71,12 +71,14 @@ async def p_start(_, msg):
                                            f"请点击 /start 重新召唤面板"))
             return
         name, lv, ex, us, embyid, pwd2 = data
+        stat, all_user, tem, timing = await open_check()
         text = f"▎__欢迎进入用户面板！{msg.from_user.first_name}__\n\n" \
                f"**· 🆔 用户のID** | `{msg.from_user.id}`\n" \
                f"**· 📊 当前状态** | {lv}\n" \
                f"**· 🍒 积分{sakura_b}** | {us}\n" \
-               f"**· 💠 账号名称** | [{name}](tg://user?id={msg.from_user.id})\n" \
-               f"**· 🚨 到期时间** | {ex}"
+               f"**· ®️ 注册状态** | {stat}\n" \
+               f"**· 🎫 总注册限制** | {all_user}\n" \
+               f"**· 🎟️ 可注册席位** | {all_user - tem}\n"
         if not embyid:
             await asyncio.gather(deleteMessage(msg),
                                  sendPhoto(msg, bot_photo, caption=text, buttons=judge_start_ikb(is_admin, False)))

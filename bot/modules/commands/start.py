@@ -67,7 +67,7 @@ async def p_start(_, msg):
                                  sendPhoto(msg, bot_photo,
                                            f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n"
                                            f"🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) \n\n"
-                                           f"初次使用，录入数据库完成\n。"
+                                           f"初次使用，录入数据库完成。\n"
                                            f"请点击 /start 重新召唤面板"))
             return
         name, lv, ex, us, embyid, pwd2 = data

@@ -9,7 +9,7 @@ import requests as r
 from bot import emby_url, emby_api, emby_block, extra_emby_libs, LOGGER
 from bot.sql_helper.sql_emby import sql_update_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_delete_emby2
-from bot.func_helper.utils import pwd_create, convert_runtime, cache, tem_deluser
+from bot.func_helper.utils import pwd_create, convert_runtime, cache, tem_deluser, Singleton
 
 
 def create_policy(admin=False, disable=False, limit: int = 2, block: list = None):
@@ -73,7 +73,7 @@ def pwd_policy(embyid, stats=False, new=None):
     return policy
 
 
-class Embyservice:
+class Embyservice(metaclass=Singleton):
     """
     初始化一个类，接收url和api_key，params作为参数
     计划是将所有关于emby api的使用方法放进来
@@ -198,6 +198,7 @@ class Embyservice:
         if _policy.status_code == 200 or 204:
             return True
         return False
+
     async def get_emby_libs(self):
         """
         获取所有媒体库

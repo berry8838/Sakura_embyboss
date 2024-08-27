@@ -102,13 +102,20 @@ class MP(BaseModel):
     password: Optional[str] = None
     access_token: Optional[str] = None
     price: int = 1
-    photo_url: Optional[str] = "https://raw.githubusercontent.com/berry8838/berry8838/main/image_2024-08-19_22-12-39.png"
+    photo_url: Optional[
+        str] = "https://raw.githubusercontent.com/berry8838/berry8838/main/image_2024-08-19_22-12-39.png"
 
 
 class AutoUpdate(BaseModel):
     status: bool = True
     git_repo: Optional[str] = "berry8838/Sakura_embyboss"  # github仓库名/魔改的请填自己的仓库
     commit_sha: Optional[str] = None  # 最近一次commit
+
+
+class API(BaseModel):
+    status: bool = False  # 默认关闭
+    http_url: Optional[str] = "localhost"
+    http_port: Optional[int] = 8838
 
 
 class Config(BaseModel):
@@ -154,6 +161,7 @@ class Config(BaseModel):
     fuxx_pitao: bool = True
     moviepilot: MP = Field(default_factory=MP)
     auto_update: AutoUpdate = Field(default_factory=AutoUpdate)
+    api: API = Field(default_factory=API)
 
     def __init__(self, **data):
         super().__init__(**data)

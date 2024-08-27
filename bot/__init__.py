@@ -59,7 +59,7 @@ fuxx_pitao = config.fuxx_pitao
 
 mp = config.moviepilot
 auto_update = config.auto_update
-
+api = config.api
 save_config()
 
 LOGGER.info("配置文件加载完毕")
@@ -120,6 +120,7 @@ if len(extra_emby_libs) > 0:
 
 with contextlib.suppress(ImportError):
     import uvloop
+
     uvloop.install()
 from pyrogram import enums
 from pyromod import Client

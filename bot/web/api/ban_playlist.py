@@ -14,22 +14,23 @@ from bot.func_helper.emby import emby
 route = APIRouter()
 
 
-@route.post("/ban_playlist/{eid}")
+@route.get("/ban_playlist/{eid}")
 async def ban_playlist(eid: str = Path(..., description="拦截后传入的embyid")):
     """
     获取传入的embyid，然后执行查询，删除，发送消息至tg群组
     :param eid: path参数，embyid
     :return: 包含用户ID和封禁状态的字典
     """
-    if not eid: return
+    if not eid:
+        return {"user_id": None, "embyid": None, "is_baned": False}
 
     user = sql_get_emby(eid)
     if user is None:
         info = {"user_id": None, "embyid": None, "is_baned": False,
                 "details": "未在emby数据库中找到此数据，请手动解决。详细时间见log记录"}
         text = ("【新建播放列表拦截】：\n\n"
-                f"{info['embyid']} - {info['details']}\n")
-        await bot.send_message(chat_id=group, text=text + str(info))
+                f"{eid} - {info['details']}\n")
+        await bot.send_message(chat_id=group[0], text=text + str(info))
         LOGGER.info(text + str(info))
         return info
 
@@ -39,7 +40,7 @@ async def ban_playlist(eid: str = Path(..., description="拦截后传入的embyi
         text = (f"【新建播放列表拦截】：\n\n"
                 f"[你](tg://user?id={user.tg}) 已被检测到新封禁用户\n"
                 f"Emby：{user.name}  |  ID：`{user.tg}`\n"
-                f"封禁原因：{info['details']}")
+                f'封禁原因：{info["details"]}')
         try:
             out = await bot.send_message(group[0], text)
             await out.forward(user.tg)
@@ -53,7 +54,7 @@ async def ban_playlist(eid: str = Path(..., description="拦截后传入的embyi
         text = ("【新建播放列表拦截】：\n\n"
                 f"[你](tg://user?id={user.tg}) 已被检测到新封禁用户\n"
                 f"Emby：{user.name}  |  ID：`{user.tg}`\n"
-                f"封禁原因：{info['details']}")
+                f'封禁原因：{info["details"]}')
         try:
             await bot.send_message(group[0], text)
         except Exception as e:

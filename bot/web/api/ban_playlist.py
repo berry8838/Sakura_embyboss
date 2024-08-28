@@ -5,8 +5,7 @@ get_user_ban -
 Author:susu
 Date:2024/8/27
 """
-from fastapi import APIRouter, Path
-
+from fastapi import APIRouter
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 from bot import LOGGER, group, bot
 from bot.func_helper.emby import emby
@@ -14,12 +13,10 @@ from bot.func_helper.emby import emby
 route = APIRouter()
 
 
-@route.get("/ban_playlist/{eid}")
-async def ban_playlist(eid: str = Path(..., description="拦截后传入的embyid")):
+@route.get("/ban_playlist")
+async def ban_playlist(eid: str):
     """
     获取传入的embyid，然后执行查询，删除，发送消息至tg群组
-    :param eid: path参数，embyid
-    :return: 包含用户ID和封禁状态的字典
     """
     if not eid:
         return {"user_id": None, "embyid": None, "is_baned": False}

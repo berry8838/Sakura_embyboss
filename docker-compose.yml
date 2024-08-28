@@ -40,3 +40,5 @@ services:
     volumes:
       - ./config.json:/app/config.json
       - ./log:/app/log
+    ports:
+      - '8838:8838' # 为api服务映射端口

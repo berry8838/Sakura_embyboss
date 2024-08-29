@@ -23,9 +23,13 @@ async def ban_playlist(eid: str):
 
     user = sql_get_emby(eid)
     if user is None:
-        info = {"user_id": None, "embyid": None, "is_baned": False,
-                "details": "未在emby数据库中找到此数据，请手动解决。详细时间见log记录"}
-        text = ("【新建播放列表拦截】：\n\n"
+        details = ''
+        if await emby.emby_change_policy(id=eid, method=True):
+            details += "已拦截到疑似敏感操作播放列表，未在emby数据库中找到此数据，但已斩杀该用户（封禁）"
+        else:
+            details += "已拦截到疑似敏感操作播放列表，未在emby数据库中找到此数据，未能斩杀该用户（封禁）。详细时间见log记录，请手动斩杀。"
+        info = {"user_id": None, "embyid": None, "is_baned": False, "details": details}
+        text = ("【新建播放列表拦截】\n\n"
                 f"{eid} - {info['details']}\n")
         await bot.send_message(chat_id=group[0], text=text)
         LOGGER.info(text)
@@ -33,8 +37,8 @@ async def ban_playlist(eid: str):
 
     if await emby.emby_change_policy(id=eid, method=True):
         info = {"user_id": user.tg, "emby_name": user.name, "embyid": eid, "is_baned": True,
-                "details": "疑似敏感操作播放列表，已拦截并封禁。请向权限管理员描述信息。"}
-        text = (f"【新建播放列表拦截】：\n\n"
+                "details": "已拦截疑似敏感操作播放列表，用户已被斩杀（封禁）。请向权限管理员描述信息。"}
+        text = (f"【新建播放列表拦截】\n\n"
                 f"[你](tg://user?id={user.tg}) 已被检测到新封禁用户\n"
                 f"Emby：{user.name}  |  ID：`{user.tg}`\n"
                 f'封禁原因：{info["details"]}')
@@ -47,8 +51,8 @@ async def ban_playlist(eid: str):
 
     else:
         info = {"user_id": user.tg, "emby_name": user.name, "embyid": eid, "is_baned": False,
-                "details": "疑似敏感操作播放列表，已拦截，但封禁失败，请手动处理。"}
-        text = ("【新建播放列表拦截】：\n\n"
+                "details": "已拦截疑似敏感操作播放列表，斩杀（封禁）失败，请手动处理。"}
+        text = ("【新建播放列表拦截】\n\n"
                 f"[你](tg://user?id={user.tg}) 已被检测到新封禁用户\n"
                 f"Emby：{user.name}  |  ID：`{user.tg}`\n"
                 f'封禁原因：{info["details"]}')

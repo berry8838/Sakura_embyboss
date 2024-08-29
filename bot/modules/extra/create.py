@@ -8,7 +8,7 @@ from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import cv_user_ip
 from bot.func_helper.msg_utils import sendMessage, editMessage, callAnswer, sendPhoto
 from bot.sql_helper.sql_emby import sql_get_emby
-from bot.sql_helper.sql_emby2 import sql_get_emby2
+from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2
 
 
 @bot.on_message(filters.command('ucr', prefixes) & admins_on_filter & filters.private)
@@ -72,7 +72,8 @@ async def urm_user(_, msg):
         e = e2
         stats = 1
 
-    if await emby.emby_del(id=e.embyid, stats=stats):
+    if await emby.emby_del(id=e.embyid):
+        sql_delete_emby2(e.embyid)
         try:
             await reply.edit(
                 f'🎯 done，管理员 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id})\n'

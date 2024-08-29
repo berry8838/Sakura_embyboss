@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 
 from bot import bot, bot_photo, group, sakura_b, LOGGER, ranks, _open
 from bot.func_helper.emby import emby
-from bot.func_helper.utils import convert_to_beijing_time, convert_s, cache, get_users
+from bot.func_helper.utils import convert_to_beijing_time, convert_s, cache, get_users, tem_deluser
 from bot.sql_helper import Session
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_embys, Emby, sql_update_emby
 from bot.func_helper.fix_bottons import plays_list_button
@@ -127,6 +127,9 @@ class Uplaysinfo:
                 finally:
                     if ac_date == "None" or ac_date + timedelta(days=15) < now:
                         if await emby.emby_del(id=e.embyid):
+                            sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d',
+                                            cr=None, ex=None)
+                            tem_deluser()
                             msg += f'**🔋活跃检测** - [{e.name}](tg://user?id={e.tg})\n#id{e.tg} 禁用后未解禁，已执行删除。\n\n'
                             LOGGER.info(f"【活跃检测】- 删除账户 {user['Name']} #id{e.tg}")
                         else:

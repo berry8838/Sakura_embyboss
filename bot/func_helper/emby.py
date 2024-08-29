@@ -8,8 +8,7 @@ from datetime import datetime, timedelta, timezone
 import requests as r
 from bot import emby_url, emby_api, emby_block, extra_emby_libs, LOGGER
 from bot.sql_helper.sql_emby import sql_update_emby, Emby
-from bot.sql_helper.sql_emby2 import sql_delete_emby2
-from bot.func_helper.utils import pwd_create, convert_runtime, cache, tem_deluser, Singleton
+from bot.func_helper.utils import pwd_create, convert_runtime, cache, Singleton
 
 
 def create_policy(admin=False, disable=False, limit: int = 2, block: list = None):
@@ -128,7 +127,7 @@ class Embyservice(metaclass=Singleton):
         else:
             return False
 
-    async def emby_del(self, id, stats=None):
+    async def emby_del(self, id):
         """
         删除账户
         :param id: emby_id
@@ -136,20 +135,10 @@ class Embyservice(metaclass=Singleton):
         """
         res = r.delete(f'{self.url}/emby/Users/{id}', headers=self.headers)
         if res.status_code == 200 or 204:
-            if stats is None:
-                if sql_update_emby(Emby.embyid == id, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
-                                   ex=None):
-                    tem_deluser()
-                    return True
-                else:
-                    return False
-            else:
-                if sql_delete_emby2(embyid=id):
-                    return True
-                else:
-                    return False
-        else:
-            return False
+            return True
+        return False
+
+
 
     async def emby_reset(self, id, new=None):
         """

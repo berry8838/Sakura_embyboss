@@ -10,7 +10,7 @@ from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import cr_kk_ikb, gog_rester_ikb
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, editMessage
-from bot.func_helper.utils import judge_admins, cr_link_two
+from bot.func_helper.utils import judge_admins, cr_link_two, tem_deluser
 from bot.sql_helper.sql_emby import sql_add_emby, sql_get_emby, sql_update_emby, Emby
 
 
@@ -200,6 +200,8 @@ async def close_emby(_, call):
         return await editMessage(call, f'💢 ta 还没有注册账户。', timer=60)
 
     if await emby.emby_del(e.embyid):
+        sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
+        tem_deluser()
         await editMessage(call,
                           f'🎯 done，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n等级：{e.lv} - [{first.first_name}](tg://user?id={b}) '
                           f'账户 {e.name} 已完成删除。')

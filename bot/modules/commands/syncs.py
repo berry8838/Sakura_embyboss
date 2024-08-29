@@ -18,7 +18,8 @@ from pyrogram.errors import FloodWait
 from bot import bot, prefixes, bot_photo, LOGGER, owner, group
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
-from bot.sql_helper.sql_emby import get_all_emby, Emby, sql_get_emby, sql_update_embys, sql_delete_emby
+from bot.func_helper.utils import tem_deluser
+from bot.sql_helper.sql_emby import get_all_emby, Emby, sql_get_emby, sql_update_embys, sql_delete_emby, sql_update_emby
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto
 from bot.sql_helper.sql_emby2 import sql_get_emby2
 
@@ -42,6 +43,9 @@ async def sync_emby_group(_, msg):
         b += 1
         if i.tg not in members:
             if await emby.emby_del(i.embyid):
+                sql_update_emby(Emby.embyid == i.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
+                                ex=None)
+                tem_deluser()
                 a += 1
                 reply_text = f'{b}. #id{i.tg} - [{i.name}](tg://user?id={i.tg}) 删除\n'
                 LOGGER.info(reply_text)

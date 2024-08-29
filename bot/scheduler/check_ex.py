@@ -8,6 +8,7 @@ from sqlalchemy import and_
 from asyncio import sleep
 from bot import bot, group, LOGGER, _open
 from bot.func_helper.emby import emby
+from bot.func_helper.utils import tem_deluser
 from bot.sql_helper.sql_emby import Emby, get_all_emby, sql_update_emby
 from bot.sql_helper.sql_emby2 import get_all_emby2, Emby2, sql_update_emby2
 
@@ -133,6 +134,9 @@ async def check_expired():
             if datetime.now() < delta:
                 continue
             if await emby.emby_del(c.embyid):
+                sql_update_emby(Emby.embyid == c.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
+                                ex=None)
+                tem_deluser()
                 text = f'【到期检测】\n#id{c.tg} 删除账户 [{c.name}](tg://user?id={c.tg})\n已到期 5 天，执行清除任务。期待下次与你相遇'
                 LOGGER.info(text)
             else:

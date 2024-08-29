@@ -3,7 +3,8 @@ from pyrogram.enums import ChatMemberStatus
 from pyrogram.types import ChatMemberUpdated
 
 from bot import bot, group, LOGGER, _open
-from bot.sql_helper.sql_emby import sql_get_emby
+from bot.func_helper.utils import tem_deluser
+from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 from bot.func_helper.emby import emby
 
 
@@ -18,6 +19,8 @@ async def leave_del_emby(_, event: ChatMemberUpdated):
                 if e is None or e.embyid is None:
                     return
                 if await emby.emby_del(id=e.embyid):
+                    sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
+                    tem_deluser()
                     LOGGER.info(
                         f'【退群删号】- {user_fname}-{user_id} 已经离开了群组，咕噜噜，ta的账户被吃掉啦！')
                     await bot.send_message(chat_id=event.chat.id,
@@ -43,6 +46,9 @@ async def leave_del_emby(_, event: ChatMemberUpdated):
                 if e is None or e.embyid is None:
                     return
                 if await emby.emby_del(id=e.embyid):
+                    sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
+                                    ex=None)
+                    tem_deluser()
                     LOGGER.info(
                         f'【退群删号】- {user_fname}-{user_id} 已经离开了群组，咕噜噜，ta的账户被吃掉啦！')
                     await bot.send_message(chat_id=event.chat.id,

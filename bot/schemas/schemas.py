@@ -116,6 +116,13 @@ class API(BaseModel):
     status: bool = False  # 默认关闭
     http_url: Optional[str] = "localhost"
     http_port: Optional[int] = 8838
+    allow_origins: Optional[List[Union[str, int]]] = None
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        if self.allow_origins is None:
+            self.allow_origins = ["*"]
+            # 如果未设置，默认为 ["*"]，为了安全可以设置成本机ip&反代的域名，列表可包含多个
 
 
 class Config(BaseModel):

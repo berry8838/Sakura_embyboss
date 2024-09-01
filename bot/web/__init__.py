@@ -37,7 +37,7 @@ class Web:
         # 配字 CORS 的中间件
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],  # 来源，可能有多个服务器的nginx，懒得写入配置直接全梭了
+            allow_origins=config_api.allow_origins,  # 来源，可能有多个服务器的nginx，懒得写入配置会直接全梭了，需要的可以自己在字段里面加
             allow_credentials=True,  # 允许使用证书
             allow_methods=["*"],  # 允许跨域的方法
             allow_headers=["*"])  # 允许的请求头
@@ -46,7 +46,7 @@ class Web:
         """
         启动 Web API 服务。
         """
-        if not config_api.http_url:
+        if not config_api.status:
             LOGGER.info("【API服务】未配置，跳过...")
             return
         LOGGER.info("【API服务】检测有配置，马上启动服务...")

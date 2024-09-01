@@ -15,7 +15,7 @@ from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emb
 from pyrogram import filters
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import user_in_group_on_filter
-from bot.func_helper.utils import members_info, tem_adduser, cr_link_one, judge_admins, tem_deluser
+from bot.func_helper.utils import members_info, tem_adduser, cr_link_one, judge_admins, tem_deluser, pwd_create
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
     store_ikb, re_bindtg_ikb, close_it_ikb, user_query_page, re_born_ikb, send_changetg_ikb
@@ -143,10 +143,10 @@ async def change_tg(_, call):
         if status == 'nochangetg':
             return await asyncio.gather(
                 editMessage(call,
-                            f' ❎ 好的，[您](tg://user?id={replace_id})已拒绝[{current_id}](tg://user?id={current_id})的请求。'),
+                            f' ❎ 好的，[您](tg://user?id={call.from_user.id})已拒绝[{current_id}](tg://user?id={current_id})的换绑请求。'),
                 bot.send_message(current_id, '❌ 您的换绑请求已被拒。请在群组中详细说明情况。'))
 
-        await editMessage(call, f' ✅ 好的，[您](tg://user?id={replace_id})已通过[{current_id}](tg://user?id={current_id})的请求。')
+        await editMessage(call, f' ✅ 好的，[您](tg://user?id={call.from_user.id})已通过[{current_id}](tg://user?id={current_id})的换绑请求。')
         e = sql_get_emby(tg=replace_id)
         if not e or not e.embyid: return await bot.send_message(current_id, '⁉️ 出错了，您所换绑账户已不存在。')
         if sql_update_emby(Emby.tg == current_id, embyid=e.embyid, name=e.name, pwd=e.pwd, pwd2=e.pwd2,
@@ -266,12 +266,12 @@ async def change_tg(_, call):
                                               f'🎯 已向授权群发送申请，请联系并等待管理员确认......'),
                                   sendMessage(call,
                                               f'⭕#TG改绑\n'
-                                              f'**用户 [{call.from_user.id}](tg://user?id={call.from_user.id}) 正在试图改绑账户 {e.name}，已通过安全/密码核验\n\n'
+                                              f'**用户 [{call.from_user.id}](tg://user?id={call.from_user.id}) 正在试图改绑Emby: {e.name}，已通过安全/密码核验\n\n'
                                               f'请管理员审核决定：**',
                                               buttons=send_changetg_ikb(call.from_user.id, e.tg),
                                               send=True))
             LOGGER.info(
-                f'【TG改绑】 {call.from_user.first_name}-{call.from_user.id} 通过验证账户 {emby_name}，已递交换绑申请')
+                f'【TG改绑】 {call.from_user.first_name}-{call.from_user.id} 通过验证账户，已递交对Emby: {emby_name}换绑申请')
 
 
 @bot.on_callback_query(filters.regex('bindtg') & user_in_group_on_filter)
@@ -315,7 +315,8 @@ async def bind_tg(_, call):
                                              f'🍥 很遗憾绑定失败，您输入的账户密码不符（{emby_name} - {emby_pwd}），请仔细确认后再次尝试',
                                              buttons=re_bindtg_ikb)
                 else:
-                    pwd = ['空（直接回车）', 5210] if emby_pwd == 'None' else [emby_pwd, emby_pwd]
+                    security_pwd = await pwd_create(4)
+                    pwd = ['空（直接回车）', security_pwd] if emby_pwd == 'None' else [emby_pwd, emby_pwd]
                     ex = (datetime.now() + timedelta(days=30))
                     text = f'✅ 账户 {emby_name} 成功绑定\n\n' \
                            f'· 用户名称 | `{emby_name}`\n' \

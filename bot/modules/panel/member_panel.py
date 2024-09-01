@@ -117,15 +117,15 @@ async def create(_, call):
     if e.embyid:
         await callAnswer(call, '💦 你已经有账户啦！请勿重复注册。', True)
     elif not _open.stat and int(e.us) <= 0:
-        await callAnswer(call, f'🤖 自助注册已关闭，等待开启。', True)
+        await callAnswer(call, f'🤖 自助注册已关闭，等待开启或使用注册码注册。', True)
     elif not _open.stat and int(e.us) > 0:
-        send = await callAnswer(call, f'🪙 积分满足要求，请稍后。', True)
+        send = await callAnswer(call, f'🪙 资质核验成功，请稍后。', True)
         if send is False:
             return
         else:
             await create_user(_, call, us=e.us, stats=False)
     elif _open.stat:
-        send = await callAnswer(call, f"🪙 开放注册，免除积分要求。", True)
+        send = await callAnswer(call, f"🪙 开放注册中，免除资质核验。", True)
         if send is False:
             return
         else:

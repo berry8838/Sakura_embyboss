@@ -22,7 +22,7 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
         # d.append(['🎟️ 使用注册码', 'exchange']) if not _open.stat else d.append(['👑 创建账户', 'create'])
     else:
         d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server']]
-    if schedall.check_ex: d.append(['🎟️ 使用续期码', 'exchange'])
+        if schedall.check_ex: d.append(['🎟️ 使用续期码', 'exchange'])
     if _open.checkin: d.append([f'🎯 签到', 'checkin'])
     lines = array_chunk(d, 2)
     if is_admin: lines.append([['👮🏻‍♂️ admin', 'manage']])
@@ -376,3 +376,20 @@ def sched_buttons():
 
 
 # checkin_button = ikb([[('🔋 重新签到', 'checkin'), ('🎮 返回主页', 'back_start')]])
+
+""" Request_media """
+
+# request_tips_ikb = ikb([[('✔️ 已转向私聊求片', 'go_to_qiupian')]])
+
+request_tips_ikb = None
+
+
+def request_media_panel_ikb():
+    return ikb([[('🍿 点播/订阅', 'get_resource'), ('📶 下载进度', 'download_rate')],  # 进度里面写一个管理 stop resume and delete
+                [('📝 我的记录', 'my_requests'), ('❌ 本次关闭', 'closeit')]])
+
+
+def get_resource_ikb(download_name: str):
+    # 翻页 + 下载此片 + 取消操作
+    return ikb([[(f'下载本片', f'download_{download_name}'), ('激活订阅', f'submit_{download_name}')],
+                [('❌ 本次关闭', 'closeit')]])

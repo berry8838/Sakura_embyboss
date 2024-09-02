@@ -146,7 +146,8 @@ async def change_tg(_, call):
                             f' ❎ 好的，[您](tg://user?id={call.from_user.id})已拒绝[{current_id}](tg://user?id={current_id})的换绑请求。'),
                 bot.send_message(current_id, '❌ 您的换绑请求已被拒。请在群组中详细说明情况。'))
 
-        await editMessage(call, f' ✅ 好的，[您](tg://user?id={call.from_user.id})已通过[{current_id}](tg://user?id={current_id})的换绑请求。')
+        await editMessage(call,
+                          f' ✅ 好的，[您](tg://user?id={call.from_user.id})已通过[{current_id}](tg://user?id={current_id})的换绑请求。')
         e = sql_get_emby(tg=replace_id)
         if not e or not e.embyid: return await bot.send_message(current_id, '⁉️ 出错了，您所换绑账户已不存在。')
         if sql_update_emby(Emby.tg == current_id, embyid=e.embyid, name=e.name, pwd=e.pwd, pwd2=e.pwd2,
@@ -325,8 +326,8 @@ async def bind_tg(_, call):
                            f'· 到期时间 | `{ex}`\n\n' \
                            f'· 当前线路：\n{emby_line}\n\n' \
                            f'· **在【服务器】按钮 - 查看线路和密码**'
-                    sql_update_emby(Emby.tg == call.from_user.id, embyid=embyid, name=emby_name, pwd=emby_pwd,
-                                    pwd2=emby_pwd, lv='b', cr=datetime.now(), ex=ex)
+                    sql_update_emby(Emby.tg == call.from_user.id, embyid=embyid, name=emby_name, pwd=pwd[0],
+                                    pwd2=pwd[1], lv='b', cr=datetime.now(), ex=ex)
                     await editMessage(call, text)
                     await sendMessage(call,
                                       f'⭕#新TG绑定 原emby账户 #{emby_name} \n\n已绑定至 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) - {call.from_user.id}',

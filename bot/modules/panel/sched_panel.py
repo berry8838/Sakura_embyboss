@@ -190,12 +190,12 @@ from sys import executable, argv
 
 
 @scheduler.SCHEDULER.scheduled_job('cron', hour='12', minute='30', id='update_bot')
-async def update_bot(force: bool = False, msg: Message = None):
+async def update_bot(force: bool = False, msg: Message = None, manual: bool = False):
     """
     此为未被测试的代码片段。
     """
     # print("update")
-    if not auto_update.status: return
+    if not auto_update.status and not manual: return
     commit_url = f"https://api.github.com/repos/{auto_update.git_repo}/commits?per_page=1"
     resp = requests.get(commit_url)
     if resp.status_code == 200:
@@ -240,4 +240,4 @@ async def get_update_bot(_, msg: Message):
         schedall.restart_chat_id = reply.chat.id
         schedall.restart_msg_id = reply.id
         save_config()
-        await update_bot(msg=reply)
+        await update_bot(msg=reply, manual=True)

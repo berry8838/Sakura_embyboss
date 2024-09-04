@@ -564,7 +564,7 @@ async def do_store_reborn(_, call):
     e = sql_get_emby(tg=call.from_user.id)
     if not e:
         return
-    if e.lv == 'c' and e.iv >= _open.exchange_cost:
+    if all([e.lv == 'c', e.iv >= _open.exchange_cost, schedall.low_activity]):
         await editMessage(call,
                           f'🏪 您已满足基础要求，此次将花费 {_open.exchange_cost}{sakura_b} 解除未活跃的封禁，确认请回复 /ok，退出 /cancel')
         m = await callListen(call, 120, buttons=re_born_ikb)
@@ -580,9 +580,10 @@ async def do_store_reborn(_, call):
             await asyncio.gather(m.delete(), do_store(_, call),
                                  sendMessage(call, '解封成功<(￣︶￣)↗[GO!]\n此消息将在20s后自焚', timer=20))
     else:
-        await sendMessage(call, '❌ 不满足要求！ヘ(￣ω￣ヘ)\n\n'
+        await sendMessage(call, '❌ 不满足以下要求！ヘ(￣ω￣ヘ)\n\n'
                                 '1. 被封禁账户\n'
                                 f'2. 至少持有 {_open.exchange_cost}{sakura_b}\n'
+                                f'3. 【定时策略】活跃检测开启'
                                 f'此消息将在20s后自焚', timer=20)
 
 

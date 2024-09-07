@@ -114,7 +114,7 @@ class AutoUpdate(BaseModel):
 
 class API(BaseModel):
     status: bool = False  # 默认关闭
-    http_url: Optional[str] = "localhost"
+    http_url: Optional[str] = "0.0.0.0"
     http_port: Optional[int] = 8838
     allow_origins: Optional[List[Union[str, int]]] = None
 

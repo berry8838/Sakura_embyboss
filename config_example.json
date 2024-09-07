@@ -82,5 +82,13 @@
     "status": true,
     "git_repo": "berry8838/Sakura_embyboss",
     "commit_sha": null
+  },
+  "api": {
+    "status": true,
+    "http_url": "0.0.0.0",
+    "http_port": 8838,
+    "allow_origins": [
+      "*"
+    ]
   }
 }

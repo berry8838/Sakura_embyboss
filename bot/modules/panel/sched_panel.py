@@ -201,6 +201,7 @@ async def update_bot(force: bool = False, msg: Message = None, manual: bool = Fa
     if resp.status_code == 200:
         latest_commit = resp.json()[0]["sha"]
         if latest_commit != auto_update.commit_sha:
+            up_description = resp.json()[0]["commit"]["message"]
             await execute("git fetch --all")
             if force:  # 默认不重置，保留本地更改
                 await execute("git reset --hard origin/master")
@@ -216,6 +217,7 @@ async def update_bot(force: bool = False, msg: Message = None, manual: bool = Fa
                 await msg.edit(text)
             LOGGER.info(text)
             auto_update.commit_sha = latest_commit
+            auto_update.up_description = up_description
             save_config()
             os.execl(executable, executable, *argv)
         else:

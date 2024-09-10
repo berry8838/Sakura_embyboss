@@ -91,8 +91,8 @@ class Proxy(BaseModel):
     scheme: Optional[str] = ""  # "socks4", "socks5" and "http" are supported
     hostname: Optional[str] = ""
     port: Optional[int] = None
-    username: str = ""
-    password: str = ""
+    username: Optional[str] = ""
+    password: Optional[str] = ""
 
 
 class MP(BaseModel):
@@ -110,6 +110,7 @@ class AutoUpdate(BaseModel):
     status: bool = True
     git_repo: Optional[str] = "berry8838/Sakura_embyboss"  # github仓库名/魔改的请填自己的仓库
     commit_sha: Optional[str] = None  # 最近一次commit
+    up_description: Optional[str] = None  # 更新描述
 
 
 class API(BaseModel):

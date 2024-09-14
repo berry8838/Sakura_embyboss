@@ -110,6 +110,15 @@ async def members(_, call):
 # 创建账户
 @bot.on_callback_query(filters.regex('create') & user_in_group_on_filter)
 async def create(_, call):
+    """
+
+    当队列已满时，用户会收到等待提示。
+    信号量和计数器正确释放。
+    代码保存至收藏夹，改版时勿忘加入排队机制
+    :param _:
+    :param call:
+    :return:
+    """
     e = sql_get_emby(tg=call.from_user.id)
     if not e:
         return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
@@ -267,12 +276,12 @@ async def change_tg(_, call):
                                               f'🎯 已向授权群发送申请，请联系并等待管理员确认......'),
                                   sendMessage(call,
                                               f'⭕#TG改绑\n'
-                                              f'**用户 [{call.from_user.id}](tg://user?id={call.from_user.id}) 正在试图改绑Emby: {e.name}，已通过安全/密码核验\n\n'
+                                              f'**用户 [{call.from_user.id}](tg://user?id={call.from_user.id}) 正在试图改绑Emby: [{e.name}](tg://user?id={e.tg})，已通过安全/密码核验\n\n'
                                               f'请管理员审核决定：**',
                                               buttons=send_changetg_ikb(call.from_user.id, e.tg),
                                               send=True))
             LOGGER.info(
-                f'【TG改绑】 {call.from_user.first_name}-{call.from_user.id} 通过验证账户，已递交对Emby: {emby_name}换绑申请')
+                f'【TG改绑】 {call.from_user.first_name}-{call.from_user.id} 通过验证账户，已递交对Emby: {emby_name}, Tg:{e.tg} 的换绑申请')
 
 
 @bot.on_callback_query(filters.regex('bindtg') & user_in_group_on_filter)

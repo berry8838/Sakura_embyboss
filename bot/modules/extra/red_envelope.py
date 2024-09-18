@@ -60,10 +60,10 @@ async def send_red_envelop(_, msg):
                                                     timer=60))
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
-            admin_status = False
-            if judge_admins(msg.from_user.id):
-                admin_status = True
-            elif not e or money < 5 or e.iv < money or msg.reply_to_message.from_user.id == msg.from_user.id:  # 不得少于余额
+            # admin_status = False
+            # if judge_admins(msg.from_user.id):
+            #     admin_status = True
+            if not e or money < 5 or e.iv < money or msg.reply_to_message.from_user.id == msg.from_user.id:  # 不得少于余额
                 await asyncio.gather(msg.delete(),
                                      msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
                                                               datetime.now() + timedelta(minutes=1)),
@@ -72,7 +72,8 @@ async def send_red_envelop(_, msg):
                                                  timer=60))
                 return
             new_iv = e.iv - money
-            if not admin_status: sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
+            # if not admin_status:
+            sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
             user_pic = None if not msg.reply_to_message.from_user.photo else await bot.download_media(
                 msg.reply_to_message.from_user.photo.big_file_id, in_memory=True)
             first_name = msg.from_user.first_name
@@ -103,10 +104,10 @@ async def send_red_envelop(_, msg):
                                                     timer=60))
         if not msg.sender_chat:
             e = sql_get_emby(tg=msg.from_user.id)
-            admin_status = False
-            if judge_admins(msg.from_user.id):
-                admin_status = True
-            elif not all([e, e.iv >= money, money >= members, members > 0, money >= 5, e.iv >= 5]):
+            # admin_status = False
+            # if judge_admins(msg.from_user.id):
+                # admin_status = True
+            if not all([e, e.iv >= money, money >= members, members > 0, money >= 5, e.iv >= 5]):
                 await asyncio.gather(msg.delete(),
                                      msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
                                                               datetime.now() + timedelta(minutes=1)),
@@ -115,7 +116,8 @@ async def send_red_envelop(_, msg):
                                                  timer=60))
                 return
             new_iv = e.iv - money
-            if not admin_status: sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
+            # if not admin_status:
+            sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
             user_pic = None if not msg.from_user.photo else await bot.download_media(msg.from_user.photo.big_file_id,
                                                                                      in_memory=True)
             first_name = msg.from_user.first_name

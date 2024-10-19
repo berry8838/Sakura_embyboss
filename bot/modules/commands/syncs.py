@@ -227,3 +227,37 @@ async def kick_not_emby(_, msg):
                 except Exception as e:
                     LOGGER.info(f"踢出 {cmember} 失败，原因: {e}")
                     pass
+@bot.on_message(filters.command('restore_from_db', prefixes) & admins_on_filter)
+async def restore_from_db(_, msg):
+    await deleteMessage(msg)
+    try:
+        open_kick = msg.command[1]
+    except:
+        return await sendMessage(msg,
+                                 '注意: 此操作会将 从数据库中恢复用户到Emby中, 请在需要恢复的群组中执行此命令, 如确定使用请输入 `/restore_from_db true`')
+    if open_kick == 'true':
+        LOGGER.info(
+            f"{msg.from_user.first_name} - {msg.from_user.id} 执行了从数据库中恢复用户到Emby中的操作")
+        embyusers = get_all_emby(Emby.embyid is not None and Emby.embyid != '')
+        # 获取当前执行命令的群组成员
+        chat_members = [member.user.id async for member in bot.get_chat_members(chat_id=msg.chat.id)]
+        for embyuser in embyusers:
+            if embyuser.tg in chat_members:
+                try:
+                    # emby api操作
+                    data = await emby.emby_create(embyuser.name, embyuser.us)
+                    if not data:
+                        await msg.reply(
+                            f'**- ❎ 已有此账户名\n- ❎ 或检查有无特殊字符\n- ❎ 或emby服务器连接不通，跳过恢复此{embyuser.name}用户！**',
+                        )
+                        LOGGER.error(
+                            f"【恢复账户】：重复账户 or 未知错误！{embyuser.name} 恢复失败！")
+                    else:
+                        tg = embyuser.tg
+                        embyid = data[0]
+                        pwd = data[1]
+                        sql_update_emby(Emby.tg == tg, embyid=embyid, pwd=pwd)
+                        LOGGER.info(f"{embyuser.tg} 已恢复")
+                except Exception as e:
+                    LOGGER.info(f"恢复 {embyuser.tg} 失败，原因: {e}")
+                    pass

@@ -110,6 +110,7 @@ owner_p = admin_p + [
     BotCommand("callall", "群发消息给每个人 [owner]"),
     BotCommand("bindall_id", "一键更新用户们Embyid [owner]"),
     BotCommand("backup_db", "手动备份数据库[owner]"),
+    BotCommand('restore_from_db', '恢复Emby账户[owner]'),
     BotCommand("config", "开启bot高级控制面板 [owner]"),
     BotCommand("embylibs_unblockall", "一键开启所有用户的媒体库 [owner]"),
     BotCommand("embylibs_blockall", "一键关闭所有用户的媒体库 [owner]")

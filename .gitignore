@@ -12,3 +12,4 @@ gen
 __pycache__
 log
 *.sql
+bot-env

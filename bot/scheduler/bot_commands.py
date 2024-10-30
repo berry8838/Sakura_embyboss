@@ -18,22 +18,46 @@ class BotCommands:
     @staticmethod
     async def set_commands(client):
         try:
-            await asyncio.gather(client.delete_bot_commands(scope=BotCommandScopeAllGroupChats()),  # 删除所有群聊指令
-                                 client.delete_bot_commands(scope=BotCommandScopeAllPrivateChats()))  # 删除所有私聊命令
-            await asyncio.gather(client.set_bot_commands(user_p, scope=BotCommandScopeAllPrivateChats()),  # 所有私聊命令
-                                 client.set_bot_commands(user_p, scope=BotCommandScopeAllGroupChats()))  # 所有群聊命令
+            try:
+                await client.delete_bot_commands(scope=BotCommandScopeAllGroupChats())  # 删除所有群聊指令
+            except:
+                pass
+            try:
+                await client.delete_bot_commands(scope=BotCommandScopeAllPrivateChats())  # 删除所有私聊命令
+            except:
+                pass
+            try:
+                await client.set_bot_commands(user_p, scope=BotCommandScopeAllPrivateChats())  # 所有私聊命令
+            except:
+                pass
+            try:
+                await client.set_bot_commands(user_p, scope=BotCommandScopeAllGroupChats())  # 所有群聊命令
+            except:
+                pass
 
             # 私聊
             for admin_id in admins:
-                await client.set_bot_commands(admin_p, scope=BotCommandScopeChat(chat_id=admin_id))
-            await client.set_bot_commands(owner_p, scope=BotCommandScopeChat(chat_id=owner))
+                try:
+                    await client.set_bot_commands(admin_p, scope=BotCommandScopeChat(chat_id=admin_id))
+                except:
+                    pass
+            try:
+                await client.set_bot_commands(owner_p, scope=BotCommandScopeChat(chat_id=owner))
+            except:
+                pass
             # 群组
             for i in group:
                 for admin_id in admins:
-                    await client.set_bot_commands(admin_p,
-                                                  scope=BotCommandScopeChatMember(chat_id=i, user_id=admin_id))
-                await client.set_bot_commands(owner_p,
-                                              scope=BotCommandScopeChatMember(chat_id=i, user_id=owner))
+                    try:
+                        await client.set_bot_commands(admin_p,
+                                                      scope=BotCommandScopeChatMember(chat_id=i, user_id=admin_id))
+                    except:
+                        pass
+                try:
+                    await client.set_bot_commands(owner_p,
+                                                  scope=BotCommandScopeChatMember(chat_id=i, user_id=owner))
+                except:
+                    pass
             LOGGER.info("————初始化 命令显示 done————")
         except ConnectionError as e:
             LOGGER.error(f'命令初始化错误：{e}')
@@ -42,9 +66,15 @@ class BotCommands:
     @staticmethod
     async def pro_commands(client, uid):
         try:
-            await client.set_bot_commands(admin_p, scope=BotCommandScopeChat(chat_id=uid))
+            try:
+                await client.set_bot_commands(admin_p, scope=BotCommandScopeChat(chat_id=uid))
+            except:
+                pass
             for i in group:
-                await client.set_bot_commands(admin_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=uid))
+                try:
+                    await client.set_bot_commands(admin_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=uid))
+                except:
+                    pass
         except Exception as e:
             LOGGER.error(f'提权命令列表设置失败：{e}')
 
@@ -52,9 +82,15 @@ class BotCommands:
     @staticmethod
     async def rev_commands(client, uid):
         try:
-            await client.set_bot_commands(user_p, scope=BotCommandScopeChat(chat_id=uid))
+            try:
+                await client.set_bot_commands(user_p, scope=BotCommandScopeChat(chat_id=uid))
+            except:
+                pass
             for i in group:
-                await client.set_bot_commands(user_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=uid))
+                try:
+                    await client.set_bot_commands(user_p, scope=BotCommandScopeChatMember(chat_id=i, user_id=uid))
+                except:
+                    pass
         except Exception as e:
             LOGGER.error(f'降权命令列表设置失败：{e}')
 

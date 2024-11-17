@@ -28,13 +28,12 @@ async def handle_favorite_webhook(request: Request):
         # 获取form-data数据
         form_data = await request.form()
         form = dict(form_data)
-        LOGGER.info(f"收到原始Webhook请求: {form}")
+        LOGGER.info(f"收到收藏请求: {form}")
         
         # 解析data字段中的JSON数据
         if "data" in form:
             try:
                 webhook_data = json.loads(form["data"])
-                LOGGER.info(f"解析后的webhook数据: {webhook_data}")
                 
                 # 提取用户和项目信息
                 user_data = webhook_data.get("User", {})

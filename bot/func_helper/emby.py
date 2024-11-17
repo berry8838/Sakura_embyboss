@@ -326,6 +326,19 @@ class Embyservice(metaclass=Singleton):
             LOGGER.error(f'获取title失败 {e}')
             return ''
 
+    async def item_id_people(self,  item_id):
+        try:
+            req = f"{self.url}/emby/Items?Ids={item_id}&Fields=People"
+            reqs = r.get(req, headers=self.headers, timeout=10)
+            if reqs.status_code != 204 and reqs.status_code != 200:
+                return False, {'error': "🤕Emby 服务器连接失败!"}
+            items = reqs.json().get("Items", [])
+            if not items or len(items) == 0:
+                return False, {'error': "🤕Emby 服务器返回数据为空!"}
+            return True, items[0].get("People", [])
+        except Exception as e:
+            LOGGER.error(f'获取演员失败 {e}')
+            return False, {'error': e}
     async def primary(self, item_id, width=200, height=300, quality=90):
         try:
             _url = f"{self.url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"

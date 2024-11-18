@@ -132,71 +132,74 @@ async def send_new_media_notification(item_data: dict):
     except Exception as e:
         LOGGER.error(f"发送新媒体通知失败: {str(e)}")
 
-@router.post("/media")
+@router.post("/webhook/medias")
 async def handle_media_webhook(request: Request):
     """处理Emby媒体库更新webhook"""
     try:
-        form_data = await request.form()
-        form = dict(form_data)
+        # 检查Content-Type
+        content_type = request.headers.get("content-type", "").lower()
         
-        if "data" in form:
-            try:
-                webhook_data = json.loads(form["data"])
-                
-                event = webhook_data.get("Event", "")
-                item_data = webhook_data.get("Item", {})
-                
-                # 处理新增媒体事件
-                if event in ["item.added", "library.new"]:  # 添加library.new事件
-                    # 检查媒体类型
-                    item_type = item_data.get("Type", "")
-                    
-                    if item_type == "Episode":
-                        # 处理剧集更新
-                        await check_and_notify_series_update(item_data)
-                        return {
-                            "status": "success",
-                            "message": "Episode update notification sent",
-                            "data": {
-                                "type": item_type,
-                                "name": item_data.get("Name"),
-                                "series": item_data.get("SeriesName"),
-                                "event": event
-                            }
-                        }
-                    elif item_type in ["Movie", "Series"]:
-                        # 处理新电影或新剧集
-                        await send_new_media_notification(item_data)
-                        return {
-                            "status": "success",
-                            "message": "New media notification sent",
-                            "data": {
-                                "type": item_type,
-                                "name": item_data.get("Name"),
-                                "event": event
-                            }
-                        }
-                
-                return {
-                    "status": "ignored",
-                    "message": "Not a new media event",
-                    "event": event
-                }
-                
-            except json.JSONDecodeError as e:
-                LOGGER.error(f"JSON解析失败: {str(e)}")
-                return {
-                    "status": "error",
-                    "message": "Invalid JSON data",
-                    "error": str(e)
-                }
+        if "application/json" in content_type:
+            # 处理JSON格式
+            webhook_data = await request.json()
         else:
-            LOGGER.warning("请求中没有data字段")
+            # 处理form-data格式
+            form_data = await request.form()
+            form = dict(form_data)
+            webhook_data = json.loads(form["data"]) if "data" in form else None
+            
+        if not webhook_data:
             return {
                 "status": "error",
-                "message": "No data field in request"
+                "message": "No data received"
             }
             
+        event = webhook_data.get("Event", "")
+        item_data = webhook_data.get("Item", {})
+        
+        # 处理新增媒体事件
+        if event in ["item.added", "library.new"]:
+            # 检查媒体类型
+            item_type = item_data.get("Type", "")
+            
+            if item_type == "Episode":
+                # 处理剧集更新
+                await check_and_notify_series_update(item_data)
+                return {
+                    "status": "success",
+                    "message": "Episode update notification sent",
+                    "data": {
+                        "type": item_type,
+                        "name": item_data.get("Name"),
+                        "series": item_data.get("SeriesName"),
+                        "event": event
+                    }
+                }
+            elif item_type in ["Movie", "Series"]:
+                # 处理新电影或新剧集
+                await send_new_media_notification(item_data)
+                return {
+                    "status": "success",
+                    "message": "New media notification sent",
+                    "data": {
+                        "type": item_type,
+                        "name": item_data.get("Name"),
+                        "event": event
+                    }
+                }
+                
+            return {
+                "status": "ignored",
+                "message": "Not a new media event",
+                "event": event
+            }
+                
+        return {
+            "status": "ignored",
+            "message": "Not a new media event",
+            "event": event
+        }
+                
     except Exception as e:
         LOGGER.error(f"处理媒体库更新失败: {str(e)}")
         return {

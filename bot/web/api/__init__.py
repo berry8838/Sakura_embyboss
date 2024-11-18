@@ -7,8 +7,8 @@ Date:2024/8/27
 """
 from fastapi import APIRouter, Request, HTTPException, Depends
 from .ban_playlist import route as ban_playlist_route
-from .favorites import router as favorites_router
-from .media import router as media_router
+from .webhook.favorites import router as favorites_router
+from .webhook.media import router as media_router
 from bot import bot_token, LOGGER
 
 emby_api_route = APIRouter(prefix="/emby", tags=["对接Emby的接口"])

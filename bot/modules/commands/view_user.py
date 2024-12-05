@@ -1,12 +1,12 @@
+from bot.func_helper.emby import emby
 from pyrogram import filters
-from bot import bot
+from bot import bot, bot_name
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.msg_utils import editMessage
-from bot.func_helper.fix_bottons import whitelist_page_ikb, normaluser_page_ikb
+from bot.func_helper.fix_bottons import whitelist_page_ikb, normaluser_page_ikb, back_manage_ikb
 from bot.sql_helper.sql_emby import get_all_emby, Emby
 from bot.func_helper.msg_utils import callAnswer
 import math
-
 
 @bot.on_callback_query(filters.regex('^whitelist$') & admins_on_filter)
 async def list_whitelist(_, call):
@@ -76,3 +76,15 @@ async def create_normaluser_text(users, page):
         text += f"TGID: `{user.tg}` | Emby用户名: [{user.name}](tg://user?id={user.tg})\n"
     text += f"第 {page} 页,共 {math.ceil(len(users) / 20)} 页, 共 {len(users)} 人"
     return text
+
+@bot.on_callback_query(filters.regex('^user_devices$') & admins_on_filter)
+async def user_devices(_, call):
+    await callAnswer(call, '🔍 用户设备列表')
+    success, result = await emby.get_emby_user_devices()
+    if not success:
+        return await callAnswer(call, '🤕 Emby 服务器连接失败!')
+    text = '**💠 用户设备列表**\n\n'
+    for r in result:
+        name, count = r
+        text += f'用户名: [{name}](https://t.me/{bot_name}?start=uinfo-{name}) | 设备数量: {count}\n'
+    await editMessage(call, text, buttons=back_manage_ikb)

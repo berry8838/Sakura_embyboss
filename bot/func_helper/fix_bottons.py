@@ -57,6 +57,7 @@ def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboard
 
 back_start_ikb = ikb([[('💫 回到首页', 'back_start')]])
 back_members_ikb = ikb([[('💨 返回', 'members')]])
+back_manage_ikb = ikb([[('💨 返回', 'manage')]])
 re_create_ikb = ikb([[('🍥 重新输入', 'create'), ('💫 用户主页', 'members')]])
 re_changetg_ikb = ikb([[('✨ 换绑TG', 'changetg'), ('💫 用户主页', 'members')]])
 re_bindtg_ikb = ikb([[('✨ 绑定TG', 'bindtg'), ('💫 用户主页', 'members')]])
@@ -121,7 +122,7 @@ async def cr_page_server():
 
 gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 注册/续期码', 'cr_link')],
                       [('💊 查询注册', 'ch_link'), ('🏬 兑换设置', 'set_renew')],
-                      [('👥 用户列表', 'normaluser'), ('👑 白名单列表', 'whitelist')],
+                      [('👥 用户列表', 'normaluser'), ('👑 白名单列表', 'whitelist'), ('💠 设备列表', 'user_devices')],
                       [('🌏 定时', 'schedall'), ('🕹️ 主界面', 'back_start'), ('其他 🪟', 'back_config')]])
 
 
@@ -357,7 +358,7 @@ async def cr_kk_ikb(uid, first):
     return text, keyboard
 
 
-def cv_user_ip(user_id):
+def cv_user_playback_reporting(user_id):
     return ikb([[('🌏 播放查询', f'userip-{user_id}'), ('❌ 关闭', 'closeit')]])
 
 

@@ -410,7 +410,25 @@ class Embyservice(metaclass=Singleton):
     # 找出 指定用户播放过的不同ip，设备
     async def get_emby_userip(self, user_id):
         sql = f"SELECT DISTINCT RemoteAddress,DeviceName FROM PlaybackActivity " \
-              f"WHERE RemoteAddress NOT IN ('127.0.0.1', '172.17.0.1') and UserId = '{user_id}'"
+              f"WHERE RemoteAddress and UserId = '{user_id}'"
+        data = {
+            "CustomQueryString": sql,
+            "ReplaceUserId": True
+        }
+        _url = f'{self.url}/emby/user_usage_stats/submit_custom_query?api_key={emby_api}'
+        resp = r.post(_url, json=data)
+        if resp.status_code != 204 and resp.status_code != 200:
+            return False, {'error': "🤕Emby 服务器连接失败!"}
+        ret = resp.json()
+        if len(ret["colums"]) == 0:
+            return False, ret["message"]
+        return True, ret["results"]
+    async def get_emby_user_devices(self, limit = 10):
+        """
+        获取用户的设备数量，并根据设备数排序，返回前10条
+        :return:
+        """
+        sql = f"SELECT UserId, COUNT(DISTINCT DeviceName) AS count FROM PlaybackActivity GROUP BY UserId ORDER BY count DESC LIMIT {limit}"
         data = {
             "CustomQueryString": sql,
             "ReplaceUserId": True

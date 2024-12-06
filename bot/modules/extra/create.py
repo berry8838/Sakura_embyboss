@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime
 
 from pyrogram import filters
+from pyrogram.types import CallbackQuery
 
 from bot import bot, prefixes, LOGGER, emby_line, owner, bot_photo, schedall
 from bot.func_helper.emby import emby
@@ -127,14 +128,30 @@ async def uun_info(_, msg, name = None):
 
 
 @bot.on_callback_query(filters.regex('userip') & admins_on_filter)
-async def user_cha_ip(_, call):
-    user_id = call.data.split('-')[1]
-    success, result = await emby.get_emby_userip(user_id)
+@bot.on_message(filters.command('userip', prefixes) & admins_on_filter)
+async def user_cha_ip(_, msg, name = None):
+    try:
+        if isinstance(msg, CallbackQuery):
+            user_id = msg.data.split('-')[1]
+            msg = msg.message
+        else:
+            if name:
+                user_id = name
+            else:
+                user_id = msg.command[1]
+    except IndexError:
+        return await sendMessage(msg, "⭕ 用法：/userip + emby用户名")
+        
+    e = sql_get_emby(user_id)
+    if not e:
+        return await sendMessage(msg, f"数据库中未查询到 {user_id}，请手动确认")
+        
+    success, result = await emby.get_emby_userip(e.embyid)
     if not success or len(result) == 0:
-        return await callAnswer(call, '没有更多信息咧')
+        return await sendMessage(msg, '没有更多信息咧')
     else:
         text = '**🌏 以下为该用户播放过的设备&ip**\n\n'
         for r in result:
-            ip, device = r
-            text += f'[{device}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true)\n'
-        await bot.send_message(call.from_user.id, text)
+            ip, device, client = r
+            text += f' {device} | {client} | [{ip}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true) \n'
+        await sendMessage(msg, text)

@@ -419,7 +419,7 @@ class Embyservice(metaclass=Singleton):
 
     # 找出 指定用户播放过的不同ip，设备
     async def get_emby_userip(self, user_id):
-        sql = f"SELECT DISTINCT RemoteAddress,DeviceName FROM PlaybackActivity " \
+        sql = f"SELECT DISTINCT RemoteAddress,DeviceName, ClientName FROM PlaybackActivity " \
               f"WHERE RemoteAddress and UserId = '{user_id}'"
         data = {
             "CustomQueryString": sql,

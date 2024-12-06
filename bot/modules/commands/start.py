@@ -14,7 +14,7 @@ from bot.sql_helper.sql_emby import sql_add_emby
 from bot.func_helper.filters import user_in_group_filter, user_in_group_on_filter
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, callAnswer, editMessage
 from bot.func_helper.fix_bottons import group_f, judge_start_ikb, judge_group_ikb, cr_kk_ikb
-from bot.modules.extra import uun_info
+from bot.modules.extra import user_cha_ip
 from bot import bot, prefixes, group, bot_photo, ranks, sakura_b
 
 
@@ -55,9 +55,9 @@ async def p_start(_, msg):
                                                 buttons=judge_group_ikb))
     try:
         u = msg.command[1].split('-')[0]
-        if u == 'uinfo':
+        if u == 'userip':
             name = msg.command[1].split('-')[1]
-            return await uun_info(_, msg, name)
+            return await user_cha_ip(_, msg, name)
         if u in f'{ranks.logo}' or u == str(msg.from_user.id):
             await asyncio.gather(msg.delete(), rgs_code(_, msg, register_code=msg.command[1]))
         else:

@@ -80,11 +80,11 @@ async def create_normaluser_text(users, page):
 @bot.on_callback_query(filters.regex('^user_devices$') & admins_on_filter)
 async def user_devices(_, call):
     await callAnswer(call, '🔍 用户设备列表')
-    success, result = await emby.get_emby_user_devices()
+    success, result = await emby.get_emby_user_devices(20)
     if not success:
         return await callAnswer(call, '🤕 Emby 服务器连接失败!')
     text = '**💠 用户设备列表**\n\n'
     for r in result:
         name, count = r
-        text += f'用户名: [{name}](https://t.me/{bot_name}?start=uinfo-{name}) | 设备数量: {count}\n'
+        text += f'用户名: [{name}](https://t.me/{bot_name}?start=userip-{name}) | 设备数量: {count}\n'
     await editMessage(call, text, buttons=back_manage_ikb)

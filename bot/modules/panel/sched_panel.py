@@ -25,7 +25,6 @@ auto_backup_db = DbBackupUtils.auto_backup_db
 user_plays_rank = Uplaysinfo.user_plays_rank
 check_low_activity = Uplaysinfo.check_low_activity
 
-
 async def user_day_plays(): await user_plays_rank(1)
 
 
@@ -41,7 +40,8 @@ action_dict = {
     "weekplayrank": user_week_plays,
     "check_ex": check_expired,
     "low_activity": check_low_activity,
-    "backup_db": auto_backup_db
+    "backup_db": auto_backup_db,
+    "sync_favorites": sync_favorites
 }
 
 # 字典，对应的操作函数的参数和id
@@ -52,7 +52,8 @@ args_dict = {
     "weekplayrank": {'day_of_week': "sun", 'hour': 23, 'minute': 0, 'id': 'user_week_plays'},
     "check_ex": {'hour': 1, 'minute': 30, 'id': 'check_expired'},
     "low_activity": {'hour': 8, 'minute': 30, 'id': 'check_low_activity'},
-    "backup_db": {'hour': 2, 'minute': 30, 'id': 'backup_db'}
+    "backup_db": {'hour': 2, 'minute': 30, 'id': 'backup_db'},
+    "sync_favorites": {'hour': 0, 'minute': 0, 'id': 'sync_favorites'}
 }
 
 
@@ -132,7 +133,12 @@ async def shou_dong_uplayrank(_, msg):
         await msg.reply(
             f"🔔 请输入 `/uranks 天数`，此运行手动不会影响{sakura_b}的结算（仅定时运行时结算），放心使用。\n"
             f"定时结算状态: {_open.uplays}")
-
+@bot.on_message(filters.command('sync_favorites', prefixes) & admins_on_filter)
+async def sync_favorites_admin(_, msg):
+    await deleteMessage(msg)
+    await msg.reply("⭕ 正在同步用户收藏记录...")
+    await sync_favorites()
+    await msg.reply("✅ 用户收藏记录同步完成")
 
 @bot.on_message(filters.command('restart', prefixes) & admins_on_filter)
 async def restart_bot(_, msg):

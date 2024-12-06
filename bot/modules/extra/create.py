@@ -136,6 +136,5 @@ async def user_cha_ip(_, call):
         text = '**🌏 以下为该用户播放过的设备&ip**\n\n'
         for r in result:
             ip, device = r
-            device = device[:-7] + "░" * 7
             text += f'[{device}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true)\n'
         await bot.send_message(call.from_user.id, text)

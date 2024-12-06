@@ -69,3 +69,14 @@ def sql_add_favorites(embyid: str, embyname: str, item_id: str, item_name: str, 
     except Exception as e:
         LOGGER.error(f"操作收藏记录失败: {str(e)}")
         return False
+    
+def sql_clear_favorites(embyid: str) -> bool:
+    """清除Emby用户的收藏记录"""
+    try:
+        with Session() as session:
+            session.query(EmbyFavorites).filter(EmbyFavorites.embyid == embyid).delete()
+            session.commit()
+        return True
+    except Exception as e:
+        LOGGER.error(f"清除收藏记录失败: {str(e)}")
+        return False

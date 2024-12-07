@@ -152,10 +152,14 @@ async def user_cha_ip(_, msg, name = None):
     else:
         text = '**🌏 以下为该用户播放过的设备&ip**\n\n'
         for r in result:
-            ip, device, client = r
-            text += f' {device} | {client} | [{ip}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true) \n'
-        # 防止触发 MESSAGE_TOO_LONG 异常，text可以是4096，caption为1024，取小会使界面好看些
-        n = 1000
-        chunks = [text[i:i + n] for i in range(0, len(text), n)]
-        for c in chunks:
-            await sendMessage(msg, c)
+            device, client, ip = r
+            text += f'{device} | {client} | [{ip}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true) \n'
+        # 以\n分割文本，每20条发送一个消息
+        messages = text.split('\n')
+        # 每20条消息组成一组
+        for i in range(0, len(messages), 20):
+            chunk = messages[i:i+20]
+            chunk_text = '\n'.join(chunk)
+            if not chunk_text.strip():
+                continue
+            await sendMessage(msg, chunk_text)

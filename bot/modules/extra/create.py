@@ -154,4 +154,8 @@ async def user_cha_ip(_, msg, name = None):
         for r in result:
             ip, device, client = r
             text += f' {device} | {client} | [{ip}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true) \n'
-        await sendMessage(msg, text)
+        # 防止触发 MESSAGE_TOO_LONG 异常，text可以是4096，caption为1024，取小会使界面好看些
+        n = 1000
+        chunks = [text[i:i + n] for i in range(0, len(text), n)]
+        for c in chunks:
+            await sendMessage(msg, c)

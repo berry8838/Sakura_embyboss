@@ -475,10 +475,10 @@ class Embyservice(metaclass=Singleton):
                 return txt
             else:
                 LOGGER.error(f"Items/Counts 未获取到返回数据")
-                return None
+                return '🤕Emby 服务器返回数据为空!'
         except Exception as e:
             LOGGER.error(f"连接Items/Counts出错：" + str(e))
-            return e
+            return '🤕Emby 服务器连接失败!'
 
     async def get_movies(self, title: str, start: int = 0, limit: int = 5):
         """

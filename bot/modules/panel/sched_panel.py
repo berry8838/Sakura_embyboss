@@ -40,8 +40,7 @@ action_dict = {
     "weekplayrank": user_week_plays,
     "check_ex": check_expired,
     "low_activity": check_low_activity,
-    "backup_db": auto_backup_db,
-    "sync_favorites": sync_favorites
+    "backup_db": auto_backup_db
 }
 
 # 字典，对应的操作函数的参数和id
@@ -52,8 +51,7 @@ args_dict = {
     "weekplayrank": {'day_of_week': "sun", 'hour': 23, 'minute': 0, 'id': 'user_week_plays'},
     "check_ex": {'hour': 1, 'minute': 30, 'id': 'check_expired'},
     "low_activity": {'hour': 8, 'minute': 30, 'id': 'check_low_activity'},
-    "backup_db": {'hour': 2, 'minute': 30, 'id': 'backup_db'},
-    "sync_favorites": {'hour': 0, 'minute': 0, 'id': 'sync_favorites'}
+    "backup_db": {'hour': 2, 'minute': 30, 'id': 'backup_db'}
 }
 
 

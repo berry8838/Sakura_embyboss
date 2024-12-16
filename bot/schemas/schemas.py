@@ -76,7 +76,6 @@ class Schedall(BaseModel):
     restart_chat_id: int = 0
     restart_msg_id: int = 0
     backup_db: bool = True
-    sync_favorites: bool = True
 
     def __init__(self, **data):
         super().__init__(**data)

@@ -433,24 +433,61 @@ class Embyservice(metaclass=Singleton):
         if len(ret["colums"]) == 0:
             return False, ret["message"]
         return True, ret["results"]
-    async def get_emby_user_devices(self, limit = 10):
+    async def get_emby_user_devices(self, offset=0, limit=20):
         """
-        获取用户的设备数量，并根据设备数排序，返回前10条
-        :return:
+        获取用户的设备数量，并根据设备数排序，支持分页
+        
+        Args:
+            offset: 跳过的记录数
+            limit: 每页记录数，实际获取limit+1条用于判断是否有下一页
+            
+        Returns:
+            (success, result, has_prev, has_next)
+            success: bool 是否成功
+            result: list 用户设备数据
+            has_prev: bool 是否有上一页
+            has_next: bool 是否有下一页
         """
-        sql = f"SELECT UserId, COUNT(DISTINCT DeviceName) AS count FROM PlaybackActivity GROUP BY UserId ORDER BY count DESC LIMIT {limit}"
+        sql = f"""
+            SELECT UserId, 
+                   COUNT(DISTINCT DeviceName) AS device_count,
+                   COUNT(DISTINCT RemoteAddress) AS ip_count 
+            FROM PlaybackActivity 
+            GROUP BY UserId 
+            ORDER BY device_count DESC 
+            LIMIT {limit + 1} 
+            OFFSET {offset}
+        """
+        
         data = {
             "CustomQueryString": sql,
             "ReplaceUserId": True
         }
-        _url = f'{self.url}/emby/user_usage_stats/submit_custom_query?api_key={emby_api}'
-        resp = r.post(_url, json=data)
-        if resp.status_code != 204 and resp.status_code != 200:
-            return False, {'error': "🤕Emby 服务器连接失败!"}
-        ret = resp.json()
-        if len(ret["colums"]) == 0:
-            return False, ret["message"]
-        return True, ret["results"]
+        
+        try:
+            _url = f'{self.url}/emby/user_usage_stats/submit_custom_query?api_key={emby_api}'
+            resp = r.post(_url, json=data)
+            if resp.status_code != 204 and resp.status_code != 200:
+                return False, [], False, False
+            
+            ret = resp.json()
+            if len(ret["colums"]) == 0:
+                return False, [], False, False
+            
+            results = ret["results"]
+            
+            # 判断是否有下一页
+            has_next = len(results) > limit
+            if has_next:
+                results = results[:-1]  # 去掉多查的一条
+            
+            # 判断是否有上一页
+            has_prev = offset > 0
+            
+            return True, results, has_prev, has_next
+        except Exception as e:
+            LOGGER.error(f"获取用户设备列表失败: {str(e)}")
+            return False, [], False, False
 
     @staticmethod
     def get_medias_count():

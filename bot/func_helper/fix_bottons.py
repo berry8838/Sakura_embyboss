@@ -260,7 +260,21 @@ async def normaluser_page_ikb(total_page: int, current_page: int) -> InlineKeybo
             followUp.append(next)
     keyboard.row(*followUp)
     return keyboard
-
+def devices_page_ikb( has_prev: bool, has_next: bool, page: int) -> InlineKeyboardMarkup:
+    # 构建分页按钮
+    buttons = []
+    if has_prev or has_next:
+        nav_buttons = []
+        if has_prev:
+            nav_buttons.append(('⬅️', f'devices:{page-1}'))
+        nav_buttons.append((f'第 {page} 页', 'none'))
+        if has_next:
+            nav_buttons.append(('➡️', f'devices:{page+1}'))
+        buttons.append(nav_buttons)
+    # 添加返回按钮
+    buttons.append([('🔙 返回', 'manage')])
+    keyboard = ikb(buttons)
+    return keyboard
 def cr_renew_ikb():
     checkin = '✔️' if _open.checkin else '❌'
     exchange = '✔️' if _open.exchange else '❌'

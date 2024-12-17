@@ -3,7 +3,7 @@ from pyrogram import filters
 from bot import bot, bot_name
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.msg_utils import editMessage
-from bot.func_helper.fix_bottons import whitelist_page_ikb, normaluser_page_ikb, back_manage_ikb
+from bot.func_helper.fix_bottons import whitelist_page_ikb, normaluser_page_ikb,devices_page_ikb 
 from bot.sql_helper.sql_emby import get_all_emby, Emby
 from bot.func_helper.msg_utils import callAnswer
 import math
@@ -77,14 +77,27 @@ async def create_normaluser_text(users, page):
     text += f"第 {page} 页,共 {math.ceil(len(users) / 20)} 页, 共 {len(users)} 人"
     return text
 
-@bot.on_callback_query(filters.regex('^user_devices$') & admins_on_filter)
+@bot.on_callback_query(filters.regex('^user_devices$|^devices:') & admins_on_filter)
 async def user_devices(_, call):
-    await callAnswer(call, '🔍 用户设备列表')
-    success, result = await emby.get_emby_user_devices(20)
+    # 获取页码
+    if call.data == 'user_devices':
+        page = 1
+        await callAnswer(call, '🔍 用户设备列表')
+    else:
+        page = int(call.data.split(':')[1])
+        await callAnswer(call, f'🔍 打开第{page}页')
+
+    page_size = 20
+    # 计算offset
+    offset = (page - 1) * page_size
+    
+    # 获取用户设备信息
+    success, result, has_prev, has_next = await emby.get_emby_user_devices(offset=offset, limit=page_size)
     if not success:
         return await callAnswer(call, '🤕 Emby 服务器连接失败!')
+
     text = '**💠 用户设备列表**\n\n'
-    for r in result:
-        name, count = r
-        text += f'用户名: [{name}](https://t.me/{bot_name}?start=userip-{name}) | 设备数量: {count}\n'
-    await editMessage(call, text, buttons=back_manage_ikb)
+    for name, device_count, ip_count in result:
+        text += f'用户名: [{name}](https://t.me/{bot_name}?start=userip-{name}) | 设备数量: {device_count} | IP数量: {ip_count}\n'
+    text += f"\n第 {page} 页"
+    await editMessage(call, text, buttons=devices_page_ikb(has_prev, has_next, page))

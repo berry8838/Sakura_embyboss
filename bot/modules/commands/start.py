@@ -57,7 +57,10 @@ async def p_start(_, msg):
         u = msg.command[1].split('-')[0]
         if u == 'userip':
             name = msg.command[1].split('-')[1]
-            return await user_cha_ip(_, msg, name)
+            if judge_admins(msg.from_user.id):
+                return await user_cha_ip(_, msg, name)
+            else:
+                return await sendMessage(msg, '💢 你不是管理员，无法使用此命令')
         if u in f'{ranks.logo}' or u == str(msg.from_user.id):
             await asyncio.gather(msg.delete(), rgs_code(_, msg, register_code=msg.command[1]))
         else:

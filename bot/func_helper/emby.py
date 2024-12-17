@@ -450,7 +450,7 @@ class Embyservice(metaclass=Singleton):
         """
         sql = f"""
             SELECT UserId, 
-                   COUNT(DISTINCT DeviceName) AS device_count,
+                   COUNT(DISTINCT DeviceName || '' || ClientName) AS device_count,
                    COUNT(DISTINCT RemoteAddress) AS ip_count 
             FROM PlaybackActivity 
             GROUP BY UserId 

@@ -140,7 +140,7 @@ async def user_cha_ip(_, msg, name = None):
             else:
                 user_id = msg.command[1]
     except IndexError:
-        return await sendMessage(msg, "⭕ 用法：/userip + emby用户名")
+        return await sendMessage(msg, "⭕ 用法：/userip + emby用户名或tgid")
         
     e = sql_get_emby(user_id)
     if not e:
@@ -148,12 +148,27 @@ async def user_cha_ip(_, msg, name = None):
         
     success, result = await emby.get_emby_userip(e.embyid)
     if not success or len(result) == 0:
-        return await sendMessage(msg, '没有更多信息咧')
+        return await sendMessage(msg, 'TA好像没播放信息吖')
     else:
-        text = '**🌏 以下为该用户播放过的设备&ip**\n\n'
+        text = '**🌏 以下为该用户播放过的设备&ip 共{}个设备，{}个ip：**\n\n'
+        device_count = 0
+        ip_count = 0
+        device_list = []
+        ip_list = []
+        details = ""
         for r in result:
             device, client, ip = r
-            text += f'{device} | {client} | [{ip}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true) \n'
+            # 统计ip
+            if ip not in ip_list:
+                ip_count += 1
+                ip_list.append(ip)
+            # 统计设备并拼接详情
+            if device + client not in device_list:
+                device_count += 1
+                device_list.append(device + client)
+                details += f'{device} | {client} | [{ip}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true) \n'
+        text = '**🌏 以下为该用户播放过的设备&ip 共{}个设备，{}个ip：**\n\n'.format(device_count, ip_count) + details
+
         # 以\n分割文本，每20条发送一个消息
         messages = text.split('\n')
         # 每20条消息组成一组

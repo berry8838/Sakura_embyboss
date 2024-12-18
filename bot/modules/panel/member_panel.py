@@ -697,7 +697,6 @@ async def my_favorite(_, call):
     favorites = await emby.get_favorite_items(get_emby.embyid, start_index=start_index, limit=limit)
     text = "**我的收藏**\n\n"
     for item in favorites.get("Items", []):
-        print(item)
         item_id = item.get("Id")
         if not item_id:
             continue

@@ -25,7 +25,6 @@ from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_code import sql_count_c_code
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby
 from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2
-from bot.sql_helper.sql_favorites import sql_get_favorites
 
 # 创号函数
 async def create_user(_, call, us, stats):
@@ -693,18 +692,31 @@ async def my_favorite(_, call):
     get_emby = sql_get_emby(tg=call.from_user.id)
     if get_emby is None:
         return await callAnswer(call, '您还没有Emby账户', True)
-    favorites = sql_get_favorites(get_emby.embyid)
-    total_favorites = len(favorites)
-    total_pages = math.ceil(total_favorites / 20)
+    limit = 20
+    start_index = (page - 1) * limit
+    favorites = await emby.get_favorite_items(get_emby.embyid, start_index=start_index, limit=limit)
+    text = "**我的收藏**\n\n"
+    for item in favorites.get("Items", []):
+        print(item)
+        item_id = item.get("Id")
+        if not item_id:
+            continue
+        # 获取项目名称
+        item_name = item.get("Name", "")
+        item_type = item.get('Type', '未知')
+        if item_type == 'Movie':
+            item_type = '电影'
+        elif item_type == 'Series':
+            item_type = '剧集'
+        elif item_type == 'Episode':
+            item_type = '剧集'
+        elif item_type == 'Person':
+            item_type = '人物'
+        elif item_type == 'Photo':
+            item_type = '图片'
+        text += f"{item_type}：{item_name}\n"
 
-    text = await create_favorites_text(favorites, page)
+    total_favorites = favorites.get("TotalRecordCount", 0)
+    total_pages = math.ceil(total_favorites / limit)
     keyboard = await favorites_page_ikb(total_pages, page)
     await editMessage(call, text, buttons=keyboard)
-async def create_favorites_text(favorites, page):
-    start = (page - 1) * 20
-    end = start + 20
-    text = "**我的收藏**\n\n"
-    for favorite in favorites[start:end]:
-        text += f"{favorite.item_name}\n"
-    text += f"第 {page} 页,共 {math.ceil(len(favorites) / 20)} 页, 共 {len(favorites)} 个"
-    return text

@@ -312,10 +312,14 @@ class Embyservice(metaclass=Singleton):
         except Exception as e:
             LOGGER.error(f'添加收藏失败 {e}')
             return False
-    async def get_favorite_items(self, user_id):
+    async def get_favorite_items(self, user_id, start_index=None, limit=None):
         try:
-            _url = f"{self.url}/emby/Users/{user_id}/Items?Filters=IsFavorite&Recursive=true"
-            resp = r.get(_url, headers=self.headers)
+            url = f"{self.url}/emby/Users/{user_id}/Items?Filters=IsFavorite&Recursive=true"
+            if start_index is not None:
+                url += f"&StartIndex={start_index}"
+            if limit is not None:
+                url += f"&Limit={limit}"
+            resp = r.get(url, headers=self.headers)
             if resp.status_code != 204 and resp.status_code != 200:
                 return False
             return resp.json()

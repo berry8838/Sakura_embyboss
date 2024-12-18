@@ -98,6 +98,6 @@ async def user_devices(_, call):
 
     text = '**💠 用户设备列表**\n\n'
     for name, device_count, ip_count in result:
-        text += f'用户名: [{name}](https://t.me/{bot_name}?start=userip-{name}) | 设备数量: {device_count} | IP数量: {ip_count}\n'
+        text += f'用户名: [{name}](https://t.me/{bot_name}?start=userip-{name}) | 设备: {device_count} | IP: {ip_count}\n'
     text += f"\n第 {page} 页"
     await editMessage(call, text, buttons=devices_page_ikb(has_prev, has_next, page))

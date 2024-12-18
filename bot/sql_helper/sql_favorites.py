@@ -80,3 +80,12 @@ def sql_clear_favorites(embyid: str) -> bool:
     except Exception as e:
         LOGGER.error(f"清除收藏记录失败: {str(e)}")
         return False
+def sql_get_favorites(embyid: str, page: int = 1, page_size: int = 20) -> list:
+    """获取Emby用户的收藏记录"""
+    try:
+        with Session() as session:
+            return session.query(EmbyFavorites).filter(EmbyFavorites.embyid == embyid).offset((page - 1) * page_size).limit(page_size).all()
+    except Exception as e:
+        LOGGER.error(f"获取收藏记录失败: {str(e)}")
+        return []
+    

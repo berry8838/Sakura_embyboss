@@ -18,14 +18,14 @@ from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.utils import members_info, tem_adduser, cr_link_one, judge_admins, tem_deluser, pwd_create
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
-    store_ikb, re_bindtg_ikb, close_it_ikb, store_query_page, re_born_ikb, send_changetg_ikb
+    store_ikb, re_bindtg_ikb, close_it_ikb, store_query_page, re_born_ikb, send_changetg_ikb, favorites_page_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage, ask_return, deleteMessage
 from bot.modules.commands import p_start
 from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_code import sql_count_c_code
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby
 from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2
-
+from bot.sql_helper.sql_favorites import sql_get_favorites
 
 # 创号函数
 async def create_user(_, call, us, stats):
@@ -681,3 +681,30 @@ async def do_store_query(_, call):
         number = 1
     await callAnswer(call, '📜 正在翻页')
     await editMessage(call, text=a[number - 1], buttons=await store_query_page(b, number))
+@bot.on_callback_query(filters.regex('^my_favorites|^page_my_favorites:'))
+async def my_favorite(_, call):
+    # 获取页码
+    if call.data == 'my_favorites':
+        page = 1
+        await callAnswer(call, '🔍 我的收藏')
+    else:
+        page = int(call.data.split(':')[1])
+        await callAnswer(call, f'🔍 打开第{page}页')
+    get_emby = sql_get_emby(tg=call.from_user.id)
+    if get_emby is None:
+        return await callAnswer(call, '您还没有Emby账户', True)
+    favorites = sql_get_favorites(get_emby.embyid)
+    total_favorites = len(favorites)
+    total_pages = math.ceil(total_favorites / 20)
+
+    text = await create_favorites_text(favorites, page)
+    keyboard = await favorites_page_ikb(total_pages, page)
+    await editMessage(call, text, buttons=keyboard)
+async def create_favorites_text(favorites, page):
+    start = (page - 1) * 20
+    end = start + 20
+    text = "**我的收藏**\n\n"
+    for favorite in favorites[start:end]:
+        text += f"{favorite.item_name}\n"
+    text += f"第 {page} 页,共 {math.ceil(len(favorites) / 20)} 页, 共 {len(favorites)} 个"
+    return text

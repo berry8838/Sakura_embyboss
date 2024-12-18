@@ -47,6 +47,7 @@ def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboard
     if account:
         return ikb([[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
+                    [('💖 我的收藏', 'my_favorites')],
                     [('♻️ 主界面', 'back_start')]])
     else:
         return judge_start_ikb(is_admin, account)
@@ -274,6 +275,19 @@ def devices_page_ikb( has_prev: bool, has_next: bool, page: int) -> InlineKeyboa
     # 添加返回按钮
     buttons.append([('🔙 返回', 'manage')])
     keyboard = ikb(buttons)
+    return keyboard
+async def favorites_page_ikb(total_page: int, current_page: int) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboard()
+    keyboard.paginate(total_page, current_page, 'page_my_favorites:{number}')
+    next = InlineButton('⏭️ 后退+5', f'page_my_favorites:{current_page + 5}')
+    previous = InlineButton('⏮️ 前进-5', f'page_my_favorites:{current_page - 5}')
+    followUp = [InlineButton('🔙 Back', 'members')]
+    if total_page > 5:
+        if current_page - 5 >= 1:
+            followUp.append(previous)
+        if current_page + 5 < total_page:
+            followUp.append(next)
+    keyboard.row(*followUp)
     return keyboard
 def cr_renew_ikb():
     checkin = '✔️' if _open.checkin else '❌'

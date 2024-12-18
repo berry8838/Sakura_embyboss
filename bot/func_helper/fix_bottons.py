@@ -47,7 +47,7 @@ def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboard
     if account:
         return ikb([[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
-                    [('💖 我的收藏', 'my_favorites')],
+                    [('💖 我的收藏', 'my_favorites'),('💠 我的设备', 'my_devices')],
                     [('♻️ 主界面', 'back_start')]])
     else:
         return judge_start_ikb(is_admin, account)

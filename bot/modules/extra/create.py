@@ -150,7 +150,6 @@ async def user_cha_ip(_, msg, name = None):
     if not success or len(result) == 0:
         return await sendMessage(msg, 'TA好像没播放信息吖')
     else:
-        text = '**🌏 以下为该用户播放过的设备&ip 共{}个设备，{}个ip：**\n\n'
         device_count = 0
         ip_count = 0
         device_list = []

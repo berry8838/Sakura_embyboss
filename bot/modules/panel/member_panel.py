@@ -719,3 +719,41 @@ async def my_favorite(_, call):
     total_pages = math.ceil(total_favorites / limit)
     keyboard = await favorites_page_ikb(total_pages, page)
     await editMessage(call, text, buttons=keyboard)
+@bot.on_callback_query(filters.regex('my_devices'))
+async def my_devices(_, call):
+    await callAnswer(call, '🔍 正在获取您的设备信息')
+    get_emby = sql_get_emby(tg=call.from_user.id)
+    if get_emby is None:
+        return await callAnswer(call, '您还没有Emby账户', True)
+    success, result = await emby.get_emby_userip(get_emby.embyid)
+    if not success or len(result) == 0:
+        return await callAnswer(call, '您好像没播放信息吖')
+    else:
+        device_count = 0
+        ip_count = 0
+        device_list = []
+        ip_list = []
+        details = ""
+        for r in result:
+            device, client, ip = r
+            # 统计ip
+            if ip not in ip_list:
+                ip_count += 1
+                ip_list.append(ip)
+                details += f'{ip_count}: `{ip}`\n'
+            # 统计设备并拼接详情
+            if device + client not in device_list:
+                device_count += 1
+                device_list.append(device + client)
+                details += f'{device_count}: {device} | {client}  \n'
+        text = '**🌏 以下为您播放过的设备&ip 共{}个设备，{}个ip：**\n\n'.format(device_count, ip_count) + details
+
+        # 以\n分割文本，每20条发送一个消息
+        messages = text.split('\n')
+        # 每20条消息组成一组
+        for i in range(0, len(messages), 20):
+            chunk = messages[i:i+20]
+            chunk_text = '\n'.join(chunk)
+            if not chunk_text.strip():
+                continue
+            await sendMessage(call.message, chunk_text, buttons=close_it_ikb)

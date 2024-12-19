@@ -710,7 +710,7 @@ async def my_favorite(_, call):
         elif item_type == 'Episode':
             item_type = '剧集'
         elif item_type == 'Person':
-            item_type = '人物'
+            item_type = '演员'
         elif item_type == 'Photo':
             item_type = '图片'
         text += f"{item_type}：{item_name}\n"

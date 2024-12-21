@@ -1,16 +1,27 @@
 #（此处请注意，arm架构请注意修改镜像名称以免拉错无法启动）
-version: '3'
+version: "3"
+networks:
+  EmbyBoss:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: 172.18.0.0/16
+        - subnet: fd38:e471:d881::/64
 services:
-  mysql:
-    image: mysql:5.7 # 镜像名称，ARM架构镜像名为 mysql:5.7-arm
-    container_name: mysql # 容器名
-    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci # 设置utf8字符集
+  MariaDB:
+    image: mariadb # 镜像名称，ARM架构镜像名为 mysql:5.7-arm
+    container_name: MariaDB # 容器名
+    command: mariadbd --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci # 设置utf8字符集
     restart: always
-    network_mode: host
+    networks:
+      EmbyBoss:
+        ipv4_address: 172.18.0.2
+        ipv6_address: fd38:e471:d881::2
     environment:
       MYSQL_ROOT_PASSWORD: 123456 # root管理员用户密码
       MYSQL_USER: susu   # 创建需要连接的用户
-      MYSQL_DATABASE: embyboss # 数据库名字
+      MYSQL_DATABASE: EmbyBoss # 数据库名字
       MYSQL_PASSWORD: 1234  # 设置普通用户的密码
       MYSQL_ROOT_HOST: "%" # 所有ip可连接
     ports:
@@ -32,11 +43,14 @@ services:
 #    depends_on:
 #      - mysql
 
-  sakura_embyboss:
+  Sakura_EmbyBoss:
     image: jingwei520/sakura_embyboss:latest # ARM与AMD镜像名称相同，会自动加载适合的镜像
-    container_name: embyboss
+    container_name: EmbyBoss
     restart: always
-    network_mode: host
+    networks:
+      EmbyBoss:
+        ipv4_address: 172.18.0.3
+        ipv6_address: fd38:e471:d881::3
     volumes:
       - ./config.json:/app/config.json
       - ./log:/app/log

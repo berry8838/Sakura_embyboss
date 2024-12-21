@@ -121,9 +121,9 @@ if len(extra_emby_libs) > 0:
                 BotCommand("extraembylibs_unblockall", "一键开启所有用户的额外媒体库 [owner]")]
 
 with contextlib.suppress(ImportError):
-    import uvloop
-
-    uvloop.install()
+    # import uvloop
+    #
+    # uvloop.install()
 from pyrogram import enums
 from pyromod import Client
 

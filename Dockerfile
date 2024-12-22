@@ -174,7 +174,7 @@ WORKDIR ${WORKDIR}
 COPY --from=requirements_builder /usr/local/lib/python3.13t/site-packages /usr/local/lib/python3.13t/site-packages
 COPY --from=requirements_builder /usr/local/bin /usr/local/bin
 
-RUN git clone https://github.com/BsBlog/Sakura_embyboss . && \
+RUN git clone https://github.com/berry8838/Sakura_embyboss . && \
     rm -rf ./image
 
 ENTRYPOINT [ "python3","-X","gil=0" ]

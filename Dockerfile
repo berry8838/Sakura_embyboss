@@ -126,7 +126,7 @@ RUN set -eux; \
 
 FROM python_builder AS requirements_builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     gcc \
     libssl-dev \
     libmariadb-dev \
@@ -146,8 +146,6 @@ RUN pip install --upgrade pip setuptools
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN ls -l -a /usr/local/lib
-
 RUN find . -type f -name "*.pyc" -delete
 
 
@@ -159,7 +157,7 @@ ENV PYTHON_GIL=0 \
     PYTHONUNBUFFERED=1 \
     WORKDIR=/app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     ca-certificates \
     libmariadb3 \
     tzdata \
@@ -168,6 +166,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone \
     && apt-get clean \
+    && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${WORKDIR}

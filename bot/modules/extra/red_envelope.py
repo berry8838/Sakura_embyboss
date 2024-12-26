@@ -205,8 +205,8 @@ async def pick_red_bag(_, call):
         if call.from_user.id in bag["flag"]: return await callAnswer(call, 'ʕ•̫͡•ʔ 你已经领取过红包了。不许贪吃', True)
 
         if bag["rest"] > 1:
-            k = bag["m"] - 1 * (bag["members"] - bag["n"] - 1)
-            t = math.ceil(random.uniform(1, k / 2))  # 对每个红包的上限进行动态限制
+            k = 2 * bag["m"] / (bag["members"] - bag["n"])
+            t = math.ceil(random.uniform(1, k ))  # 对每个红包的上限进行动态限制
 
         elif bag["rest"] == 1:
             t = bag["m"]

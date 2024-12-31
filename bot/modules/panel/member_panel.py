@@ -692,7 +692,7 @@ async def my_favorite(_, call):
     get_emby = sql_get_emby(tg=call.from_user.id)
     if get_emby is None:
         return await callAnswer(call, '您还没有Emby账户', True)
-    limit = 20
+    limit = 10
     start_index = (page - 1) * limit
     favorites = await emby.get_favorite_items(get_emby.embyid, start_index=start_index, limit=limit)
     text = "**我的收藏**\n\n"

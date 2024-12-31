@@ -314,7 +314,7 @@ class Embyservice(metaclass=Singleton):
             return False
     async def get_favorite_items(self, user_id, start_index=None, limit=None):
         try:
-            url = f"{self.url}/emby/Users/{user_id}/Items?Filters=IsFavorite&Recursive=true"
+            url = f"{self.url}/emby/Users/{user_id}/Items?Filters=IsFavorite&Recursive=true&IncludeItemTypes=Movie,Series,Episode,Person"
             if start_index is not None:
                 url += f"&StartIndex={start_index}"
             if limit is not None:

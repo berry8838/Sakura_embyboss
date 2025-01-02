@@ -132,7 +132,7 @@ async def send_red_envelop(_, msg):
         try:
             flag = msg.command[3]
         except:
-            flag = None
+            flag = 1 if money == members else None
         reply, delete = await asyncio.gather(msg.reply('正在准备红包，稍等'), msg.delete())
         ikb = create_reds(money=money, members=members, flag=flag, first_name=first_name)
         cover = RanksDraw.hb_test_draw(money, members, user_pic, first_name)
@@ -206,7 +206,7 @@ async def pick_red_bag(_, call):
 
         if bag["rest"] > 1:
             k = 2 * bag["m"] / (bag["members"] - bag["n"])
-            t = math.ceil(random.uniform(1, k ))  # 对每个红包的上限进行动态限制
+            t = int(random.uniform(1,k))  # 对每个红包的上限进行动态限制
 
         elif bag["rest"] == 1:
             t = bag["m"]

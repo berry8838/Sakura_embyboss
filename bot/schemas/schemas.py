@@ -124,7 +124,9 @@ class API(BaseModel):
         if self.allow_origins is None:
             self.allow_origins = ["*"]
             # 如果未设置，默认为 ["*"]，为了安全可以设置成本机ip&反代的域名，列表可包含多个
-
+class RedEnvelope(BaseModel):
+    status: bool = True  # 是否开启红包
+    allow_private: bool = True # 是否允许专属红包
 
 class Config(BaseModel):
     bot_name: str
@@ -169,6 +171,7 @@ class Config(BaseModel):
     fuxx_pitao: bool = True
     moviepilot: MP = Field(default_factory=MP)
     auto_update: AutoUpdate = Field(default_factory=AutoUpdate)
+    red_envelope: RedEnvelope = Field(default_factory=RedEnvelope)
     api: API = Field(default_factory=API)
 
     def __init__(self, **data):

@@ -13,7 +13,7 @@ from pyrogram import filters
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 from sqlalchemy import func
 
-from bot import bot, prefixes, sakura_b, bot_photo
+from bot import bot, prefixes, sakura_b, bot_photo, red_envelope
 from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.fix_bottons import users_iv_button
 from bot.func_helper.msg_utils import sendPhoto, sendMessage, callAnswer, editMessage
@@ -46,8 +46,12 @@ async def create_reds(money, members, first_name, flag=None, private=None, priva
 
 @bot.on_message(filters.command('red', prefixes) & user_in_group_on_filter & filters.group)
 async def send_red_envelop(_, msg):
+    if not red_envelope.status:
+        return await asyncio.gather(msg.delete(), sendMessage(msg, '🚫 红包功能已关闭！'))
+    if not red_envelope.allow_private and msg.reply_to_message:
+        return await asyncio.gather(msg.delete(), sendMessage(msg, '🚫 专属红包功能已关闭！'))
     # 回复某人 - 专享红包
-    if msg.reply_to_message:
+    if msg.reply_to_message and red_envelope.allow_private:
         try:
             money = int(msg.command[1])
             try:

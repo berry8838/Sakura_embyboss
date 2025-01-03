@@ -184,7 +184,7 @@ async def clear_deleted_account(_, msg):
     send = await msg.reply("🔍 正在运行清理程序...")
     a = b = 0
     text = '️⛔ 清理结束\n'
-    async for d in bot.get_members(group[0]):  # 以后别写group了,绑定一下聊天群更优雅
+    async for d in bot.get_chat_members(group[0]):  # 以后别写group了,绑定一下聊天群更优雅
         b += 1
         try:
             if d.user.is_deleted:  # and d.is_member or any(keyword in l.user.first_name for keyword in keywords) 关键词检索，没模板不加了

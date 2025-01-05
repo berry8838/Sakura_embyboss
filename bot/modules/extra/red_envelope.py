@@ -4,6 +4,7 @@ red_envelope -
 Author:susu
 Date:2023/01/02
 """
+
 import cn2an
 import asyncio
 import random
@@ -25,242 +26,380 @@ from bot.schemas import Yulv
 
 # 小项目，说实话不想写数据库里面。放内存里了，从字典里面每次拿分
 
-red_bags = {}
+red_envelopes = {}
 
 
-async def create_reds(money, members, first_name, flag=None, private=None, private_text=None):
+class RedEnvelope:
+    def __init__(self, money, members, sender_id, sender_name, envelope_type="random"):
+        self.id = None
+        self.money = money  # 总金额
+        self.rest_money = money  # 剩余金额
+        self.members = members  # 总份数
+        self.rest_members = members  # 剩余份数
+        self.sender_id = sender_id  # 发送者ID
+        self.sender_name = sender_name  # 发送者名称
+        self.type = envelope_type  # random/equal/private
+        self.receivers = {}  # {user_id: {"amount": xx, "name": "xx"}}
+        self.target_user = None  # 专享红包接收者ID
+        self.message = None  # 专享红包消息
+
+
+async def create_reds(
+    money, members, first_name, sender_id, flag=None, private=None, private_text=None
+):
     red_id = await pwd_create(5)
+    envelope = RedEnvelope(
+        money=money, members=members, sender_id=sender_id, sender_name=first_name
+    )
+
     if flag:
-        red_bags.update(
-            {red_id: dict(money=money, members=members, flag=1, sender=first_name, num=money // members, rest=members,
-                          m=money, used={})})
+        envelope.type = "equal"
     elif private:
-        red_bags.update(
-            {red_id: dict(money=money, members=private, flag=2, sender=first_name, m=money, rest=True,
-                          private_text=private_text)})
-    else:
-        red_bags.update(
-            {red_id: dict(money=money, members=members, flag={}, sender=first_name, rest=members, m=money, n=0)})
-    return InlineKeyboardMarkup([[InlineKeyboardButton(text='👆🏻 好運連連', callback_data=f'red_bag-{red_id}')]])
+        envelope.type = "private"
+        envelope.target_user = private
+        envelope.message = private_text
+
+    envelope.id = red_id
+    red_envelopes[red_id] = envelope
+
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    text="👆🏻 好運連連", callback_data=f"red_envelope-{red_id}"
+                )
+            ]
+        ]
+    )
 
 
-@bot.on_message(filters.command('red', prefixes) & user_in_group_on_filter & filters.group)
-async def send_red_envelop(_, msg):
+@bot.on_message(
+    filters.command("red", prefixes) & user_in_group_on_filter & filters.group
+)
+async def send_red_envelope(_, msg):
     if not red_envelope.status:
-        return await asyncio.gather(msg.delete(), sendMessage(msg, '🚫 红包功能已关闭！'))
+        return await asyncio.gather(
+            msg.delete(), sendMessage(msg, "🚫 红包功能已关闭！")
+        )
+
     if not red_envelope.allow_private and msg.reply_to_message:
-        return await asyncio.gather(msg.delete(), sendMessage(msg, '🚫 专属红包功能已关闭！'))
-    # 回复某人 - 专享红包
+        return await asyncio.gather(
+            msg.delete(), sendMessage(msg, "🚫 专属红包功能已关闭！")
+        )
+
+    # 处理专享红包
     if msg.reply_to_message and red_envelope.allow_private:
         try:
             money = int(msg.command[1])
+            private_text = (
+                msg.command[2]
+                if len(msg.command) > 2
+                else random.choice(Yulv.load_yulv().red_bag)
+            )
+        except (IndexError, ValueError):
+            return await asyncio.gather(
+                msg.delete(),
+                sendMessage(
+                    msg,
+                    "**🧧 专享红包：\n\n请回复某人 [数额][空格][个性化留言（可选）]**",
+                    timer=60,
+                ),
+            )
+
+        # 验证发送者资格
+        if msg.reply_to_message and red_envelope.allow_private:
             try:
-                private_text = msg.command[2]
-            except:
-                private_text = random.choice(Yulv.load_yulv().red_bag)
-        except (IndexError, KeyError, ValueError):
-            return await asyncio.gather(msg.delete(),
-                                        sendMessage(msg, f'**🧧 专享红包：\n\n请回复某 [数额][空格][个性化留言（可选）]',
-                                                    timer=60))
-        if not msg.sender_chat:
-            e = sql_get_emby(tg=msg.from_user.id)
-            # admin_status = False
-            # if judge_admins(msg.from_user.id):
-            #     admin_status = True
-            if not e or money < 5 or e.iv < money or msg.reply_to_message.from_user.id == msg.from_user.id:  # 不得少于余额
-                await asyncio.gather(msg.delete(),
-                                     msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
-                                                              datetime.now() + timedelta(minutes=1)),
-                                     sendMessage(msg, f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) '
-                                                      f'违反规则，禁言一分钟。\nⅰ 所持有{sakura_b}不小于5\nⅱ 发出{sakura_b}不小于5\nⅲ 不许发自己',
-                                                 timer=60))
+                money = int(msg.command[1])
+                private_text = (
+                    msg.command[2]
+                    if len(msg.command) > 2
+                    else random.choice(Yulv.load_yulv().red_bag)
+                )
+            except (IndexError, ValueError):
+                return await asyncio.gather(
+                    msg.delete(),
+                    sendMessage(
+                        msg,
+                        "**🧧 专享红包：\n\n请回复某人 [数额][空格][个性化留言（可选）]**",
+                        timer=60,
+                    ),
+                )
+
+            verified, first_name, error = await verify_red_envelope_sender(
+                msg, money, is_private=True
+            )
+            if not verified:
                 return
-            new_iv = e.iv - money
-            # if not admin_status:
-            sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
-            user_pic = None if not msg.reply_to_message.from_user.photo else await bot.download_media(
-                msg.reply_to_message.from_user.photo.big_file_id, in_memory=True)
-            first_name = msg.from_user.first_name
-        elif msg.sender_chat.id == msg.chat.id:
-            user_pic = None if not msg.reply_to_message.from_user.photo else await bot.download_media(
-                message=msg.reply_to_message.from_user.photo.big_file_id, in_memory=True)
-            first_name = msg.chat.title
-        reply, delete = await asyncio.gather(msg.reply('正在准备专享红包，稍等'), msg.delete())
-        ikb = create_reds(money=money, first_name=first_name, members=1, private=msg.reply_to_message.from_user.id,
-                          private_text=private_text)
-        cover = RanksDraw.hb_test_draw(money, 1, user_pic, f'{msg.reply_to_message.from_user.first_name} 专享')
-        ikb, cover = await asyncio.gather(ikb, cover)
-        await asyncio.gather(sendPhoto(msg, photo=cover, buttons=ikb),
-                             reply.edit(f'🔥 [{msg.reply_to_message.from_user.first_name}]'
-                                        f'(tg://user?id={msg.reply_to_message.from_user.id})\n'
-                                        f' 您收到一个来自 [{first_name}](tg://user?id={msg.from_user.id}) 的专属红包'))
-    # 非回复某人 - 普通红包
-    elif not msg.reply_to_message:
-        try:
-            money = int(msg.command[1])
-            members = int(msg.command[2])
-        except (IndexError, KeyError, ValueError):
-            return await asyncio.gather(msg.delete(),
-                                        sendMessage(msg,
-                                                    f'**🧧 发红包：\n\n'
-                                                    f'/red [总{sakura_b}数] [份数] [mode]**\n\n'
-                                                    f'[mode]留空为 拼手气, 任意值为 均分\n专享红包请回复 + {sakura_b}',
-                                                    timer=60))
-        if not msg.sender_chat:
-            e = sql_get_emby(tg=msg.from_user.id)
-            # admin_status = False
-            # if judge_admins(msg.from_user.id):
-                # admin_status = True
-            if not all([e, e.iv >= money, money >= members, members > 0, money >= 5, e.iv >= 5]):
-                await asyncio.gather(msg.delete(),
-                                     msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
-                                                              datetime.now() + timedelta(minutes=1)),
-                                     sendMessage(msg, f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) '
-                                                      f'违反规则，禁言一分钟。\nⅰ 所持有{sakura_b}不小于5\nⅱ 发出{sakura_b}不小于5\nⅲ 未私聊过bot',
-                                                 timer=60))
-                return
-            new_iv = e.iv - money
-            # if not admin_status:
-            sql_update_emby(Emby.tg == msg.from_user.id, iv=new_iv)
-            user_pic = None if not msg.from_user.photo else await bot.download_media(msg.from_user.photo.big_file_id,
-                                                                                     in_memory=True)
-            first_name = msg.from_user.first_name
 
-        elif msg.sender_chat.id == msg.chat.id:
-            user_pic = None if not msg.chat.photo else await bot.download_media(message=msg.chat.photo.big_file_id,
-                                                                                in_memory=True)
-            first_name = msg.chat.title
-        else:
-            return
+        # 创建并发送红包
+        reply, _ = await asyncio.gather(
+            msg.reply("正在准备专享红包，稍等"), msg.delete()
+        )
 
-        try:
-            flag = msg.command[3]
-        except:
-            flag = 1 if money == members else None
-        reply, delete = await asyncio.gather(msg.reply('正在准备红包，稍等'), msg.delete())
-        ikb = create_reds(money=money, members=members, flag=flag, first_name=first_name)
-        cover = RanksDraw.hb_test_draw(money, members, user_pic, first_name)
-        ikb, cover = await asyncio.gather(ikb, cover)
-        await asyncio.gather(sendPhoto(msg, photo=cover, buttons=ikb), reply.delete())
+        ikb = await create_reds(
+            money=money,
+            members=1,
+            first_name=first_name,
+            sender_id=msg.from_user.id if not msg.sender_chat else msg.sender_chat.id,
+            private=msg.reply_to_message.from_user.id,
+            private_text=private_text,
+        )
 
+        user_pic = await get_user_photo(msg.reply_to_message.from_user)
+        cover = await RanksDraw.hb_test_draw(
+            money, 1, user_pic, f"{msg.reply_to_message.from_user.first_name} 专享"
+        )
 
-@bot.on_callback_query(filters.regex("red_bag") & user_in_group_on_filter)
-async def pick_red_bag(_, call):
-    red_id = call.data.split('-')[1]
+        await asyncio.gather(
+            sendPhoto(msg, photo=cover, buttons=ikb),
+            reply.edit(
+                f"🔥 [{msg.reply_to_message.from_user.first_name}]"
+                f"(tg://user?id={msg.reply_to_message.from_user.id})\n"
+                f"您收到一个来自 [{first_name}](tg://user?id={msg.from_user.id}) 的专属红包"
+            ),
+        )
+        return
+
+    # 处理普通红包
     try:
-        bag = red_bags[red_id]
-    except (IndexError, KeyError):
-        return await callAnswer(call, '/(ㄒoㄒ)/~~ \n\n来晚了，红包已经被抢光啦。', True)
+        money = int(msg.command[1])
+        members = int(msg.command[2])
+    except (IndexError, ValueError):
+        return await asyncio.gather(
+            msg.delete(),
+            sendMessage(
+                msg,
+                f"**🧧 发红包：\n\n/red [总{sakura_b}数] [份数] [mode]**\n\n"
+                f"[mode]留空为拼手气, 任意值为均分\n专享红包请回复 + {sakura_b}",
+                timer=60,
+            ),
+        )
 
+    # 验证发送者资格和红包参数
+    verified, first_name, error = await verify_red_envelope_sender(msg, money)
+    if not verified:
+        return
+
+    # 创建并发送红包
+    flag = msg.command[3] if len(msg.command) > 3 else (1 if money == members else None)
+    reply, _ = await asyncio.gather(msg.reply("正在准备红包，稍等"), msg.delete())
+
+    ikb = await create_reds(
+        money=money,
+        members=members,
+        first_name=first_name,
+        sender_id=msg.from_user.id if not msg.sender_chat else msg.sender_chat.id,
+        flag=flag,
+    )
+
+    user_pic = await get_user_photo(msg.from_user if not msg.sender_chat else msg.chat)
+    cover = await RanksDraw.hb_test_draw(money, members, user_pic, first_name)
+
+    await asyncio.gather(sendPhoto(msg, photo=cover, buttons=ikb), reply.delete())
+
+
+@bot.on_callback_query(filters.regex("red_envelope") & user_in_group_on_filter)
+async def grab_red_envelope(_, call):
+    red_id = call.data.split("-")[1]
+    try:
+        envelope = red_envelopes[red_id]
+    except (IndexError, KeyError):
+        return await callAnswer(
+            call, "/(ㄒoㄒ)/~~ \n\n来晚了，红包已经被抢光啦。", True
+        )
+
+    # 验证用户资格
     e = sql_get_emby(tg=call.from_user.id)
     if not e:
-        return await callAnswer(call, '你还未私聊bot! 数据库没有你.', True)
+        return await callAnswer(call, "你还未私聊bot! 数据库没有你.", True)
 
-    # 均分模式 只需要计算 rest 剩余数，每次取出的 num 就行了
-    if bag["flag"] == 1:
-        if call.from_user.id in bag["used"]: return await callAnswer(call, 'ʕ•̫͡•ʔ 你已经领取过红包了。不许贪吃',
-                                                                     True)
-        if bag["rest"] >= 1:
-            new = e.iv + bag["num"]
-        else:
-            return await callAnswer(call, '/(ㄒoㄒ)/~~ \n\n来晚了，红包已经被抢光啦。', True)
+    # 检查是否已领取
+    if call.from_user.id in envelope.receivers:
+        return await callAnswer(call, "ʕ•̫͡•ʔ 你已经领取过红包了。不许贪吃", True)
 
-        sql_update_emby(Emby.tg == call.from_user.id, iv=new)
-        bag["used"][call.from_user.id] = bag["num"]
-        bag["rest"] = bag["rest"] - 1
-        if bag["rest"] == 0:
-            red_bags.pop(red_id, '不存在的红包')
-            text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
-                   f'🕶️{bag["sender"]} **的红包已经被抢光啦~\n\n'
-            members = await get_users()
-            keys = [key for item in bag["used"] for key in item]
-            for key in keys:
-                text += f'**🎖️ [{members.get(key, "None")}](tg://user?id={key}) 获得了 {bag["num"]} {sakura_b}**\n'
-            n = 2048
-            chunks = [text[i:i + n] for i in range(0, len(text), n)]
-            for c in chunks:
-                if n == 0:
-                    await call.message.reply(c)
-                    continue
-                await editMessage(call, text)
-                n = 0
+    # 检查红包是否已抢完
+    if envelope.rest_members <= 0:
+        return await callAnswer(
+            call, "/(ㄒoㄒ)/~~ \n\n来晚了，红包已经被抢光啦。", True
+        )
 
-        await callAnswer(call, f'🧧恭喜，你领取到了\n{bag["sender"]} の {bag["num"]}{sakura_b}', True)
+    amount = 0
+    # 处理均分红包
+    if envelope.type == "equal":
+        amount = envelope.money // envelope.members
 
-    # 专享红包的抽取
-    elif bag["flag"] == 2:
-        if bag["rest"] and call.from_user.id == bag["members"]:
-            bag["rest"] = False
-            red_bags.pop(red_id, '不存在的红包')
-            new_iv = e.iv + bag["money"]
-            sql_update_emby(Emby.tg == call.from_user.id, iv=new_iv)
-            await callAnswer(call,
-                             f'🧧恭喜，你领取到了\n{bag["sender"]} の {bag["m"]}{sakura_b}\n\n{bag["private_text"]}',
-                             True)
-            members = await get_users()
-            text = f'🧧 {sakura_b}红包\n\n**{bag["private_text"]}\n\n' \
-                   f'🕶️{bag["sender"]} **的专属红包已被 [{members.get(call.from_user.id, "None")}](tg://user?id={bag["members"]}) 领取'
-            await editMessage(call, text)
-            return
-        else:
-            return await callAnswer(call, 'ʕ•̫͡•ʔ 这是你的专属红包吗？', True)
-    # 拼手气红包
+    # 处理专享红包
+    elif envelope.type == "private":
+        if call.from_user.id != envelope.target_user:
+            return await callAnswer(call, "ʕ•̫͡•ʔ 这是你的专属红包吗？", True)
+        amount = envelope.rest_money
+        await callAnswer(
+            call,
+            f"🧧恭喜，你领取到了\n{envelope.sender_name} の {amount}{sakura_b}\n\n{envelope.message}",
+            True,
+        )
+
+    # 处理拼手气红包
     else:
-        if call.from_user.id in bag["flag"]: return await callAnswer(call, 'ʕ•̫͡•ʔ 你已经领取过红包了。不许贪吃', True)
-
-        if bag["rest"] > 1:
-            k = 2 * bag["m"] / (bag["members"] - bag["n"])
-            t = int(random.uniform(1,k))  # 对每个红包的上限进行动态限制
-
-        elif bag["rest"] == 1:
-            t = bag["m"]
+        if envelope.rest_members > 1:
+            k = 2 * envelope.rest_money / envelope.rest_members
+            amount = int(random.uniform(1, k))
         else:
-            return await callAnswer(call, '/(ㄒoㄒ)/~~ \n\n来晚了，红包已经被抢光啦。', True)
+            amount = envelope.rest_money
 
-        bag["flag"][call.from_user.id] = t
-        bag.update({"m": bag["m"] - t, "rest": bag["rest"] - 1, "n": bag["n"] + 1})
-        # print(bag)
+    # 更新用户余额
+    new_balance = e.iv + amount
+    sql_update_emby(Emby.tg == call.from_user.id, iv=new_balance)
 
-        await callAnswer(call, f'🧧恭喜，你领取到了\n{bag["sender"]} の {t}{sakura_b}', True)
-        new = e.iv + t
-        sql_update_emby(Emby.tg == call.from_user.id, iv=new)
+    # 更新红包信息
+    envelope.receivers[call.from_user.id] = {
+        "amount": amount,
+        "name": call.from_user.first_name or "Anonymous",
+    }
+    envelope.rest_money -= amount
+    envelope.rest_members -= 1
 
-        if bag["rest"] == 0:
-            red_bags.pop(red_id, '不存在的红包')
-            # 找出运气王
-            # 对用户按照积分从高到低进行排序，并取出前六名
-            top_five_scores = sorted(bag["flag"].items(), key=lambda x: x[1], reverse=True)  # [:6]
-            text = f'🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n' \
-                   f'🕶️{bag["sender"]} **的红包已经被抢光啦~ \n\n'
-            members = await get_users()
-            for i, score in enumerate(top_five_scores):
-                if i == 0:
-                    text += f'**🏆 手气最佳 [{members.get(score[0], "None")}](tg://user?id={score[0]}) **获得了 {score[1]} {sakura_b}'
-                else:
-                    text += f'\n**[{members.get(score[0], "None")}](tg://user?id={score[0]})** 获得了 {score[1]} {sakura_b}'
-            n = 2048
-            chunks = [text[i:i + n] for i in range(0, len(text), n)]
-            for c in chunks:
-                if n == 0:
-                    await call.message.reply(c)
-                    continue
-                await editMessage(call, text)
-                n = 0
+    await callAnswer(
+        call, f"🧧恭喜，你领取到了\n{envelope.sender_name} の {amount}{sakura_b}", True
+    )
+
+    # 处理红包抢完后的展示
+    if envelope.rest_members == 0:
+        red_envelopes.pop(red_id)
+        text = await generate_final_message(envelope)
+        n = 2048
+        chunks = [text[i : i + n] for i in range(0, len(text), n)]
+        for i, chunk in enumerate(chunks):
+            if i == 0:
+                await editMessage(call, chunk)
+            else:
+                await call.message.reply(chunk)
 
 
-@bot.on_message(filters.command("srank", prefixes) & user_in_group_on_filter & filters.group)
+async def verify_red_envelope_sender(msg, money, is_private=False):
+    """验证发红包者资格
+
+    Args:
+        msg: 消息对象
+        money: 红包金额
+        is_private: 是否为专享红包
+
+    Returns:
+        tuple: (验证是否通过, 发送者名称, 错误信息)
+    """
+    if not msg.sender_chat:
+        e = sql_get_emby(tg=msg.from_user.id)
+        conditions = [
+            e,  # 用户存在
+            e.iv >= money if e else False,  # 余额充足
+            money >= 5,  # 红包金额不小于5
+            e.iv >= 5 if e else False,  # 持有金额不小于5
+        ]
+
+        if is_private:
+            # 专享红包额外检查 不能发给自己
+            conditions.append(msg.reply_to_message.from_user.id != msg.from_user.id)
+        else:
+            # 普通红包额外检查
+            conditions.append(money >= int(msg.command[2]))  # 金额不小于份数
+
+        if not all(conditions):
+            error_msg = (
+                f"[{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) "
+                f"违反规则，禁言一分钟。\nⅰ 所持有{sakura_b}不得小于5\nⅱ 发出{sakura_b}不得小于5"
+            )
+            if is_private:
+                error_msg += "\nⅲ 不许发自己"
+            else:
+                error_msg += "\nⅲ 未私聊过bot"
+
+            await asyncio.gather(
+                msg.delete(),
+                msg.chat.restrict_member(
+                    msg.from_user.id,
+                    ChatPermissions(),
+                    datetime.now() + timedelta(minutes=1),
+                ),
+                sendMessage(msg, error_msg, timer=60),
+            )
+            return False, None, error_msg
+
+        # 验证通过,扣除余额
+        sql_update_emby(Emby.tg == msg.from_user.id, iv=e.iv - money)
+        return True, msg.from_user.first_name, None
+
+    else:
+        # 频道/群组发送
+        first_name = msg.chat.title if msg.sender_chat.id == msg.chat.id else None
+        if not first_name:
+            return False, None, "无法获取发送者名称"
+        return True, first_name, None
+
+
+async def get_user_photo(user):
+    """获取用户头像"""
+    if not user.photo:
+        return None
+    return await bot.download_media(
+        user.photo.big_file_id,
+        in_memory=True,
+    )
+
+
+async def generate_final_message(envelope):
+    """生成红包领取完毕的消息"""
+    if envelope.type == "private":
+        receiver = envelope.receivers[envelope.target_user]
+        return (
+            f"🧧 {sakura_b}红包\n\n**{envelope.message}\n\n"
+            f"🕶️{envelope.sender_name} **的专属红包已被 "
+            f"[{receiver['name']}](tg://user?id={envelope.target_user}) 领取"
+        )
+
+    # 排序领取记录
+    sorted_receivers = sorted(
+        envelope.receivers.items(), key=lambda x: x[1]["amount"], reverse=True
+    )
+
+    text = (
+        f"🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n"
+        f"😎 {envelope.sender_name} **的红包已经被抢光啦~\n\n"
+    )
+
+    for i, (user_id, details) in enumerate(sorted_receivers):
+        if i == 0:
+            text += f"**🏆 手气最佳 [{details['name']}](tg://user?id={user_id}) **获得了 {details['amount']} {sakura_b}"
+        else:
+            text += f"\n**[{details['name']}](tg://user?id={user_id})** 获得了 {details['amount']} {sakura_b}"
+
+    return text
+
+
+@bot.on_message(
+    filters.command("srank", prefixes) & user_in_group_on_filter & filters.group
+)
 async def s_rank(_, msg):
     await msg.delete()
+    sender = None
     if not msg.sender_chat:
         e = sql_get_emby(tg=msg.from_user.id)
         if judge_admins(msg.from_user.id):
             sender = msg.from_user.id
         elif not e or e.iv < 5:
-            await asyncio.gather(msg.delete(),
-                                 msg.chat.restrict_member(msg.from_user.id, ChatPermissions(),
-                                                          datetime.now() + timedelta(minutes=1)),
-                                 sendMessage(msg, f'[{msg.from_user.first_name}]({msg.from_user.id}) '
-                                                  f'未私聊过bot或不足支付手续费5{sakura_b}，禁言一分钟。', timer=60))
+            await asyncio.gather(
+                msg.delete(),
+                msg.chat.restrict_member(
+                    msg.from_user.id,
+                    ChatPermissions(),
+                    datetime.now() + timedelta(minutes=1),
+                ),
+                sendMessage(
+                    msg,
+                    f"[{msg.from_user.first_name}]({msg.from_user.id}) "
+                    f"未私聊过bot或不足支付手续费5{sakura_b}，禁言一分钟。",
+                    timer=60,
+                ),
+            )
             return
         else:
             sql_update_emby(Emby.tg == msg.from_user.id, iv=e.iv - 5)
@@ -269,10 +408,17 @@ async def s_rank(_, msg):
         sender = msg.chat.id
     reply = await msg.reply(f"已扣除手续5{sakura_b}, 请稍等......加载中")
     text, i = await users_iv_rank()
-    t = '❌ 数据库操作失败' if not text else text[0]
-    button = await users_iv_button(i, 1, sender)
-    await asyncio.gather(reply.delete(),
-                         sendPhoto(msg, photo=bot_photo, caption=f'**▎🏆 {sakura_b}风云录**\n\n{t}', buttons=button))
+    t = "❌ 数据库操作失败" if not text else text[0]
+    button = await users_iv_button(i, 1, sender or msg.chat.id)
+    await asyncio.gather(
+        reply.delete(),
+        sendPhoto(
+            msg,
+            photo=bot_photo,
+            caption=f"**▎🏆 {sakura_b}风云录**\n\n{t}",
+            buttons=button,
+        ),
+    )
 
 
 @cache.memoize(ttl=120)
@@ -292,13 +438,20 @@ async def users_iv_rank():
         while b <= i:
             d = (b - 1) * 10
             # 查询iv排序，分页查询
-            result = session.query(Emby).filter(Emby.iv > 0).order_by(Emby.iv.desc()).limit(10).offset(d).all()
+            result = (
+                session.query(Emby)
+                .filter(Emby.iv > 0)
+                .order_by(Emby.iv.desc())
+                .limit(10)
+                .offset(d)
+                .all()
+            )
             e = 1 if d == 0 else d + 1
-            text = ''
+            text = ""
             for q in result:
                 name = str(members_dict.get(q.tg, q.tg))[:12]
                 medal = m[e - 1] if e < 4 else m[3]
-                text += f'{medal}**第{cn2an.an2cn(e)}名** | [{name}](google.com?q={q.tg}) の **{q.iv} {sakura_b}**\n'
+                text += f"{medal}**第{cn2an.an2cn(e)}名** | [{name}](google.com?q={q.tg}) の **{q.iv} {sakura_b}**\n"
                 e += 1
             a.append(text)
             b += 1
@@ -307,16 +460,18 @@ async def users_iv_rank():
 
 
 # 检索翻页
-@bot.on_callback_query(filters.regex('users_iv') & user_in_group_on_filter)
+@bot.on_callback_query(filters.regex("users_iv") & user_in_group_on_filter)
 async def users_iv_pikb(_, call):
     # print(call.data)
-    j, tg = map(int, call.data.split(":")[1].split('_'))
+    j, tg = map(int, call.data.split(":")[1].split("_"))
     if call.from_user.id != tg:
         if not judge_admins(call.from_user.id):
-            return await callAnswer(call, '❌ 这不是你召唤出的榜单，请使用自己的 /srank', True)
+            return await callAnswer(
+                call, "❌ 这不是你召唤出的榜单，请使用自己的 /srank", True
+            )
 
-    await callAnswer(call, f'将为您翻到第 {j} 页')
+    await callAnswer(call, f"将为您翻到第 {j} 页")
     a, b = await users_iv_rank()
     button = await users_iv_button(b, j, tg)
     text = a[j - 1]
-    await editMessage(call, f'**▎🏆 {sakura_b}风云录**\n\n{text}', buttons=button)
+    await editMessage(call, f"**▎🏆 {sakura_b}风云录**\n\n{text}", buttons=button)

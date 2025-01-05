@@ -252,14 +252,14 @@ async def cr_link(_, call):
 @bot.on_callback_query(filters.regex('ch_link') & admins_on_filter)
 async def ch_link(_, call):
     await callAnswer(call, '🔍 查看管理们注册码...时长会久一点', True)
-    a, b, c, d, f = sql_count_code()
-    text = f'**🎫 常用code数据：\n• 已使用 - {a}\n• 月码 - {b}   | • 季码 - {c} \n• 半年码 - {d}  | • 年码 - {f}**'
+    a, b, c, d, f, e = sql_count_code()
+    text = f'**🎫 常用code数据：\n• 已使用 - {a}  | • 未使用 - {e}\n• 月码 - {b}   | • 季码 - {c} \n• 半年码 - {d}  | • 年码 - {f}**'
     ls = []
     admins.append(owner)
     for i in admins:
         name = await bot.get_chat(i)
-        a, b, c, d, f = sql_count_code(i)
-        text += f'\n👮🏻`{name.first_name}`: 月/{b}，季/{c}，半年/{d}，年/{f}，已用/{a}'
+        a, b, c, d, f ,e= sql_count_code(i)
+        text += f'\n👮🏻`{name.first_name}`: 月/{b}，季/{c}，半年/{d}，年/{f}，已用/{a}，未用/{e}'
         f = [f"🔎 {name.first_name}", f"ch_admin_link-{i}"]
         ls.append(f)
     admins.remove(owner)
@@ -275,15 +275,15 @@ async def ch_admin_link(client, call):
     if call.from_user.id != owner and call.from_user.id != i:
         return await callAnswer(call, '🚫 你怎么偷窥别人呀! 你又不是owner', True)
     await callAnswer(call, f'💫 管理员 {i} 的注册码')
-    a, b, c, d, f = sql_count_code(i)
+    a, b, c, d, f, e= sql_count_code(i)
     name = await client.get_chat(i)
-    text = f'**🎫 [{name.first_name}-{i}](tg://user?id={i})：\n• 已使用 - {a}\n• 月码 - {b}   | • 季码 - {c} \n• 半年码 - {d}  | • 年码 - {f}**'
+    text = f'**🎫 [{name.first_name}-{i}](tg://user?id={i})：\n• 已使用 - {a}  | • 未使用 - {e}\n• 月码 - {b}    | • 季码 - {c} \n• 半年码 - {d}  | • 年码 - {f}**'
     await editMessage(call, text, date_ikb(i))
 
 
 @bot.on_callback_query(
     filters.regex('register_mon') | filters.regex('register_sea')
-    | filters.regex('register_half') | filters.regex('register_year') | filters.regex('register_used'))
+    | filters.regex('register_half') | filters.regex('register_year') | filters.regex('register_used') | filters.regex('register_unused'))
 async def buy_mon(_, call):
     await call.answer('✅ 显示注册码')
     cd, times, u = call.data.split('_')
@@ -301,7 +301,7 @@ async def buy_mon(_, call):
 # 检索翻页
 @bot.on_callback_query(filters.regex('pagination_keyboard'))
 async def paginate_keyboard(_, call):
-    j, mode = map(int, call.data.split(":")[1].split('-'))
+    j, mode = map(int, call.data.split(":")[1].split('_'))
     await callAnswer(call, f'好的，将为您翻到第 {j} 页')
     a, b = sql_count_p_code(call.from_user.id, mode)
     keyboard = await cr_paginate(b, j, mode)

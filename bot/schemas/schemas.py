@@ -12,6 +12,7 @@ class ExDate(BaseModel):
     half: int = 180
     year: int = 365
     used: int = 0
+    unused: int = -1
     code: str = 'code'
     link: str = 'link'
 

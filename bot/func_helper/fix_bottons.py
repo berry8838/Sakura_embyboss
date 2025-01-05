@@ -147,8 +147,8 @@ def ch_link_ikb(ls: list) -> InlineKeyboardMarkup:
 def date_ikb(i) -> InlineKeyboardMarkup:
     return ikb([[('🌘 - 月', f'register_mon_{i}'), ('🌗 - 季', f'register_sea_{i}'),
                  ('🌖 - 半年', f'register_half_{i}')],
-                [('🌕 - 年', f'register_year_{i}'), ('🎟️ - 已用', f'register_used_{i}')], [('🔙 - 返回', 'ch_link')]])
-
+                [('🌕 - 年', f'register_year_{i}'), ('🌑 - 未用', f'register_unused_{i}'), ('🎟️ - 已用', f'register_used_{i}')],
+                [('🔙 - 返回', 'ch_link')]])
 
 # 翻页按钮
 async def cr_paginate(total_page: int, current_page: int, n) -> InlineKeyboardMarkup:
@@ -159,7 +159,7 @@ async def cr_paginate(total_page: int, current_page: int, n) -> InlineKeyboardMa
     :return:
     """
     keyboard = InlineKeyboard()
-    keyboard.paginate(total_page, current_page, 'pagination_keyboard:{number}' + f'-{n}')
+    keyboard.paginate(total_page, current_page, 'pagination_keyboard:{number}' + f'_{n}')
     next = InlineButton('⏭️ 后退+5', f'users_iv:{current_page + 5}-{n}')
     previous = InlineButton('⏮️ 前进-5', f'users_iv:{current_page - 5}-{n}')
     followUp = [InlineButton('❌ 关闭', f'closeit')]

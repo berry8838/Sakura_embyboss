@@ -9,7 +9,7 @@ from pyrogram import filters
 from bot import bot, _open, save_config, bot_photo, LOGGER, bot_name, admins, owner
 from bot.func_helper.filters import admins_on_filter
 from bot.schemas import ExDate
-from bot.sql_helper.sql_code import sql_count_code, sql_count_p_code
+from bot.sql_helper.sql_code import sql_count_code, sql_count_p_code, sql_delete_all_unused, sql_delete_unused_by_days
 from bot.sql_helper.sql_emby import sql_count_emby
 from bot.func_helper.fix_bottons import gm_ikb_content, open_menu_ikb, gog_rester_ikb, back_open_menu_ikb, \
     back_free_ikb, \
@@ -262,10 +262,48 @@ async def ch_link(_, call):
         text += f'\n👮🏻`{name.first_name}`: 月/{b}，季/{c}，半年/{d}，年/{f}，已用/{a}，未用/{e}'
         f = [f"🔎 {name.first_name}", f"ch_admin_link-{i}"]
         ls.append(f)
+    ls.append(["🚮 删除未使用码", f"delete_codes"])
     admins.remove(owner)
     keyboard = ch_link_ikb(ls)
     text += '\n详情查询 👇'
 
+    await editMessage(call, text, buttons=keyboard)
+
+# 删除未使用码
+@bot.on_callback_query(filters.regex('delete_codes') & admins_on_filter)
+async def delete_unused_codes(_, call):
+    await callAnswer(call, '⚠️ 请确认要删除码的类别')
+    if call.from_user.id != owner:
+        return await callAnswer(call, '🚫 不可以哦！ 你又不是owner', True)
+    
+    await editMessage(call, 
+        "请回复要删除的未使用码天数类别，多个天数用空格分隔\n"
+        "例如: `5 30 180` 将删除属于5天、30天和180天类别的未使用码\n"
+        "输入 `all` 删除所有未使用码\n"
+        "取消请输入 /cancel")
+    
+    content = await callListen(call, 120)
+    if content is False:
+        return
+    elif content.text == '/cancel':
+        await content.delete()
+        return await gm_ikb(_, call)
+        
+    try:
+        if content.text.lower() == 'all':
+            count = sql_delete_all_unused()
+            text = f"已删除所有未使用码，共 {count} 个"
+        else:
+            days = [int(x) for x in content.text.split()]
+            count = sql_delete_unused_by_days(days)
+            text = f"已删除指定天数的未使用码，共 {count} 个"
+        await content.delete()
+    except ValueError:
+        text = "❌ 输入格式错误"
+    
+    ls=[]
+    ls.append(["🔄 继续删除", f"delete_codes"])
+    keyboard = ch_link_ikb(ls)
     await editMessage(call, text, buttons=keyboard)
 
 

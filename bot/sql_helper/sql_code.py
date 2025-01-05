@@ -255,3 +255,33 @@ def sql_count_c_code(tg_id):
             # 查询失败时，打印异常信息，并返回None
             print(e)
             return None, 1
+
+def sql_delete_unused_by_days(days: list[int], user_id: int = None) -> int:
+    with Session() as session:
+        try:
+            query = session.query(Code).filter(Code.used == None)
+            if user_id is not None:
+                query = query.filter(Code.tg == user_id)
+            query = query.filter(Code.us.in_(days))
+            result = query.delete(synchronize_session=False)
+            session.commit()
+            return result
+        except Exception as e:
+            session.rollback()
+            print(f"删除注册码失败: {e}")
+            return 0
+
+
+def sql_delete_all_unused(user_id: int = None) -> int:
+    with Session() as session:
+        try:
+            query = session.query(Code).filter(Code.used == None)
+            if user_id is not None:
+                query = query.filter(Code.tg == user_id)
+            result = query.delete(synchronize_session=False)
+            session.commit()
+            return result
+        except Exception as e:
+            session.rollback()
+            print(f"删除所有未使用注册码失败: {e}")
+            return 0

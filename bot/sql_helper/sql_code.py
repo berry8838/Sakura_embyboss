@@ -69,7 +69,6 @@ def sql_get_code(code):
             return None
 
 
-@cache.memoize(ttl=120)
 def sql_count_code(tg: int = None):
     with Session() as session:
         if tg is None:
@@ -124,7 +123,6 @@ def sql_count_code(tg: int = None):
                 return None
 
 
-@cache.memoize(ttl=120)
 def sql_count_p_code(tg_id, us):
     with Session() as session:
         try:
@@ -216,7 +214,6 @@ def sql_count_p_code(tg_id, us):
             return None, 1
 
 
-@cache.memoize(ttl=120)
 def sql_count_c_code(tg_id):
     with Session() as session:
         try:

@@ -40,7 +40,6 @@ class RanksDraw:
             else:
                 mask_path = os.path.join('bot', 'ranks_helper', "resource", "day_ranks_mask.png")
         font_path = os.path.join('bot', 'ranks_helper', "resource", 'font', "PingFang Bold.ttf")
-        logo_font_path = os.path.join('bot', 'ranks_helper', 'resource', 'font', 'Provicali.otf')
         # 随机调取背景
         bg_list = os.listdir(bg_path)
         bg_path = os.path.join(bg_path, random.choice(bg_list))
@@ -52,7 +51,7 @@ class RanksDraw:
         self.font = ImageFont.truetype(font_path, 18)
         self.font_small = ImageFont.truetype(font_path, 14)
         self.font_count = ImageFont.truetype(font_path, 12)
-        self.font_logo = ImageFont.truetype(logo_font_path, 100)
+        self.font_logo = ImageFont.truetype(font_path, 60)
         self.embyname = embyname
         self.backdrop = backdrop
 
@@ -169,7 +168,7 @@ class RanksDraw:
         # 绘制Logo名字
         if self.embyname:
             if self.backdrop:
-                draw_text_psd_style(text, (1470, 830), self.embyname, self.font_logo, 126)
+                draw_text_psd_style(text, (1900, 830), self.embyname, self.font_logo, 126, align='right')
             else:
                 draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126)
 
@@ -246,9 +245,9 @@ class RanksDraw:
         # 绘制Logo名字
         if self.embyname:
             if self.backdrop:
-                draw_text_psd_style(text, (1470, 830), self.embyname, self.font_logo, 126)
+                draw_text_psd_style(text, (1900, 830), self.embyname, self.font_logo, 126, align='right')
             else:
-                draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126)
+                draw_text_psd_style(text, (90, 1100), self.embyname, self.font_logo, 126, align='left')
 
     @staticmethod
     async def hb_test_draw(money: int, members: int, user_pic: bytes = None, first_name: str = None):
@@ -299,10 +298,10 @@ async def draw_cover_text(cover, first_name, money, members):
     return cover
 
 
-def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, **kwargs):
+def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, align='left', **kwargs):
     """
     usage: draw_text_psd_style(draw, (0, 0), "Test", 
-                tracking=-0.1, leading=32, fill="Blue")
+                tracking=-0.1, leading=32, fill="Blue", align='left')
 
     Leading is measured from the baseline of one line of text to the
     baseline of the line above it. Baseline is the invisible line on which most
@@ -328,16 +327,24 @@ def draw_text_psd_style(draw, xy, text, font, tracking=0, leading=None, **kwargs
     lines = text.splitlines()
     if leading is None:
         leading = font.size * 1.2
+        
     for line in lines:
+        # 计算整行文本宽度
+        total_width = font.getlength(line) + (tracking / 1000) * font_size * (len(line) - 1)
+        
+        # 如果是右对齐，调整起始 x 坐标
+        current_x = x
+        if align == 'right':
+            current_x = x - total_width
+            
         for a, b in stutter_chunk(line, 2, 1, ' '):
             w = font.getlength(a + b) - font.getlength(b)
-            draw.text((x, y), a, font=font, **kwargs)
-            x += w + (tracking / 1000) * font_size
+            draw.text((current_x, y), a, font=font, **kwargs)
+            current_x += w + (tracking / 1000) * font_size
         y += leading
-        x = xy[0]
-#
-#
+
+
 # if __name__ == "__main__":
-#     draw = RanksDraw(embyname='SAKURA', weekly=True, backdrop=True)
+#     draw = RanksDraw(embyname='SAKURA欢迎你', weekly=True, backdrop=False)
 #     draw.test()
 #     draw.save()

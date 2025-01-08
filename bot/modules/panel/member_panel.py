@@ -159,10 +159,19 @@ async def change_tg(_, call):
         e = sql_get_emby(tg=replace_id)
         if not e or not e.embyid: return await bot.send_message(current_id, '⁉️ 出错了，您所换绑账户已不存在。')
         
+        # 清空原账号信息但保留tg
+        if sql_update_emby(Emby.tg == replace_id, embyid=None, name=None, pwd=None, pwd2=None, 
+                          lv='d', cr=None, ex=None, us=0, iv=0, ch=None):
+            LOGGER.info(f'【TG改绑】清空原账户 id{e.tg} 成功')
+        else:
+            await bot.send_message(current_id, "🍰 **⭕#TG改绑 原账户清空错误，请联系闺蜜（管理）！**")
+            LOGGER.error(f"【TG改绑】清空原账户 id{e.tg} 失败, Emby:{e.name}未转移...")
+            return
+
         # 将原账号的币值转移到新账号
         old_iv = e.iv
         if sql_update_emby(Emby.tg == current_id, embyid=e.embyid, name=e.name, pwd=e.pwd, pwd2=e.pwd2,
-                           lv=e.lv, cr=e.cr, ex=e.ex, iv=old_iv):
+                           lv=e.lv, cr=e.cr, ex=e.ex, iv=old_iv+sql_get_emby(tg=current_id).iv):
             text = f'⭕ 请接收您的信息！\n\n' \
                    f'· 用户名称 | `{e.name}`\n' \
                    f'· 用户密码 | `{e.pwd}`\n' \
@@ -177,14 +186,7 @@ async def change_tg(_, call):
             await bot.send_message(current_id, '🍰 **【TG改绑】数据库处理出错，请联系闺蜜（管理）！**')
             LOGGER.error(f"【TG改绑】 emby账户{e.name} 绑定未知错误。")
             
-        # 清空原账号信息但保留tg
-        if sql_update_emby(Emby.tg == replace_id, embyid=None, name=None, pwd=None, pwd2=None, 
-                          lv='d', cr=None, ex=None, us=0, iv=0, ch=None):
-            LOGGER.info(f'【TG改绑】清空原账户 id{e.tg} 成功, Emby:{e.name}已转移...')
-        else:
-            await bot.send_message(current_id, "🍰 **⭕#TG改绑 原账户清空错误，请联系闺蜜（管理）！**")
-            LOGGER.error(f"【TG改绑】清空原账户 id{e.tg} 失败, Emby:{e.name}未转移...")
-        return
+        
     except (IndexError, ValueError):
         pass
     d = sql_get_emby(tg=call.from_user.id)

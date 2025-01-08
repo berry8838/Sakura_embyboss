@@ -93,7 +93,7 @@ async def members(_, call):
         return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
     await callAnswer(call, f"✅ 用户界面")
     name, lv, ex, us, embyid, pwd2 = data
-    text = f"▎__欢迎进入用户面板！{call.from_user.first_name}__\n\n" \
+    text = f"▎__欢迎进入用户界面吖！{call.from_user.first_name}__\n\n" \
            f"**· 🆔 用户のID** | `{call.from_user.id}`\n" \
            f"**· 📊 当前状态** | {lv}\n" \
            f"**· 🍒 积分{sakura_b}** | {us}\n" \

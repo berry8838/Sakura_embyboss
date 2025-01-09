@@ -4,7 +4,7 @@
 部分目前有 导出日志，更改探针，更改emby线路，设置购买按钮
 
 """
-from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open, auto_update, mp
+from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open, auto_update, moviepilot
 from pyrogram import filters
 
 from bot.func_helper.filters import admins_on_filter
@@ -194,8 +194,8 @@ async def set_auto_update(_, call):
 async def set_mp_status(_, call):
     try:
         # 简化逻辑，只设置一次
-        mp.status = not mp.status
-        if mp.status:
+        moviepilot.status = not moviepilot.status
+        if moviepilot.status:
             message = '👮🏻‍♂️您已开启 Moviepilot求片功能'
             LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} Moviepilot求片功能")
         else:

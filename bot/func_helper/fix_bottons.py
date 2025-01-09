@@ -3,7 +3,7 @@ from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
 from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, sakura_b, \
-    schedall, auto_update, fuxx_pitao, kk_gift_days, mp, red_envelope
+    schedall, auto_update, fuxx_pitao, kk_gift_days, moviepilot, red_envelope
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import members_info
@@ -45,10 +45,14 @@ def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboard
     判断用户面板
     """
     if account:
-        return ikb([[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
+        normal = [[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
                     [('💖 我的收藏', 'my_favorites'),('💠 我的设备', 'my_devices')],
-                    [('♻️ 主界面', 'back_start')]])
+                    ]
+        if moviepilot.status:
+            normal.append([('🎬 求片中心', 'download_center')])
+        normal.append([('♻️ 主界面', 'back_start')])
+        return ikb(normal)
     else:
         return judge_start_ikb(is_admin, account)
         # return ikb(

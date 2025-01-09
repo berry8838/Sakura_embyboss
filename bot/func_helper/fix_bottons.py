@@ -446,12 +446,18 @@ def sched_buttons():
 request_tips_ikb = None
 
 
-def request_media_panel_ikb():
-    return ikb([[('🍿 点播/订阅', 'get_resource'), ('📶 下载进度', 'download_rate')],  # 进度里面写一个管理 stop resume and delete
-                [('📝 我的记录', 'my_requests'), ('❌ 本次关闭', 'closeit')]])
-
-
 def get_resource_ikb(download_name: str):
     # 翻页 + 下载此片 + 取消操作
     return ikb([[(f'下载本片', f'download_{download_name}'), ('激活订阅', f'submit_{download_name}')],
-                [('❌ 本次关闭', 'closeit')]])
+                [('❌ 关闭', 'closeit')]])
+re_download_center_ikb = ikb([
+    [('🍿 点播/订阅', 'get_resource'), ('📶 下载进度', 'download_rate')], 
+    [('📝 我的记录', 'my_requests'), ('🔙 返回', 'members')]])
+def page_request_record_ikb(has_prev: bool, has_next: bool):
+    buttons = []
+    if has_prev:
+        buttons.append(('◀️ 上一页', 'pre_page_request_record'))
+    if has_next:
+        buttons.append(('▶️ 下一页', 'next_page_request_record'))
+    return ikb([buttons, [('🔙 返回', 'download_center')]])
+

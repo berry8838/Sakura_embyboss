@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, BigInteger, Text
+from sqlalchemy import Column, String, DateTime, BigInteger, Text, Float
 import datetime
 from bot.sql_helper import Base, Session, engine
 from cacheout import Cache
@@ -13,9 +13,11 @@ class RequestRecord(Base):
     request_name = Column(String(255), nullable=False)
     cost = Column(String(255), nullable=False)
     detail = Column(Text, nullable=False)
+    status = Column(String(50), default='pending')  # pending, downloading, completed, failed
+    progress = Column(Float, default=0)
     create_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow,
-                       onupdate=datetime.datetime.utcnow)
+                      onupdate=datetime.datetime.utcnow)
 
 
 RequestRecord.__table__.create(bind=engine, checkfirst=True)
@@ -56,3 +58,21 @@ def sql_get_all_request_record():
     with Session() as session:
         request_record = session.query(RequestRecord).all()
         return request_record
+
+
+def sql_update_request_status(download_id: str, status: str, progress: float = None):
+    """更新下载状态"""
+    with Session() as session:
+        try:
+            record = session.query(RequestRecord).filter(
+                RequestRecord.download_id == download_id).first()
+            if record:
+                record.status = status
+                if progress is not None:
+                    record.progress = progress
+                session.commit()
+                return True
+        except Exception as e:
+            session.rollback()
+            LOGGER.error(f"更新下载状态失败: {str(e)}")
+            return False

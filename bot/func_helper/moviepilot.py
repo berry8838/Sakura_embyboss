@@ -56,11 +56,22 @@ async def login():
         return False
 
 async def search(title):
+    """
+    搜索资源
+    Args:
+        title: 搜索关键词
+    Returns:
+        (success, results)
+        success: bool 是否成功
+        results: list 搜索结果列表
+    """
     if title is None:
         return False, []
+        
     url = f"{mp.url}/api/v1/search/title?keyword={title}"
     headers = {'Authorization': mp.access_token}
     request = {'method': 'GET', 'url': url, 'headers': headers}
+    
     try:
         data = await _do_request(request)
         results = []
@@ -84,15 +95,16 @@ async def search(title):
                     "torrent_info": torrent_info,
                 }
                 results.append(result)
+                
+        # 按做种数排序并限制返回数量
         results.sort(key=lambda x: int(x["seeders"]), reverse=True)
         if len(results) > 10:
             results = results[:10]
-        else:
-            results = results[:-1]
+            
         LOGGER.info("MP Search successful!")
         return True, results
     except Exception as e:
-        LOGGER.error(f"MP Search failed: {e}")
+        LOGGER.error(f"MP Search failed: {str(e)}")
         return False, []
 
 

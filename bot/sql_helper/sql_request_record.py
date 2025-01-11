@@ -13,8 +13,9 @@ class RequestRecord(Base):
     request_name = Column(String(255), nullable=False)
     cost = Column(String(255), nullable=False)
     detail = Column(Text, nullable=False)
-    left_time = Column(String(255), nullable=False)
-    state= Column(String(50), default='pending')  # pending, downloading, completed, failed
+    left_time = Column(String(255))
+    download_state= Column(String(50), default='pending')  # pending, downloading, completed, failed
+    transfer_state = Column(String(50))  # success, failed
     progress = Column(Float, default=0)
     create_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow,
@@ -37,7 +38,7 @@ def sql_add_request_record(tg: int, download_id: str, request_name: str, detail:
             return False
 
 
-def sql_get_request_record(tg: int, page: int = 1, limit: int = 5):
+def sql_get_request_record_by_tg(tg: int, page: int = 1, limit: int = 5):
     with Session() as session:
         request_record = session.query(RequestRecord).filter(
             RequestRecord.tg == tg).limit(limit + 1).offset((page - 1) * limit).all()
@@ -54,21 +55,28 @@ def sql_get_request_record(tg: int, page: int = 1, limit: int = 5):
             has_prev = False
         return request_record, has_prev, has_next
 
-
-def sql_get_all_request_record():
+def sql_get_request_record_by_download_id(download_id: str):
     with Session() as session:
-        request_record = session.query(RequestRecord).all()
+        request_record = session.query(RequestRecord).filter(RequestRecord.download_id == download_id).first()
+        return request_record
+
+def sql_get_request_record_by_transfer_state(transfer_state: str = None):
+    with Session() as session:
+        request_record = session.query(RequestRecord).filter(RequestRecord.transfer_state == transfer_state).all()
         return request_record
 
 
-def sql_update_request_status(download_id: str, status: str, progress: float = None, left_time: str = None):
+def sql_update_request_status(download_id: str, download_state: str, transfer_state: str = None, progress: float = None, left_time: str = None):
     """更新下载状态"""
     with Session() as session:
         try:
             record = session.query(RequestRecord).filter(
                 RequestRecord.download_id == download_id).first()
             if record:
-                record.status = status
+                if download_state is not None:
+                    record.download_state = download_state
+                if transfer_state is not None:
+                    record.transfer_state = transfer_state
                 if progress is not None:
                     record.progress = progress
                 if left_time is not None:

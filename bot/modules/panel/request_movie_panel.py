@@ -4,7 +4,7 @@ from bot.func_helper.msg_utils import callAnswer, editMessage, sendMessage, send
 from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.fix_bottons import re_download_center_ikb, back_members_ikb, continue_search_ikb, request_record_page_ikb
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
-from bot.sql_helper.sql_request_record import sql_add_request_record, sql_get_request_record
+from bot.sql_helper.sql_request_record import sql_add_request_record, sql_get_request_record_by_tg
 from bot.func_helper.moviepilot import search, add_download_task, get_download_task
 from bot.func_helper.emby import emby
 import asyncio
@@ -210,12 +210,12 @@ async def call_rate(_, call):
     if not moviepilot.status:
         return await callAnswer(call, '❌ 管理员未开启点播功能', True)
     await callAnswer(call, '📈 查看点播下载任务')
-    request_record, has_prev, has_next = sql_get_request_record(
+    request_record, has_prev, has_next = sql_get_request_record_by_tg(
         call.from_user.id)
     if request_record is None:
         return await editMessage(call, '🤷‍♂️ 您还没有点播记录，快去点播吧', buttons=re_download_center_ikb)
-    download_tasks = await get_download_task()
-    text = get_download_text(download_tasks, request_record)
+    # download_tasks = await get_download_task()
+    text = get_request_record_text(request_record)
     user_data[call.from_user.id] = {'request_record_page': 1}
     await editMessage(call, text, buttons=request_record_page_ikb(has_prev, has_next))
 
@@ -227,7 +227,7 @@ async def request_record_prev(_, call):
     page = user_data[call.from_user.id]['request_record_page'] - 1
     if page <= 0:
         page = 1
-    request_record, has_prev, has_next = sql_get_request_record(
+    request_record, has_prev, has_next = sql_get_request_record_by_tg(
         call.from_user.id, page=page)
     user_data[call.from_user.id]['request_record_page'] = page
     # download_tasks = await get_download_task()
@@ -240,7 +240,7 @@ async def request_record_next(_, call):
     if user_data.get(call.from_user.id) is None:
         user_data[call.from_user.id] = {'request_record_page': 1}
     page = user_data[call.from_user.id]['request_record_page'] + 1
-    request_record, has_prev, has_next = sql_get_request_record(
+    request_record, has_prev, has_next = sql_get_request_record_by_tg(
         call.from_user.id, page=page)
     user_data[call.from_user.id]['request_record_page'] = page
     # download_tasks = await get_download_task()
@@ -276,12 +276,25 @@ def get_request_record_text(request_record):
     for index, item in enumerate(request_record, start=1):
         progress = item.progress
         progress_text = ''
-        if progress is None:
-            progress_text = '未知'
+        if item.transfer_state is not None:
+            if item.transfer_state:
+                text += f"「{index}」：{item.request_name} \n状态：已入库 📽️\n"
+            else:
+                text += f"「{index}」：{item.request_name} \n状态：入库失败 🚫\n"
         else:
-            progress = round(progress, 1)
-            left_progress = '🟩' * int(progress/10)
-            right_progress = '⬜️' * (10 - int(progress // 10))
-            progress_text = f"{left_progress}{right_progress} {progress}%"
-        text += f"「{index}」：{item.request_name} \n状态：{'正在下载' if item.state == 'downloading' else ''} {progress_text}\n 剩余时间：{item.left_time}"
+            if progress is None:
+                progress_text = '未知'
+            else:
+                progress = round(progress, 1)
+                left_progress = '🟩' * int(progress/10)
+                right_progress = '⬜️' * (10 - int(progress // 10))
+                progress_text = f"{left_progress}{right_progress} {progress}%"
+            download_state_text = '正在排队'
+            if item.download_state == 'downloading':
+                download_state_text = '正在下载'
+            elif item.download_state == 'completed':
+                download_state_text = '已完成'
+            elif item.download_state == 'failed':
+                download_state_text = '下载失败'
+            text += f"「{index}」：{item.request_name} \n状态：{download_state_text} {progress_text}\n 剩余时间：{item.left_time}\n"
     return text

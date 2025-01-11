@@ -9,11 +9,9 @@ from bot import bot, sakura_b, schedall, save_config, prefixes, _open, owner, LO
 from bot.func_helper.filters import admins_on_filter, user_in_group_on_filter
 from bot.func_helper.fix_bottons import sched_buttons, plays_list_button
 from bot.func_helper.msg_utils import callAnswer, editMessage, deleteMessage
-from bot.func_helper.scheduler import Scheduler
+from bot.func_helper.scheduler import scheduler
 from bot.scheduler import *
 
-# 实例化
-scheduler = Scheduler()
 
 # 初始化命令 开机检查重启
 loop = asyncio.get_event_loop()
@@ -40,7 +38,7 @@ action_dict = {
     "weekplayrank": user_week_plays,
     "check_ex": check_expired,
     "low_activity": check_low_activity,
-    "backup_db": auto_backup_db
+    "backup_db": auto_backup_db,
 }
 
 # 字典，对应的操作函数的参数和id
@@ -51,7 +49,7 @@ args_dict = {
     "weekplayrank": {'day_of_week': "sun", 'hour': 23, 'minute': 0, 'id': 'user_week_plays'},
     "check_ex": {'hour': 1, 'minute': 30, 'id': 'check_expired'},
     "low_activity": {'hour': 8, 'minute': 30, 'id': 'check_low_activity'},
-    "backup_db": {'hour': 2, 'minute': 30, 'id': 'backup_db'}
+    "backup_db": {'hour': 2, 'minute': 30, 'id': 'backup_db'},
 }
 
 

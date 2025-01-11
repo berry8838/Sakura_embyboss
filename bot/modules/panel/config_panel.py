@@ -10,6 +10,8 @@ from pyrogram import filters
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.fix_bottons import config_preparation, close_it_ikb, back_config_p_ikb, back_set_ikb
 from bot.func_helper.msg_utils import deleteMessage, editMessage, callAnswer, callListen, sendPhoto, sendFile
+from bot.func_helper.scheduler import scheduler
+from bot.scheduler.sync_mp_download import sync_download_tasks
 
 
 @bot.on_message(filters.command('config', prefixes=prefixes) & admins_on_filter)
@@ -197,9 +199,11 @@ async def set_mp_status(_, call):
         moviepilot.status = not moviepilot.status
         if moviepilot.status:
             message = '👮🏻‍♂️您已开启 Moviepilot点播功能'
+            scheduler.add_job(sync_download_tasks, 'interval', seconds=60, id='sync_mp_download')
             LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} Moviepilot点播功能")
         else:
             message = '👮🏻‍♂️ 您已关闭 Moviepilot点播功能'
+            scheduler.remove_job(job_id='sync_mp_download')
             LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已关闭 Moviepilot点播功能")
 
         await callAnswer(call, message, True)

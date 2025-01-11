@@ -58,7 +58,7 @@ kk_gift_days = config.kk_gift_days
 fuxx_pitao = config.fuxx_pitao
 red_envelope = config.red_envelope
 
-mp = config.moviepilot
+moviepilot = config.moviepilot
 auto_update = config.auto_update
 api = config.api
 save_config()

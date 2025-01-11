@@ -98,14 +98,13 @@ class Proxy(BaseModel):
 
 class MP(BaseModel):
     status: bool = False
-    host: Optional[str] = None
-    username: Optional[str] = None
-    password: Optional[str] = None
-    access_token: Optional[str] = None
+    url: Optional[str] = ''
+    username: Optional[str] = ''
+    password: Optional[str] = ''
+    access_token: Optional[str] = ''
     price: int = 1
-    photo_url: Optional[
-        str] = "https://raw.githubusercontent.com/berry8838/berry8838/main/image_2024-08-19_22-12-39.png"
-
+    download_log_chatid: Optional[int] = None
+    lv: Optional[str] = 'b'
 
 class AutoUpdate(BaseModel):
     status: bool = True

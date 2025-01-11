@@ -3,7 +3,7 @@ from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
 from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, sakura_b, \
-    schedall, auto_update, fuxx_pitao, kk_gift_days, mp, red_envelope
+    schedall, auto_update, fuxx_pitao, kk_gift_days, moviepilot, red_envelope
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import members_info
@@ -45,10 +45,14 @@ def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboard
     判断用户面板
     """
     if account:
-        return ikb([[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
+        normal = [[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
                     [('💖 我的收藏', 'my_favorites'),('💠 我的设备', 'my_devices')],
-                    [('♻️ 主界面', 'back_start')]])
+                    ]
+        if moviepilot.status:
+            normal.append([('🍿 点播中心', 'download_center')])
+        normal.append([('♻️ 主界面', 'back_start')])
+        return ikb(normal)
     else:
         return judge_start_ikb(is_admin, account)
         # return ikb(
@@ -307,7 +311,7 @@ def cr_renew_ikb():
 
 
 def config_preparation() -> InlineKeyboardMarkup:
-    mp_set = '✅' if mp.status else '❎'
+    mp_set = '✅' if moviepilot.status else '❎'
     auto_up = '✅' if auto_update.status else '❎'
     leave_ban = '✅' if _open.leave_ban else '❎'
     uplays = '✅' if _open.uplays else '❎'
@@ -318,7 +322,7 @@ def config_preparation() -> InlineKeyboardMarkup:
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
          [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
          [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 观影奖励结算', 'set_uplays')],
-         [(f'{auto_up} 自动更新bot', 'set_update'), (f'{mp_set} Moviepilot求片', 'set_mp')],
+         [(f'{auto_up} 自动更新bot', 'set_update'), (f'{mp_set} Moviepilot点播', 'set_mp')],
          [(f'设置赠送资格天数({kk_gift_days}天)', 'set_kk_gift_days'), (f'{fuxx_pt} 皮套人过滤功能', 'set_fuxx_pitao')],
          [(f'{red_envelope_status} 红包', 'set_red_envelope_status'), (f'{allow_private} 专属红包', 'set_red_envelope_allow_private')],
          [('🔙 返回', 'manage')]])
@@ -442,12 +446,53 @@ def sched_buttons():
 request_tips_ikb = None
 
 
-def request_media_panel_ikb():
-    return ikb([[('🍿 点播/订阅', 'get_resource'), ('📶 下载进度', 'download_rate')],  # 进度里面写一个管理 stop resume and delete
-                [('📝 我的记录', 'my_requests'), ('❌ 本次关闭', 'closeit')]])
-
-
 def get_resource_ikb(download_name: str):
     # 翻页 + 下载此片 + 取消操作
     return ikb([[(f'下载本片', f'download_{download_name}'), ('激活订阅', f'submit_{download_name}')],
-                [('❌ 本次关闭', 'closeit')]])
+                [('❌ 关闭', 'closeit')]])
+re_download_center_ikb = ikb([
+    [('🍿 点播', 'get_resource'), ('📶 下载进度', 'download_rate')], 
+    [('🔙 返回', 'members')]])
+continue_search_ikb = ikb([
+    [('🔄 继续搜索', 'continue_search'), ('❌ 取消搜索', 'cancel_search')],
+    [('🔙 返回', 'download_center')]
+])
+def download_resource_ids_ikb(resource_ids: list):
+    buttons = []
+    row = []
+    for i in range(0, len(resource_ids), 2):
+        current_id = resource_ids[i]
+        current_button = [f"资源编号: {current_id}", f'download_resource_id_{current_id}']
+        if i + 1 < len(resource_ids):
+            next_id = resource_ids[i + 1]
+            next_button = [f"资源编号: {next_id}", f'download_resource_id_{next_id}']
+            row.append([current_button, next_button])
+        else:
+            row.append([current_button])
+    buttons.extend(row)
+    buttons.append([('❌ 取消', 'cancel_download')])
+    return ikb(buttons)
+def request_record_page_ikb(has_prev: bool, has_next: bool):
+    buttons = []
+    if has_prev:
+        buttons.append(('< 上一页', 'request_record_prev'))
+    if has_next:
+        buttons.append(('下一页 >', 'request_record_next'))
+    return ikb([buttons, [('🔙 返回', 'download_center')]])
+
+# 添加 MoviePilot 设置按钮
+def mp_config_ikb():
+    """MoviePilot 设置面板按钮"""
+    mp_status = '✅' if moviepilot.status else '❎'
+    lv_text = '无'
+    if moviepilot.lv == 'a':
+        lv_text = '白名单'
+    elif moviepilot.lv == 'b':
+        lv_text = '普通用户'
+    keyboard = ikb([
+        [(f'{mp_status} 点播功能', 'set_mp_status')],
+        [('💰 设置点播价格', 'set_mp_price'), ('👥 设置用户权限', 'set_mp_lv')],
+        [('📝 设置日志频道', 'set_mp_log_channel')],
+        [('🔙 返回', 'back_config')]
+    ])
+    return keyboard

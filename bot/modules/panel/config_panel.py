@@ -4,12 +4,14 @@
 部分目前有 导出日志，更改探针，更改emby线路，设置购买按钮
 
 """
-from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open, auto_update, mp
+from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open, auto_update, moviepilot, sakura_b
 from pyrogram import filters
 
 from bot.func_helper.filters import admins_on_filter
-from bot.func_helper.fix_bottons import config_preparation, close_it_ikb, back_config_p_ikb, back_set_ikb
+from bot.func_helper.fix_bottons import config_preparation, close_it_ikb, back_config_p_ikb, back_set_ikb, mp_config_ikb
 from bot.func_helper.msg_utils import deleteMessage, editMessage, callAnswer, callListen, sendPhoto, sendFile
+from bot.func_helper.scheduler import scheduler
+from bot.scheduler.sync_mp_download import sync_download_tasks
 
 
 @bot.on_message(filters.command('config', prefixes=prefixes) & admins_on_filter)
@@ -190,24 +192,99 @@ async def set_auto_update(_, call):
         LOGGER.error(f"【admin】：管理员 {call.from_user.first_name} 尝试更改 auto_update状态时出错: {e}")
 
 
-@bot.on_callback_query(filters.regex('set_mp') & admins_on_filter)
-async def set_mp_status(_, call):
-    try:
-        # 简化逻辑，只设置一次
-        mp.status = not mp.status
-        if mp.status:
-            message = '👮🏻‍♂️您已开启 Moviepilot求片功能'
-            LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} Moviepilot求片功能")
-        else:
-            message = '👮🏻‍♂️ 您已关闭 Moviepilot求片功能'
-            LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已关闭 Moviepilot求片功能")
+@bot.on_callback_query(filters.regex('^set_mp$') & admins_on_filter)
+async def mp_config_panel(_, call):
+    """MoviePilot 设置面板"""
+    await callAnswer(call, '⚙️ MoviePilot 设置')
+    lv_text = '无'
+    if moviepilot.lv == 'a':
+        lv_text = '白名单'
+    elif moviepilot.lv == 'b':
+        lv_text = '普通用户'
+    await editMessage(call, 
+                     "⚙️ MoviePilot 设置面板\n\n"
+                     f"当前状态：{'已开启' if moviepilot.status else '已关闭'}\n"
+                     f"点播价格：{moviepilot.price} {sakura_b}/GB\n"
+                     f"用户权限：{lv_text}可使用\n"
+                     f"日志频道：{moviepilot.download_log_chatid or '未设置'}",
+                     buttons=mp_config_ikb())
 
+@bot.on_callback_query(filters.regex('^set_mp_status$') & admins_on_filter)
+async def set_mp_status(_, call):
+    """设置点播功能开关"""
+    try:
+        moviepilot.status = not moviepilot.status
+        if moviepilot.status:
+            message = '👮🏻‍♂️ 您已开启 MoviePilot 点播功能'
+            scheduler.add_job(sync_download_tasks, 'interval', seconds=60, id='sync_download_tasks')
+        else:
+            message = '👮🏻‍♂️ 您已关闭 MoviePilot 点播功能'
+            scheduler.remove_job(job_id='sync_download_tasks')
+        
         await callAnswer(call, message, True)
-        await config_p_re(_, call)
         save_config()
+        await mp_config_panel(_, call)
     except Exception as e:
-        # 异常处理，记录错误信息
-        LOGGER.error(f"【admin】：管理员 {call.from_user.first_name} 尝试更改 Moviepilot求片 状态时出错: {e}")
+        LOGGER.error(f"设置点播状态时出错: {str(e)}")
+
+@bot.on_callback_query(filters.regex('^set_mp_price$') & admins_on_filter)
+async def set_mp_price(_, call):
+    """设置点播价格"""
+    await callAnswer(call, '💰 设置点播价格')
+    await editMessage(call,
+                     f"💰 设置点播价格\n\n"
+                     f"当前价格：{moviepilot.price} {sakura_b}/GB\n"
+                     f"请输入新的价格数值\n"
+                     f"取消请点 /cancel")
+    
+    txt = await callListen(call, 120)
+    if txt is False or txt.text == '/cancel':
+        return await mp_config_panel(_, call)
+    
+    try:
+        price = int(txt.text)
+        if price < 0:
+            raise ValueError
+        moviepilot.price = price
+        save_config()
+        await editMessage(call, f"✅ 点播价格已设置为 {price} {sakura_b}/GB")
+        await mp_config_panel(_, call)
+    except ValueError:
+        await editMessage(call, "❌ 请输入有效的数字")
+        await mp_config_panel(_, call)
+
+@bot.on_callback_query(filters.regex('set_mp_lv') & admins_on_filter)
+async def set_mp_lv(_, call):
+    """设置用户权限"""
+    moviepilot.lv = 'a' if moviepilot.lv == 'b' else 'b'
+    message = '✅ 已设置为仅白名单用户可用' if moviepilot.lv == 'a' else '✅ 已设置为普通用户可用'
+    await callAnswer(call, message, True)
+    save_config()
+    await mp_config_panel(_, call)
+
+@bot.on_callback_query(filters.regex('set_mp_log_channel') & admins_on_filter)
+async def set_mp_log_channel(_, call):
+    """设置日志频道"""
+    await callAnswer(call, '📝 设置日志频道')
+    await editMessage(call,
+                     f"📝 设置日志频道\n\n"
+                     f"当前频道：{moviepilot.download_log_chatid or '未设置'}\n"
+                     f"请输入频道 ID\n"
+                     f"取消请点 /cancel")
+    
+    txt = await callListen(call, 120)
+    if txt is False or txt.text == '/cancel':
+        return await mp_config_panel(_, call)
+    
+    try:
+        chat_id = int(txt.text)
+        moviepilot.download_log_chatid = chat_id
+        save_config()
+        await editMessage(call, f"✅ 日志频道已设置为 {chat_id}")
+        await mp_config_panel(_, call)
+    except ValueError:
+        await editMessage(call, "❌ 请输入有效的频道 ID")
+        await mp_config_panel(_, call)
 
 
 @bot.on_callback_query(filters.regex('leave_ban') & admins_on_filter)

@@ -73,5 +73,5 @@ class Scheduler(metaclass=Singleton):
         except Exception as e:
             LOGGER.error(f"Failed to modify a job: {e}")
 
-# scheduler = Scheduler()
+scheduler = Scheduler()
 # scheduler.add_job(check_expired, 'cron', hour=1, id='check_expired')

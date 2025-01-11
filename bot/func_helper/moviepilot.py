@@ -154,3 +154,20 @@ async def get_download_task():
     except Exception as e:
         LOGGER.error(f"MP 获取下载任务失败: {e}")
         return None
+async def get_history_transfer_task(title, download_id, page = 1, count = 50):
+    url = f"{mp.url}/api/v1/history/transfer?title={title}&page={page}&count={count}"
+    headers = {'Authorization': mp.access_token}
+    request = {'method': 'GET', 'url': url, 'headers': headers}
+    try:
+        result = await _do_request(request)
+        if result.get("success", False) and result.get("data", []):
+            for item in result["data"]["list"]:
+                if item['download_hash'] == download_id:
+                    return item['status']
+            return None
+        else:
+            LOGGER.error(f"MP 获取历史转移任务失败: {result.get('message')}")
+            return None
+    except Exception as e:
+        LOGGER.error(f"MP 获取历史转移任务失败: {e}")
+        return None

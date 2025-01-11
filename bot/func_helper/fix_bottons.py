@@ -50,7 +50,7 @@ def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboard
                     [('💖 我的收藏', 'my_favorites'),('💠 我的设备', 'my_devices')],
                     ]
         if moviepilot.status:
-            normal.append([('🎬 求片中心', 'download_center')])
+            normal.append([('🍿 点播中心', 'download_center')])
         normal.append([('♻️ 主界面', 'back_start')])
         return ikb(normal)
     else:
@@ -322,7 +322,7 @@ def config_preparation() -> InlineKeyboardMarkup:
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
          [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
          [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 观影奖励结算', 'set_uplays')],
-         [(f'{auto_up} 自动更新bot', 'set_update'), (f'{mp_set} Moviepilot求片', 'set_mp')],
+         [(f'{auto_up} 自动更新bot', 'set_update'), (f'{mp_set} Moviepilot点播', 'set_mp')],
          [(f'设置赠送资格天数({kk_gift_days}天)', 'set_kk_gift_days'), (f'{fuxx_pt} 皮套人过滤功能', 'set_fuxx_pitao')],
          [(f'{red_envelope_status} 红包', 'set_red_envelope_status'), (f'{allow_private} 专属红包', 'set_red_envelope_allow_private')],
          [('🔙 返回', 'manage')]])
@@ -451,13 +451,31 @@ def get_resource_ikb(download_name: str):
     return ikb([[(f'下载本片', f'download_{download_name}'), ('激活订阅', f'submit_{download_name}')],
                 [('❌ 关闭', 'closeit')]])
 re_download_center_ikb = ikb([
-    [('🍿 点播/订阅', 'get_resource'), ('📶 下载进度', 'download_rate')], 
-    [('📝 我的记录', 'my_requests'), ('🔙 返回', 'members')]])
-def page_request_record_ikb(has_prev: bool, has_next: bool):
+    [('🍿 点播', 'get_resource'), ('📶 下载进度', 'download_rate')], 
+    [('🔙 返回', 'members')]])
+continue_search_ikb = ikb([
+    [('🔄 继续搜索', 'continue_search'), ('❌ 取消搜索', 'cancel_search')],
+    [('🔙 返回', 'download_center')]
+])
+def download_resource_ids_ikb(resource_ids: list):
+    buttons = []
+    row = []
+    for i in range(0, len(resource_ids), 2):
+        current_id = resource_ids[i]
+        current_button = [f"资源编号: {current_id}", f'download_resource_id_{current_id}']
+        if i + 1 < len(resource_ids):
+            next_id = resource_ids[i + 1]
+            next_button = [f"资源编号: {next_id}", f'download_resource_id_{next_id}']
+            row.append([current_button, next_button])
+        else:
+            row.append([current_button])
+    buttons.extend(row)
+    buttons.append([('❌ 取消', 'cancel_download')])
+    return ikb(buttons)
+def request_record_page_ikb(has_prev: bool, has_next: bool):
     buttons = []
     if has_prev:
-        buttons.append(('◀️ 上一页', 'pre_page_request_record'))
+        buttons.append(('< 上一页', 'request_record_prev'))
     if has_next:
-        buttons.append(('▶️ 下一页', 'next_page_request_record'))
+        buttons.append(('下一页 >', 'request_record_next'))
     return ikb([buttons, [('🔙 返回', 'download_center')]])
-

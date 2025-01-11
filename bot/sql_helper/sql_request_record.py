@@ -13,7 +13,8 @@ class RequestRecord(Base):
     request_name = Column(String(255), nullable=False)
     cost = Column(String(255), nullable=False)
     detail = Column(Text, nullable=False)
-    status = Column(String(50), default='pending')  # pending, downloading, completed, failed
+    left_time = Column(String(255), nullable=False)
+    state= Column(String(50), default='pending')  # pending, downloading, completed, failed
     progress = Column(Float, default=0)
     create_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow,
@@ -27,7 +28,7 @@ def sql_add_request_record(tg: int, download_id: str, request_name: str, detail:
     with Session() as session:
         try:
             request_record = RequestRecord(
-                tg=tg, download_id=download_id, request_name=request_name, detail=detail, cost=cost)
+                tg=tg, download_id=download_id, request_name=request_name, detail=detail, cost=cost, left_time='一万年吧')
             session.add(request_record)
             session.commit()
             return True
@@ -60,7 +61,7 @@ def sql_get_all_request_record():
         return request_record
 
 
-def sql_update_request_status(download_id: str, status: str, progress: float = None):
+def sql_update_request_status(download_id: str, status: str, progress: float = None, left_time: str = None):
     """更新下载状态"""
     with Session() as session:
         try:
@@ -70,9 +71,10 @@ def sql_update_request_status(download_id: str, status: str, progress: float = N
                 record.status = status
                 if progress is not None:
                     record.progress = progress
+                if left_time is not None:
+                    record.left_time = left_time
                 session.commit()
                 return True
         except Exception as e:
             session.rollback()
-            LOGGER.error(f"更新下载状态失败: {str(e)}")
             return False

@@ -1,6 +1,6 @@
 import requests
 import json
-from bot import LOGGER, moviepilot
+from bot import LOGGER, moviepilot, save_config
 import aiohttp
 import asyncio
 
@@ -10,7 +10,7 @@ class MoviePilot:
         self.url = moviepilot.url
         self.username = moviepilot.username 
         self.password = moviepilot.password
-        self.access_token = moviepilot.access_token
+        self.access_token = moviepilot.access_token or ''
 
 mp = MoviePilot()
 
@@ -34,7 +34,7 @@ async def _do_request(request):
     async with aiohttp.ClientSession() as session:
         async with session.request(method=request['method'], url=request['url'], headers=request['headers'], data=request.get('data')) as response:
             if response.status == 401 or response.status == 403:
-                LOGGER.error("MP Token expired, attempting to re-login.")
+                LOGGER.error("MP Token过期, 尝试重新登录.")
                 success = await login()
                 if success:
                     request['headers']['Authorization'] = mp.access_token
@@ -49,10 +49,12 @@ async def login():
     result = response.json()
     if 'access_token' in result:
         mp.access_token = result['token_type'] + ' ' + result['access_token']
-        LOGGER.info("MP Login successful, token stored")
+        moviepilot.access_token = mp.access_token # 保存到config
+        save_config()
+        LOGGER.info("MP 登录成功, token已保存")
         return True
     else:
-        LOGGER.error(f"MP Login failed: {result}")
+        LOGGER.error(f"MP 登录失败: {result}")
         return False
 
 async def search(title):
@@ -71,7 +73,6 @@ async def search(title):
     url = f"{mp.url}/api/v1/search/title?keyword={title}"
     headers = {'Authorization': mp.access_token}
     request = {'method': 'GET', 'url': url, 'headers': headers}
-    
     try:
         data = await _do_request(request)
         results = []
@@ -80,6 +81,12 @@ async def search(title):
             for item in data:
                 meta_info = item.get("meta_info", {})
                 torrent_info = item.get("torrent_info", {})
+                
+                seeders = torrent_info.get("seeders", "0")
+                try:
+                    seeders = int(seeders) if seeders else 0
+                except (ValueError, TypeError):
+                    seeders = 0
                 result = {
                     "title": meta_info.get("title", ""),
                     "year": meta_info.get("year", ""),
@@ -88,8 +95,8 @@ async def search(title):
                     "video_encode": meta_info.get("video_encode", ""),
                     "audio_encode": meta_info.get("audio_encode", ""),
                     "resource_team": meta_info.get("resource_team", ""),
-                    "seeders": torrent_info.get("seeders", ""),
-                    "size": torrent_info.get("size", ""),
+                    "seeders": seeders,
+                    "size": torrent_info.get("size", "0"),
                     "labels": torrent_info.get("labels", ""),
                     "description": torrent_info.get("description", ""),
                     "torrent_info": torrent_info,
@@ -97,7 +104,7 @@ async def search(title):
                 results.append(result)
                 
         # 按做种数排序并限制返回数量
-        results.sort(key=lambda x: int(x["seeders"]), reverse=True)
+        results.sort(key=lambda x: x["seeders"], reverse=True)  # 现在 seeders 一定是数字
         if len(results) > 10:
             results = results[:10]
             
@@ -120,13 +127,13 @@ async def add_download_task(param):
     try:
         result = await _do_request(request)
         if result.get("success", False):
-            LOGGER.info(f"MP add download task successful, ID: {result['data']['download_id']}")
+            LOGGER.info(f"MP 添加下载任务成功, ID: {result['data']['download_id']}")
             return True, result["data"]["download_id"]
         else:
-            LOGGER.error(f"MP add download task failed: {result.get('message')}")
+            LOGGER.error(f"MP 添加下载任务失败: {result.get('message')}")
             return False, None
     except Exception as e:
-        LOGGER.error(f"MP add download task failed: {e}")
+        LOGGER.error(f"MP 添加下载任务失败: {e}")
         return False, None
 
 async def get_download_task():
@@ -137,8 +144,13 @@ async def get_download_task():
         result = await _do_request(request)
         data = []
         for item in result:
-            data.append({'download_id': item['hash'], 'state': item['state'], 'progress': item['progress']})
+            data.append(
+                {'download_id': item['hash'],
+                 'state': item['state'],
+                 'progress': item['progress'],
+                 'left_time': item['left_time']
+                 })
         return data
     except Exception as e:
-        LOGGER.error(f"MP get download task failed: {e}")
+        LOGGER.error(f"MP 获取下载任务失败: {e}")
         return None

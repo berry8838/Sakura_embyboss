@@ -98,10 +98,10 @@ class Proxy(BaseModel):
 
 class MP(BaseModel):
     status: bool = False
-    url: Optional[str] = None
-    username: Optional[str] = None
-    password: Optional[str] = None
-    access_token: Optional[str] = None
+    url: Optional[str] = ''
+    username: Optional[str] = ''
+    password: Optional[str] = ''
+    access_token: Optional[str] = ''
     price: int = 1
     download_log_chatid: Optional[int] = None
     photo_url: Optional[

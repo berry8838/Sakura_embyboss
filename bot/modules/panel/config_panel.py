@@ -196,18 +196,18 @@ async def set_mp_status(_, call):
         # 简化逻辑，只设置一次
         moviepilot.status = not moviepilot.status
         if moviepilot.status:
-            message = '👮🏻‍♂️您已开启 Moviepilot求片功能'
-            LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} Moviepilot求片功能")
+            message = '👮🏻‍♂️您已开启 Moviepilot点播功能'
+            LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} Moviepilot点播功能")
         else:
-            message = '👮🏻‍♂️ 您已关闭 Moviepilot求片功能'
-            LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已关闭 Moviepilot求片功能")
+            message = '👮🏻‍♂️ 您已关闭 Moviepilot点播功能'
+            LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 已关闭 Moviepilot点播功能")
 
         await callAnswer(call, message, True)
         await config_p_re(_, call)
         save_config()
     except Exception as e:
         # 异常处理，记录错误信息
-        LOGGER.error(f"【admin】：管理员 {call.from_user.first_name} 尝试更改 Moviepilot求片 状态时出错: {e}")
+        LOGGER.error(f"【admin】：管理员 {call.from_user.first_name} 尝试更改 Moviepilot点播 状态时出错: {e}")
 
 
 @bot.on_callback_query(filters.regex('leave_ban') & admins_on_filter)

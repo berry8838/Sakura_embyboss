@@ -311,7 +311,7 @@ def cr_renew_ikb():
 
 
 def config_preparation() -> InlineKeyboardMarkup:
-    mp_set = '✅' if mp.status else '❎'
+    mp_set = '✅' if moviepilot.status else '❎'
     auto_up = '✅' if auto_update.status else '❎'
     leave_ban = '✅' if _open.leave_ban else '❎'
     uplays = '✅' if _open.uplays else '❎'
@@ -479,3 +479,20 @@ def request_record_page_ikb(has_prev: bool, has_next: bool):
     if has_next:
         buttons.append(('下一页 >', 'request_record_next'))
     return ikb([buttons, [('🔙 返回', 'download_center')]])
+
+# 添加 MoviePilot 设置按钮
+def mp_config_ikb():
+    """MoviePilot 设置面板按钮"""
+    mp_status = '✅' if moviepilot.status else '❎'
+    lv_text = '无'
+    if moviepilot.lv == 'a':
+        lv_text = '白名单'
+    elif moviepilot.lv == 'b':
+        lv_text = '普通用户'
+    keyboard = ikb([
+        [(f'{mp_status} 点播功能', 'set_mp_status')],
+        [('💰 设置点播价格', 'set_mp_price'), ('👥 设置用户权限', 'set_mp_lv')],
+        [('📝 设置日志频道', 'set_mp_log_channel')],
+        [('🔙 返回', 'back_config')]
+    ])
+    return keyboard

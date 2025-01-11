@@ -7,6 +7,7 @@ from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 from bot.sql_helper.sql_request_record import sql_add_request_record, sql_get_request_record_by_tg
 from bot.func_helper.moviepilot import search, add_download_task 
 from bot.func_helper.emby import emby
+from bot.func_helper.utils import judge_admins
 import asyncio
 import math
 
@@ -31,7 +32,9 @@ async def download_media(_, call):
     if not emby_user:
         return await editMessage(call, '⚠️ 数据库没有你，请重新 /start录入')
     if emby_user.lv is None or emby_user.lv not in ['a', 'b']:
-        return await editMessage(call, '🫡 你没有权限使用此功能')
+        return await editMessage(call, '🫡 您没有权限使用此功能', buttons=re_download_center_ikb)
+    if not judge_admins(emby_user.tg) and moviepilot.lv == 'a' and emby_user.lv != 'a':
+        return await editMessage(call, '🫡 您没有权限使用此功能，仅限白名单用户可用', buttons=re_download_center_ikb)
 
     await asyncio.gather(callAnswer(call, f'🔍 请输入你想求的资源名称'))
     await editMessage(call,

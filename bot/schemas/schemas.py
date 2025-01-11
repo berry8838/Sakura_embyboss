@@ -104,9 +104,7 @@ class MP(BaseModel):
     access_token: Optional[str] = ''
     price: int = 1
     download_log_chatid: Optional[int] = None
-    photo_url: Optional[
-        str] = "https://raw.githubusercontent.com/berry8838/berry8838/main/image_2024-08-19_22-12-39.png"
-
+    lv: Optional[str] = 'b'
 
 class AutoUpdate(BaseModel):
     status: bool = True

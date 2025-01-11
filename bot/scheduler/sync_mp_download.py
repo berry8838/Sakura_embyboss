@@ -72,8 +72,8 @@ async def sync_download_tasks():
                     download_state='completed',
                     progress=100,
                     left_time='0'
-            )
-            transfer_count += 1
+                )
+                transfer_count += 1
 
         LOGGER.info(f"同步了 {download_count} 个下载任务状态, {transfer_count} 个转移任务状态")
     except Exception as e:

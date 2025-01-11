@@ -2,7 +2,7 @@ from bot import LOGGER, config
 from bot.func_helper.moviepilot import get_download_task, get_history_transfer_task
 from bot.sql_helper.sql_request_record import sql_update_request_status, sql_get_request_record_by_transfer_state, sql_get_request_record_by_download_id
 from bot.func_helper.scheduler import scheduler
-
+from bot.func_helper.msg_utils import sendMessage
 
 async def sync_download_tasks():
     """同步MoviePilot下载任务状态到数据库"""
@@ -63,8 +63,9 @@ async def sync_download_tasks():
         # 检查每个记录的转移状态
         for record in transfer_tasks:
             transfer_state = await get_history_transfer_task(record.request_name, record.download_id)
-            LOGGER.info(f"检查转移状态: {record.request_name} {record.download_id} {transfer_state}")
             if transfer_state is not None:
+                if transfer_state:
+                    await sendMessage(record.tg, f"恭喜您点播的「{record.request_name}」已成功入库！")
                 sql_update_request_status(
                     download_id=record.download_id,
                     transfer_state=transfer_state,
@@ -80,4 +81,4 @@ async def sync_download_tasks():
 # 如果MoviePilot功能开启，添加定时任务
 if config.moviepilot.status:
     scheduler.add_job(sync_download_tasks, 'interval',
-                     seconds=10, id='sync_download_tasks')
+                     seconds=60, id='sync_download_tasks')

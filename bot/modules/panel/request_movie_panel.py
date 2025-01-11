@@ -1,11 +1,11 @@
 from pyrogram import filters
-from bot import bot, config, moviepilot, bot_photo, LOGGER, sakura_b
+from bot import bot, moviepilot, bot_photo, LOGGER, sakura_b
 from bot.func_helper.msg_utils import callAnswer, editMessage, sendMessage, sendPhoto, callListen
 from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.fix_bottons import re_download_center_ikb, back_members_ikb, continue_search_ikb, request_record_page_ikb
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 from bot.sql_helper.sql_request_record import sql_add_request_record, sql_get_request_record_by_tg
-from bot.func_helper.moviepilot import search, add_download_task, get_download_task
+from bot.func_helper.moviepilot import search, add_download_task 
 from bot.func_helper.emby import emby
 import asyncio
 import math
@@ -172,9 +172,7 @@ async def handle_resource_selection(call, result):
                 if need_cost > emby_user.iv:
                     await editMessage(msg, f"❌ 您的{sakura_b}不足，此资源需要 {need_cost}{sakura_b}\n请选择其他资源编号", buttons=re_download_center_ikb)
                     continue
-                # success, download_id = await add_download_task(result[index-1]['torrent_info'])
-                success = True
-                download_id = '1234567890'
+                success, download_id = await add_download_task(result[index-1]['torrent_info'])
                 if success:
                     log = f"【下载任务】：#{call.from_user.id} [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已成功添加到下载队列，下载ID：{download_id}\n此次消耗 {need_cost}{sakura_b}"
                     download_log = f"{log}\n详情：{result[index-1]['tg_log']}"
@@ -214,7 +212,6 @@ async def call_rate(_, call):
         call.from_user.id)
     if request_record is None:
         return await editMessage(call, '🤷‍♂️ 您还没有点播记录，快去点播吧', buttons=re_download_center_ikb)
-    # download_tasks = await get_download_task()
     text = get_request_record_text(request_record)
     user_data[call.from_user.id] = {'request_record_page': 1}
     await editMessage(call, text, buttons=request_record_page_ikb(has_prev, has_next))
@@ -230,7 +227,6 @@ async def request_record_prev(_, call):
     request_record, has_prev, has_next = sql_get_request_record_by_tg(
         call.from_user.id, page=page)
     user_data[call.from_user.id]['request_record_page'] = page
-    # download_tasks = await get_download_task()
     text = get_request_record_text(request_record)
     await editMessage(call, text, buttons=request_record_page_ikb(has_prev, has_next))
 
@@ -243,7 +239,6 @@ async def request_record_next(_, call):
     request_record, has_prev, has_next = sql_get_request_record_by_tg(
         call.from_user.id, page=page)
     user_data[call.from_user.id]['request_record_page'] = page
-    # download_tasks = await get_download_task()
     text = get_request_record_text(request_record)
     await editMessage(call, text, buttons=request_record_page_ikb(has_prev, has_next))
 

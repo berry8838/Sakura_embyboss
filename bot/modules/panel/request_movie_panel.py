@@ -185,7 +185,10 @@ async def handle_resource_selection(call, result):
                     sql_add_request_record(
                         call.from_user.id, download_id, result[index-1]['title'], download_log, need_cost)
                     if moviepilot.download_log_chatid:
-                        await sendMessage(call, download_log, send=True, chat_id=moviepilot.download_log_chatid)
+                        try:
+                            await sendMessage(call, download_log, send=True, chat_id=moviepilot.download_log_chatid)
+                        except Exception as e:
+                            LOGGER.error(f"[MoviePilot] 发送下载日志通知到{moviepilot.download_log_chatid}失败: {str(e)}")
                     await editMessage(msg, f"🎉 已成功添加到下载队列，下载ID：{download_id}，此次消耗 {need_cost}{sakura_b}", buttons=re_download_center_ikb)
                     return
                 else:

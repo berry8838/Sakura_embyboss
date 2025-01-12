@@ -98,13 +98,13 @@ class Proxy(BaseModel):
 
 class MP(BaseModel):
     status: bool = False
-    url: Optional[str] = ''
-    username: Optional[str] = ''
-    password: Optional[str] = ''
-    access_token: Optional[str] = ''
+    url: Optional[str] = ""
+    username: Optional[str] = ""
+    password: Optional[str] = ""
+    access_token: Optional[str] = ""
     price: int = 1
     download_log_chatid: Optional[int] = None
-    lv: Optional[str] = 'b'
+    lv: Optional[str] = "b"
 
 class AutoUpdate(BaseModel):
     status: bool = True

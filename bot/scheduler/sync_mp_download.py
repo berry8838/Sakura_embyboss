@@ -1,5 +1,5 @@
 from bot import LOGGER, config, bot
-from bot.func_helper.moviepilot import get_download_task, get_history_transfer_task
+from bot.func_helper.moviepilot import get_download_task, get_history_transfer_task_by_title_download_id
 from bot.sql_helper.sql_request_record import sql_update_request_status, sql_get_request_record_by_transfer_state, sql_get_request_record_by_download_id
 from bot.func_helper.scheduler import scheduler
 async def sync_download_tasks():
@@ -59,7 +59,7 @@ async def sync_download_tasks():
         if transfer_tasks is not None:
             # 检查每个记录的转移状态
             for record in transfer_tasks:
-                transfer_state = await get_history_transfer_task(record.request_name, record.download_id)
+                transfer_state = await get_history_transfer_task_by_title_download_id("", record.download_id, count=100)
                 if transfer_state is not None:
                     if transfer_state:
                         try:

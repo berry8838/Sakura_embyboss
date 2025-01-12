@@ -154,7 +154,7 @@ async def get_download_task():
     except Exception as e:
         LOGGER.error(f"MP 获取下载任务失败: {e}")
         return None
-async def get_history_transfer_task(title, download_id, page = 1, count = 50):
+async def get_history_transfer_task_by_title_download_id(title, download_id, page = 1, count = 50):
     url = f"{mp.url}/api/v1/history/transfer?title={title}&page={page}&count={count}"
     headers = {'Authorization': mp.access_token}
     request = {'method': 'GET', 'url': url, 'headers': headers}

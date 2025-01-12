@@ -158,8 +158,20 @@ async def change_tg(_, call):
                           f' ✅ 好的，[您](tg://user?id={call.from_user.id})已通过[{current_id}](tg://user?id={current_id})的换绑请求。')
         e = sql_get_emby(tg=replace_id)
         if not e or not e.embyid: return await bot.send_message(current_id, '⁉️ 出错了，您所换绑账户已不存在。')
+        
+        # 清空原账号信息但保留tg
+        if sql_update_emby(Emby.tg == replace_id, embyid=None, name=None, pwd=None, pwd2=None, 
+                          lv='d', cr=None, ex=None, us=0, iv=0, ch=None):
+            LOGGER.info(f'【TG改绑】清空原账户 id{e.tg} 成功')
+        else:
+            await bot.send_message(current_id, "🍰 **⭕#TG改绑 原账户清空错误，请联系闺蜜（管理）！**")
+            LOGGER.error(f"【TG改绑】清空原账户 id{e.tg} 失败, Emby:{e.name}未转移...")
+            return
+
+        # 将原账号的币值转移到新账号
+        old_iv = e.iv
         if sql_update_emby(Emby.tg == current_id, embyid=e.embyid, name=e.name, pwd=e.pwd, pwd2=e.pwd2,
-                           lv=e.lv, cr=e.cr, ex=e.ex, iv=e.iv):
+                           lv=e.lv, cr=e.cr, ex=e.ex, iv=old_iv+sql_get_emby(tg=current_id).iv):
             text = f'⭕ 请接收您的信息！\n\n' \
                    f'· 用户名称 | `{e.name}`\n' \
                    f'· 用户密码 | `{e.pwd}`\n' \
@@ -173,12 +185,8 @@ async def change_tg(_, call):
         else:
             await bot.send_message(current_id, '🍰 **【TG改绑】数据库处理出错，请联系闺蜜（管理）！**')
             LOGGER.error(f"【TG改绑】 emby账户{e.name} 绑定未知错误。")
-        if sql_delete_emby(tg=replace_id):
-            LOGGER.info(f'【TG改绑】删除原账户 id{e.tg} 成功, Emby:{e.name}已转移...')
-        else:
-            await bot.send_message(current_id, "🍰 **⭕#TG改绑 原账户删除错误，请联系闺蜜（管理）！**")
-            LOGGER.error(f"【TG改绑】删除原账户 id{e.tg} 失败, Emby:{e.name}未转移...")
-        return
+            
+        
     except (IndexError, ValueError):
         pass
     d = sql_get_emby(tg=call.from_user.id)
@@ -194,7 +202,7 @@ async def change_tg(_, call):
                              '- **请确保您之前用其他tg账户注册过**\n'
                              '- **请确保您注册的其他tg账户呈已注销状态**\n'
                              '- **请确保输入正确的emby用户名，安全码/密码**\n\n'
-                             '您有120s回复 `[emby用户名] [安全码/密码]`\n例如 `苏苏 5210` ，若密码为空则填写“None”，退出点 /cancel')
+                             '您有120s回复 `[emby用户名] [安全码/密码]`\n例如 `苏苏 5210` ，若密码为空则填写"None"，退出点 /cancel')
     if send is False:
         return
 

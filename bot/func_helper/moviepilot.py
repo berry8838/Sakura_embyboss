@@ -57,9 +57,9 @@ async def login():
         LOGGER.error(f"MP 登录失败: {result}")
         return False
 
-async def search(title):
+async def search_by_site(title):
     """
-    搜索资源
+    搜索站点资源
     Args:
         title: 搜索关键词
     Returns:
@@ -114,7 +114,18 @@ async def search(title):
         LOGGER.error(f"MP Search failed: {str(e)}")
         return False, []
 
-
+async def search_by_media(title):
+    if title is None:
+        return False, []
+    url = f"{mp.url}/api/v1/media/search?page=1&title={title}&type=media"
+    headers = {'Authorization': mp.access_token}
+    request = {'method': 'GET', 'url': url, 'headers': headers}
+    try:
+        items = await _do_request(request)
+        return True, items
+    except Exception as e:
+        LOGGER.error(f"MP 搜索媒体失败: {e}")
+        return False, []
 async def add_download_task(param):
     if param is None:
         return False, None

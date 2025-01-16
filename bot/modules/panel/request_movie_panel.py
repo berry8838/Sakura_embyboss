@@ -2,10 +2,10 @@ from pyrogram import filters
 from bot import bot, moviepilot, bot_photo, LOGGER, sakura_b
 from bot.func_helper.msg_utils import callAnswer, editMessage, sendMessage, sendPhoto, callListen
 from bot.func_helper.filters import user_in_group_on_filter
-from bot.func_helper.fix_bottons import re_download_center_ikb, back_members_ikb, continue_search_ikb, request_record_page_ikb
+from bot.func_helper.fix_bottons import re_download_center_ikb, back_members_ikb, continue_search_site_ikb, continue_search_media_ikb, request_record_page_ikb
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 from bot.sql_helper.sql_request_record import sql_add_request_record, sql_get_request_record_by_tg
-from bot.func_helper.moviepilot import search, add_download_task 
+from bot.func_helper.moviepilot import search_by_site, search_by_media, add_download_task 
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import judge_admins
 import asyncio
@@ -24,7 +24,7 @@ async def call_download_center(_, call):
 
 
 @bot.on_callback_query(filters.regex('get_resource') & user_in_group_on_filter)
-async def download_media(_, call):
+async def get_resource(_, call):
     if not moviepilot.status:
         return await callAnswer(call, '❌ 管理员未开启点播功能', True)
 
@@ -36,7 +36,7 @@ async def download_media(_, call):
     if not judge_admins(emby_user.tg) and moviepilot.lv == 'a' and emby_user.lv != 'a':
         return await editMessage(call, '🫡 您没有权限使用此功能，仅限白名单用户可用', buttons=re_download_center_ikb)
 
-    await asyncio.gather(callAnswer(call, f'🔍 请输入你想求的资源名称'))
+    await asyncio.gather(callAnswer(call, f'🔍 请输入你想点播的资源名称'))
     await editMessage(call,
                       f"当前点播费用为: 1GB 消耗 {moviepilot.price} {sakura_b}\n"
                       f"您当前拥有 {emby_user.iv} {sakura_b}\n"
@@ -60,14 +60,55 @@ async def download_media(_, call):
         for item in emby_results:
             text += f"• {item['title']} ({item['year']})\n"
         text += "\n是否仍要继续搜索站点资源?"
-        await editMessage(call, text, buttons=continue_search_ikb)
+        await editMessage(call, text, buttons=continue_search_site_ikb)
         return
     # 如果Emby中没有，直接搜索站点资源
     await search_site_resources(call, txt.text)
 
+@bot.on_callback_query(filters.regex('get_media') & user_in_group_on_filter)
+async def get_media(_, call):
+    if not moviepilot.status:
+        return await callAnswer(call, '❌ 管理员未开启订阅功能', True)
 
-@bot.on_callback_query(filters.regex('continue_search') & user_in_group_on_filter)
-async def continue_search(_, call):
+    emby_user = sql_get_emby(tg=call.from_user.id)
+    if not emby_user:
+        return await editMessage(call, '⚠️ 数据库没有你，请重新 /start录入')
+    if emby_user.lv is None or emby_user.lv not in ['a', 'b']:
+        return await editMessage(call, '🫡 您没有权限使用此功能', buttons=re_download_center_ikb)
+    if not judge_admins(emby_user.tg) and moviepilot.lv == 'a' and emby_user.lv != 'a':
+        return await editMessage(call, '🫡 您没有权限使用此功能，仅限白名单用户可用', buttons=re_download_center_ikb)
+
+    await asyncio.gather(callAnswer(call, f'🔍 请输入你想订阅的资源名称'))
+    await editMessage(call,
+                      f"当前订阅费用为: 1GB 消耗 {moviepilot.price} {sakura_b}\n"
+                      f"您当前拥有 {emby_user.iv} {sakura_b}\n"
+                      f"请在120s内对我发送你想订阅的资源名称，\n退出点 /cancel")
+
+    txt = await callListen(call, 120, buttons=re_download_center_ikb)
+    if txt is False:
+        return
+    if txt.text == '/cancel':
+        await asyncio.gather(txt.delete(), editMessage(call, '🔍 已取消操作', buttons=back_members_ikb))
+        return
+
+    # 记录用户的搜索文本
+    user_search_data[call.from_user.id] = txt.text
+
+    # 先查询emby库中是否存在
+    await editMessage(call, '🔍 正在查询Emby库，请稍后...')
+    emby_results = await emby.get_movies(txt.text)
+    if emby_results:
+        text = "🎯 Emby库中已存在以下相关资源:\n\n"
+        for item in emby_results:
+            text += f"• {item['title']} ({item['year']})\n"
+        text += "\n是否仍要继续搜索站点资源?"
+        await editMessage(call, text, buttons=continue_search_media_ikb)
+        return
+    # 如果Emby中没有，直接搜索站点资源
+    await search_media_resources(call, txt.text)
+
+@bot.on_callback_query(filters.regex('continue_search_site') & user_in_group_on_filter)
+async def continue_search_site(_, call):
     await callAnswer(call, '🔍 继续搜索')
     # 使用之前保存的搜索文本
     search_text = user_search_data.get(call.from_user.id)
@@ -75,7 +116,14 @@ async def continue_search(_, call):
         await editMessage(call.message, '❌ 未找到搜索记录，请重新搜索', buttons=re_download_center_ikb)
         return
     await search_site_resources(call, search_text)
-
+@bot.on_callback_query(filters.regex('continue_search_media') & user_in_group_on_filter)
+async def continue_search_media(_, call):
+    await callAnswer(call, '🔍 继续搜索')
+    search_text = user_search_data.get(call.from_user.id)
+    if not search_text:
+        await editMessage(call.message, '❌ 未找到搜索记录，请重新搜索', buttons=re_download_center_ikb)
+        return
+    await search_media_resources(call, search_text)
 
 @bot.on_callback_query(filters.regex('cancel_search') & user_in_group_on_filter)
 async def cancel_search(_, call):
@@ -93,7 +141,7 @@ async def search_site_resources(call, keyword):
     """搜索站点资源并显示结果"""
     try:
         await editMessage(call.message, '🔍 正在搜索站点资源，请稍后...')
-        success, result = await search(keyword)
+        success, result = await search_by_site(keyword)
         if not success or len(result) == 0:
             await editMessage(call.message, '🤷‍♂️ 没有找到相关资源', buttons=re_download_center_ikb)
             return
@@ -110,6 +158,23 @@ async def search_site_resources(call, keyword):
         LOGGER.error(f"搜索站点资源时出错: {str(e)}")
         await editMessage(call.message, '❌ 搜索过程中出错', buttons=re_download_center_ikb)
 
+async def search_media_resources(call, keyword):
+    try:
+        await editMessage(call.message, '🔍 正在搜索媒体资源，请稍后...')
+        success, result = await search_by_media(keyword)
+        if not success or len(result) == 0:
+            await editMessage(call.message, '🤷‍♂️ 没有找到相关资源', buttons=re_download_center_ikb)
+            return
+        print(result)
+        for index, item in enumerate(result, start=1):
+            text = format_media_info(index, item)
+            item['tg_log'] = text  # 保存格式化后的文本用于后续日志
+            await sendMessage(call.message, text, send=True, chat_id=call.from_user.id)
+        await sendMessage(call.message, f"共为您找到 {len(result)} 个资源！\n请选择您要订阅的资源编号", send=True, chat_id=call.from_user.id)
+        await handle_media_selection(call, result)
+    except Exception as e:
+        LOGGER.error(f"搜索媒体资源时出错: {str(e)}")
+        await editMessage(call.message, '❌ 搜索过程中出错', buttons=re_download_center_ikb)
 
 def format_resource_info(index, item):
     """格式化资源信息显示"""
@@ -154,6 +219,10 @@ def format_resource_info(index, item):
 
     return text
 
+def format_media_info(index, item):
+    """格式化媒体信息显示"""
+    text = f"资源编号: `{index}`\n来源：{item['source']}\nTMDB_ID:{item['tmdb_id']}\n标题：{item['title']}\n类型：{item['type']}\n详情：{item['year'] }年 \n {item['overview']}"
+    return text
 
 async def handle_resource_selection(call, result):
     while True:

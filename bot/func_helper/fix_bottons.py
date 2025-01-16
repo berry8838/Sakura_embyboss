@@ -451,10 +451,14 @@ def get_resource_ikb(download_name: str):
     return ikb([[(f'下载本片', f'download_{download_name}'), ('激活订阅', f'submit_{download_name}')],
                 [('❌ 关闭', 'closeit')]])
 re_download_center_ikb = ikb([
-    [('🍿 点播', 'get_resource'), ('📶 下载进度', 'download_rate')], 
+    [('🍿 点播', 'get_resource'), ('🔗 订阅', 'get_media'), ('📶 下载进度', 'download_rate')], 
     [('🔙 返回', 'members')]])
-continue_search_ikb = ikb([
-    [('🔄 继续搜索', 'continue_search'), ('❌ 取消搜索', 'cancel_search')],
+continue_search_site_ikb = ikb([
+    [('🔄 继续搜索', 'continue_search_site'), ('❌ 取消搜索', 'cancel_search')],
+    [('🔙 返回', 'download_center')]
+])
+continue_search_media_ikb = ikb([
+    [('🔄 继续搜索', 'continue_search_media'), ('❌ 取消搜索', 'cancel_search')],
     [('🔙 返回', 'download_center')]
 ])
 def download_resource_ids_ikb(resource_ids: list):

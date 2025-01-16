@@ -81,16 +81,22 @@ async def sync_emby_group(_, msg):
 @bot.on_message(filters.command('syncunbound', prefixes) & admins_on_filter)
 async def sync_emby_unbound(_, msg):
     await deleteMessage(msg)
-    send = await sendPhoto(msg, photo=bot_photo, caption="⚡绑定同步任务\n  **正在开启中...消灭未绑定bot的emby账户**",
+    send = await sendPhoto(msg, photo=bot_photo, caption="⚡扫描未绑定Bot任务\n  **正在开启中...消灭扫描bot的emby账户**",
                            send=True)
     LOGGER.info(
-        f"【绑定同步任务开启 - 消灭未绑定bot的emby账户】 - {msg.from_user.first_name} - {msg.from_user.id}")
+        f"【扫描未绑定Bot任务开启】 - {msg.from_user.first_name} - {msg.from_user.id}")
+    confirm_delete = False
+    try:
+        confirm_delete = msg.command[1]
+    except:
+        pass
+
     a = b = 0
     text = ''
     start = time.perf_counter()
     success, alluser = await emby.users()
     if not success or alluser is None:
-        return await send.edit("⚡绑定同步任务\n\n结束！搞毛，没有人。")
+        return await send.edit("⚡扫描未绑定Bot任务结束\n\n结束！搞毛，emby库中一个人都没有。")
 
     if success:
         for v in alluser:
@@ -105,8 +111,11 @@ async def sync_emby_unbound(_, msg):
                         e1 = sql_get_emby2(name=embyid)
                         if e1 is None:
                             a += 1
-                            await emby.emby_del(embyid)
-                            text += f"🎯 #{v['Name']} 未绑定bot，删除\n"
+                            if confirm_delete:
+                                await emby.emby_del(embyid)
+                                text += f"🎯 #{v['Name']} 未绑定bot，删除\n"
+                            else:
+                                text += f"🎯 #{v['Name']} 未绑定bot\n"
             except Exception as e:
                 LOGGER.warning(e)
         # 防止触发 MESSAGE_TOO_LONG 异常
@@ -117,10 +126,10 @@ async def sync_emby_unbound(_, msg):
     end = time.perf_counter()
     times = end - start
     if a != 0:
-        await sendMessage(msg, text=f"⚡绑定同步任务 done\n  共检索出 {b} 个账户，删除 {a}个，耗时：{times:.3f}s")
+        await sendMessage(msg, text=f"⚡扫描未绑定Bot任务 done\n  共检索出 {b} 个账户， {a}个未绑定，耗时：{times:.3f}s，如需删除请输入 `/syncunbound true`")
     else:
-        await sendMessage(msg, text=f"**绑定同步任务 结束！搞毛，没有人被干掉。**")
-    LOGGER.info(f"【绑定同步任务结束】 - {msg.from_user.id} 共检索出 {b} 个账户，删除 {a}个，耗时：{times:.3f}s")
+        await sendMessage(msg, text=f"**扫描未绑定Bot任务 结束！搞毛，没有人被干掉。**")
+    LOGGER.info(f"【扫描未绑定Bot任务结束】 - {msg.from_user.id} 共检索出 {b} 个账户， {a}个未绑定，耗时：{times:.3f}s")
 
 
 @bot.on_message(filters.command('bindall_id', prefixes) & filters.user(owner))

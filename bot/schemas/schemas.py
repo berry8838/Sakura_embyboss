@@ -103,6 +103,7 @@ class MP(BaseModel):
     password: Optional[str] = ""
     access_token: Optional[str] = ""
     price: int = 1
+    subscribe_price: int = 10
     download_log_chatid: Optional[int] = None
     lv: Optional[str] = "b"
 

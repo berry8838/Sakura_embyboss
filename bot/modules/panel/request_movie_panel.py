@@ -5,7 +5,7 @@ from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.fix_bottons import re_download_center_ikb, back_members_ikb, continue_search_site_ikb, continue_search_media_ikb, request_record_page_ikb
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 from bot.sql_helper.sql_request_record import sql_add_request_record, sql_get_request_record_by_tg
-from bot.func_helper.moviepilot import search_by_site, search_by_media, add_download_task 
+from bot.func_helper.moviepilot import search_by_site, search_by_media, add_download_task, create_subscribe
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import judge_admins
 import asyncio
@@ -80,7 +80,7 @@ async def get_media(_, call):
 
     await asyncio.gather(callAnswer(call, f'🔍 请输入你想订阅的资源名称'))
     await editMessage(call,
-                      f"当前订阅费用为: 1GB 消耗 {moviepilot.price} {sakura_b}\n"
+                      f"当前订阅费用为: 1次 消耗 {moviepilot.subscribe_price} {sakura_b}\n"
                       f"您当前拥有 {emby_user.iv} {sakura_b}\n"
                       f"请在120s内对我发送你想订阅的资源名称，\n退出点 /cancel")
 
@@ -165,7 +165,6 @@ async def search_media_resources(call, keyword):
         if not success or len(result) == 0:
             await editMessage(call.message, '🤷‍♂️ 没有找到相关资源', buttons=re_download_center_ikb)
             return
-        print(result)
         for index, item in enumerate(result, start=1):
             text = format_media_info(index, item)
             item['tg_log'] = text  # 保存格式化后的文本用于后续日志
@@ -221,7 +220,7 @@ def format_resource_info(index, item):
 
 def format_media_info(index, item):
     """格式化媒体信息显示"""
-    text = f"资源编号: `{index}`\n来源：{item['source']}\nTMDB_ID:{item['tmdb_id']}\n标题：{item['title']}\n类型：{item['type']}\n详情：{item['year'] }年 \n {item['overview']}"
+    text = f"资源编号: `{index}`\n来源：{item['source']}\n标题：{item['title']}\n类型：{item['type']}\n详情：{item['year'] }年 \n {item['overview']}\n点击查看详情:{item['detail_link']}"
     return text
 
 async def handle_resource_selection(call, result):
@@ -274,6 +273,54 @@ async def handle_resource_selection(call, result):
                 await editMessage(msg, '❌ 呜呜呜，出错了', buttons=re_download_center_ikb)
                 return
 
+async def handle_media_selection(call, result):
+   while True:
+        emby_user = sql_get_emby(tg=call.from_user.id)
+        msg = await sendPhoto(call, photo=bot_photo, caption="【选择资源编号】：\n请在120s内对我发送你的资源编号，\n退出点 /cancel", send=True, chat_id=call.from_user.id)
+        txt = await callListen(call, 120, buttons=re_download_center_ikb)
+        if txt is False:
+            await asyncio.gather(editMessage(msg, '🔍 已取消操作', buttons=back_members_ikb))
+            return
+        elif txt.text == '/cancel':
+            await asyncio.gather(editMessage(msg, '🔍 已取消操作', buttons=back_members_ikb))
+            return
+        else:
+            try:
+                await editMessage(msg, '🔍 正在处理，请稍后')
+                index = int(txt.text)
+                need_cost = moviepilot.subscribe_price
+                if need_cost > emby_user.iv:
+                    await editMessage(msg, f"❌ 您的{sakura_b}不足，此资源需要 {need_cost}{sakura_b}\n请选择其他资源编号", buttons=re_download_center_ikb)
+                    continue
+                success, download_id = await create_subscribe(result[index-1])
+                if success:
+                    log = f"【订阅任务】：#{call.from_user.id} [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已成功添加到订阅队列，订阅ID：{download_id}\n此次消耗 {need_cost}{sakura_b}"
+                    download_log = f"{log}\n详情：{result[index-1]['tg_log']}"
+                    LOGGER.info(log)
+                    sql_update_emby(Emby.tg == call.from_user.id,
+                                    iv=emby_user.iv - need_cost)
+                    sql_add_request_record(
+                        call.from_user.id, download_id, result[index-1]['title'], download_log, need_cost)
+                    if moviepilot.download_log_chatid:
+                        try:
+                            await sendMessage(call, download_log, send=True, chat_id=moviepilot.download_log_chatid)
+                        except Exception as e:
+                            LOGGER.error(f"[MoviePilot] 发送下载日志通知到{moviepilot.download_log_chatid}失败: {str(e)}")
+                    await editMessage(msg, f"🎉 已成功添加到下载队列，下载ID：{download_id}，此次消耗 {need_cost}{sakura_b}", buttons=re_download_center_ikb)
+                    return
+                else:
+                    LOGGER.error(f"【下载任务】：{call.from_user.id} 添加下载任务失败!")
+                    await editMessage(msg, f"❌ 添加下载任务失败!", buttons=re_download_center_ikb)
+                    return
+            except IndexError:
+                await editMessage(msg, '❌ 输入错误，请重新输入，退出点 /cancel', buttons=re_download_center_ikb)
+                continue
+            except ValueError:
+                await editMessage(msg, '❌ 输入错误，请重新输入，退出点 /cancel', buttons=re_download_center_ikb)
+                continue
+            except:
+                await editMessage(msg, '❌ 呜呜呜，出错了', buttons=re_download_center_ikb)
+                return 
 
 user_data = {}
 

@@ -196,11 +196,13 @@ async def clear_deleted_account(_, msg):
     async for d in bot.get_chat_members(group[0]):  # 以后别写group了,绑定一下聊天群更优雅
         b += 1
         try:
-            if d.user.is_deleted:  # and d.is_member or any(keyword in l.user.first_name for keyword in keywords) 关键词检索，没模板不加了
+            # and d.is_member or any(keyword in l.user.first_name for keyword in keywords) 关键词检索，没模板不加了
+            if d.user.is_deleted:
                 await msg.chat.ban_member(d.user.id)
                 sql_delete_emby(tg=d.user.id)
                 a += 1
-                text += f'{a}. `{d.user.id}` 已注销\n'  # 打个注释，scheduler 默认出群就删号了，不需要再执行删除
+                # 打个注释，scheduler 默认出群就删号了，不需要再执行删除
+                text += f'{a}. `{d.user.id}` 已注销\n'
         except Exception as e:
             LOGGER.error(e)
     await send.delete()
@@ -278,3 +280,44 @@ async def restore_from_db(_, msg):
         for c in chunks:
             await sendMessage(msg, c + f'\n🔈 当前时间：{datetime.now().strftime("%Y-%m-%d")}')
         await sendMessage(msg, '** 恢复完成 **')
+
+
+@bot.on_message(filters.command('scan_embyname', prefixes) & admins_on_filter)
+async def scan_embyname(_, msg):
+    await deleteMessage(msg)
+    send = await msg.reply("🔍 正在扫描重复用户名...")
+    LOGGER.info(
+        f"【扫描重复用户名任务开启】 - {msg.from_user.first_name} - {msg.from_user.id}")
+
+    # 获取所有有效的emby用户
+    emby_users = get_all_emby(Emby.name is not None)
+    if not emby_users:
+        return await send.edit("⚡扫描重复用户名任务\n\n结束！数据库中没有用户。")
+
+    # 用字典统计相同name的用户
+    name_count = {}
+    for user in emby_users:
+        if user.name:
+            if user.name in name_count:
+                name_count[user.name].append(user)
+            else:
+                name_count[user.name] = [user]
+    # 筛选出重复的用户名
+    duplicate_names = {name: users for name,
+                       users in name_count.items() if len(users) > 1}
+    if not duplicate_names:
+        return await send.edit("✅ 没有发现重复的用户名！")
+    text = "🔍 发现以下重复用户名：\n\n"
+    for name, users in duplicate_names.items():
+        text += f"用户名: {name}\n"
+        for user in users:
+            text += f"- TG ID: `{user.tg}` | Emby ID: `{user.embyid}`\n"
+        text += "\n"
+    text += "\n使用 `/only_rm_record tg_id` 可删除指定用户的数据库记录（不会删除 Emby 账号）"
+    # 分段发送消息，避免超过长度限制
+    n = 1000
+    chunks = [text[i:i + n] for i in range(0, len(text), n)]
+    for c in chunks:
+        await sendMessage(msg, c)
+    LOGGER.info(
+        f"【扫描重复用户名任务结束】 - {msg.from_user.id} 共发现 {len(duplicate_names)} 个重复用户名")

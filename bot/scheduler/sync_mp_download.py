@@ -1,12 +1,12 @@
 from bot import LOGGER, config, bot
-from bot.func_helper.moviepilot import get_download_task, get_history_transfer_task_by_title_download_id
+from bot.func_helper.moviepilot import get_download_tasks, get_history_transfer_task_by_title_download_id, get_subscribes
 from bot.sql_helper.sql_request_record import sql_update_request_status, sql_get_request_record_by_transfer_state, sql_get_request_record_by_download_id
 from bot.func_helper.scheduler import scheduler
 async def sync_download_tasks():
     """同步MoviePilot下载任务状态到数据库"""
     try:
         # 获取所有下载任务
-        download_tasks = await get_download_task()
+        download_tasks = await get_download_tasks()
         download_count = 0
         if download_tasks is not None:
             # 更新每个任务的状态

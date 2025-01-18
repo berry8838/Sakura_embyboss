@@ -108,7 +108,7 @@ class Embyservice(metaclass=Singleton):
         new_user = r.post(f'{self.url}/emby/Users/New',
                           headers=self.headers,
                           json=name_data)
-        if new_user.status_code == 200 or 204:
+        if new_user.status_code == 200 or new_user.status_code == 204:
             try:
                 id = new_user.json()["Id"]
                 pwd = await pwd_create(8)
@@ -123,7 +123,7 @@ class Embyservice(metaclass=Singleton):
                 _policy = r.post(f'{self.url}/emby/Users/{id}/Policy',
                                  headers=self.headers,
                                  json=policy)  # .encode('utf-8')
-                return id, pwd, ex if _policy.status_code == 200 or 204 else False
+                return id, pwd, ex if _policy.status_code == 200 or _policy.status_code == 204 else False
         else:
             return False
 
@@ -134,7 +134,7 @@ class Embyservice(metaclass=Singleton):
         :return: bool
         """
         res = r.delete(f'{self.url}/emby/Users/{id}', headers=self.headers)
-        if res.status_code == 200 or 204:
+        if res.status_code == 200 or res.status_code == 204:
             return True
         return False
 
@@ -152,7 +152,7 @@ class Embyservice(metaclass=Singleton):
                       headers=self.headers,
                       json=pwd)
         # print(_pwd.status_code)
-        if _pwd.status_code == 200 or 204:
+        if _pwd.status_code == 200 or _pwd.status_code == 204:
             if new is None:
                 if sql_update_emby(Emby.embyid == id, pwd=None) is True:
                     return True
@@ -162,7 +162,7 @@ class Embyservice(metaclass=Singleton):
                 new_pwd = r.post(f'{self.url}/emby/Users/{id}/Password',
                                  headers=self.headers,
                                  json=pwd2)
-                if new_pwd.status_code == 200 or 204:
+                if new_pwd.status_code == 200 or new_pwd.status_code == 204:
                     if sql_update_emby(Emby.embyid == id, pwd=new) is True:
                         return True
                     return False
@@ -184,7 +184,7 @@ class Embyservice(metaclass=Singleton):
                          headers=self.headers,
                          json=policy)
         # print(policy)
-        if _policy.status_code == 200 or 204:
+        if _policy.status_code == 200 or _policy.status_code == 204:
             return True
         return False
 
@@ -231,7 +231,7 @@ class Embyservice(metaclass=Singleton):
         _policy = r.post(self.url + f'/emby/Users/{id}/Policy',
                          headers=self.headers,
                          json=policy)
-        if _policy.status_code == 200 or 204:
+        if _policy.status_code == 200 or _policy.status_code == 204:
             return True
         return False
 
@@ -301,7 +301,15 @@ class Embyservice(metaclass=Singleton):
             return True, resp.json()
         except Exception as e:
             return False, {'error': e}
-
+    async def get_emby_user_by_name(self, embyname):
+        _url = f"{self.url}/emby/Users/Query?NameStartsWithOrGreater={embyname}&api_key={self.api_key}"
+        resp = r.get(_url, headers=self.headers)
+        if resp.status_code != 204 and resp.status_code != 200:
+            return False, {'error': "🤕Emby 服务器连接失败!"}
+        for item in resp.json().get("Items"):
+            if item.get("Name") == embyname:
+                return True, item
+        return False, {'error': "🤕Emby 服务器返回数据为空!"}
     async def add_favotire_items(self, user_id, item_id):
         try:
             _url = f"{self.url}/emby/Users/{user_id}/FavoriteItems/{item_id}"

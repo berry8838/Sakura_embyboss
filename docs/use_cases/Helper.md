@@ -72,6 +72,39 @@
    emby插件 [playback reporting](../deploy/start_docker.md#3填写configjson) 此处第一张图
 
 <hr>
+##  :material-webhook: WebHook - 追剧推送
+1. 添加第一个Webhook
+
+    名称: 随便填，例如：favorites
+
+    URL: 填入`http://192.168.2.147:8838/emby/webhook/favorites?token=这里填入bot的token`
+    将ip地址和端口替换成自己bot所在的地址和端口，token填入bot的token，如图：
+
+    ![emby_webhook](../assets/images/webhook/webhook_favorites.png){height=300px width=300px}
+
+    事件类型选中：添加到“最爱”，从“最爱”中移除，然后点击存储，如图：
+
+    ![emby_webhook_event](../assets/images/webhook/webhook_favorites_event.png){height=300px width=300px}
+
+2. 添加第二个Webhook
+
+    名称: 随便填，例如：medias
+
+    URL: 填入`http://192.168.2.147:8838/emby/webhook/medias?token=这里填入bot的token`
+
+    将ip地址和端口替换成自己bot所在的地址和端口，token填入bot的token，如图：
+
+    ![emby_webhook](../assets/images/webhook/webhook_medias.png){height=300px width=300px}
+
+    事件类型选中：新媒体已添加，然后点击存储，如图：
+
+    ![emby_webhook_event](../assets/images/webhook/webhook_medias_event.png){height=300px width=300px}
+
+3. 配置完成后可实现如下效果
+
+    ![emby_webhook_effect](../assets/images/webhook/webhook_newmedia1.png){height=300px width=300px}
+    ![emby_webhook_effect](../assets/images/webhook/webhook_newmedia2.png){height=300px width=300px}
+<hr>
 
 ## :material-movie-roll: 其他设置各点解释
 

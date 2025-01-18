@@ -90,6 +90,7 @@ admin_p = user_p + [
     BotCommand("unban_channel", "解封皮套人 [管理]"),
     BotCommand("syncgroupm", "消灭不在群的人 [管理]"),
     BotCommand("syncunbound", "消灭未绑定bot的emby账户 [管理]"),
+    BotCommand("scan_embyname", "扫描同名的用户记录 [管理]"),
     BotCommand("low_activity", "手动运行活跃检测 [管理]"),
     BotCommand("check_ex", "手动到期检测 [管理]"),
     BotCommand("uranks", "召唤观影时长榜，失效时用 [管理]"),

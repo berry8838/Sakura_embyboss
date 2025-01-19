@@ -130,14 +130,14 @@ async def add_download_task(param):
             LOGGER.info(f"MP 添加下载任务成功, ID: {result['data']['download_id']}")
             return True, result["data"]["download_id"]
         else:
-            LOGGER.error(f"MP 添加下载任务失败: {result.get('message')}")
+            LOGGER.error(f"MP 添加下载任务失败: {result}")
             return False, None
     except Exception as e:
         LOGGER.error(f"MP 添加下载任务失败: {e}")
         return False, None
 
 async def get_download_task():
-    url = f"{mp.url}/api/v1/download"
+    url = f"{mp.url}/api/v1/download?name=下载"
     headers = {'Authorization': mp.access_token}
     request = {'method': 'GET', 'url': url, 'headers': headers}
     try:
@@ -160,13 +160,13 @@ async def get_history_transfer_task_by_title_download_id(title, download_id, pag
     request = {'method': 'GET', 'url': url, 'headers': headers}
     try:
         result = await _do_request(request)
-        if result.get("success", False) and result.get("data", []):
+        if result and result.get("success", False) and result.get("data", []):
             for item in result["data"]["list"]:
                 if item['download_hash'] == download_id:
                     return item['status']
             return None
         else:
-            LOGGER.error(f"MP 获取历史转移任务失败: {result.get('message')}")
+            LOGGER.error(f"MP 获取历史转移任务失败: {result}")
             return None
     except Exception as e:
         LOGGER.error(f"MP 获取历史转移任务失败: {e}")

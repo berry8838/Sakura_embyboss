@@ -175,7 +175,10 @@ async def handle_resource_selection(call, result):
                 if need_cost > emby_user.iv:
                     await editMessage(msg, f"❌ 您的{sakura_b}不足，此资源需要 {need_cost}{sakura_b}\n请选择其他资源编号", buttons=re_download_center_ikb)
                     continue
-                success, download_id = await add_download_task(result[index-1]['torrent_info'])
+                torrent_info = result[index-1]['torrent_info']
+                # 兼容mp v2的api，加入了torrent_in
+                param = {**torrent_info, 'torrent_in': torrent_info}
+                success, download_id = await add_download_task(param)
                 if success:
                     log = f"【下载任务】：#{call.from_user.id} [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已成功添加到下载队列，下载ID：{download_id}\n此次消耗 {need_cost}{sakura_b}"
                     download_log = f"{log}\n详情：{result[index-1]['tg_log']}"

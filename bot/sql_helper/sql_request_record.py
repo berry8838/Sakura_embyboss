@@ -41,7 +41,7 @@ def sql_add_request_record(tg: int, download_id: str, request_name: str, detail:
 def sql_get_request_record_by_tg(tg: int, page: int = 1, limit: int = 5):
     with Session() as session:
         request_record = session.query(RequestRecord).filter(
-            RequestRecord.tg == tg).limit(limit + 1).offset((page - 1) * limit).all()
+            RequestRecord.tg == tg).order_by(RequestRecord.create_at.desc()).limit(limit + 1).offset((page - 1) * limit).all()
         if len(request_record) == 0:
             return None, False, False
         if len(request_record) == limit + 1:

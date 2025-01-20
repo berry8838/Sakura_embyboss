@@ -59,8 +59,8 @@ async def only_rm_record(_, msg):
     try:
         sql_delete_emby(tg=tg_id)
         await sendMessage(msg, f"✅ 已删除 TG ID: {tg_id} 的数据库记录")
-        LOGGER.info(
-            f"管理员 {msg.from_user.first_name}({msg.from_user.id}) 删除了用户 {tg_id} 的数据库记录")
+        # LOGGER.info(
+        #     f"管理员 {msg.from_user.first_name}({msg.from_user.id}) 删除了用户 {tg_id} 的数据库记录")
     except Exception as e:
         await sendMessage(msg, f"❌ 删除记录失败: {str(e)}")
         LOGGER.error(f"删除用户 {tg_id} 的数据库记录失败: {str(e)}")

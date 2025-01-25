@@ -313,7 +313,7 @@ async def scan_embyname(_, msg):
         for user in users:
             text += f"- TG ID: `{user.tg}` | Emby ID: `{user.embyid}`\n"
         text += "\n"
-    text += "\n使用 `/only_rm_record tg_id` 可删除指定用户的数据库记录（不会删除 Emby 账号）"
+    text += "\n使用 `/only_rm_record tg_id` 可删除指定用户的数据库记录（此命令不会删除 Emby 账号）"
     # 分段发送消息，避免超过长度限制
     n = 1000
     chunks = [text[i:i + n] for i in range(0, len(text), n)]

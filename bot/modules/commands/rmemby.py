@@ -32,16 +32,16 @@ async def rmemby_user(_, msg):
         if await emby.emby_del(id=e.embyid):
             sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
             tem_deluser()
+            sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
             try:
                 await reply.edit(
-                    f'🎯 done，管理员 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id})\n[{first.first_name}](tg://user?id={e.tg}) 账户 {e.name} '
-                    f'已完成删除。')
+                    f'🎯 done，管理员  {sign_name} 已将 [{first.first_name}](tg://user?id={e.tg}) 账户 {e.name} 删除。')
                 await bot.send_message(e.tg,
-                                       f'🎯 done，管理员 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 已将 您的账户 {e.name} 删除。')
+                                       f'🎯 done，管理员 {sign_name} 已将 您的账户 {e.name} 删除。')
             except:
                 pass
             LOGGER.info(
-                f"【admin】：管理员 {msg.from_user.first_name} 执行删除 {first.first_name}-{e.tg} 账户 {e.name}")
+                f"【admin】：管理员 {sign_name} 执行删除 {first.first_name}-{e.tg} 账户 {e.name}")
     else:
         await reply.edit(f"💢 [ta](tg://user?id={b}) 还没有注册账户呢")
 @bot.on_message(filters.command('only_rm_record', prefixes) & admins_on_filter)
@@ -58,9 +58,10 @@ async def only_rm_record(_, msg):
 
     try:
         sql_delete_emby(tg=tg_id)
-        await sendMessage(msg, f"✅ 已删除 TG ID: {tg_id} 的数据库记录")
-        # LOGGER.info(
-        #     f"管理员 {msg.from_user.first_name}({msg.from_user.id}) 删除了用户 {tg_id} 的数据库记录")
+        sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
+        await sendMessage(msg, f"管理员 {sign_name} 已删除 TG ID: {tg_id} 的数据库记录")
+        LOGGER.info(
+            f"管理员 {sign_name} 删除了用户 {tg_id} 的数据库记录")
     except Exception as e:
         await sendMessage(msg, f"❌ 删除记录失败: {str(e)}")
         LOGGER.error(f"删除用户 {tg_id} 的数据库记录失败: {str(e)}")
@@ -82,6 +83,7 @@ async def only_rm_emby(_, msg):
         res = await emby.emby_del(embyuser.get("Id"))
         if not res:
             return await sendMessage(msg, f"❌ 删除用户 {emby_id} 失败")
-    await sendMessage(msg, f"✅ 已删除用户 {emby_id} 的Emby账号")
-    LOGGER.info(
-        f"管理员 {msg.from_user.first_name}({msg.from_user.id}) 删除了用户 {emby_id} 的Emby账号")
+        sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
+        await sendMessage(msg, f"管理员 {sign_name} 已删除用户 {emby_id} 的Emby账号")
+        LOGGER.info(
+            f"管理员 {sign_name} 删除了用户 {emby_id} 的Emby账号")

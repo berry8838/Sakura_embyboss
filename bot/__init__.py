@@ -101,6 +101,8 @@ admin_p = user_p + [
     BotCommand("ucr", "私聊创建非tg的emby用户 [管理]"),
     BotCommand("uinfo", "查询指定用户名 [管理]"),
     BotCommand("urm", "删除指定用户名 [管理]"),
+    BotCommand("only_rm_emby", "删除指定的Emby账号 [管理]"),
+    BotCommand("only_rm_record", "删除指定的tgid数据库记录 [管理]"),
     BotCommand("restart", "重启bot [管理]"),
     BotCommand("update_bot", "更新bot [管理]"),
 ]

@@ -479,6 +479,13 @@ def request_record_page_ikb(has_prev: bool, has_next: bool):
     if has_next:
         buttons.append(('下一页 >', 'request_record_next'))
     return ikb([buttons, [('🔙 返回', 'download_center')]])
+def mp_search_page_ikb(has_prev: bool, has_next: bool, page: int):
+    buttons = []
+    if has_prev:
+        buttons.append(('< 上一页', 'mp_search_prev_page'))
+    if has_next:
+        buttons.append(('下一页 >', 'mp_search_next_page'))
+    return ikb([buttons, [('💾 选择下载', 'mp_search_select_download'), ('❌ 取消搜索', 'cancel_search')]])
 
 # 添加 MoviePilot 设置按钮
 def mp_config_ikb():

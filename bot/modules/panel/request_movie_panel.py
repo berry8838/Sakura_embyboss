@@ -2,7 +2,7 @@ from pyrogram import filters
 from bot import bot, moviepilot, bot_photo, LOGGER, sakura_b
 from bot.func_helper.msg_utils import callAnswer, editMessage, sendMessage, sendPhoto, callListen
 from bot.func_helper.filters import user_in_group_on_filter
-from bot.func_helper.fix_bottons import re_download_center_ikb, back_members_ikb, continue_search_ikb, request_record_page_ikb
+from bot.func_helper.fix_bottons import re_download_center_ikb, back_members_ikb, continue_search_ikb, request_record_page_ikb,mp_search_page_ikb
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 from bot.sql_helper.sql_request_record import sql_add_request_record, sql_get_request_record_by_tg
 from bot.func_helper.moviepilot import search, add_download_task 
@@ -13,6 +13,7 @@ import math
 
 # 添加全局字典来存储用户搜索记录
 user_search_data = {}
+ITEMS_PER_PAGE = 10
 
 
 @bot.on_callback_query(filters.regex('download_center') & user_in_group_on_filter)
@@ -89,23 +90,52 @@ async def cancel_download(_, call):
     user_search_data.pop(call.from_user.id, None)
     await editMessage(call.message, '🔍 已取消下载', buttons=re_download_center_ikb)
 
-async def search_site_resources(call, keyword):
+async def search_site_resources(call, keyword, page=1, all_result=None):
     """搜索站点资源并显示结果"""
     try:
-        await editMessage(call.message, '🔍 正在搜索站点资源，请稍后...')
-        success, result = await search(keyword)
-        if not success or len(result) == 0:
+        if page == 1:
+            await editMessage(call.message, '🔍 正在搜索站点资源，请稍后...')
+        if all_result is None:
+            success, all_result = await search(keyword)
+            if not success:
+                await editMessage(call.message, '🤷‍♂️ 搜索站点资源失败，请稍后再试', buttons=re_download_center_ikb)
+                return
+        if all_result is None or len(all_result) == 0:
             await editMessage(call.message, '🤷‍♂️ 没有找到相关资源', buttons=re_download_center_ikb)
             return
 
-        # 显示搜索结果
-        for index, item in enumerate(result, start=1):
+        # 计算分页
+        start_idx = (page - 1) * ITEMS_PER_PAGE
+        end_idx = start_idx + ITEMS_PER_PAGE
+        page_items = all_result[start_idx:end_idx]
+        total_pages = math.ceil(len(all_result) / ITEMS_PER_PAGE)
+
+        # 保存搜索结果到用户数据
+        user_search_data[call.from_user.id] = {
+            'keyword': keyword,
+            'all_result': all_result,
+            'current_page': page,
+            'total_pages': total_pages
+        }
+
+        # 显示当前页的搜索结果
+        for index, item in enumerate(page_items, start=start_idx + 1):
             text = format_resource_info(index, item)
-            item['tg_log'] = text  # 保存格式化后的文本用于后续日志
+            item['tg_log'] = text
             await sendMessage(call.message, text, send=True, chat_id=call.from_user.id)
 
-        await sendMessage(call.message, f"共为您找到 {len(result)} 个资源！\n请选择您要下载的资源编号", send=True, chat_id=call.from_user.id)
-        await handle_resource_selection(call, result)
+        # 创建分页按钮
+        keyboard = mp_search_page_ikb(page > 1, page < total_pages, page)
+        pagination_text = f"第 {page}/{total_pages} 页 | 共 {len(all_result)} 个资源"
+        await sendPhoto(
+            call.message,
+            photo=bot_photo,
+            caption=f"请点击下载按钮选择下载，如果没有合适的资源，请翻页查询\n\n{pagination_text}", 
+            send=True, 
+            chat_id=call.from_user.id,
+            buttons=keyboard
+        )
+
     except Exception as e:
         LOGGER.error(f"搜索站点资源时出错: {str(e)}")
         await editMessage(call.message, '❌ 搜索过程中出错', buttons=re_download_center_ikb)
@@ -161,9 +191,12 @@ async def handle_resource_selection(call, result):
         msg = await sendPhoto(call, photo=bot_photo, caption="【选择资源编号】：\n请在120s内对我发送你的资源编号，\n退出点 /cancel", send=True, chat_id=call.from_user.id)
         txt = await callListen(call, 120, buttons=re_download_center_ikb)
         if txt is False:
+            user_search_data.pop(call.from_user.id, None)
+
             await asyncio.gather(editMessage(msg, '🔍 已取消操作', buttons=back_members_ikb))
             return
         elif txt.text == '/cancel':
+            user_search_data.pop(call.from_user.id, None)
             await asyncio.gather(editMessage(msg, '🔍 已取消操作', buttons=back_members_ikb))
             return
         else:
@@ -179,6 +212,7 @@ async def handle_resource_selection(call, result):
                 # 兼容mp v2的api，加入了torrent_in
                 param = {**torrent_info, 'torrent_in': torrent_info}
                 success, download_id = await add_download_task(param)
+                user_search_data.pop(call.from_user.id, None)
                 if success:
                     log = f"【下载任务】：#{call.from_user.id} [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 已成功添加到下载队列，下载ID：{download_id}\n此次消耗 {need_cost}{sakura_b}"
                     download_log = f"{log}\n详情：{result[index-1]['tg_log']}"
@@ -302,3 +336,37 @@ def get_request_record_text(request_record):
                 download_state_text = '下载失败'
             text += f"「{index}」：{item.request_name} \n状态：{download_state_text} {progress_text}\n 剩余时间：{item.left_time}\n"
     return text
+
+# 添加新的回调处理函数
+@bot.on_callback_query(filters.regex('^mp_search_prev_page$') & user_in_group_on_filter)
+async def handle_prev_page(_, call):
+    user_data = user_search_data.get(call.from_user.id)
+    if not user_data:
+        return await callAnswer(call, '❌ 搜索会话已过期，请重新搜索', True)
+    
+    new_page = user_data['current_page'] - 1
+    await callAnswer(call, f'📃 正在加载第 {new_page} 页')
+    all_result = user_data['all_result']
+    keyword = user_data['keyword']
+    await search_site_resources(call, keyword, new_page, all_result)
+
+@bot.on_callback_query(filters.regex('^mp_search_next_page$') & user_in_group_on_filter)
+async def handle_next_page(_, call):
+    user_data = user_search_data.get(call.from_user.id)
+    if not user_data:
+        return await callAnswer(call, '❌ 搜索会话已过期，请重新搜索', True)
+    
+    new_page = user_data['current_page'] + 1
+    await callAnswer(call, f'📃 正在加载第 {new_page} 页')
+    all_result = user_data['all_result']
+    keyword = user_data['keyword']
+    await search_site_resources(call, keyword, new_page, all_result)
+
+@bot.on_callback_query(filters.regex('^mp_search_select_download$') & user_in_group_on_filter)
+async def handle_select_download(_, call):
+    user_data = user_search_data.get(call.from_user.id)
+    if not user_data:
+        return await callAnswer(call, '❌ 搜索会话已过期，请重新搜索', True)
+    
+    await callAnswer(call, '💾 进入资源选择')
+    await handle_resource_selection(call, user_data['all_result'])

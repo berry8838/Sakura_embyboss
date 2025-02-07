@@ -103,10 +103,8 @@ async def search(title):
                 }
                 results.append(result)
                 
-        # 按做种数排序并限制返回数量
-        results.sort(key=lambda x: x["seeders"], reverse=True)  # 现在 seeders 一定是数字
-        if len(results) > 10:
-            results = results[:10]
+        # 只按做种数排序,移除数量限制
+        results.sort(key=lambda x: x["seeders"], reverse=True)
             
         LOGGER.info("MP Search successful!")
         return True, results

@@ -9,9 +9,11 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from .ban_playlist import route as ban_playlist_route
 from .webhook.favorites import router as favorites_router
 from .webhook.media import router as media_router
+from .user_info import route as user_info_route
 from bot import bot_token, LOGGER
 
 emby_api_route = APIRouter(prefix="/emby", tags=["对接Emby的接口"])
+user_api_route = APIRouter(prefix="/user", tags=["对接用户信息的接口"])
 
 async def verify_token(request: Request):
     """验证API请求的token"""
@@ -20,12 +22,10 @@ async def verify_token(request: Request):
         token = request.query_params.get("token")
         if not token:
             raise HTTPException(status_code=401, detail="No token provided")
-            
         # 验证token是否与bot token匹配
         if token != bot_token:
             LOGGER.warning(f"Invalid token attempt: {token[:10]}...")
             raise HTTPException(status_code=403, detail="Invalid token")
-            
         return True
     except HTTPException:
         raise
@@ -44,3 +44,8 @@ emby_api_route.include_router(
     media_router,
     dependencies=[Depends(verify_token)]
 )
+user_api_route.include_router(
+    user_info_route,
+    dependencies=[Depends(verify_token)]
+)
+

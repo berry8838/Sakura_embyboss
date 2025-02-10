@@ -154,20 +154,23 @@ async def user_cha_ip(_, msg, name = None):
         ip_count = 0
         device_list = []
         ip_list = []
-        details = ""
+        device_details = ""
+        ip_details = ""
         for r in result:
             device, client, ip = r
             # 统计ip
             if ip not in ip_list:
                 ip_count += 1
                 ip_list.append(ip)
-                details += f'{ip_count}: `{ip}`| [{ip}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true) \n'
+                ip_details += f'{ip_count}: `{ip}`| [{ip}](https://whois.pconline.com.cn/ipJson.jsp?ip={ip}&json=true) \n'
+
             # 统计设备并拼接详情
             if device + client not in device_list:
                 device_count += 1
                 device_list.append(device + client)
-                details += f'{device_count}: {device} | {client}  \n'
-        text = '**🌏 以下为该用户播放过的设备&ip 共{}个设备，{}个ip：**\n\n'.format(device_count, ip_count) + details
+                device_details += f'{device_count}: {device} | {client}  \n'
+        text = '**🌏 以下为该用户播放过的设备&ip 共{}个设备，{}个ip：**\n\n'.format(device_count, ip_count) + '**设备:**\n' + device_details + '**IP:**\n'+ ip_details
+
 
         # 以\n分割文本，每20条发送一个消息
         messages = text.split('\n')

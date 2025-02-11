@@ -116,14 +116,23 @@ class Embyservice(metaclass=Singleton):
                 _pwd = r.post(f'{self.url}/emby/Users/{id}/Password',
                               headers=self.headers,
                               json=pwd_data)
-            except:
+            except Exception as e:
+                LOGGER.error(f'创建账户 {name} 失败，原因: {e}')
                 return False
             else:
                 policy = create_policy(False, False)
-                _policy = r.post(f'{self.url}/emby/Users/{id}/Policy',
-                                 headers=self.headers,
-                                 json=policy)  # .encode('utf-8')
-                return id, pwd, ex if _policy.status_code == 200 or _policy.status_code == 204 else False
+                try:
+                    _policy = r.post(f'{self.url}/emby/Users/{id}/Policy',
+                                     headers=self.headers,
+                                     json=policy)  # .encode('utf-8')
+                except Exception as e:
+                    LOGGER.error(f'设置账户 {name} 策略失败，原因: {e}')
+                    return False
+                else:
+                    if _policy.status_code == 200 or _policy.status_code == 204:
+                        return id, pwd, ex
+                    else:
+                        return False
         else:
             return False
 

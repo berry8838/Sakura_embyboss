@@ -55,11 +55,17 @@ def sql_delete_emby(tg=None, embyid=None, name=None):
             emby = session.query(Emby).filter(condition).with_for_update().first()
             if emby:
                 session.delete(emby)
-                session.commit()
-                return True
-            else:
-                return None
-        except:
+                try:
+                    session.commit()
+                    return True
+                except Exception as e:
+                    LOGGER.error(f"删除Emby记录时提交事务失败 {e}")
+                    session.rollback()
+                    return False
+            return False
+        except Exception as e:
+            LOGGER.error(f"删除Emby记录时发生异常 {e}")
+            session.rollback()
             return False
 
 

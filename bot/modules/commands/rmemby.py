@@ -5,7 +5,7 @@ from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.msg_utils import deleteMessage, editMessage, sendMessage
 from bot.func_helper.utils import tem_deluser
-from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby
+from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby_by_tg, sql_delete_emby
 
 
 # 删除账号命令
@@ -57,7 +57,7 @@ async def only_rm_record(_, msg):
         return await sendMessage(msg, f"❌ 未找到 TG ID: {tg_id} 的记录")
 
     try:
-        res = sql_delete_emby(tg=tg_id)
+        res = sql_delete_emby_by_tg(tg_id)
         sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
         if res:
             await sendMessage(msg, f"管理员 {sign_name} 已删除 TG ID: {tg_id} 的数据库记录")

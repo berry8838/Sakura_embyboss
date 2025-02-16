@@ -2,7 +2,7 @@
 version: '3'
 services:
   mysql:
-    image: mysql:5.7 # 镜像名称，ARM架构镜像名为 mysql:5.7-arm
+    image: mysql:5.7 # 镜像名称，ARM架构镜像名为 liupeng0518/mysql:5.7-arm64 
     container_name: mysql # 容器名
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci # 设置utf8字符集
     restart: always
@@ -32,7 +32,7 @@ services:
 #    depends_on:
 #      - mysql
 
-  sakura_embyboss:
+  embyboss:
     image: jingwei520/sakura_embyboss:latest # ARM与AMD镜像名称相同，会自动加载适合的镜像
     container_name: embyboss
     restart: always

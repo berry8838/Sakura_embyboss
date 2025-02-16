@@ -16,8 +16,8 @@ class BackupDBUtils:
             os.makedirs(backup_dir)
         # 根据时间创建当前备份文件
         backup_file = os.path.join(backup_dir, f'{database_name}-{datetime.now().strftime("%Y-%m-%d-%H-%M-%S")}.sql')
-        command = f"mysqldump -h{host} --skip-ssl --no-tablespaces -P{port} -u{user} -p\'{password}\' {database_name} > {backup_file}"
-        skip_ssl_command = f"mysqldump -h{host} --no-tablespaces -P{port} -u{user} -p\'{password}\' {database_name} > {backup_file}"
+        command = f"mysqldump -h{host} --no-tablespaces -P{port} -u{user} -p\'{password}\' {database_name} > {backup_file}"
+        skip_ssl_command = f"mysqldump -h{host} --skip-ssl --no-tablespaces -P{port} -u{user} -p\'{password}\' {database_name} > {backup_file}"
         return_code = -1
         try:
             process = await asyncio.create_subprocess_shell(command)

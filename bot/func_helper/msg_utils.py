@@ -181,15 +181,15 @@ async def deleteMessage(message, timer=None):
             return str(e)  # 返回异常字符串表示删除出错
 
 
-async def callAnswer(callbackquery: CallbackQuery, query, bool=False):
+async def callAnswer(callbackquery: CallbackQuery, query, show_alert=False):
     try:
-        await callbackquery.answer(query, show_alert=bool)
+        await callbackquery.answer(query, show_alert=show_alert)
         return True
     except FloodWait as f:
         LOGGER.warning(str(f))
         await sleep(f.value * 1.2)
         # 递归地调用自己的函数
-        return await callAnswer(callbackquery, query, bool)
+        return await callAnswer(callbackquery, query, show_alert)
     except BadRequest as e:
         # 判断异常的消息是否是 "Query_id_invalid"
         if e.ID == "QUERY_ID_INVALID":

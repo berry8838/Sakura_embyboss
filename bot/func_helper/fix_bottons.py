@@ -304,14 +304,29 @@ def cr_renew_ikb():
     exchange = '✔️' if _open.exchange else '❌'
     whitelist = '✔️' if _open.whitelist else '❌'
     invite = '✔️' if _open.invite else '❌'
+    # 添加邀请等级的显示
+    invite_lv_text = {
+        'a': '白名单',
+        'b': '普通用户',
+        'c': '已禁用用户',
+        'd': '无账号用户'
+    }.get(_open.invite_lv, '未知')
     keyboard = InlineKeyboard(row_width=2)
     keyboard.add(InlineButton(f'{checkin} 每日签到', f'set_renew-checkin'),
                  InlineButton(f'{exchange} 自动{sakura_b}续期', f'set_renew-exchange'),
                  InlineButton(f'{whitelist} 兑换白名单', f'set_renew-whitelist'),
-                 InlineButton(f'{invite} 兑换邀请码', f'set_renew-invite'))
+                 InlineButton(f'{invite} 兑换邀请码', f'set_renew-invite'),
+                 InlineButton(f'邀请等级: {invite_lv_text}', f'set_invite_lv')
+                 )
     keyboard.row(InlineButton(f'◀ 返回', 'manage'))
     return keyboard
-
+def invite_lv_ikb():
+    keyboard = ikb([
+        [('🅰️ 白名单', 'set_invite_lv-a'), ('🅱️ 普通用户', 'set_invite_lv-b')],
+        [('©️ 已禁用用户', 'set_invite_lv-c'), ('🅳️ 无账号用户', 'set_invite_lv-d')],
+        [('🔙 返回', 'set_renew')]
+    ])
+    return keyboard
 
 """ config_panel ↓"""
 

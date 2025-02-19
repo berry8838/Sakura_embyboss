@@ -47,6 +47,7 @@ class Open(BaseModel):
     exchange: bool
     whitelist: bool
     invite: bool
+    invite_lv: Optional[str] = 'b'
     leave_ban: bool
     uplays: bool = True
     checkin_reward: Optional[List[int]] = [1, 10]

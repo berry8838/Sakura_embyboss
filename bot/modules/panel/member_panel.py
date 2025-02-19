@@ -574,12 +574,14 @@ async def do_store(_, call):
 
 @bot.on_callback_query(filters.regex('store-reborn'))
 async def do_store_reborn(_, call):
-    await callAnswer(call,
-                     '✔️ 请仔细阅读：\n\n本功能仅为 因未活跃而被封禁的用户解封使用，到期状态下封禁的账户请勿使用，以免浪费积分。',
-                     True)
     e = sql_get_emby(tg=call.from_user.id)
     if not e:
         return
+    if not e.embyid or not e.name:
+        return await callAnswer(call, '❌ 未查询到账户，不许乱点！', True)
+    await callAnswer(call,
+                     '✔️ 请仔细阅读：\n\n本功能仅为 因未活跃而被封禁的用户解封使用，到期状态下封禁的账户请勿使用，以免浪费积分。',
+                     True)
     if all([e.lv == 'c', e.iv >= _open.exchange_cost, schedall.low_activity]):
         await editMessage(call,
                           f'🏪 您已满足基础要求，此次将花费 {_open.exchange_cost}{sakura_b} 解除未活跃的封禁，确认请回复 /ok，退出 /cancel')
@@ -609,6 +611,8 @@ async def do_store_whitelist(_, call):
         e = sql_get_emby(tg=call.from_user.id)
         if e is None:
             return
+        if not e.embyid or not e.name:
+            return await callAnswer(call, '❌ 未查询到账户，不许乱点！', True)
         if e.iv < _open.whitelist_cost or e.lv == 'a':
             return await callAnswer(call,
                                     f'🏪 兑换规则：\n当前兑换白名单需要 {_open.whitelist_cost} {sakura_b}，已有白名单无法再次消费。勉励',
@@ -627,18 +631,23 @@ async def do_store_whitelist(_, call):
 async def do_store_invite(_, call):
     if _open.invite:
         e = sql_get_emby(tg=call.from_user.id)
-        if not e or not e.embyid:
-            return callAnswer(call, '❌ 仅持有账户可兑换此选项', True)
+        if not e:
+            return
+        # 用户等级为 a（白名单） b(普通用户) c(已禁用) d（未注册用户）
+        # 比如当 _open.invite_lv 设置为 d 时，用户等级为 小于等于d 的用户可以兑换，否则无法兑换
+        if e.lv > _open.invite_lv:
+            return await callAnswer(call, '❌ 账号等级不足，无法兑换', True)
         if e.iv < _open.invite_cost:
             return await callAnswer(call,
-                                    f'🏪 兑换规则：\n当前兑换注册码至少需要 {_open.invite_cost} {sakura_b}。勉励',
+                                    f'🏪 兑换规则：\n当前兑换注册码至少需要 {_open.invite_cost} {sakura_b}。你的账户只有 {e.iv} {sakura_b}，勉励',
                                     True)
         await editMessage(call,
                           f'🎟️ 请回复创建 [类型] [数量] [模式]\n\n'
                           f'**类型**：月mon，季sea，半年half，年year\n'
                           f'**模式**： link -深链接 | code -码\n'
                           # f'**续期**： F - 注册码，T - 续期码\n'
-                          f'**示例**：`sea 1 link` 记作 1条 季度注册链接\n'
+                          f'**示例**：`mon 1 link` 记作 1条 月度注册链接 \n'
+                          f'**示例**：`sea 1 code` 记作 1条 季度注册码\n'
                           f'**注意**：兑率 30天 = {_open.invite_cost}{sakura_b}\n'
                           f'__取消本次操作，请 /cancel__')
         content = await callListen(call, 120)

@@ -283,7 +283,7 @@ async def change_tg(_, call):
                                               f'🎯 已向授权群发送申请，请联系并等待管理员确认......'),
                                   sendMessage(call,
                                               f'⭕#TG改绑\n'
-                                              f'**用户 [{call.from_user.id}](tg://user?id={call.from_user.id}) 正在试图改绑Emby: [{e.name}](tg://user?id={e.tg})，已通过安全/密码核验\n\n'
+                                              f'**用户 [{call.from_user.id}](tg://user?id={call.from_user.id}) 正在试图改绑Emby: [{e.name}](tg://user?id={e.tg})，原TG: `{e.tg}`，已通过安全/密码核验\n\n'
                                               f'请管理员审核决定：**',
                                               buttons=send_changetg_ikb(call.from_user.id, e.tg),
                                               send=True))

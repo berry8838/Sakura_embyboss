@@ -98,7 +98,10 @@ async def set_emby_line(_, call):
                           buttons=back_config_p_ikb)
         LOGGER.info(f"【admin】：{call.from_user.id} - 更新emby线路为{config.emby_line}设置完成")
 
-
+@bot.on_callback_query(filters.regex('set_whitelist_line') & admins_on_filter)
+async def set_whitelist_emby_line(_,call):
+    print('set whitelist line')
+    pass
 # 设置需要显示/隐藏的库
 @bot.on_callback_query(filters.regex('set_block') & admins_on_filter)
 async def set_block(_, call):

@@ -151,11 +151,11 @@ async def change_tg(_, call):
         if status == 'nochangetg':
             return await asyncio.gather(
                 editMessage(call,
-                            f' ❎ 好的，[您](tg://user?id={call.from_user.id})已拒绝[{current_id}](tg://user?id={current_id})的换绑请求。'),
+                            f' ❎ 好的，[您](tg://user?id={call.from_user.id})已拒绝[{current_id}](tg://user?id={current_id})的换绑请求，原TG：`{replace_id}`。'),
                 bot.send_message(current_id, '❌ 您的换绑请求已被拒。请在群组中详细说明情况。'))
 
         await editMessage(call,
-                          f' ✅ 好的，[您](tg://user?id={call.from_user.id})已通过[{current_id}](tg://user?id={current_id})的换绑请求。')
+                          f' ✅ 好的，[您](tg://user?id={call.from_user.id})已通过[{current_id}](tg://user?id={current_id})的换绑请求，原TG：`{replace_id}`。')
         e = sql_get_emby(tg=replace_id)
         if not e or not e.embyid: return await bot.send_message(current_id, '⁉️ 出错了，您所换绑账户已不存在。')
         
@@ -171,7 +171,7 @@ async def change_tg(_, call):
         # 将原账号的币值转移到新账号
         old_iv = e.iv
         if sql_update_emby(Emby.tg == current_id, embyid=e.embyid, name=e.name, pwd=e.pwd, pwd2=e.pwd2,
-                           lv=e.lv, cr=e.cr, ex=e.ex, iv=old_iv+sql_get_emby(tg=current_id).iv):
+                           lv=e.lv, cr=e.cr, ex=e.ex, iv=old_iv):
             text = f'⭕ 请接收您的信息！\n\n' \
                    f'· 用户名称 | `{e.name}`\n' \
                    f'· 用户密码 | `{e.pwd}`\n' \
@@ -185,8 +185,7 @@ async def change_tg(_, call):
         else:
             await bot.send_message(current_id, '🍰 **【TG改绑】数据库处理出错，请联系闺蜜（管理）！**')
             LOGGER.error(f"【TG改绑】 emby账户{e.name} 绑定未知错误。")
-            
-        
+        return
     except (IndexError, ValueError):
         pass
     d = sql_get_emby(tg=call.from_user.id)

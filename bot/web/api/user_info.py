@@ -16,7 +16,7 @@ route = APIRouter()
 @route.get("/user_info")
 async def user_info(tg: str):
     # 从数据库获取用户信息
-    user = await sql_get_emby(tg)
+    user = sql_get_emby(tg)
 
     if not user:
         return {"code": 404, "message": "用户不存在"}

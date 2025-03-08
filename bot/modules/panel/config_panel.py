@@ -99,9 +99,28 @@ async def set_emby_line(_, call):
         LOGGER.info(f"【admin】：{call.from_user.id} - 更新emby线路为{config.emby_line}设置完成")
 
 @bot.on_callback_query(filters.regex('set_whitelist_line') & admins_on_filter)
-async def set_whitelist_emby_line(_,call):
-    print('set whitelist line')
-    pass
+async def set_whitelist_emby_line(_, call):
+    await callAnswer(call, '🌟 设置白名单线路')
+    send = await editMessage(call,
+                             "🌟【设置白名单线路】\n\n对我发送白名单用户专属的emby地址\n取消点击 /cancel")
+    if send is False:
+        return
+
+    txt = await callListen(call, 120, buttons=back_set_ikb('set_whitelist_line'))
+    if txt is False:
+        return
+
+    elif txt.text == '/cancel':
+        await txt.delete()
+        await editMessage(call, '__您已经取消输入__ **会话已结束！**', buttons=back_set_ikb('set_whitelist_line'))
+    else:
+        await txt.delete()
+        config.emby_whitelist_line = txt.text
+        save_config()
+        await editMessage(call, f"**【白名单线路】:** \n\n{config.emby_whitelist_line}\n\n设置完成！done！",
+                          buttons=back_config_p_ikb)
+        LOGGER.info(f"【admin】：{call.from_user.id} - 更新白名单线路为{config.emby_whitelist_line}设置完成")
+
 # 设置需要显示/隐藏的库
 @bot.on_callback_query(filters.regex('set_block') & admins_on_filter)
 async def set_block(_, call):

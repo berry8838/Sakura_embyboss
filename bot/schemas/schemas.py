@@ -170,6 +170,8 @@ class Config(BaseModel):
     kk_gift_days: int = 30
     # 是否狙杀皮套人
     fuxx_pitao: bool = True
+    # 白名单用户专属的emby线路
+    emby_whitelist_line: Optional[str] = None
     moviepilot: MP = Field(default_factory=MP)
     auto_update: AutoUpdate = Field(default_factory=AutoUpdate)
     red_envelope: RedEnvelope = Field(default_factory=RedEnvelope)

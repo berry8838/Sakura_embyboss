@@ -341,11 +341,12 @@ def config_preparation() -> InlineKeyboardMarkup:
     allow_private = '✅' if red_envelope.allow_private else '❎'
     keyboard = ikb(
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
-         [('💠 emby线路', 'set_line'), ('🎬 显/隐指定库', 'set_block')],
+         [('🎬 显/隐指定库', 'set_block'), (f'{fuxx_pt} 皮套人过滤功能', 'set_fuxx_pitao')],
+         [('💠 普通用户线路', 'set_line'),('🌟 白名单线路', 'set_whitelist_line')],
          [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 观影奖励结算', 'set_uplays')],
          [(f'{auto_up} 自动更新bot', 'set_update'), (f'{mp_set} Moviepilot点播', 'set_mp')],
-         [(f'设置赠送资格天数({kk_gift_days}天)', 'set_kk_gift_days'), (f'{fuxx_pt} 皮套人过滤功能', 'set_fuxx_pitao')],
          [(f'{red_envelope_status} 红包', 'set_red_envelope_status'), (f'{allow_private} 专属红包', 'set_red_envelope_allow_private')],
+         [(f'设置赠送资格天数({kk_gift_days}天)', 'set_kk_gift_days')],
          [('🔙 返回', 'manage')]])
     return keyboard
 

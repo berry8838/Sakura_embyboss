@@ -36,6 +36,7 @@ schedall = config.schedall
 emby_api = config.emby_api
 emby_url = config.emby_url
 emby_line = config.emby_line
+emby_whitelist_line = config.emby_whitelist_line
 emby_block = config.emby_block
 extra_emby_libs = config.extra_emby_libs
 # # 数据库

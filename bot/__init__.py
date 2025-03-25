@@ -73,7 +73,8 @@ user_p = [
     BotCommand("myinfo", "[用户] 查看状态"),
     BotCommand("count", "[用户] 媒体库数量"),
     BotCommand("red", "[用户/禁言] 发红包"),
-    BotCommand("srank", "[用户/禁言] 查看计分")]
+    BotCommand("srank", "[用户/禁言] 查看计分"),
+    BotCommand("rob", "[用户] 开始打劫事件")]
 
 # 取消 BotCommand("exchange", "[私聊] 使用注册码")
 admin_p = user_p + [
@@ -81,7 +82,7 @@ admin_p = user_p + [
     BotCommand("score", "加/减积分 [管理]"),
     BotCommand("coins", f"加/减{sakura_b} [管理]"),
     BotCommand("deleted", f"清理死号 [管理]"),
-    BotCommand("kick_not_emby", f"踢出当前群内无号崽 [管理]"),
+    # BotCommand("kick_not_emby", f"踢出当前群内无号崽 [管理]"),
     BotCommand("renew", "调整到期时间 [管理]"),
     BotCommand("rmemby", "删除用户[包括非tg] [管理]"),
     BotCommand("prouser", "增加白名单 [管理]"),

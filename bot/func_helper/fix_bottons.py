@@ -29,7 +29,7 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
     else:
         d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server']]
         if schedall.check_ex: d.append(['🎟️ 使用续期码', 'exchange'])
-    if _open.checkin: d.append([f'🎯 签到', 'checkin'])
+    if _open.checkin: d.append([f'💰 入股区', 'https://faka.dimlight.top/', 'url'])
     lines = array_chunk(d, 2)
     if is_admin: lines.append([['👮🏻‍♂️ admin', 'manage']])
     keyword = ikb(lines)
@@ -312,7 +312,7 @@ def cr_renew_ikb():
         'd': '无账号用户'
     }.get(_open.invite_lv, '未知')
     keyboard = InlineKeyboard(row_width=2)
-    keyboard.add(InlineButton(f'{checkin} 每日签到', f'set_renew-checkin'),
+    keyboard.add(InlineButton(f'{checkin} 显示入股区', f'set_renew-checkin'),
                  InlineButton(f'{exchange} 自动{sakura_b}续期', f'set_renew-exchange'),
                  InlineButton(f'{whitelist} 兑换白名单', f'set_renew-whitelist'),
                  InlineButton(f'{invite} 兑换邀请码', f'set_renew-invite'),

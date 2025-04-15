@@ -737,7 +737,6 @@ async def my_favorite(_, call):
     await editMessage(call, text, buttons=keyboard)
 @bot.on_callback_query(filters.regex('my_devices'))
 async def my_devices(_, call):
-    await callAnswer(call, '🔍 正在获取您的设备信息')
     get_emby = sql_get_emby(tg=call.from_user.id)
     if get_emby is None:
         return await callAnswer(call, '您还没有Emby账户', True)
@@ -745,6 +744,7 @@ async def my_devices(_, call):
     if not success or len(result) == 0:
         return await callAnswer(call, '您好像没播放信息吖')
     else:
+        await callAnswer(call, '🔍 正在获取您的设备信息')
         device_count = 0
         ip_count = 0
         device_list = []

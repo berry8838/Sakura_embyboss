@@ -11,7 +11,7 @@ from pyrogram.errors import FloodWait
 from bot import bot, prefixes, bot_photo, LOGGER, sakura_b
 from bot.func_helper.msg_utils import sendMessage, deleteMessage, ask_return
 from bot.func_helper.filters import admins_on_filter
-from bot.sql_helper.sql_emby import get_all_emby, Emby, sql_update_embys
+from bot.sql_helper.sql_emby import get_all_emby, Emby, sql_update_embys, sql_clear_emby_iv
 
 
 @bot.on_message(filters.command('renewall', prefixes) & admins_on_filter)
@@ -93,7 +93,26 @@ async def coins_all(_, msg):
     else:
         await msg.reply("数据库操作出错，请检查重试")
 
-
+# coinsclear 清除所有用户币币
+@bot.on_message(filters.command('coinsclear', prefixes) & admins_on_filter)
+async def coinsclear(_, msg):
+    await deleteMessage(msg)
+    try:
+        confirm_clear = msg.command[1]
+    except (IndexError, ValueError):
+        return await sendMessage(msg,
+                                 f"🔔 如果确定清除所有用户币币，请输入 `/coinsclear true`", timer=60)
+    if confirm_clear == 'true':
+        send = await bot.send_photo(msg.chat.id, photo=bot_photo,
+                                caption=f"⚡【{sakura_b}任务】\n  **正在清除所有用户币币...请稍后**")
+        rst = sql_clear_emby_iv()
+        if rst:
+            await send.edit(f"⚡【{sakura_b}任务】\n\n  清除所有用户币币完成")
+        else:
+            await send.edit(f"⚡【{sakura_b}任务】\n\n  清除所有用户币币失败")
+    else:
+        return await sendMessage(msg,
+                                 f"🔔 如果确定清除所有用户币币，请输入 `/coinsclear true`", timer=60)
 @bot.on_message(filters.command('callall', prefixes) & admins_on_filter & filters.private)
 async def call_all(_, msg):
     await msg.delete()

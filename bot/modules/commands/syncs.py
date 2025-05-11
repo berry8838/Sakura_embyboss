@@ -238,7 +238,7 @@ async def kick_not_emby(_, msg):
                 except Exception as e:
                     LOGGER.info(f"踢出 {cmember} 失败，原因: {e}")
                     pass
-@bot.on_message(filters.command('restore_from_db', prefixes) & admins_on_filter)
+@bot.on_message(filters.command('restore_from_db', prefixes) & filters.user(owner))
 async def restore_from_db(_, msg):
     await deleteMessage(msg)
     try:

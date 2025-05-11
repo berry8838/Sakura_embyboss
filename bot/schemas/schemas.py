@@ -33,6 +33,7 @@ class ExDate(BaseModel):
 
 class Open(BaseModel):
     stat: bool
+    open_us: int = 30
     all_user: int
     timing: int = 0
     tem: Optional[int] = 0

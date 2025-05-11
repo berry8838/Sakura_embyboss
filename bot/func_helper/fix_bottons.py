@@ -139,7 +139,7 @@ gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 注册/续�
 
 def open_menu_ikb(openstats, timingstats) -> InlineKeyboardMarkup:
     return ikb([[(f'{openstats} 自由注册', 'open_stat'), (f'{timingstats} 定时注册', 'open_timing')],
-                [('⭕ 注册限制', 'all_user_limit')], [('🌟 返回上一级', 'manage')]])
+                [('🤖注册账号天数', 'open_us'),('⭕ 注册限制', 'all_user_limit')], [('🌟 返回上一级', 'manage')]])
 
 
 back_free_ikb = ikb([[('🔙 返回上一级', 'open-menu')]])

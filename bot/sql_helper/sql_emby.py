@@ -62,6 +62,18 @@ def sql_delete_emby_by_tg(tg):
             session.rollback()
             return False
 
+def sql_clear_emby_iv():
+    """
+    清除所有emby的iv
+    """
+    with Session() as session:
+        try:
+            session.query(Emby).update({Emby.iv: 0})
+            session.commit()
+            return True
+        except Exception as e:
+            LOGGER.error(f"清除所有emby的iv时发生异常 {e}")
+            return False
 
 def sql_delete_emby(tg=None, embyid=None, name=None):
     """

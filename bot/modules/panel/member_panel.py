@@ -137,7 +137,7 @@ async def create(_, call):
         if send is False:
             return
         else:
-            await create_user(_, call, us=30, stats=True)
+            await create_user(_, call, us=_open.open_us, stats=True)
 
 
 # 换绑tg

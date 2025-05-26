@@ -229,6 +229,37 @@ class Embyservice(metaclass=Singleton):
                 pass
         return count
 
+    async def terminate_session(self, session_id: str, reason: str = "Unauthorized client detected"):
+        """
+        终止指定的会话
+        :param session_id: 会话ID
+        :param reason: 终止原因
+        :return: bool 是否成功
+        """
+        try:
+            # 使用Sessions/{sessionId}/Playing/Stop API来停止播放
+            stop_url = f"{self.url}/emby/Sessions/{session_id}/Playing/Stop"
+            stop_response = r.post(stop_url, headers=self.headers)
+            # 使用Sessions/{sessionId}/Message API发送消息给客户端
+            message_url = f"{self.url}/emby/Sessions/{session_id}/Message"
+            message_data = {
+                "Text": f"🚫 会话已被终止: {reason}",
+                "Header": "安全警告",
+                "TimeoutMs": 10000
+            }
+            message_response = r.post(message_url, headers=self.headers, json=message_data)
+            # 检查是否成功
+            if (stop_response.status_code in [200, 204] or 
+                message_response.status_code in [200, 204]):
+                LOGGER.info(f"成功终止会话 {session_id}: {reason}")
+                return True
+            else:
+                LOGGER.error(f"终止会话失败 {session_id}: stop_code={stop_response.status_code}, msg_code={message_response.status_code}")
+                return False
+        except Exception as e:
+            LOGGER.error(f"终止会话异常 {session_id}: {str(e)}")
+            return False
+
     async def emby_change_policy(self, id=id, admin=False, method=False):
         """
         :param id:

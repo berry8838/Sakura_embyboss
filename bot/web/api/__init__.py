@@ -9,6 +9,7 @@ from fastapi import APIRouter, Request, HTTPException, Depends
 from .ban_playlist import route as ban_playlist_route
 from .webhook.favorites import router as favorites_router
 from .webhook.media import router as media_router
+from .webhook.client_filter import router as client_filter_router
 from .user_info import route as user_info_route
 from bot import bot_token, LOGGER
 
@@ -42,6 +43,10 @@ emby_api_route.include_router(
 )
 emby_api_route.include_router(
     media_router,
+    dependencies=[Depends(verify_token)]
+)
+emby_api_route.include_router(
+    client_filter_router,
     dependencies=[Depends(verify_token)]
 )
 user_api_route.include_router(

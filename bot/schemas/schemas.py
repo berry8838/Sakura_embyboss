@@ -176,9 +176,9 @@ class Config(BaseModel):
     # 被拦截的user-agent模式列表
     blocked_clients: Optional[List[str]] = None
     # 是否在检测到可疑客户端时终止会话
-    client_filter_terminate_session: bool = True,
+    client_filter_terminate_session: bool = True
     # 是否在检测到可疑客户端时封禁用户
-    client_filter_block_user: bool = False,
+    client_filter_block_user: bool = False
     moviepilot: MP = Field(default_factory=MP)
     auto_update: AutoUpdate = Field(default_factory=AutoUpdate)
     red_envelope: RedEnvelope = Field(default_factory=RedEnvelope)

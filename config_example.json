@@ -15,6 +15,24 @@
   "emby_api": "xxxxx",
   "emby_url": "http://255.255.255.255:8096",
   "emby_line": "susuyyds.com",
+  "emby_whitelist_line": null,
+  "blocked_clients": [
+    ".*curl.*",
+    ".*wget.*",
+    ".*python.*",
+    ".*bot.*",
+    ".*spider.*",
+    ".*crawler.*",
+    ".*scraper.*",
+    ".*downloader.*",
+    ".*aria2.*",
+    ".*youtube-dl.*",
+    ".*yt-dlp.*",
+    ".*ffmpeg.*",
+    ".*vlc.*"
+  ],
+  "client_filter_terminate_session": true,
+  "client_filter_block_user": false,
   "db_host": "localhost",
   "db_user": "",
   "db_pwd": "",
@@ -43,8 +61,7 @@
   },
   "tz_ad": "",
   "tz_api": "",
-  "tz_id": [
-  ],
+  "tz_id": [],
   "ranks": {
     "logo": "SAKURA",
     "backdrop": false

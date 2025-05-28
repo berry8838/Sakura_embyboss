@@ -1,0 +1,316 @@
+/*region1修改note默认样式 ammunition样式*/
+.md-typeset .admonition,
+.md-typeset details {
+    border-width: 0;
+    border-left-width: 4px;
+}
+
+/*endregion1*/
+
+/*region2 自定义的 ammunition样式 注释为ai生成*/
+/* 定义根元素的CSS变量，包含SVG图标的URL，命名为 --md-admonition-icon--pen-tip */
+:root {
+    --md-admonition-icon--pen-tip: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12a2 2 0 0 0 2 2h4l4 4 4-4h4c1.11 0 2-.89 2-2V4a2 2 0 0 0-2-2m-9.54 12-3.5-3.5 1.41-1.42 2.09 2.09L15.64 6l1.41 1.41L10.46 14Z"/></svg>');
+}
+
+/* 类名为 "md-typeset" 的元素下，类名为 "admonition" 且同时包含 "pen-tip" 的元素，以及类名为 "details" 且同时包含 "pen-tip" 的元素，它们的边框颜色将被设置为RGB值 (43, 155, 70) */
+.md-typeset .admonition.pen-tip,
+.md-typeset details.pen-tip {
+    border-color: rgb(43, 155, 70);
+    border-width: 0;
+}
+
+/* 类名为 "md-typeset" 的元素下，类名为 "pen-tip" 的元素内部的类名为 "admonition-title" 的元素，以及类名为 "pen-tip" 的元素内部的 <summary> 元素，它们的背景颜色将被设置为带有透明度的RGBA值 (43, 155, 70, 0.1) */
+.md-typeset .pen-tip > .admonition-title,
+.md-typeset .pen-tip > summary {
+    background-color: rgba(43, 155, 70, 0.1);
+}
+
+/* 类名为 "md-typeset" 的元素下，类名为 "pen-tip" 的元素内部的类名为 "admonition-title" 的元素的 ::before 伪元素，以及类名为 "pen-tip" 的元素内部的 <summary> 元素的 ::before 伪元素，它们的背景颜色将被设置为RGB值 (43, 155, 70)，并使用了 mask-image 属性来应用之前定义的SVG图像作为遮罩 */
+.md-typeset .pen-tip > .admonition-title::before,
+.md-typeset .pen-tip > summary::before {
+    background-color: rgb(43, 155, 70);
+    -webkit-mask-image: var(--md-admonition-icon--pen-tip);
+    mask-image: var(--md-admonition-icon--pen-tip);
+}
+
+/*!*success的*!*/
+/*.md-typeset .success_docker {*/
+/*    border-width: 0;*/
+/*}*/
+
+/*endregion2*/
+
+/*!*修改底栏颜色*!*/
+/*footer {*/
+/*    background-color: hsl(199deg, 18%, 40%, .9) !important;*/
+/*    font-size: 16px;*/
+/*}*/
+
+/*region3 自定义字体设置*/
+body {
+    /*font-family: "LXGW WenKai", sans-serif;*/
+    /* Lite version */
+    /* font-family: "LXGW WenKai Lite", sans-serif;*/
+    /* TC version */
+    /* font-family: "LXGW WenKai TC", sans-serif;*/
+    /* Screen version */
+    font-family: "LXGW WenKai Screen", sans-serif;
+}
+
+button.md-top {
+    font-family: "LXGW WenKai Screen", sans-serif; /* 修改字体 */
+    font-size: 16px; /* 修改字体大小 */
+    font-weight: bold; /* 修改字体粗细 */
+    color: gray; /* 修改字体颜色 */
+}
+
+button.md-top:hover {
+    background-color: rebeccapurple;
+}
+
+.admonition {
+    font-size: 0.9em !important;
+}
+
+/*endregion3自定义字体设置*/
+
+/*region4 滚动条设置 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: rgba(73, 177, 245, 0.2);
+    border-radius: 2em;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: mediumpurple;
+    background-image: -webkit-linear-gradient(
+            45deg,
+            rgba(255, 255, 255, 0.4) 25%,
+            transparent 25%,
+            transparent 50%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0.4) 75%,
+            transparent 75%,
+            transparent
+    );
+    border-radius: 10px;
+
+}
+
+::-webkit-scrollbar-corner {
+    background-color: transparent;
+}
+
+::-moz-selection {
+    color: #fff;
+    background-color: #49b1f5;
+}
+
+::-webkit-scrollbar:hover {
+    width: 7px;
+    height: 7px;
+}
+
+/*endregion4 */
+
+/*region5心动效果*/
+@keyframes heart {
+    0%, 40%, 80%, 100% {
+        transform: scale(1);
+    }
+    20%, 60% {
+        transform: scale(1.15);
+    }
+}
+
+.heart {
+    animation: heart 1000ms infinite;
+    color: darkviolet;
+}
+
+/*endregion5*/
+
+
+/*region6主页按钮primary*/
+.md-button {
+    border-radius: 1em !important;
+}
+
+.md-button--go_start {
+    float: right;
+    margin-bottom: 2em;
+    /*background-color: transparent;*/
+}
+
+.md-button--go_docker {
+    float: left;
+    margin-bottom: 2em;
+    /*background-color: transparent;*/
+}
+
+.md-button--go_start:hover, .md-button--go_docker:hover {
+    border-color: transparent !important;
+    transition-duration: 0.8s;
+    background-color: rgba(148, 0, 211, 0.6) !important;
+    box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.3);
+}
+
+.clear_float:after {
+    /*清除浮动*/
+    content: "";
+    display: block;
+    clear: both;
+}
+
+.md-docker_compose, .md-config_json {
+    border-radius: 1em !important;
+    background-color: transparent;
+    color: green !important;
+    /*background-color: rgb(43, 155, 70)!important;*/
+}
+
+.md-docker_compose {
+    margin-left: 1em;
+    margin-right: 3em;
+}
+
+.md-docker_compose:hover, .md-config_json:hover {
+    border-color: transparent !important;
+    background-color: rgba(43, 155, 70, 0.8) !important;
+    color: white !important;
+    transition-duration: 0.8s;
+    box-shadow: 4px 4px 5px rgba(0, 0, 0, 0.3); /*阴影偏移：x轴（+为右-为左） y轴（+为上-为下） 阴影范围*/
+    /*background-color: rgb(43, 155, 70)!important;*/
+}
+
+/*endregion6*/
+
+/*region6鼠标效果*/
+/* 鼠标样式 */
+a, img, .all_index summary:hover, .md-button:hover {
+    cursor: url("/Sakura_embyboss/assets/cursor/pen.cur"), auto;
+}
+
+#cursor {
+    position: fixed;
+    width: 16px;
+    height: 16px;
+    background: rgb(0, 255, 255);
+    border-radius: 8px;
+    opacity: 0.25;
+    z-index: 10086;
+    pointer-events: none;
+    transition: 0.2s ease-in-out;
+    transition-property: background, opacity, transform;
+}
+
+#cursor.hidden {
+    opacity: 0;
+}
+
+#cursor.hover {
+    opacity: 0.1;
+    transform: scale(2.5);
+    -webkit-transform: scale(2.5);
+    -moz-transform: scale(2.5);
+    -ms-transform: scale(2.5);
+    -o-transform: scale(2.5);
+}
+
+#cursor.active {
+    opacity: 0.5;
+    transform: scale(0.5);
+    -webkit-transform: scale(0.5);
+    -moz-transform: scale(0.5);
+    -ms-transform: scale(0.5);
+    -o-transform: scale(0.5);
+}
+
+/*endregion6鼠标end */
+
+/*region7进度条*/
+.progress-label {
+    position: absolute;
+    text-align: center;
+    font-weight: 700;
+    width: 100%;
+    margin: 0;
+    line-height: 1.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 1.2rem;
+    float: left;
+    background-color: #2979ff;
+}
+
+.progress {
+    display: block;
+    width: 100%;
+    margin: 0.5rem 0;
+    height: 1.2rem;
+    background-color: #eeeeee;
+    position: relative;
+}
+
+.progress.thin {
+    margin-top: 0.9rem;
+    height: 0.4rem;
+}
+
+.progress.thin .progress-label {
+    margin-top: -0.4rem;
+}
+
+.progress.thin .progress-bar {
+    height: 0.4rem;
+}
+
+.progress-100plus .progress-bar {
+    background-color: #00e676;
+}
+
+.progress-80plus .progress-bar {
+    background-color: #fbc02d;
+}
+
+.progress-60plus .progress-bar {
+    background-color: #ff9100;
+}
+
+.progress-40plus .progress-bar {
+    background-color: #ff5252;
+}
+
+.progress-20plus .progress-bar {
+    background-color: #ff1744;
+}
+
+.progress-0plus .progress-bar {
+    background-color: #f50057;
+}
+
+/*endregion*/
+
+/*region8表格*/
+.md-typeset__scrollwrap caption {
+    font-size: 16px;
+}
+
+.md-typeset__scrollwrap th, td {
+    font-size: 14px;
+    vertical-align: middle !important; /* 文字垂直居中 */
+}
+
+/*endregion8*/
+
+/*region9代码块*/
+
+/*endregion9*/

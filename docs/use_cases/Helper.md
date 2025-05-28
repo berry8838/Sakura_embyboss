@@ -80,11 +80,11 @@
     URL: 填入`http://192.168.2.147:8838/emby/webhook/favorites?token=这里填入bot的token`
     将ip地址和端口替换成自己bot所在的地址和端口，token填入bot的token，如图：
 
-    ![emby_webhook](../assets/images/webhook/webhook_favorites.png){height=300px width=300px}
+    ![emby_webhook_favorites](../assets/images/webhook/webhook_favorites.png){height=300px width=300px}
 
     事件类型选中：添加到“最爱”，从“最爱”中移除，然后点击存储，如图：
 
-    ![emby_webhook_event](../assets/images/webhook/webhook_favorites_event.png){height=300px width=300px}
+    ![emby_webhook_favorites_event](../assets/images/webhook/webhook_favorites_event.png){height=300px width=300px}
 
 2. 添加第二个Webhook
 
@@ -94,23 +94,42 @@
 
     将ip地址和端口替换成自己bot所在的地址和端口，token填入bot的token，如图：
 
-    ![emby_webhook](../assets/images/webhook/webhook_medias.png){height=300px width=300px}
+    ![emby_webhook_medias](../assets/images/webhook/webhook_medias.png){height=300px width=300px}
 
     事件类型选中：新媒体已添加，然后点击存储，如图：
 
-    ![emby_webhook_event](../assets/images/webhook/webhook_medias_event.png){height=300px width=300px}
+    ![emby_webhook_medias_event](../assets/images/webhook/webhook_medias_event.png){height=300px width=300px}
 
 3. 配置完成后可实现如下效果
 
-    ![emby_webhook_effect](../assets/images/webhook/webhook_newmedia1.png){height=300px width=300px}
-    ![emby_webhook_effect](../assets/images/webhook/webhook_newmedia2.png){height=300px width=300px}
+    ![emby_webhook_newmedia1](../assets/images/webhook/webhook_newmedia1.png){height=300px width=300px}
+    ![emby_webhook_newmedia2](../assets/images/webhook/webhook_newmedia2.png){height=300px width=300px}
 <hr>
+##  :material-webhook: WebHook - 客户端过滤
+
+1.  添加 Webhook
+
+    名称：随便填，例如：client-filter
+
+    URL: 填入`http://192.168.2.147:8838/emby/webhook/client-filter?token=这里填入bot的token`
+
+    将ip地址和端口替换成自己bot所在的地址和端口，token填入bot的token，如图：
+
+    ![emby_webhook_client-filter](../assets/images/webhook/webhook_client-filter.png){height=300px width=300px}
+
+    事件类型选中：播放：开始，暂停，取消暂停，停止，用户：已验证用户身份，无法验证用户身份，然后点击存储，如图：
+
+    ![emby_webhook_client-filter_event](../assets/images/webhook/webhook_client-filter_event.png){height=300px width=300px}
+
+    配置 [config.json模板](../deploy/config_json.md#-选填) 客户端过滤，配置完成后可实现如下效果
+
+    ![emby_webhook_client-filter_block](../assets/images/webhook/webhook_client-filter_block.png){height=300px width=300px}
 
 ## :material-movie-roll: 其他设置各点解释
 
 !!!info
 
-       1. **导出日志** [一般] 
+       1. **导出日志** [一般]
        2. **设置探针**  按格式,可以直接在bot设置探针 [鸡肋]
        3. **emby线路** , bot内设置显示给用户的线路, 需要markdowm效果请开config.json修改 [鸡肋]
        4. **显示、隐藏指定媒体库** 为用户们指定他们可以隐藏和显示的媒体库
@@ -118,9 +137,3 @@
        6. **开关充电**， 在初始键盘下多加一个按钮，点击能跳转指定网页
        7. **退群封禁**， 顾名思义，用户退群默认删除账户，开启此项时直接封禁用户不允许加群
        8. **自动看片结算**， 当定时任务中，看片榜结算时，给予 [观看时长 + 额外排名奖励分数]，分数仍有待商榷，重要可先不开
-
-
-
-     
-     
-         

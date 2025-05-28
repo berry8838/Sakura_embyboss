@@ -1,6 +1,7 @@
 # 必填、选填速查表
 
 ## :writing_hand: 必填
+
 <table border="1" cellspacing="0">
 <caption><h4>必填变量的配置填写指南</h4></caption>
 <thead><tr><th>类型</th><th>变量名称</th><th>填写描述</th></tr></thead>
@@ -17,7 +18,8 @@
 <tr><td>admins</td><td> 默认<code>[ ]</code> 为空，可以将想要赋予权限的tg用户id填进 </td></tr>
 <tr><td rowspan="3" > Emby </td><td>emby_api</td><td> emby的api_key，<code>【Emby Service 管理】-> 【高级】->【API密钥】</code>创建一个 </td></tr>
 <tr><td>emby_url</td><td> 形如 <a target="_blank" href="">http://255.255.255.36:8096（纯ip）</a> or <a href="https://emby.susuyyds.xyz" target="_blank">https://emby.susuyyds.xyz（有反代）</a> 最后不带斜杠，为发起请求emby的地址 </td></tr>
-<tr><td>emby_line</td><td> 【服务器板块】展示给用户的emby地址和信息，仅支持telegram的MarkdownV2写法  </td></tr>
+<tr><td>emby_line</td><td> 【服务器板块】展示给普通用户的emby地址和信息，仅支持telegram的MarkdownV2写法  </td></tr>
+
 <tr><td rowspan="5" > Database <br>(Mysql) </td><td> db_host </td><td>本机<code>localhost</code> or 数据库的ip <code>255.255.255.36</code> 端口默认<i>3306</i></td></tr>
 <tr><td> db_user </td><td>数据库用户名,默认 <code>susu</code> </td></tr>
 <tr><td> db_pwd </td><td>数据库密码,默认 <code>1234</code> </td></tr>
@@ -25,12 +27,13 @@
 <tr><td> db_port </td><td>数据库端口,默认 <code>3306</code> </td></tr>
 </tbody>
 <tfoot></tfoot>
-</table> 
+</table>
 
-- __如已经填完上述，可以直接前往 [启动bot](../deploy/start_docker.md#4一键启动)__
+- **如已经填完上述，可以直接前往 [启动 bot](../deploy/start_docker.md#4一键启动)**
 - 接下来是 【选填项目】 会自动生成，不填亦可，如果填写，请认真阅读！！！
 
 ## :material-equalizer-outline: 选填
+
 <table border="1" cellspacing="0">
 <caption><h4>选填变量的配置填写指南</h4></caption>
 <thead><tr><th>类型</th><th>变量名称</th><th>填写描述</th></tr></thead>
@@ -43,13 +46,14 @@
 <tr><td>port</td><td>端口</td></tr>
 <tr><td>username <br>password</td><td>温馨提示：<em>如果以上你都不会用，请使用海外机器</em><br>如果您的代理不需要授权, 可以省略 username password 空着不填</td></tr>
 
-[//]: # (<tr><td rowspan="2">user_buy<br>充电按钮</td><td>stat</td><td>是否开启充电按钮，即设置一个跳转网页的按钮<code>true</code> or <code>false</code></td></tr>)
-[//]: # (<tr><td>button</td><td> 按钮样式<br><code>["🔋 点击充电","https://google.com","url"]</code>依序分别 “按钮显示文本”，“跳转网址”，固定不可变字段“url”</td></tr>)
+<tr><td rowspan="2">user_buy<br>充电按钮(已不支持)</td><td>stat</td><td>~~是否开启充电按钮，即设置一个跳转网页的按钮~~<code>true</code> or <code>false</code></td></tr>
+<tr><td>button</td><td> 按钮样式<br><code>["🔋 点击充电","https://google.com","url"]</code>依序分别 "按钮显示文本"，"跳转网址"，固定不可变字段"url"</td></tr>
 <tr>
 <td>货币</td> <td>money</td> <td>功能货币的名称，默认<code>花币</code>. 私以为取名两个字会简单好听点</td>
 </tr>
 
 <tr><td rowspan="14">open<br>注册，兑换开关</td><td>stat</td><td>注册状态，默认 false <code>true</code> or <code>false</code></td></tr>
+<tr><td>open_us</td><td>自由注册时创建的账号有效期，默认 <code>30</code></td></tr>
 <tr><td>all_user</td><td>注册人数限制，可在bot启动后进入admin设置，默认 <code>1000</code></td></tr>
 <tr><td>timing</td><td>定时注册计时参数，bot启动后开启定时注册有效，勿动，默认 <code>0</code></td></tr>
 <tr><td>tem</td><td>当前已注册用户计数，勿动，默认 <code>0</code></td></tr>
@@ -83,6 +87,10 @@
 <tr><td>db_backup_dir</td><td>默认 <code>./backup</code>数据库备份文件所保存的目录 </td></tr>
 <tr><td>db_backup_maxcount</td><td>默认 <code>7</code>数据库备份文件保留的个数 </td></tr>
 <tr><td>AntiChanel <br>反皮套白名单</td><td>w_anti_chanel_ids</td><td>本机器人默认开启反频道（杀皮套人）功能，除匿名群管皮套，如需要允许其发言请将其id或username加入列表，当然，支持命令操作，<a href="/#命令帮助">请查阅命令大全</a></td></tr>
+<tr><td>白名单专属线路</td><td>emby_whitelist_line </td><td> 【服务器板块】展示给白名单用户的emby地址和信息，仅支持telegram的MarkdownV2写法 </td></tr>
+<tr><td rowspan="3">客户端过滤</td><td>blocked_clients </td><td> 通过 webhook 来拦截的客户端名字，示例：<code>[".*curl.*",".*wget.*",".*python.*",".*bot.*", ".*spider.*",".*crawler.*", ".*scraper.*",".*downloader.*",".*aria2.*",".*youtube-dl.*",".*yt-dlp.*",".*ffmpeg.*",".*vlc.*"] </code></td></tr>
+<tr><td>client_filter_terminate_session</td><td>拦截到客户端后是否自动终止客户端的播放，默认 <code>true</code> </td></tr>
+<tr><td>client_filter_block_user</td><td>拦截到客户端后是否封禁用户，默认 <code>false</code> </td></tr>
 <tr><td rowspan="3">AutoUpdate<br>自动更新Bot代码</td><td>status</td><td>默认<code>false</code>，是否开启自动更新程序，<code>每日 12:30</code></td></tr>
 <tr><td>git_repo<br>拉取的代码仓库名称</td><td>默认<code>berry8838/Sakura_embyboss</code>，如有魔改请填写自己的仓库，以免代码覆盖</td></tr>
 <tr><td>commit_sha<br>所获取的latest commit sha</td><td>默认<code>null</code>，无需动，自动更新时会保存进此处以便下次比对</td></tr>

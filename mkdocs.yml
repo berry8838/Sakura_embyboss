@@ -188,6 +188,7 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.tasklist:
       custom_checkbox: true
+  - pymdownx.tilde #删除线
   - toc:
       permalink: ⚓︎ # 显示锚点
       slugify: !!python/object/apply:pymdownx.slugs.slugify { kwds: { case: lower } }

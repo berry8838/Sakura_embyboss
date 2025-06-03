@@ -37,7 +37,9 @@ async def server(_, call):
     if data.lv == 'b':
         line = f'{emby_line}'
     elif data.lv == 'a':
-        line += f'{emby_line}\n{emby_whitelist_line}'
+        line = f'{emby_line}'
+        if emby_whitelist_line:
+            line += f'\n{emby_whitelist_line}'
     else:
         line = ' - **无权查看**'
     try:

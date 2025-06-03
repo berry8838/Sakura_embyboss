@@ -173,6 +173,12 @@ class Config(BaseModel):
     fuxx_pitao: bool = True
     # 白名单用户专属的emby线路
     emby_whitelist_line: Optional[str] = None
+    # 被拦截的user-agent模式列表
+    blocked_clients: Optional[List[str]] = None
+    # 是否在检测到可疑客户端时终止会话
+    client_filter_terminate_session: bool = True
+    # 是否在检测到可疑客户端时封禁用户
+    client_filter_block_user: bool = False
     moviepilot: MP = Field(default_factory=MP)
     auto_update: AutoUpdate = Field(default_factory=AutoUpdate)
     red_envelope: RedEnvelope = Field(default_factory=RedEnvelope)

@@ -104,8 +104,14 @@
     "status": true,
     "http_url": "0.0.0.0",
     "http_port": 8838,
+    "webapp_url": "https://bot.example.com",
     "allow_origins": [
       "*"
-    ]
-  }
+    ],
+    "cloudflare_turnstile": {
+      "site_key": "",
+      "secret_key": ""
+    }
+  },
+  "rob_magnification": 10
 }

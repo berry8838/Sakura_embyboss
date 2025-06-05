@@ -114,12 +114,17 @@ class AutoUpdate(BaseModel):
     commit_sha: Optional[str] = None  # 最近一次commit
     up_description: Optional[str] = None  # 更新描述
 
+class CloudflareTurnstile(BaseModel):
+    site_key: Optional[str] = ""
+    secret_key: Optional[str] = ""
 
 class API(BaseModel):
     status: bool = False  # 默认关闭
     http_url: Optional[str] = "0.0.0.0"
     http_port: Optional[int] = 8838
+    webapp_url: Optional[str] = ""
     allow_origins: Optional[List[Union[str, int]]] = None
+    cloudflare_turnstile: Optional[CloudflareTurnstile] = Field(default_factory=CloudflareTurnstile)
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -183,6 +188,7 @@ class Config(BaseModel):
     auto_update: AutoUpdate = Field(default_factory=AutoUpdate)
     red_envelope: RedEnvelope = Field(default_factory=RedEnvelope)
     api: API = Field(default_factory=API)
+    rob_magnification: int = 1
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -203,6 +209,7 @@ class Config(BaseModel):
 class Yulv(BaseModel):
     wh_msg: List[str]
     red_bag: List[str]
+    white_list: List[str]
 
     @classmethod
     def load_yulv(cls):

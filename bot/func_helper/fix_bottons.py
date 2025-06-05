@@ -1,12 +1,13 @@
 from cacheout import Cache
 from pykeyboard import InlineKeyboard, InlineButton
-from pyrogram.types import InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from pyromod.helpers import ikb, array_chunk
 from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, sakura_b, \
     schedall, auto_update, fuxx_pitao, kk_gift_days, moviepilot, red_envelope
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import members_info
+from bot import api as config_api
 
 cache = Cache()
 
@@ -17,24 +18,42 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
     """
     start面板按钮
     """
-    if not account:
-        d = []
-        d.append(['🎟️ 使用注册码', 'exchange'])
-        d.append(['👑 创建账户', 'create'])
-        d.append(['⭕ 换绑TG', 'changetg'])
-        d.append(['🔍 绑定TG', 'bindtg'])
-        # 如果邀请等级为d （未注册用户也能使用），则显示兑换商店
-        if _open.invite_lv == 'd':
-            d.append(['🏪 兑换商店', 'storeall'])
-    else:
-        d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server']]
-        if schedall.check_ex: d.append(['🎟️ 使用续期码', 'exchange'])
-    if _open.checkin: d.append([f'💰 入股区', 'https://faka.dimlight.top/', 'url'])
-    lines = array_chunk(d, 2)
-    if is_admin: lines.append([['👮🏻‍♂️ admin', 'manage']])
-    keyword = ikb(lines)
-    return keyword
+    buttons = []
 
+    if not account:
+        buttons.append([
+            InlineKeyboardButton("🎟️ 使用注册码", callback_data="exchange"),
+            InlineKeyboardButton("👑 创建账户", callback_data="create")
+        ])
+        buttons.append([
+            InlineKeyboardButton("⭕ 换绑TG", callback_data="changetg"),
+            InlineKeyboardButton("🔍 绑定TG", callback_data="bindtg")
+        ])
+        if _open.invite_lv == 'd':
+            buttons.append([InlineKeyboardButton("🏪 兑换商店", callback_data="storeall")])
+    else:
+        buttons.append([
+            InlineKeyboardButton("️👥 用户功能", callback_data="members"),
+            InlineKeyboardButton("🌐 服务器", callback_data="server")
+        ])
+        if schedall.check_ex:
+            buttons.append([InlineKeyboardButton("🎟️ 使用续期码", callback_data="exchange")])
+
+    if _open.checkin:
+        try:
+            if config_api.webapp_url and config_api.webapp_url.strip() != "":
+                checkin_url = config_api.webapp_url.rstrip('/') + "/api/checkin/web"
+                webapp_button = InlineKeyboardButton("🎯 签到", web_app=WebAppInfo(url=checkin_url))
+                buttons.append([webapp_button])
+            else:
+                buttons.append([InlineKeyboardButton("🎯 签到", callback_data="checkin")])
+        except Exception as e:
+            buttons.append([InlineKeyboardButton("🎯 签到", callback_data="checkin")])
+
+    if is_admin:
+        buttons.append([InlineKeyboardButton("👮🏻‍♂️ admin", callback_data="manage")])
+
+    return InlineKeyboardMarkup(buttons)
 
 # un_group_answer
 group_f = ikb([[('点击我(●ˇ∀ˇ●)', f't.me/{bot_name}', 'url')]])
@@ -312,7 +331,7 @@ def cr_renew_ikb():
         'd': '无账号用户'
     }.get(_open.invite_lv, '未知')
     keyboard = InlineKeyboard(row_width=2)
-    keyboard.add(InlineButton(f'{checkin} 显示入股区', f'set_renew-checkin'),
+    keyboard.add(InlineButton(f'{checkin} 每日签到', f'set_renew-checkin'),
                  InlineButton(f'{exchange} 自动{sakura_b}续期', f'set_renew-exchange'),
                  InlineButton(f'{whitelist} 兑换白名单', f'set_renew-whitelist'),
                  InlineButton(f'{invite} 兑换邀请码', f'set_renew-invite'),

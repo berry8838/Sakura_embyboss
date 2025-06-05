@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>每日签到</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+  <style>
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f7f7f8;
+      color: #1c1c1e;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
+
+    .container {
+      text-align: center;
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      width: 100%;
+    }
+
+    .title {
+      color: #ff4b5c;
+      font-size: 2.4em;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    h1 {
+      color: #ff4b5c;
+      font-size: 2.4em;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 1.1em;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      color: #5e5e5e;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+
+    .check-in-btn, button {
+      font-size: 1.1em;
+      padding: 14px 0;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.3s ease, box-shadow 0.2s ease;
+      width: 100%;
+      font-weight: 600;
+    }
+
+    .check-in-btn:hover, button:hover {
+      background-color: #0051a8;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .check-in-btn:active, button:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .check-in-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .turnstile-container {
+      margin: 20px 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .loading {
+      display: none;
+      margin-top: 20px;
+      font-size: 1em;
+      color: #007aff;
+    }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+      font-size: 1em;
+      padding: 15px;
+      border-radius: 10px;
+      word-break: break-all;
+    }
+
+    .result.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .result.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 1em;
+      color: #1c1c1e;
+      word-break: break-all;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 25px;
+      }
+
+      .title, h1 {
+        font-size: 2em;
+      }
+
+      p {
+        font-size: 1em;
+      }
+
+      .check-in-btn, button {
+        font-size: 1em;
+        padding: 12px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">每日签到</div>
+        <p>点击按钮完成签到，获取币子奖励！</p>
+        
+        <div class="turnstile-container" id="turnstile-container"></div>
+        
+        <button class="check-in-btn" id="checkinBtn" disabled>签到</button>
+        
+        <div class="loading" id="loading">处理中...</div>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        let userId = null;
+        let turnstileWidgetId = null;
+        
+        tg.expand();
+        
+        // 获取用户ID和消息信息
+        function getUserInfo() {
+            const info = { user_id: null, chat_id: null, message_id: null };
+            
+            try {
+                if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                    info.user_id = tg.initDataUnsafe.user.id.toString();
+                    console.log('Got user_id from Telegram WebApp:', info.user_id);
+                }
+            } catch (error) {
+                console.error('Error getting user_id from Telegram WebApp:', error);
+            }
+            
+            // 从URL获取参数
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // 尝试从URL获取user_id（如果未从WebApp获取）
+            if (!info.user_id) {
+                const urlUserId = urlParams.get('user_id');
+                if (urlUserId) {
+                    console.log('Got user_id from URL:', urlUserId);
+                    info.user_id = urlUserId;
+                }
+            }
+            
+            // 获取消息信息
+            info.chat_id = urlParams.get('chat_id');
+            info.message_id = urlParams.get('message_id');
+            
+            if (info.chat_id && info.message_id) {
+                console.log('Got message info: chat_id=${info.chat_id}, message_id=${info.message_id}');
+            }
+            
+            if (!info.user_id) {
+                showError('无法获取用户ID，请从Telegram机器人菜单重新打开签到页面');
+            }
+            
+            return info;
+        }
+        
+        // 初始化Turnstile
+        function onTurnstileLoad() {
+            turnstileWidgetId = turnstile.render('#turnstile-container', {
+                sitekey: '{{ site_key }}',
+                theme: tg.colorScheme === 'dark' ? 'dark' : 'light',
+                callback: function(token) {
+                    document.getElementById('checkinBtn').disabled = false;
+                }
+            });
+        }
+        
+        function showSuccess(message) {
+            const resultElement = document.getElementById('result');
+            resultElement.className = 'result success';
+            resultElement.textContent = message;
+            resultElement.style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function showError(message) {
+            const resultElement = document.getElementById('result');
+            resultElement.className = 'result error';
+            resultElement.textContent = message;
+            resultElement.style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        // 检查签到按钮点击事件
+        document.getElementById('checkinBtn').addEventListener('click', async function() {
+            const userInfo = getUserInfo();
+            if (!userInfo.user_id) return;
+            
+            const token = turnstile.getResponse(turnstileWidgetId);
+            if (!token) {
+                showError('请先完成人机验证');
+                return;
+            }
+            
+            // 点击后立即禁用按钮，验证器保持成功状态
+            this.disabled = true;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+            
+            try {
+                const requestData = {
+                    user_id: userInfo.user_id,
+                    token: token
+                };
+                
+                // 添加消息信息（如果有）
+                if (userInfo.chat_id && userInfo.message_id) {
+                    requestData.chat_id = userInfo.chat_id;
+                    requestData.message_id = userInfo.message_id;
+                }
+                
+                const response = await fetch('/api/checkin/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(data.message + '！' + data.reward);
+                    // 通知Telegram WebApp成功签到
+                    if (tg.MainButton) {
+                        tg.MainButton.setText('签到成功');
+                        tg.MainButton.show();
+                        tg.MainButton.disable();
+                    }
+                    
+                    // 签到成功后直接关闭WebApp
+                    if (data.should_close) {
+                        tg.close();
+                    } else {
+                        // 2秒后关闭WebApp
+                        setTimeout(() => {
+                            tg.close();
+                        }, 2000);
+                    }
+                } else {
+                    showError(data.detail || '签到失败，请稍后重试');
+                    // 签到失败时不重新启用按钮和验证器，防止重复点击
+                }
+            } catch (error) {
+                console.error('Error during check-in:', error);
+                showError('网络错误，请稍后重试');
+                // 网络错误时也不重新启用按钮和验证器，防止重复点击
+            }
+        });
+        
+        // 当页面加载完成后初始化
+        window.onload = function() {
+            // 初始化用户信息
+            getUserInfo();
+            
+            // 如果turnstile已加载，初始化小部件
+            if (typeof turnstile !== 'undefined') {
+                onTurnstileLoad();
+            } else {
+                // 否则设置回调
+                window.onloadTurnstileCallback = onTurnstileLoad;
+            }
+        };
+    </script>
+</body>
+</html>

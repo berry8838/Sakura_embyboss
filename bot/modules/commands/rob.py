@@ -19,7 +19,7 @@ FIGHT_PENALTY = max(3, rob_magnification * 3)                  # 战斗失败惩
 
 # 围观群众奖励配置
 TOTAL_GAME_COINS = max(2, rob_magnification * 2)           # 围观奖励池：2币
-PENALTY_CHANCE = 20                                                      # 被惩罚概率：20%
+PENALTY_CHANCE = 15                                                      # 被惩罚概率：15%
 BONUS_CHANCE = 15                                                         # 获得奖励概率：15%
 PENALTY_AMOUNT = max(2, rob_magnification * 2)               # 惩罚扣除：2币
 BONUS_MIN_AMOUNT = max(1, rob_magnification)               # 奖励最小：1币
@@ -305,6 +305,7 @@ async def fighting(call, game_id):
                     msg = f"{target_with_link} 最终赢得了斗争🏆\n{user_with_link} 失去 {FIGHT_PENALTY} {sakura_b}😭"
                     success_msg = await bot.send_message(call.message.chat.id, msg, reply_to_message_id=call.message.id)
                     asyncio.create_task(deleteMessage(success_msg, 180))
+                    change_emby_amount(user.tg, user.iv - FIGHT_PENALTY)
                     change_emby_amount(call.from_user.id, target_user.iv + FIGHT_PENALTY)
                     # 给打劫者私发消息
                     await bot.send_message(
@@ -351,9 +352,20 @@ async def fighting(call, game_id):
                     asyncio.create_task(deleteMessage(rob_msg, 180))
                 else:
                     msg = f"双方竟然打平了, 乱世的盗贼跑路了，{user_with_link} 痛失佣金 💸，什么也没有得到 🤡"
-                    change_emby_amount(user.tg, user.iv - FIGHT_PENALTY)
                     rob_msg = await bot.send_message(call.message.chat.id, msg, reply_to_message_id=call.message.id)
                     asyncio.create_task(deleteMessage(rob_msg, 180))
+                    # 给打劫者私发消息
+                    await bot.send_message(
+                        user.tg,
+                        f"与{target_with_link}打成平手，佣金 {COMMISSION_FEE} {sakura_b}打水漂了，剩余 {user.iv} {sakura_b}！",
+                        reply_to_message_id=call.message.id
+                    )
+                    # 给被打劫者私发消息
+                    await bot.send_message(
+                        target_user.tg,
+                        f"你和乱世的盗贼打成了平手，成功保住了财产，剩余 {target_user.iv} {sakura_b}！",
+                        reply_to_message_id=call.message.id
+                    )
                 asyncio.create_task(handle_kanxi_rewards(game))
                 asyncio.create_task(deleteMessage(call.message, 180))
                 del rob_games[game_id]

@@ -7,16 +7,59 @@
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
   <style>
+    :root {
+      --bg-primary: #f7f7f8;
+      --bg-secondary: #fff;
+      --text-primary: #1c1c1e;
+      --text-secondary: #5e5e5e;
+      --accent-color: #ff4b5c;
+      --button-bg: #007aff;
+      --button-hover: #0051a8;
+      --border-color: #ccc;
+      --shadow: rgba(0, 0, 0, 0.1);
+      --success-bg: #d4edda;
+      --success-text: #155724;
+      --success-border: #c3e6cb;
+      --error-bg: #f8d7da;
+      --error-text: #721c24;
+      --error-border: #f5c6cb;
+      --warning-bg: #fff3cd;
+      --warning-text: #856404;
+      --warning-border: #ffeaa7;
+    }
+
+    .dark-theme {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2a2a2a;
+      --text-primary: #ffffff;
+      --text-secondary: #b0b0b0;
+      --accent-color: #ff6b7d;
+      --button-bg: #0a84ff;
+      --button-hover: #0056cc;
+      --border-color: #404040;
+      --shadow: rgba(0, 0, 0, 0.3);
+      --success-bg: #1e3a28;
+      --success-text: #4ade80;
+      --success-border: #16a34a;
+      --error-bg: #3a1e1e;
+      --error-text: #f87171;
+      --error-border: #dc2626;
+      --warning-bg: #3a2e1e;
+      --warning-text: #fbbf24;
+      --warning-border: #f59e0b;
+    }
+
     html, body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background-color: #f7f7f8;
-      color: #1c1c1e;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
       margin: 0;
       padding: 0;
       height: 100vh;
       overflow: hidden;
       position: fixed;
       width: 100%;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     body {
@@ -29,49 +72,61 @@
 
     .container {
       text-align: center;
-      background-color: #fff;
+      background-color: var(--bg-secondary);
       padding: 40px;
       border-radius: 20px;
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 20px var(--shadow);
       max-width: 500px;
       width: 100%;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
     }
 
     .title {
-      color: #ff4b5c;
+      color: var(--accent-color);
       font-size: 2.4em;
       margin-bottom: 20px;
       font-weight: 700;
+      transition: color 0.3s ease;
     }
 
     h1 {
-      color: #ff4b5c;
+      color: var(--accent-color);
       font-size: 2.4em;
       margin-bottom: 20px;
       font-weight: 700;
+      transition: color 0.3s ease;
     }
 
     p {
       font-size: 1.1em;
       line-height: 1.6;
       margin-bottom: 30px;
-      color: #5e5e5e;
+      color: var(--text-secondary);
+      transition: color 0.3s ease;
     }
 
     input[type="text"] {
       width: 100%;
       padding: 14px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--border-color);
       border-radius: 10px;
       margin-bottom: 20px;
       font-size: 1em;
       box-sizing: border-box;
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--button-bg);
     }
 
     .check-in-btn, button {
       font-size: 1.1em;
       padding: 14px 0;
-      background-color: #007aff;
+      background-color: var(--button-bg);
       color: white;
       border: none;
       border-radius: 12px;
@@ -82,18 +137,18 @@
     }
 
     .check-in-btn:hover, button:hover {
-      background-color: #0051a8;
+      background-color: var(--button-hover);
       transform: translateY(-3px);
-      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 15px var(--shadow);
     }
 
     .check-in-btn:active, button:active {
       transform: translateY(2px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 4px var(--shadow);
     }
 
     .check-in-btn:disabled {
-      background-color: #ccc;
+      background-color: var(--border-color);
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
@@ -109,7 +164,8 @@
       display: none;
       margin-top: 20px;
       font-size: 1em;
-      color: #007aff;
+      color: var(--button-bg);
+      transition: color 0.3s ease;
     }
 
     .result {
@@ -119,25 +175,44 @@
       padding: 15px;
       border-radius: 10px;
       word-break: break-all;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
 
     .result.success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+      background-color: var(--success-bg);
+      color: var(--success-text);
+      border: 1px solid var(--success-border);
     }
 
     .result.error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
+      background-color: var(--error-bg);
+      color: var(--error-text);
+      border: 1px solid var(--error-border);
+    }
+
+    .result.warning {
+      background-color: var(--warning-bg);
+      color: var(--warning-text);
+      border: 1px solid var(--warning-border);
     }
 
     #result {
       margin-top: 20px;
       font-size: 1em;
-      color: #1c1c1e;
+      color: var(--text-primary);
       word-break: break-all;
+      transition: color 0.3s ease;
+    }
+
+    .network-tip {
+      margin-top: 15px;
+      font-size: 0.9em;
+      padding: 12px;
+      border-radius: 8px;
+      background-color: var(--warning-bg);
+      color: var(--warning-text);
+      border: 1px solid var(--warning-border);
+      transition: all 0.3s ease;
     }
 
     @media (max-width: 600px) {
@@ -167,9 +242,13 @@
         
         <div class="turnstile-container" id="turnstile-container"></div>
         
-        <button class="check-in-btn" id="checkinBtn" disabled>签到</button>
+        <button id="checkinBtn" class="check-in-btn" disabled>验证中...</button>
         
-        <div class="loading" id="loading">处理中...</div>
+        <div class="network-tip">
+            💡 无法签到？请检查网络或尝试更换代理重新打开页面
+        </div>
+        
+        <div class="loading" id="loading">签到中，请稍候...</div>
         <div class="result" id="result"></div>
     </div>
 
@@ -177,10 +256,35 @@
         let tg = window.Telegram.WebApp;
         let userId = null;
         let turnstileWidgetId = null;
+        let lastClickTime = 0;
+        let mouseMovements = [];
+        let clicks = [];
+        let scrolls = [];
+        let operationTime = Date.now();
         
         tg.expand();
         
-        // 获取用户ID和消息信息
+        function applyTheme() {
+            const isDark = tg.colorScheme === 'dark';
+            if (isDark) {
+                document.documentElement.classList.add('dark-theme');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+            }
+            console.log('Applied theme:', isDark ? 'dark' : 'light');
+        }
+        
+        tg.onEvent('themeChanged', function() {
+            console.log('Theme changed to:', tg.colorScheme);
+            applyTheme();
+            
+            if (turnstileWidgetId !== null) {
+                turnstile.reset(turnstileWidgetId);
+                turnstile.remove(turnstileWidgetId);
+                onTurnstileLoad();
+            }
+        });
+        
         function getUserInfo() {
             const info = { user_id: null, chat_id: null, message_id: null };
             
@@ -193,10 +297,8 @@
                 console.error('Error getting user_id from Telegram WebApp:', error);
             }
             
-            // 从URL获取参数
             const urlParams = new URLSearchParams(window.location.search);
             
-            // 尝试从URL获取user_id（如果未从WebApp获取）
             if (!info.user_id) {
                 const urlUserId = urlParams.get('user_id');
                 if (urlUserId) {
@@ -205,12 +307,11 @@
                 }
             }
             
-            // 获取消息信息
             info.chat_id = urlParams.get('chat_id');
             info.message_id = urlParams.get('message_id');
             
             if (info.chat_id && info.message_id) {
-                console.log('Got message info: chat_id=${info.chat_id}, message_id=${info.message_id}');
+                console.log(`Got message info: chat_id=${info.chat_id}, message_id=${info.message_id}`);
             }
             
             if (!info.user_id) {
@@ -220,13 +321,22 @@
             return info;
         }
         
-        // 初始化Turnstile
         function onTurnstileLoad() {
+            const isDark = tg.colorScheme === 'dark';
             turnstileWidgetId = turnstile.render('#turnstile-container', {
                 sitekey: '{{ site_key }}',
-                theme: tg.colorScheme === 'dark' ? 'dark' : 'light',
+                theme: isDark ? 'dark' : 'light',
                 callback: function(token) {
-                    document.getElementById('checkinBtn').disabled = false;
+                    const checkinBtn = document.getElementById('checkinBtn');
+                    checkinBtn.disabled = false;
+                    checkinBtn.textContent = '立即签到';
+                    
+                    const networkTip = document.querySelector('.network-tip');
+                    if (networkTip) {
+                        networkTip.style.display = 'none';
+                    }
+                    
+                    lastClickTime = Date.now();
                 }
             });
         }
@@ -247,8 +357,28 @@
             document.getElementById('loading').style.display = 'none';
         }
         
-        // 检查签到按钮点击事件
+        function showWarning(message) {
+            const resultElement = document.getElementById('result');
+            resultElement.className = 'result warning';
+            resultElement.textContent = message;
+            resultElement.style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function canClick() {
+            const now = Date.now();
+            if (now - lastClickTime < 1000) {
+                alert('请稍等片刻再点击签到按钮');
+                return false;
+            }
+            return true;
+        }
+        
         document.getElementById('checkinBtn').addEventListener('click', async function() {
+            if (!canClick()) {
+                return;
+            }
+            
             const userInfo = getUserInfo();
             if (!userInfo.user_id) return;
             
@@ -258,18 +388,21 @@
                 return;
             }
             
-            // 点击后立即禁用按钮，验证器保持成功状态
             this.disabled = true;
+            lastClickTime = Date.now();
             document.getElementById('loading').style.display = 'block';
             document.getElementById('result').style.display = 'none';
             
             try {
                 const requestData = {
                     user_id: userInfo.user_id,
-                    token: token
+                    token: token,
+                    mouseMovements: mouseMovements,
+                    clicks: clicks,
+                    scrolls: scrolls,
+                    operationTime: operationTime
                 };
                 
-                // 添加消息信息（如果有）
                 if (userInfo.chat_id && userInfo.message_id) {
                     requestData.chat_id = userInfo.chat_id;
                     requestData.message_id = userInfo.message_id;
@@ -287,43 +420,55 @@
                 
                 if (response.ok) {
                     showSuccess(data.message + '！' + data.reward);
-                    // 通知Telegram WebApp成功签到
+                    
+                    this.textContent = '签到成功';
+                    this.style.backgroundColor = 'var(--success-text)';
+                    this.style.cursor = 'default';
+                    
                     if (tg.MainButton) {
                         tg.MainButton.setText('签到成功');
                         tg.MainButton.show();
                         tg.MainButton.disable();
                     }
                     
-                    // 签到成功后直接关闭WebApp
                     if (data.should_close) {
                         tg.close();
                     } else {
-                        // 2秒后关闭WebApp
                         setTimeout(() => {
                             tg.close();
                         }, 2000);
                     }
                 } else {
                     showError(data.detail || '签到失败，请稍后重试');
-                    // 签到失败时不重新启用按钮和验证器，防止重复点击
                 }
             } catch (error) {
                 console.error('Error during check-in:', error);
                 showError('网络错误，请稍后重试');
-                // 网络错误时也不重新启用按钮和验证器，防止重复点击
             }
         });
         
-        // 当页面加载完成后初始化
+        document.addEventListener('mousemove', function(e) {
+            mouseMovements.push({x: e.clientX, y: e.clientY, time: Date.now()});
+            if (mouseMovements.length > 50) mouseMovements.shift();
+        });
+        
+        document.addEventListener('click', function(e) {
+            clicks.push({x: e.clientX, y: e.clientY, time: Date.now()});
+            if (clicks.length > 20) clicks.shift();
+        });
+        
+        document.addEventListener('scroll', function() {
+            scrolls.push({scrollY: window.scrollY, time: Date.now()});
+            if (scrolls.length > 20) scrolls.shift();
+        });
+        
         window.onload = function() {
-            // 初始化用户信息
+            applyTheme();
             getUserInfo();
             
-            // 如果turnstile已加载，初始化小部件
             if (typeof turnstile !== 'undefined') {
                 onTurnstileLoad();
             } else {
-                // 否则设置回调
                 window.onloadTurnstileCallback = onTurnstileLoad;
             }
         };

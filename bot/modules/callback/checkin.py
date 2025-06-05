@@ -14,6 +14,15 @@ from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 async def user_in_checkin(_, call):
     now = datetime.now(timezone(timedelta(hours=8)))
     today = now.strftime("%Y-%m-%d")
+    if ':' not in call.data:
+        await callAnswer(call, '📅 这个签到按钮已过期，请重新打开菜单签到。', True)
+        return
+    else:
+        _, date_str = call.data.split(':', 1)
+        if date_str != today:
+            await callAnswer(call, '📅 这个签到按钮已过期，请重新打开菜单签到。', True)
+            return
+
     if _open.checkin:
         e = sql_get_emby(call.from_user.id)
         if not e:

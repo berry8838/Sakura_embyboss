@@ -2,6 +2,7 @@ from cacheout import Cache
 from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from pyromod.helpers import ikb, array_chunk
+from datetime import datetime, timezone, timedelta
 from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, sakura_b, \
     schedall, auto_update, fuxx_pitao, kk_gift_days, moviepilot, red_envelope
 from bot.func_helper import nezha_res
@@ -46,9 +47,11 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
                 webapp_button = InlineKeyboardButton("🎯 签到", web_app=WebAppInfo(url=checkin_url))
                 buttons.append([webapp_button])
             else:
-                buttons.append([InlineKeyboardButton("🎯 签到", callback_data="checkin")])
+                today_str = datetime.now(timezone(timedelta(hours=8))).strftime('%Y-%m-%d')
+                buttons.append([InlineKeyboardButton("🎯 签到", callback_data=f"checkin:{today_str}")])
         except Exception as e:
-            buttons.append([InlineKeyboardButton("🎯 签到", callback_data="checkin")])
+            today_str = datetime.now(timezone(timedelta(hours=8))).strftime('%Y-%m-%d')
+            buttons.append([InlineKeyboardButton("🎯 签到", callback_data=f"checkin:{today_str}")])
 
     if is_admin:
         buttons.append([InlineKeyboardButton("👮🏻‍♂️ admin", callback_data="manage")])

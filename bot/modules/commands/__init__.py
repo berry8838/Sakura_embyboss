@@ -10,3 +10,4 @@ from .start import ui_g_command, my_info, count_info, p_start, b_start, store_al
 from .syncs import sync_emby_group, sync_emby_unbound, bindall_id, reload_admins
 from .view_user import list_whitelist, whitelist_page, list_normaluser, normaluser_page
 from .import rob
+from .import bet

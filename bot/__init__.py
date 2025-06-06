@@ -75,7 +75,9 @@ user_p = [
     BotCommand("count", "[用户] 媒体库数量"),
     BotCommand("red", "[用户/禁言] 发红包"),
     BotCommand("srank", "[用户/禁言] 查看计分"),
-    BotCommand("rob", "[用户] 开始打劫事件")]
+    BotCommand("rob", "[用户] 开始打劫事件"),
+    BotCommand("startbet", "[用户] 创建赌局"),
+    BotCommand("bet", "[用户] 参与赌局")]
 
 # 取消 BotCommand("exchange", "[私聊] 使用注册码")
 admin_p = user_p + [

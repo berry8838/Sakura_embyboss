@@ -113,5 +113,9 @@
       "secret_key": ""
     }
   },
-  "rob_magnification": 10
+  "game": {
+    "rob_open": true,
+    "bet_open": true,
+    "magnification": 10
+  }
 }

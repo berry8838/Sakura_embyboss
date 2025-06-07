@@ -3,7 +3,7 @@ import random
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List
 from pyrogram import filters
-from bot import bot, prefixes, sakura_b, rob_magnification, LOGGER
+from bot import bot, prefixes, sakura_b, game, LOGGER
 from bot.func_helper.msg_utils import deleteMessage
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 
@@ -323,7 +323,7 @@ class BettingSystem:
                         new_balance = user.iv
                         await bot.send_message(
                             chat_id=participant['user_id'],
-                            text=f"🎉 开奖通知\n\n"
+                            text=f"🎉 赌局开奖通知\n\n"
                                  f"恭喜中奖！\n"
                                  f"获得：{personal_reward} {sakura_b}\n"
                                  f"当前余额：{new_balance} {sakura_b}"
@@ -333,7 +333,7 @@ class BettingSystem:
                         if not winners:  # 没有获胜者，全额退还的情况
                             await bot.send_message(
                                 chat_id=participant['user_id'],
-                                text=f"😌 开奖通知\n\n"
+                                text=f"😌 赌局开奖通知\n\n"
                                      f"本次无人中奖\n"
                                      f"已退还：{participant['amount']} {sakura_b}\n"
                                      f"当前余额：{new_balance} {sakura_b}"
@@ -341,7 +341,7 @@ class BettingSystem:
                         else:  # 正常失败的情况
                             await bot.send_message(
                                 chat_id=participant['user_id'],
-                                text=f"😔 开奖通知\n\n"
+                                text=f"😔 赌局开奖通知\n\n"
                                      f"很遗憾，这次没有中奖\n"
                                      f"损失：{participant['amount']} {sakura_b}\n"
                                      f"当前余额：{new_balance} {sakura_b}"
@@ -360,6 +360,12 @@ from pyrogram import filters
 @bot.on_message(filters.command('startbet', prefixes=prefixes) & filters.group)
 # 定义一个异步函数，用于处理开始下注的命令
 async def handle_startbet_command(client, message):
+    if not game.bet_open:
+        try:
+            await message.delete()
+        except:
+            pass
+        return
     asyncio.create_task(deleteMessage(message, 0))
     chat_id = message.chat.id
     user_id = message.from_user.id
@@ -371,18 +377,18 @@ async def handle_startbet_command(client, message):
         return
 
     # 检查用户金币是否足够支付手续费
-    if user.iv < rob_magnification:
-        await message.reply_text(f"❌ 你的余额不够支付 {rob_magnification} {sakura_b} 手续费哦～")
+    if user.iv < game.magnification:
+        await message.reply_text(f"❌ 你的余额不够支付 {game.magnification} {sakura_b} 手续费哦～")
         return
 
     # 扣除手续费
-    new_balance = user.iv - rob_magnification
+    new_balance = user.iv - game.magnification
     sql_update_emby(Emby.tg == user_id, iv=new_balance)
-    await message.reply_text(f"✅ 发起者已扣除 {rob_magnification} {sakura_b} 手续费")
+    await message.reply_text(f"✅ 发起者已扣除 {game.magnification} {sakura_b} 手续费")
 
     await bot.send_message(
         chat_id=user_id,
-        text=f"✅ 您已成功创建赌局\n💰 扣除手续费：{rob_magnification} {sakura_b}\n💳 当前余额：{new_balance} {sakura_b}"
+        text=f"✅ 您已成功创建赌局\n💰 扣除手续费：{game.magnification} {sakura_b}\n💳 当前余额：{new_balance} {sakura_b}"
     )
 
     result = await betting_system.start_bet(chat_id, user_id, message_text)
@@ -390,6 +396,12 @@ async def handle_startbet_command(client, message):
 
 @bot.on_message(filters.command('bet', prefixes=prefixes) & filters.group)
 async def handle_bet_command(client, message):
+    if not game.bet_open:
+        try:
+            await message.delete()
+        except:
+            pass
+        return
     try:
         # 解析命令参数: /bet 大/小 金额
         parts = message.text.split()

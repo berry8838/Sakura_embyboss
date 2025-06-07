@@ -62,7 +62,7 @@ red_envelope = config.red_envelope
 moviepilot = config.moviepilot
 auto_update = config.auto_update
 api = config.api
-rob_magnification = config.rob_magnification
+game = config.game
 save_config()
 
 LOGGER.info("配置文件加载完毕")
@@ -75,7 +75,7 @@ user_p = [
     BotCommand("count", "[用户] 媒体库数量"),
     BotCommand("red", "[用户/禁言] 发红包"),
     BotCommand("srank", "[用户/禁言] 查看计分"),
-    BotCommand("rob", "[用户] 开始打劫事件"),
+    BotCommand("rob", "[用户] 开始抢劫事件"),
     BotCommand("startbet", "[用户] 创建赌局"),
     BotCommand("bet", "[用户] 参与赌局")]
 

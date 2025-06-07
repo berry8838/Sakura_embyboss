@@ -77,7 +77,7 @@ async def verify_checkin(request: CheckinVerifyRequest, user_agent: str = Header
     
     # 检查今天是否已经签到
     if e.ch and e.ch.strftime("%Y-%m-%d") >= today:
-        raise HTTPException(status_code=409, detail="您今天已经签到过了！签到是无聊的活动哦。")
+        raise HTTPException(status_code=409, detail="您今天已经签到过了，再签到剁掉你的小鸡鸡🐤。")
     
     # 处理签到奖励
     reward = random.randint(_open.checkin_reward[0], _open.checkin_reward[1])

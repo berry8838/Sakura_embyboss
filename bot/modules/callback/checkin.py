@@ -36,6 +36,6 @@ async def user_in_checkin(_, call):
             await asyncio.gather(deleteMessage(call), sendMessage(call, text=text))
 
         else:
-            await callAnswer(call, '⭕ 您今天已经签到过了！签到是无聊的活动哦。', True)
+            await callAnswer(call, '⭕ 您今天已经签到过了，再签到剁掉你的小鸡鸡🐤。', True)
     else:
         await callAnswer(call, '❌ 未开启签到功能，等待！', True)

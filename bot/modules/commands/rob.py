@@ -178,14 +178,19 @@ async def update_edit_message(call, game, status=None):
             rob_gold = game['rob_gold']
             
         change_emby_amount(game['user_id'], user.iv + rob_gold)
-        change_emby_amount(game['target_user_id'], target_user.iv - rob_gold)
+        # 确保不会扣除超过目标用户当前持有的积分
+        actual_rob_gold = min(rob_gold, target_user.iv)
+        
+        # 更新玩家积分
+        change_emby_amount(game['target_user_id'], target_user.iv - actual_rob_gold)
+        change_emby_amount(game['user_id'], user.iv + actual_rob_gold)
 
         await editMessage(game['original_message'], update_text)
-        answer = f"对方投降了，你获得 **{rob_gold}** {sakura_b}， 剩余 {user.iv + rob_gold} {sakura_b}✌️！\n"
+        answer = f"对方投降了，你获得 {actual_rob_gold} {sakura_b}， 剩余 {user.iv + actual_rob_gold} {sakura_b}✌️！\n"
 
         await bot.send_message(user.tg, answer, reply_to_message_id=call.message.id)
 
-        target_answer = f"你投降了，割地赔款 **{rob_gold}** {sakura_b}， 剩余 {target_user.iv - rob_gold} {sakura_b}️！\n"
+        target_answer = f"你投降了，割地赔款 {actual_rob_gold} {sakura_b}， 剩余 {target_user.iv - actual_rob_gold} {sakura_b}️！\n"
         await bot.send_message(target_user.tg, target_answer, reply_to_message_id=call.message.id)
 
         del rob_games[game['rob_msg_id']]
@@ -302,11 +307,13 @@ async def fighting(call, game_id):
                 target_user = sql_get_emby(int(call.data.split("_")[4]))
 
                 if game["target_score"] > game["user_score"]:
-                    msg = f"{target_with_link} 最终赢得了斗争🏆\n{user_with_link} 失去 {FIGHT_PENALTY} {sakura_b}😭"
+                    # 确保惩罚不超过用户当前积分
+                    actual_penalty = min(user.iv, FIGHT_PENALTY)
+                    msg = f"{target_with_link} 最终赢得了斗争🏆\n{user_with_link} 失去 {actual_penalty} {sakura_b}😭"
                     success_msg = await bot.send_message(call.message.chat.id, msg, reply_to_message_id=call.message.id)
                     asyncio.create_task(deleteMessage(success_msg, 180))
-                    change_emby_amount(user.tg, user.iv - FIGHT_PENALTY)
-                    change_emby_amount(call.from_user.id, target_user.iv + FIGHT_PENALTY)
+                    change_emby_amount(user.tg, user.iv - actual_penalty)
+                    change_emby_amount(call.from_user.id, target_user.iv + actual_penalty)
                     # 给打劫者私发消息
                     await bot.send_message(
                         user.tg,
@@ -392,12 +399,14 @@ async def handle_kanxi_rewards(rob_game):
             else:
                 reward_chance = random.randint(1, 100)
                 if reward_chance <= PENALTY_CHANCE:
+                    # 确保惩罚不会使积分变为负数
                     penalty = min(PENALTY_AMOUNT, kanxi_user.iv)
                     if penalty > 0:
-                        change_emby_amount(kanxi_id, kanxi_user.iv - penalty)
+                        actual_penalty = min(penalty, kanxi_user.iv)
+                        change_emby_amount(kanxi_id, kanxi_user.iv - actual_penalty)
                         remaining_gold = sql_get_emby(kanxi_id).iv
-                        reward_messages.append(f"· {name} 被乱世的盗贼误伤，被抢走了 {penalty} {sakura_b}🤕")
-                        tasks.append(bot.send_message(kanxi_id, f"您被误伤，损失了 {penalty} {sakura_b}😭，剩余 {remaining_gold} {sakura_b}"))
+                        reward_messages.append(f"· {name} 被乱世的盗贼误伤，被抢走了 {actual_penalty} {sakura_b}🤕")
+                        tasks.append(bot.send_message(kanxi_id, f"您被误伤，损失了 {actual_penalty} {sakura_b}😭，剩余 {remaining_gold} {sakura_b}"))
                 elif reward_chance <= PENALTY_CHANCE + BONUS_CHANCE:
                     bonus_amount = random.randint(BONUS_MIN_AMOUNT, BONUS_MAX_AMOUNT)
                     if total_rewards + bonus_amount > TOTAL_GAME_COINS:

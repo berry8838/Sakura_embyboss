@@ -127,6 +127,11 @@ class BettingSystem:
                 # 扣除余额
                 new_balance = user.iv - amount_int
                 sql_update_emby(Emby.tg == user_id, iv=new_balance)
+
+                await bot.send_message(
+                    chat_id=user_id,
+                    text=f"✅ 您已成功追加赌局\n💰 追加金额：{amount_int} {sakura_b}\n💳 当前余额：{new_balance} {sakura_b}"
+                )
                 
                 # 更新参与记录
                 existing_participant['amount'] += amount_int
@@ -164,6 +169,11 @@ class BettingSystem:
                 new_balance = user.iv - amount_int
                 sql_update_emby(Emby.tg == user_id, iv=new_balance)
                 
+                await bot.send_message(
+                    chat_id=user_id,
+                    text=f"✅ 您已成功参与赌局\n💰 投注金额：{amount_int} {sakura_b}\n💳 当前余额：{new_balance} {sakura_b}"
+                )
+                
                 # 添加参与记录
                 participant = {
                     'user_id': user_id,
@@ -193,7 +203,7 @@ class BettingSystem:
 当前赔率：
 大：{odds_info['big_odds']:.2f}倍
 小：{odds_info['small_odds']:.2f}倍
-总投注：{int(bet_info['total_amount'])}"""
+总投注：{int(bet_info['total_amount'])} {sakura_b}"""
                 
             except Exception as e:
                 LOGGER.info(f"用户 {user_id} 投注失败，原因: {str(e)}")
@@ -296,12 +306,48 @@ class BettingSystem:
         del self.active_bets[chat_id]
         if bet_id in self.participants:
             del self.participants[bet_id]
-        
         # 发送开奖消息
         try:
             await bot.send_message(chat_id, result_message)
         except:
             pass
+            
+        # 给参与者发送私信通知
+        for participant in participants:
+            try:
+                user = sql_get_emby(participant['user_id'])
+                if user:
+                    won = participant['type'] == winning_type
+                    if won:
+                        personal_reward = round((participant['amount'] / total_winner_amount) * prize_pool) if total_winner_amount > 0 else 0
+                        new_balance = user.iv
+                        await bot.send_message(
+                            chat_id=participant['user_id'],
+                            text=f"🎉 开奖通知\n\n"
+                                 f"恭喜中奖！\n"
+                                 f"获得：{personal_reward} {sakura_b}\n"
+                                 f"当前余额：{new_balance} {sakura_b}"
+                        )
+                    else:
+                        new_balance = user.iv
+                        if not winners:  # 没有获胜者，全额退还的情况
+                            await bot.send_message(
+                                chat_id=participant['user_id'],
+                                text=f"😌 开奖通知\n\n"
+                                     f"本次无人中奖\n"
+                                     f"已退还：{participant['amount']} {sakura_b}\n"
+                                     f"当前余额：{new_balance} {sakura_b}"
+                            )
+                        else:  # 正常失败的情况
+                            await bot.send_message(
+                                chat_id=participant['user_id'],
+                                text=f"😔 开奖通知\n\n"
+                                     f"很遗憾，这次没有中奖\n"
+                                     f"损失：{participant['amount']} {sakura_b}\n"
+                                     f"当前余额：{new_balance} {sakura_b}"
+                            )
+            except Exception as e:
+                LOGGER.infof("Failed to send bet result notification: {e}")
         
         return result_message
 
@@ -333,6 +379,11 @@ async def handle_startbet_command(client, message):
     new_balance = user.iv - rob_magnification
     sql_update_emby(Emby.tg == user_id, iv=new_balance)
     await message.reply_text(f"✅ 发起者已扣除 {rob_magnification} {sakura_b} 手续费")
+
+    await bot.send_message(
+        chat_id=user_id,
+        text=f"✅ 您已成功创建赌局\n💰 扣除手续费：{rob_magnification} {sakura_b}\n💳 当前余额：{new_balance} {sakura_b}"
+    )
 
     result = await betting_system.start_bet(chat_id, user_id, message_text)
     await message.reply_text(result)

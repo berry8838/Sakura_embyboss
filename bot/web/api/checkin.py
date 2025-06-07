@@ -16,6 +16,12 @@ from typing import Optional
 
 from bot import _open, bot_token, LOGGER, api as config_api, sakura_b 
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
+from bot.sql_helper.sql_ip import (
+    add_checkin_ip_record, 
+    is_ip_blacklisted, 
+    get_distinct_users_by_ip_today,
+    add_ip_to_blacklist
+)
 
 # 创建路由
 route = APIRouter(prefix="/checkin")
@@ -27,6 +33,9 @@ templates = Jinja2Templates(directory=str(templates_path))
 # 从配置中获取 Cloudflare Turnstile 密钥
 TURNSTILE_SITE_KEY = config_api.cloudflare_turnstile.site_key or "YOUR_TURNSTILE_SITE_KEY"
 TURNSTILE_SECRET_KEY = config_api.cloudflare_turnstile.secret_key or "YOUR_TURNSTILE_SECRET_KEY"
+
+# IP签到限制
+MAX_USERS_PER_IP = 5  # 每个IP每天最多可签到的不同用户数
 
 class CheckinVerifyRequest(BaseModel):
     token: str
@@ -44,12 +53,30 @@ async def checkin_page(request: Request):
     )
 
 @route.post("/verify")
-async def verify_checkin(request: CheckinVerifyRequest, user_agent: str = Header(None)):
+async def verify_checkin(request: CheckinVerifyRequest, user_agent: str = Header(None), client_ip: str = Header(None, alias="X-Forwarded-For")):
     """验证签到"""
-    LOGGER.info(f"Checkin request from user_id: {request.user_id} with User-Agent: {user_agent}")
+    # 获取客户端IP地址
+    if not client_ip:
+        # 尝试从请求对象中获取
+        client_ip = getattr(request, "client", None)
+        if client_ip:
+            client_ip = client_ip.host
     
+    # 如果X-Forwarded-For包含多个IP（代理链），取第一个
+    if client_ip and "," in client_ip:
+        client_ip = client_ip.split(",")[0].strip()
+    
+    # 记录签到请求
+    LOGGER.info(f"Checkin request from user_id: {request.user_id} with IP: {client_ip}, User-Agent: {user_agent}")
+    
+    # 检查签到功能是否开启
     if not _open.checkin:
         raise HTTPException(status_code=403, detail="签到功能未开启")
+    
+    # 检查IP是否在黑名单中
+    if client_ip and is_ip_blacklisted(client_ip):
+        LOGGER.warning(f"IP {client_ip} 在黑名单中，拒绝用户 {request.user_id} 的签到请求")
+        raise HTTPException(status_code=403, detail="您的IP已被禁止签到")
     
     # 检查用户是否存在
     e = sql_get_emby(request.user_id)
@@ -63,7 +90,7 @@ async def verify_checkin(request: CheckinVerifyRequest, user_agent: str = Header
             data={
                 "secret": TURNSTILE_SECRET_KEY,
                 "response": request.token,
-                "remoteip": "0.0.0.0"  # 可选，可以从请求中获取
+                "remoteip": client_ip or "0.0.0.0"
             }
         ) as response:
             result = await response.json()
@@ -79,6 +106,18 @@ async def verify_checkin(request: CheckinVerifyRequest, user_agent: str = Header
     if e.ch and e.ch.strftime("%Y-%m-%d") >= today:
         raise HTTPException(status_code=409, detail="您今天已经签到过了，再签到剁掉你的小鸡鸡🐤。")
     
+    # 如果有IP，检查该IP今天签到的不同用户数
+    if client_ip:
+        # 获取今天使用该IP签到的所有不同用户
+        users = get_distinct_users_by_ip_today(client_ip)
+        
+        # 检查是否已经达到限制
+        if request.user_id not in users and len(users) >= MAX_USERS_PER_IP:
+            # 将IP加入黑名单
+            add_ip_to_blacklist(client_ip, f"单日签到用户数超过{MAX_USERS_PER_IP}个")
+            LOGGER.warning(f"IP {client_ip} 当日签到用户数超限，已加入黑名单")
+            raise HTTPException(status_code=403, detail="此IP今日签到用户数已达上限，IP已被禁止")
+    
     # 处理签到奖励
     reward = random.randint(_open.checkin_reward[0], _open.checkin_reward[1])
     new_balance = e.iv + reward
@@ -89,7 +128,11 @@ async def verify_checkin(request: CheckinVerifyRequest, user_agent: str = Header
     # 更新emby表
     sql_update_emby(Emby.tg == request.user_id, iv=new_balance, ch=now)
     
-    LOGGER.info(f"Successful checkin for user_id: {request.user_id}, reward: {reward}")
+    # 记录签到IP
+    if client_ip:
+        add_checkin_ip_record(client_ip, request.user_id, now)
+    
+    LOGGER.info(f"Successful checkin for user_id: {request.user_id}, reward: {reward}, IP: {client_ip}")
     
     # 构建签到成功消息
     checkin_text = f'🎉 **签到成功** | {reward} {sakura_b}\n💴 **当前持有** | {new_balance} {sakura_b}\n⏳ **签到日期** | {now.strftime("%Y-%m-%d")}'

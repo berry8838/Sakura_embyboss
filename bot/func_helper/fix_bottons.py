@@ -153,10 +153,29 @@ async def cr_page_server():
 
 """admins ↓"""
 
-gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 注册/续期码', 'cr_link')],
-                      [('💊 查询注册', 'ch_link'), ('🏬 兑换设置', 'set_renew')],
-                      [('👥 用户列表', 'normaluser'), ('👑 白名单列表', 'whitelist'), ('💠 设备列表', 'user_devices')],
-                      [('🌏 定时', 'schedall'), ('🕹️ 主界面', 'back_start'), ('其他 🪟', 'back_config')]])
+def gm_ikb_content() -> InlineKeyboardMarkup:
+    """
+    管理面板按键
+    """
+    buttons = [
+        [
+            InlineKeyboardButton("⚙️ 系统设置", callback_data="open-menu"),
+            InlineKeyboardButton("🎫 注册码操作", callback_data="cr_link")
+        ],
+        [
+            InlineKeyboardButton("🏅 邀请奖励", callback_data="set_invite_lv"),
+            InlineKeyboardButton("🔋 续期设置", callback_data="set_renew")
+        ],
+        [
+            InlineKeyboardButton("⛔ IP黑名单", callback_data="ip_blacklist"),
+            InlineKeyboardButton("⏰ 定时任务", callback_data="sched")
+        ],
+        [
+            InlineKeyboardButton("🏠 主菜单", callback_data="menu")
+        ]
+
+    ]
+    return InlineKeyboardMarkup(buttons)
 
 
 def open_menu_ikb(openstats, timingstats) -> InlineKeyboardMarkup:

@@ -396,7 +396,7 @@ async def cr_kk_ikb(uid, first):
                 last_time = rst[0][0]
                 toltime = rst[0][1]
                 text1 = f"**· 🔋 上次活动** | {last_time.split('.')[0]}\n" \
-                        f"**· 📅 过去30天** | {toltime} min"
+                        f"**· 📅 过去30天** | {toltime} 分钟"
             except (TypeError, IndexError, ValueError):
                 text1 = f"**· 📅 过去30天未有记录**"
         else:

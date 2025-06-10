@@ -5,16 +5,17 @@ from asyncio import sleep
 
 import asyncio
 
-from pyrogram import filters
+from pyrogram import filters, enums
 from pyrogram.errors import FloodWait, Forbidden, BadRequest
 from pyrogram.types import CallbackQuery
 from pyromod.exceptions import ListenerTimeout
 from bot import LOGGER, group, bot
+from typing import Optional
 
 
 # 将来自己要是重写，希望不要把/cancel当关键词，用call.data，省代码还好看，切记。
 
-async def sendMessage(message, text: str, buttons=None, timer=None, send=False, chat_id=None):
+async def sendMessage(message, text: str, buttons=None, timer=None, send=False, chat_id=None, parse_mode: Optional["enums.ParseMode"] = None):
     """
     发送消息
     :param message: 消息
@@ -30,7 +31,7 @@ async def sendMessage(message, text: str, buttons=None, timer=None, send=False, 
         if send is True:
             if chat_id is None:
                 chat_id = group[0]
-            return await bot.send_message(chat_id=chat_id, text=text, reply_markup=buttons)
+            return await bot.send_message(chat_id=chat_id, text=text, reply_markup=buttons, parse_mode=parse_mode)
         # 禁用通知 disable_notification=True,
         send = await message.reply(text=text, quote=True, disable_web_page_preview=True, reply_markup=buttons)
         if timer is not None:
@@ -39,13 +40,13 @@ async def sendMessage(message, text: str, buttons=None, timer=None, send=False, 
     except FloodWait as f:
         LOGGER.warning(str(f))
         await sleep(f.value * 1.2)
-        return await sendMessage(message, text, buttons)
+        return await sendMessage(message, text, buttons, parse_mode=parse_mode)
     except Exception as e:
         LOGGER.error(str(e))
         return str(e)
 
 
-async def editMessage(message, text: str, buttons=None, timer=None):
+async def editMessage(message, text: str, buttons=None, timer=None, parse_mode: Optional["enums.ParseMode"] = None):
     """
     编辑消息
     :param message:
@@ -56,14 +57,14 @@ async def editMessage(message, text: str, buttons=None, timer=None):
     if isinstance(message, CallbackQuery):
         message = message.message
     try:
-        edt = await message.edit(text=text, disable_web_page_preview=True, reply_markup=buttons)
+        edt = await message.edit(text=text, disable_web_page_preview=True, reply_markup=buttons, parse_mode=parse_mode)
         if timer is not None:
             return await deleteMessage(edt, timer)
         return True
     except FloodWait as f:
         LOGGER.warning(str(f))
         await sleep(f.value * 1.2)
-        return await editMessage(message, text, buttons)
+        return await editMessage(message, text, buttons, parse_mode=parse_mode)
     except BadRequest as e:
         if e.ID == 'BUTTON_URL_INVALID':
             # await editMessage(message, text='⚠️ 底部按钮设置失败。', buttons=back_start_ikb)

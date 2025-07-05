@@ -32,7 +32,7 @@ async def sync_favorites():
                 # 获取项目名称
                 item_name = item.get("Name", "")
                 if not item_name:
-                    item_name = await emby.item_id_namme(user.embyid, item_id) or "未知"
+                    item_name = await emby.item_id_name(user.embyid, item_id) or "未知"
 
                 # 添加到数据库
                 sql_add_favorites(

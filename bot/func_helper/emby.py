@@ -5,11 +5,14 @@ emby的api操作方法
 """
 from datetime import datetime, timedelta, timezone
 
-import requests as r
+import requests
 from bot import emby_url, emby_api, emby_block, extra_emby_libs, LOGGER
 from bot.sql_helper.sql_emby import sql_update_emby, Emby
 from bot.func_helper.utils import pwd_create, convert_runtime, cache, Singleton
 
+class EmbyConnectError(Exception):
+    """自定义Emby连接异常"""
+    pass
 
 def create_policy(admin=False, disable=False, limit: int = 2, block: list = None):
     """
@@ -95,7 +98,32 @@ class Embyservice(metaclass=Singleton):
             'X-Emby-Client-Version': '1.0.0',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.82'
         }
+        self.timeout = 10
 
+    def _request(self, method: str, endpoint: str, **kwargs):
+        """
+        统一请求方法
+        """
+        full_url = f"{self.url}{endpoint}"
+        kwargs.setdefault('headers', self.headers)
+        kwargs.setdefault('timeout', self.timeout)
+        
+        try:
+            response = requests.request(method, full_url, **kwargs)
+            response.raise_for_status()
+            
+            if response.status_code == 204:
+                return True
+            
+            if 'application/json' in response.headers.get('Content-Type', ''):
+                return response.json()
+            else:
+                return response.content
+                
+        except requests.exceptions.RequestException as e:
+            LOGGER.error(f"请求Emby API失败: {method} {full_url}, 错误: {e}")
+            raise EmbyConnectError(f"连接或请求Emby服务器失败: {e}")
+        
     async def emby_create(self, name, us: int):
         """
         创建账户
@@ -104,36 +132,17 @@ class Embyservice(metaclass=Singleton):
         :return: bool
         """
         ex = (datetime.now() + timedelta(days=us))
-        name_data = ({"Name": name})
-        new_user = r.post(f'{self.url}/emby/Users/New',
-                          headers=self.headers,
-                          json=name_data)
-        if new_user.status_code == 200 or new_user.status_code == 204:
-            try:
-                id = new_user.json()["Id"]
-                pwd = await pwd_create(8)
-                pwd_data = pwd_policy(id, new=pwd)
-                _pwd = r.post(f'{self.url}/emby/Users/{id}/Password',
-                              headers=self.headers,
-                              json=pwd_data)
-            except Exception as e:
-                LOGGER.error(f'创建账户 {name} 失败，原因: {e}')
-                return False
-            else:
-                policy = create_policy(False, False)
-                try:
-                    _policy = r.post(f'{self.url}/emby/Users/{id}/Policy',
-                                     headers=self.headers,
-                                     json=policy)  # .encode('utf-8')
-                except Exception as e:
-                    LOGGER.error(f'设置账户 {name} 策略失败，原因: {e}')
-                    return False
-                else:
-                    if _policy.status_code == 200 or _policy.status_code == 204:
-                        return id, pwd, ex
-                    else:
-                        return False
-        else:
+        try:
+            new_user_data = self._request('POST', '/emby/Users/New', json={"Name": name})
+            user_id = new_user_data["Id"]
+            
+            pwd = pwd_create(8)
+            self._request('POST', f'/emby/Users/{user_id}/Password', json=pwd_policy(user_id, new=pwd))
+            self._request('POST', f'/emby/Users/{user_id}/Policy', json=create_policy())
+
+            return user_id, pwd, ex
+        except (EmbyConnectError, Exception) as e:
+            LOGGER.error(f'创建账户 {name} 失败，原因: {e}')
             return False
 
     async def emby_del(self, id):
@@ -142,12 +151,10 @@ class Embyservice(metaclass=Singleton):
         :param id: emby_id
         :return: bool
         """
-        res = r.delete(f'{self.url}/emby/Users/{id}', headers=self.headers)
-        if res.status_code == 200 or res.status_code == 204:
-            return True
-        return False
-
-
+        try:
+            return self._request('DELETE', f'/emby/Users/{id}')
+        except EmbyConnectError:
+            return False
 
     async def emby_reset(self, id, new=None):
         """
@@ -156,26 +163,16 @@ class Embyservice(metaclass=Singleton):
         :param new: new_pwd
         :return: bool
         """
-        pwd = pwd_policy(embyid=id, stats=True, new=None)
-        _pwd = r.post(f'{self.url}/emby/Users/{id}/Password',
-                      headers=self.headers,
-                      json=pwd)
-        # print(_pwd.status_code)
-        if _pwd.status_code == 200 or _pwd.status_code == 204:
-            if new is None:
-                if sql_update_emby(Emby.embyid == id, pwd=None) is True:
-                    return True
-                return False
-            else:
-                pwd2 = pwd_policy(id, new=new)
-                new_pwd = r.post(f'{self.url}/emby/Users/{id}/Password',
-                                 headers=self.headers,
-                                 json=pwd2)
-                if new_pwd.status_code == 200 or new_pwd.status_code == 204:
-                    if sql_update_emby(Emby.embyid == id, pwd=new) is True:
-                        return True
-                    return False
-        else:
+        try:
+            self._request('POST', f'/emby/Users/{id}/Password', json=pwd_policy(id, stats=True))
+            if new:
+                self._request('POST', f'/emby/Users/{id}/Password', json=pwd_policy(id, new=new))
+            
+            if sql_update_emby(Emby.embyid == id, pwd=new):
+                return True
+            return False
+        except (EmbyConnectError, Exception) as e:
+            LOGGER.error(f"重置密码失败: {e}")
             return False
 
     async def emby_block(self, id, stats=0, block=emby_block):
@@ -185,30 +182,28 @@ class Embyservice(metaclass=Singleton):
         :param stats: policy
         :return:bool
         """
-        if stats == 0:
-            policy = create_policy(False, False, block=block)
-        else:
-            policy = create_policy(False, False)
-        _policy = r.post(f'{self.url}/emby/Users/{id}/Policy',
-                         headers=self.headers,
-                         json=policy)
-        # print(policy)
-        if _policy.status_code == 200 or _policy.status_code == 204:
+        try:
+            if stats == 0:
+                policy = create_policy(False, False, block=block)
+            else:
+                policy = create_policy(False, False)
+            self._request('POST',f'/emby/Users/{id}/Policy',
+                            json=policy)
             return True
-        return False
+        except (EmbyConnectError, Exception) as e:
+            LOGGER.error(f"修改媒体库权限失败: {e}")
+            return False
 
     async def get_emby_libs(self):
         """
         获取所有媒体库
         :return: list
         """
-        response = r.get(f"{self.url}/emby/Library/VirtualFolders?api_key={self.api_key}", headers=self.headers)
-        if response.status_code == 200:
-            tmp = []
-            for lib in response.json():
-                tmp.append(lib['Name'])
-            return tmp
-        else:
+        try:
+            libs_data = self._request('GET', f"/emby/Library/VirtualFolders?api_key={self.api_key}")
+            return [lib['Name'] for lib in libs_data]
+        except (EmbyConnectError, Exception) as e:
+            LOGGER.error(f"获取媒体库失败: {e}")
             return None
 
     @cache.memoize(ttl=120)
@@ -217,17 +212,10 @@ class Embyservice(metaclass=Singleton):
         最近播放数量
         :return: int NowPlayingItem
         """
-        response = r.get(f"{self.url}/emby/Sessions", headers=self.headers)
-        sessions = response.json()
-        # print(sessions)
-        count = 0
-        for session in sessions:
-            try:
-                if session["NowPlayingItem"]:
-                    count += 1
-            except KeyError:
-                pass
-        return count
+        sessions = self._request('GET', "/emby/Sessions")
+        if isinstance(sessions, list):
+            return sum(1 for session in sessions if session.get("NowPlayingItem"))
+        return 0
 
     async def terminate_session(self, session_id: str, reason: str = "Unauthorized client detected"):
         """
@@ -237,26 +225,18 @@ class Embyservice(metaclass=Singleton):
         :return: bool 是否成功
         """
         try:
-            # 使用Sessions/{sessionId}/Playing/Stop API来停止播放
-            stop_url = f"{self.url}/emby/Sessions/{session_id}/Playing/Stop"
-            stop_response = r.post(stop_url, headers=self.headers)
-            # 使用Sessions/{sessionId}/Message API发送消息给客户端
-            message_url = f"{self.url}/emby/Sessions/{session_id}/Message"
+            self._request('POST',f"/emby/Sessions/{session_id}/Playing/Stop")
+            message_endpoint = f"/emby/Sessions/{session_id}/Message"
             message_data = {
                 "Text": f"🚫 会话已被终止: {reason}",
                 "Header": "安全警告",
                 "TimeoutMs": 10000
             }
-            message_response = r.post(message_url, headers=self.headers, json=message_data)
-            # 检查是否成功
-            if (stop_response.status_code in [200, 204] or 
-                message_response.status_code in [200, 204]):
-                LOGGER.info(f"成功终止会话 {session_id}: {reason}")
-                return True
-            else:
-                LOGGER.error(f"终止会话失败 {session_id}: stop_code={stop_response.status_code}, msg_code={message_response.status_code}")
-                return False
-        except Exception as e:
+            self._request('POST',message_endpoint, json=message_data)
+
+            LOGGER.info(f"成功终止会话 {session_id}: {reason}")
+            return True
+        except (EmbyConnectError,Exception) as e:
             LOGGER.error(f"终止会话异常 {session_id}: {str(e)}")
             return False
 
@@ -267,44 +247,41 @@ class Embyservice(metaclass=Singleton):
         :param method: 默认False允许播放
         :return:
         """
-        policy = create_policy(admin=admin, disable=method)
-        _policy = r.post(self.url + f'/emby/Users/{id}/Policy',
-                         headers=self.headers,
-                         json=policy)
-        if _policy.status_code == 200 or _policy.status_code == 204:
+        try:
+            policy = create_policy(admin=admin, disable=method)
+            self._request('POST', f'/emby/Users/{id}/Policy',
+                            json=policy)
             return True
-        return False
+        except (EmbyConnectError, Exception) as e:
+            LOGGER.error(f"修改用户策略失败: {e}")
+            return False
 
     async def authority_account(self, tg, username, password=None):
-        data = {"Username": username, "Pw": password, }
-        if password == 'None':
-            data = {"Username": username}
-        res = r.post(self.url + '/emby/Users/AuthenticateByName', headers=self.headers, json=data)
-        if res.status_code == 200:
+        data = {"Username": username, "Pw": password} if password else {"Username": username}
+        try:
+            res = self._request('POST', '/emby/Users/AuthenticateByName', json=data)
             embyid = res.json()["User"]["Id"]
             return True, embyid
-        return False, 0
+        except (EmbyConnectError,Exception) as e:
+            LOGGER.error(f"认证用户失败: {e}")
+            return False, 0
 
-    async def emby_cust_commit(self, user_id=None, days=7, method=None):
-        _url = f'{self.url}/emby/user_usage_stats/submit_custom_query'
-        sub_time = datetime.now(timezone(timedelta(hours=8)))
-        start_time = (sub_time - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
-        end_time = sub_time.strftime("%Y-%m-%d %H:%M:%S")
-        sql = ''
-        if method == 'sp':
-            sql += "SELECT UserId, SUM(PlayDuration - PauseDuration) AS WatchTime FROM PlaybackActivity "
-            sql += f"WHERE DateCreated >= '{start_time}' AND DateCreated < '{end_time}' GROUP BY UserId ORDER BY WatchTime DESC"
-        elif user_id != 'None':
-            sql += "SELECT MAX(DateCreated) AS LastLogin,SUM(PlayDuration - PauseDuration) / 60 AS WatchTime FROM PlaybackActivity "
-            sql += f"WHERE UserId = '{user_id}' AND DateCreated >= '{start_time}' AND DateCreated < '{end_time}' GROUP BY UserId"
-        data = {"CustomQueryString": sql, "ReplaceUserId": True}  # user_name
-        # print(sql)
-        resp = r.post(_url, headers=self.headers, json=data, timeout=30)
-        if resp.status_code == 200:
-            # print(resp.json())
-            rst = resp.json()["results"]
-            return rst
-        else:
+    async def emby_cust_commit(self, user_id=None, days=7, method=None): 
+        try:
+            sub_time = datetime.now(timezone(timedelta(hours=8)))
+            start_time = (sub_time - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+            end_time = sub_time.strftime("%Y-%m-%d %H:%M:%S")
+            sql = ''
+            if method == 'sp':
+                sql += "SELECT UserId, SUM(PlayDuration - PauseDuration) AS WatchTime FROM PlaybackActivity "
+                sql += f"WHERE DateCreated >= '{start_time}' AND DateCreated < '{end_time}' GROUP BY UserId ORDER BY WatchTime DESC"
+            elif user_id != 'None':
+                sql += "SELECT MAX(DateCreated) AS LastLogin,SUM(PlayDuration - PauseDuration) / 60 AS WatchTime FROM PlaybackActivity "
+                sql += f"WHERE UserId = '{user_id}' AND DateCreated >= '{start_time}' AND DateCreated < '{end_time}' GROUP BY UserId"
+            data = {"CustomQueryString": sql, "ReplaceUserId": True}  # user_name
+            return self._request('POST',f'/emby/user_usage_stats/submit_custom_query', json=data, timeout=30)["results"]
+        except (EmbyConnectError,Exception) as e:
+            LOGGER.error(f"获取统计失败: {e}")
             return None
 
     async def users(self):
@@ -319,13 +296,10 @@ class Embyservice(metaclass=Singleton):
             - Any exception that occurs during the request.
         """
         try:
-            _url = f"{self.url}/emby/Users"
-            resp = r.get(_url, headers=self.headers)
-            if resp.status_code != 204 and resp.status_code != 200:
-                return False, {'error': "🤕Emby 服务器连接失败!"}
-            return True, resp.json()
-        except Exception as e:
-            return False, {'error': e}
+            return True, self._request('GET',f"/emby/Users")
+        except (EmbyConnectError,Exception) as e:
+            LOGGER.error(f"获取用户列表失败: {e}")
+            return False, {'error': str(e)}
 
     def user(self, embyid):
         """
@@ -334,101 +308,82 @@ class Embyservice(metaclass=Singleton):
         :return:
         """
         try:
-            _url = f"{self.url}/emby/Users/{embyid}"
-            resp = r.get(_url, headers=self.headers)
-            if resp.status_code != 204 and resp.status_code != 200:
-                return False, {'error': "🤕Emby 服务器连接失败!"}
-            return True, resp.json()
-        except Exception as e:
-            return False, {'error': e}
+            return True,self._request('GET',f"/emby/Users/{embyid}")
+        except (EmbyConnectError,Exception) as e:
+            LOGGER.error(f"获取用户信息失败: {e}")
+            return False, {'error': str(e)}
+
     async def get_emby_user_by_name(self, embyname):
-        _url = f"{self.url}/emby/Users/Query?NameStartsWithOrGreater={embyname}&api_key={self.api_key}"
-        resp = r.get(_url, headers=self.headers)
-        if resp.status_code != 204 and resp.status_code != 200:
-            return False, {'error': "🤕Emby 服务器连接失败!"}
-        for item in resp.json().get("Items"):
-            if item.get("Name") == embyname:
-                return True, item
-        return False, {'error': "🤕Emby 服务器返回数据为空!"}
-    async def add_favotire_items(self, user_id, item_id):
+        _url = f"/emby/Users/Query?NameStartsWithOrGreater={embyname}&api_key={self.api_key}"
         try:
-            _url = f"{self.url}/emby/Users/{user_id}/FavoriteItems/{item_id}"
-            resp = r.post(_url, headers=self.headers)
-            if resp.status_code != 204 and resp.status_code != 200:
-                return False
+            resp = self._request('GET',_url)
+            for item in resp.get("Items"):
+                if item.get("Name") == embyname:
+                    return True, item
+        except (EmbyConnectError,Exception) as e:
+            LOGGER.error(f"获取用户失败: {e}")
+            return False, {'error': str(e)}
+
+    async def add_favorite_items(self, user_id, item_id):
+        try:
+            _url = f"/emby/Users/{user_id}/FavoriteItems/{item_id}"
+            self._request('POST',_url)
             return True
-        except Exception as e:
+        except (EmbyConnectError,Exception) as e:
             LOGGER.error(f'添加收藏失败 {e}')
             return False
+
     async def get_favorite_items(self, user_id, start_index=None, limit=None):
         try:
-            url = f"{self.url}/emby/Users/{user_id}/Items?Filters=IsFavorite&Recursive=true&IncludeItemTypes=Movie,Series,Episode,Person"
+            url = f"/emby/Users/{user_id}/Items?Filters=IsFavorite&Recursive=true&IncludeItemTypes=Movie,Series,Episode,Person"
             if start_index is not None:
                 url += f"&StartIndex={start_index}"
             if limit is not None:
                 url += f"&Limit={limit}"
-            resp = r.get(url, headers=self.headers)
-            if resp.status_code != 204 and resp.status_code != 200:
-                return False
-            return resp.json()
-        except Exception as e:
+            resp = self._request('GET',url)
+            return resp
+        except (EmbyConnectError,Exception) as e:
             LOGGER.error(f'获取收藏失败 {e}')
             return False
 
-    async def item_id_namme(self, user_id, item_id):
+    async def item_id_name(self, user_id, item_id):
         try:
-            req = f"{self.url}/emby/Users/{user_id}/Items/{item_id}"
-            reqs = r.get(req, headers=self.headers, timeout=3)
-            if reqs.status_code != 204 and reqs.status_code != 200:
-                return ''
-            title = reqs.json().get("Name")
-            # print(reqs.json())
+            resp = self._request('GET',f"/emby/Users/{user_id}/Items/{item_id}", timeout=3)
+            title = resp.get("Name")
             return title
-        except Exception as e:
+        except (EmbyConnectError,Exception) as e:
             LOGGER.error(f'获取title失败 {e}')
             return ''
 
     async def item_id_people(self,  item_id):
         try:
-            req = f"{self.url}/emby/Items?Ids={item_id}&Fields=People"
-            reqs = r.get(req, headers=self.headers, timeout=10)
-            if reqs.status_code != 204 and reqs.status_code != 200:
-                return False, {'error': "🤕Emby 服务器连接失败!"}
-            items = reqs.json().get("Items", [])
+            reqs = self._request('GET',f"/emby/Items?Ids={item_id}&Fields=People", timeout=10)
+            items = reqs.get("Items", [])
             if not items or len(items) == 0:
                 return False, {'error': "🤕Emby 服务器返回数据为空!"}
             return True, items[0].get("People", [])
-        except Exception as e:
+        except (EmbyConnectError,Exception) as e:
             LOGGER.error(f'获取演员失败 {e}')
             return False, {'error': e}
     async def primary(self, item_id, width=200, height=300, quality=90):
         try:
-            _url = f"{self.url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
-            resp = r.get(_url, headers=self.headers)
-            if resp.status_code != 204 and resp.status_code != 200:
-                return False, {'error': "🤕Emby 服务器连接失败!"}
-            return True, resp.content
-        except Exception as e:
+            resp = self._request('GET',f"/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}")
+            return True, resp
+        except (EmbyConnectError,Exception) as e:
             return False, {'error': e}
 
     async def backdrop(self, item_id, width=300, quality=90):
         try:
-            _url = f"{self.url}/emby/Items/{item_id}/Images/Backdrop?maxWidth={width}&quality={quality}"
-            resp = r.get(_url, headers=self.headers)
-            if resp.status_code != 204 and resp.status_code != 200:
-                return False, {'error': "🤕Emby 服务器连接失败!"}
-            return True, resp.content
-        except Exception as e:
+            resp = self._request('GET',f"/emby/Items/{item_id}/Images/Backdrop?maxWidth={width}&quality={quality}")
+            return True, resp
+        except (EmbyConnectError,Exception) as e:
             return False, {'error': e}
 
     async def items(self, user_id, item_id):
         try:
-            _url = f"{self.url}/emby/Users/{user_id}/Items/{item_id}"
-            resp = r.get(_url, headers=self.headers)
-            if resp.status_code != 204 and resp.status_code != 200:
-                return False, {'error': "🤕Emby 服务器连接失败!"}
-            return True, resp.json()
-        except Exception as e:
+            resp = self._request('GET',f"/emby/Users/{user_id}/Items/{item_id}")
+            return True, resp
+        except (EmbyConnectError,Exception) as e:
             return False, {'error': e}
 
     async def get_emby_report(self, types='Movie', user_id=None, days=7, end_date=None, limit=10):
@@ -453,20 +408,16 @@ class Embyservice(metaclass=Singleton):
             sql += "GROUP BY name "
             sql += "ORDER BY total_duarion DESC "
             sql += "LIMIT " + str(limit)
-            _url = f'{self.url}/emby/user_usage_stats/submit_custom_query'
             data = {
                 "CustomQueryString": sql,
                 "ReplaceUserId": False
             }
             # print(sql)
-            resp = r.post(_url, headers=self.headers, json=data)
-            if resp.status_code != 204 and resp.status_code != 200:
-                return False, {'error': "🤕Emby 服务器连接失败!"}
-            ret = resp.json()
-            if len(ret["colums"]) == 0:
-                return False, ret["message"]
-            return True, ret["results"]
-        except Exception as e:
+            resp = self._request('POST',f'/emby/user_usage_stats/submit_custom_query', json=data)
+            if len(resp["colums"]) == 0:
+                return False, resp["message"]
+            return True, resp["results"]
+        except (EmbyConnectError,Exception) as e:
             return False, {'error': e}
 
     # 找出 指定用户播放过的不同ip，设备
@@ -477,14 +428,15 @@ class Embyservice(metaclass=Singleton):
             "CustomQueryString": sql,
             "ReplaceUserId": True
         }
-        _url = f'{self.url}/emby/user_usage_stats/submit_custom_query?api_key={emby_api}'
-        resp = r.post(_url, json=data)
-        if resp.status_code != 204 and resp.status_code != 200:
-            return False, {'error': "🤕Emby 服务器连接失败!"}
-        ret = resp.json()
-        if len(ret["colums"]) == 0:
-            return False, ret["message"]
-        return True, ret["results"]
+        try:
+            resp = self._request('POST',f'/emby/user_usage_stats/submit_custom_query?api_key={emby_api}', json=data)
+            if len(resp["colums"]) == 0:
+                return False, resp["message"]
+            return True, resp["results"]
+        except (EmbyConnectError,Exception) as e:
+            LOGGER.error(f"获取用户IP列表失败: {str(e)}")
+            return False, {'error': str(e)}
+    
     async def get_emby_user_devices(self, offset=0, limit=20):
         """
         获取用户的设备数量，并根据设备数排序，支持分页
@@ -517,16 +469,12 @@ class Embyservice(metaclass=Singleton):
         }
         
         try:
-            _url = f'{self.url}/emby/user_usage_stats/submit_custom_query?api_key={emby_api}'
-            resp = r.post(_url, json=data)
-            if resp.status_code != 204 and resp.status_code != 200:
+            resp = self._request('POST',f'/emby/user_usage_stats/submit_custom_query?api_key={emby_api}', json=data)
+            
+            if len(resp["colums"]) == 0:
                 return False, [], False, False
             
-            ret = resp.json()
-            if len(ret["colums"]) == 0:
-                return False, [], False, False
-            
-            results = ret["results"]
+            results = resp["results"]
             
             # 判断是否有下一页
             has_next = len(results) > limit
@@ -537,26 +485,22 @@ class Embyservice(metaclass=Singleton):
             has_prev = offset > 0
             
             return True, results, has_prev, has_next
-        except Exception as e:
+        except (EmbyConnectError,Exception) as e:
             LOGGER.error(f"获取用户设备列表失败: {str(e)}")
             return False, [], False, False
 
-    @staticmethod
-    def get_medias_count():
+    def get_medias_count(self):
         """
         获得电影、电视剧、音乐媒体数量
         :return: MovieCount SeriesCount SongCount
         """
-        req_url = f"{emby_url}/emby/Items/Counts?api_key={emby_api}"
         try:
-            res = r.get(url=req_url)
-            if res:
-                result = res.json()
-                # print(result)
-                movie_count = result.get("MovieCount") or 0
-                tv_count = result.get("SeriesCount") or 0
-                episode_count = result.get("EpisodeCount") or 0
-                music_count = result.get("SongCount") or 0
+            resp = self._request('GET',f"/emby/Items/Counts?api_key={emby_api}")
+            if resp:
+                movie_count = resp.get("MovieCount") or 0
+                tv_count = resp.get("SeriesCount") or 0
+                episode_count = resp.get("EpisodeCount") or 0
+                music_count = resp.get("SongCount") or 0
                 txt = f'🎬 电影数量：{movie_count}\n' \
                       f'📽️ 剧集数量：{tv_count}\n' \
                       f'🎵 音乐数量：{music_count}\n' \
@@ -565,7 +509,7 @@ class Embyservice(metaclass=Singleton):
             else:
                 LOGGER.error(f"Items/Counts 未获取到返回数据")
                 return '🤕Emby 服务器返回数据为空!'
-        except Exception as e:
+        except (EmbyConnectError,Exception) as e:
             LOGGER.error(f"连接Items/Counts出错：" + str(e))
             return '🤕Emby 服务器连接失败!'
 
@@ -579,12 +523,12 @@ class Embyservice(metaclass=Singleton):
         """
         if start != 0: start = start
         # Options: Budget, Chapters, DateCreated, Genres, HomePageUrl, IndexOptions, MediaStreams, Overview, ParentId, Path, People, ProviderIds, PrimaryImageAspectRatio, Revenue, SortName, Studios, Taglines
-        req_url = f"{self.url}/emby/Items?IncludeItemTypes=Movie,Series&Fields=ProductionYear,Overview,OriginalTitle,Taglines,ProviderIds,Genres,RunTimeTicks,ProductionLocations,DateCreated,Studios" \
+        req_endpoint = f"/emby/Items?IncludeItemTypes=Movie,Series&Fields=ProductionYear,Overview,OriginalTitle,Taglines,ProviderIds,Genres,RunTimeTicks,ProductionLocations,DateCreated,Studios" \
                   f"&StartIndex={start}&Recursive=true&SearchTerm={title}&Limit={limit}&IncludeSearchTypes=false"
         try:
-            res = r.get(url=req_url, headers=self.headers, timeout=3)
+            res = self._request('GET',req_endpoint, timeout=3)
             if res:
-                res_items = res.json().get("Items")
+                res_items = res.get("Items")
                 if res_items:
                     ret_movies = []
                     for res_item in res_items:
@@ -611,7 +555,7 @@ class Embyservice(metaclass=Singleton):
                                                 )
                         ret_movies.append(mediaserver_item)
                     return ret_movies
-        except Exception as e:
+        except (EmbyConnectError,Exception) as e:
             LOGGER.error(f"连接Items出错：" + str(e))
             return []
 
@@ -625,7 +569,7 @@ class Embyservice(metaclass=Singleton):
     #     """
     #     req_url = f"{self.url}/emby/Items/{item_id}/RemoteImages"
     #     try:
-    #         res = r.get(url=req_url, headers=self.headers,timeout=3)
+    #         res = self._request('GET',url=req_url, headers=self.headers,timeout=3)
     #         if res:
     #             images = res.json().get("Images")
     #             if not images:

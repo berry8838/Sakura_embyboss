@@ -5,6 +5,7 @@ from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.msg_utils import deleteMessage, editMessage, sendMessage
 from bot.func_helper.utils import tem_deluser
+from bot.func_helper.cloudflare_api import delete_user_domain
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby_by_tg, sql_delete_emby
 
 
@@ -30,6 +31,12 @@ async def rmemby_user(_, msg):
     if e.embyid is not None:
         first = await bot.get_chat(e.tg)
         if await emby.emby_del(id=e.embyid):
+            # 删除 Cloudflare 三级域名
+            if e.name:
+                domain_success, domain_error = await delete_user_domain(e.name)
+                if not domain_success:
+                    LOGGER.warning(f"【删除域名失败】：{e.name} - {domain_error}")
+            
             sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
             tem_deluser()
             sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
@@ -81,15 +88,33 @@ async def only_rm_emby(_, msg):
     except (IndexError, ValueError):
         return await sendMessage(msg, "❌ 使用格式：/only_rm_emby embyid或者embyname")
     
+    # 获取用户名用于删除域名
+    username = None
+    if not emby_id.isdigit():  # 如果输入的是用户名而不是ID
+        username = emby_id
+    else:
+        # 通过 embyid 查找用户名
+        e = sql_get_emby(embyid=emby_id)
+        if e:
+            username = e.name
+    
     res = await emby.emby_del(emby_id)
     if not res:
         success, embyuser = await emby.get_emby_user_by_name(emby_id)
         if not success:
             return await sendMessage(msg, f"❌ 未找到此用户 {emby_id} 的记录")
+        username = embyuser.get("Name")  # 获取用户名
         res = await emby.emby_del(embyuser.get("Id"))
         if not res:
             return await sendMessage(msg, f"❌ 删除用户 {emby_id} 失败")
-        sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
-        await sendMessage(msg, f"管理员 {sign_name} 已删除用户 {emby_id} 的Emby账号")
-        LOGGER.info(
-            f"管理员 {sign_name} 删除了用户 {emby_id} 的Emby账号")
+    
+    # 删除 Cloudflare 三级域名
+    if username:
+        domain_success, domain_error = await delete_user_domain(username)
+        if not domain_success:
+            LOGGER.warning(f"【删除域名失败】：{username} - {domain_error}")
+    
+    sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
+    await sendMessage(msg, f"管理员 {sign_name} 已删除用户 {emby_id} 的Emby账号")
+    LOGGER.info(
+        f"管理员 {sign_name} 删除了用户 {emby_id} 的Emby账号")

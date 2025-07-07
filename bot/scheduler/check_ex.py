@@ -9,6 +9,7 @@ from asyncio import sleep
 from bot import bot, group, LOGGER, _open
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import tem_deluser
+from bot.func_helper.cloudflare_api import delete_user_domain
 from bot.sql_helper.sql_emby import Emby, get_all_emby, sql_update_emby
 from bot.sql_helper.sql_emby2 import get_all_emby2, Emby2, sql_update_emby2
 
@@ -134,6 +135,12 @@ async def check_expired():
             if datetime.now() < delta:
                 continue
             if await emby.emby_del(c.embyid):
+                # 删除 Cloudflare 三级域名
+                if c.name:
+                    domain_success, domain_error = await delete_user_domain(c.name)
+                    if not domain_success:
+                        LOGGER.warning(f"【删除域名失败】：{c.name} - {domain_error}")
+                
                 sql_update_emby(Emby.embyid == c.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
                                 ex=None)
                 tem_deluser()

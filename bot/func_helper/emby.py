@@ -404,7 +404,7 @@ class Embyservice(metaclass=Singleton):
     async def primary(self, item_id, width=200, height=300, quality=90):
         try:
             _url = f"{self.url}/emby/Items/{item_id}/Images/Primary?maxHeight={height}&maxWidth={width}&quality={quality}"
-            resp = r.get(_url, headers=self.headers)
+            resp = r.get(_url, headers=self.headers, timeout=10)
             if resp.status_code != 204 and resp.status_code != 200:
                 return False, {'error': "🤕Emby 服务器连接失败!"}
             return True, resp.content

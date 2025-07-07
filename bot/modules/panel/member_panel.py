@@ -20,6 +20,7 @@ from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create
     re_reset_ikb, re_changetg_ikb, emby_block_ikb, user_emby_block_ikb, user_emby_unblock_ikb, re_exchange_b_ikb, \
     store_ikb, re_bindtg_ikb, close_it_ikb, store_query_page, re_born_ikb, send_changetg_ikb, favorites_page_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage, ask_return, deleteMessage
+from bot.func_helper.cloudflare_api import create_user_domain, delete_user_domain
 from bot.modules.commands import p_start
 from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_code import sql_count_c_code
@@ -65,6 +66,15 @@ async def create_user(_, call, us, stats):
                                                                                     pwd2=emby_pwd2, lv='b',
                                                                                     cr=datetime.now(), ex=ex,
                                                                                     us=0)
+            
+            # 创建 Cloudflare 三级域名
+            domain_success, domain_result = await create_user_domain(emby_name)
+            domain_info = ""
+            if domain_success and domain_result:
+                domain_info = f'\n· 专属域名 | `{domain_result}`'
+            elif not domain_success:
+                LOGGER.warning(f"【创建域名失败】：{emby_name} - {domain_result}")
+            
             if schedall.check_ex:
                 ex = ex.strftime("%Y-%m-%d %H:%M:%S")
             elif schedall.low_activity:
@@ -76,7 +86,7 @@ async def create_user(_, call, us, stats):
                               f'· 用户名称 | `{emby_name}`\n'
                               f'· 用户密码 | `{pwd}`\n'
                               f'· 安全密码 | `{emby_pwd2}`（仅发送一次）\n'
-                              f'· 到期时间 | `{ex}`\n'
+                              f'· 到期时间 | `{ex}`{domain_info}\n'
                               f'· 当前线路：\n'
                               f'{emby_line}\n\n'
                               f'**·【服务器】 - 查看线路和密码**')
@@ -395,8 +405,20 @@ async def del_emby(_, call):
         return
 
     embyid = call.data.split('-')[1]
+    
+    # 获取账户信息以便删除域名
+    emby_data = sql_get_emby(embyid=embyid)
+    username = emby_data.name if emby_data else None
+    
     if await emby.emby_del(embyid):
         sql_update_emby(Emby.embyid == embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
+        
+        # 删除 Cloudflare 三级域名
+        if username:
+            domain_success, domain_error = await delete_user_domain(username)
+            if not domain_success:
+                LOGGER.warning(f"【删除域名失败】：{username} - {domain_error}")
+        
         tem_deluser()
         send1 = await editMessage(call, '🗑️ 好了，已经为您删除...\n愿来日各自安好，山高水长，我们有缘再见！',
                                   buttons=back_members_ikb)

@@ -1,6 +1,7 @@
 """
 Cloudflare API 辅助函数
 用于管理三级域名的创建和删除
+支持 A 记录和 CNAME 记录两种模式
 """
 import aiohttp
 import asyncio
@@ -14,6 +15,8 @@ class CloudflareAPI:
         self.zone_id = cloudflare.zone_id
         self.domain = cloudflare.domain
         self.target_ip = cloudflare.target_ip
+        self.target_domain = cloudflare.target_domain
+        self.record_type = cloudflare.record_type
         self.base_url = "https://api.cloudflare.com/client/v4"
         self.headers = {
             "Authorization": f"Bearer {self.api_token}",
@@ -29,18 +32,29 @@ class CloudflareAPI:
         if not cloudflare.status:
             LOGGER.info("Cloudflare API 未启用，跳过域名创建")
             return True, None
-            
-        if not all([self.api_token, self.zone_id, self.domain, self.target_ip]):
-            LOGGER.error("Cloudflare API 配置不完整")
-            return False, "Cloudflare 配置不完整"
+        
+        # 根据记录类型检查配置
+        if self.record_type.upper() == "A":
+            if not all([self.api_token, self.zone_id, self.domain, self.target_ip]):
+                LOGGER.error("Cloudflare API A记录配置不完整")
+                return False, "Cloudflare A记录配置不完整"
+            record_content = self.target_ip
+        elif self.record_type.upper() == "CNAME":
+            if not all([self.api_token, self.zone_id, self.domain, self.target_domain]):
+                LOGGER.error("Cloudflare API CNAME记录配置不完整")
+                return False, "Cloudflare CNAME记录配置不完整"
+            record_content = self.target_domain
+        else:
+            LOGGER.error(f"不支持的DNS记录类型: {self.record_type}")
+            return False, f"不支持的DNS记录类型: {self.record_type}"
 
         subdomain = f"{username}.{self.domain}"
         
         # 构建 DNS 记录数据
         dns_record = {
-            "type": "A",
+            "type": self.record_type.upper(),
             "name": subdomain,
-            "content": self.target_ip,
+            "content": record_content,
             "ttl": 300,
             "proxied": False
         }
@@ -54,11 +68,11 @@ class CloudflareAPI:
                     
                     if response.status == 200 and result.get("success"):
                         record_id = result["result"]["id"]
-                        LOGGER.info(f"成功创建域名: {subdomain} -> {self.target_ip}")
+                        LOGGER.info(f"成功创建{self.record_type}域名: {subdomain} -> {record_content}")
                         return True, subdomain
                     else:
                         error_msg = result.get("errors", [{"message": "未知错误"}])[0]["message"]
-                        LOGGER.error(f"创建域名失败: {subdomain}, 错误: {error_msg}")
+                        LOGGER.error(f"创建{self.record_type}域名失败: {subdomain}, 错误: {error_msg}")
                         return False, error_msg
                         
         except Exception as e:
@@ -96,11 +110,11 @@ class CloudflareAPI:
                     result = await response.json()
                     
                     if response.status == 200 and result.get("success"):
-                        LOGGER.info(f"成功删除域名: {subdomain}")
+                        LOGGER.info(f"成功删除{self.record_type}域名: {subdomain}")
                         return True, None
                     else:
                         error_msg = result.get("errors", [{"message": "未知错误"}])[0]["message"]
-                        LOGGER.error(f"删除域名失败: {subdomain}, 错误: {error_msg}")
+                        LOGGER.error(f"删除{self.record_type}域名失败: {subdomain}, 错误: {error_msg}")
                         return False, error_msg
                         
         except Exception as e:
@@ -118,7 +132,7 @@ class CloudflareAPI:
                 url = f"{self.base_url}/zones/{self.zone_id}/dns_records"
                 params = {
                     "name": domain_name,
-                    "type": "A"
+                    "type": self.record_type.upper()
                 }
                 
                 async with session.get(url, params=params, headers=self.headers) as response:

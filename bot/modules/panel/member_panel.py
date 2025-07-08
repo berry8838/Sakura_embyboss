@@ -405,9 +405,8 @@ async def del_emby(_, call):
         return
 
     embyid = call.data.split('-')[1]
-    
     # 获取账户信息以便删除域名
-    emby_data = sql_get_emby(embyid=embyid)
+    emby_data = sql_get_emby(embyid)
     username = emby_data.name if emby_data else None
     
     if await emby.emby_del(embyid):

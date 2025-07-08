@@ -94,7 +94,7 @@ async def only_rm_emby(_, msg):
         username = emby_id
     else:
         # 通过 embyid 查找用户名
-        e = sql_get_emby(embyid=emby_id)
+        e = sql_get_emby(emby_id)
         if e:
             username = e.name
     

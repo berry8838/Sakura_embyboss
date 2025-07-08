@@ -132,7 +132,9 @@ class CloudFlare(BaseModel):
     api_token: Optional[str] = ""  # Cloudflare API Token
     zone_id: Optional[str] = ""  # 域名的 Zone ID
     domain: Optional[str] = ""  # 主域名，如 example.com
-    target_ip: Optional[str] = ""  # 三级域名指向的IP地址
+    target_ip: Optional[str] = ""  # 三级域名指向的IP地址 (A记录模式)
+    target_domain: Optional[str] = ""  # 三级域名指向的域名 (CNAME模式)
+    record_type: Optional[str] = "CNAME"  # DNS记录类型: "A" 或 "CNAME"
 class RedEnvelope(BaseModel):
     status: bool = True  # 是否开启红包
     allow_private: bool = True # 是否允许专属红包

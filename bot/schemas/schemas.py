@@ -171,6 +171,8 @@ class Config(BaseModel):
     kk_gift_days: int = 30
     # 是否狙杀皮套人
     fuxx_pitao: bool = True
+    # 活跃检测天数，默认21天
+    activity_check_days: int = 21
     # 白名单用户专属的emby线路
     emby_whitelist_line: Optional[str] = None
     # 被拦截的user-agent模式列表

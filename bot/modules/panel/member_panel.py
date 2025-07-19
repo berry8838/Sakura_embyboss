@@ -68,7 +68,7 @@ async def create_user(_, call, us, stats):
             if schedall.check_ex:
                 ex = ex.strftime("%Y-%m-%d %H:%M:%S")
             elif schedall.low_activity:
-                ex = '__若21天无观看将封禁__'
+                ex = f'__若{config.activity_check_days}天无观看将封禁__'
             else:
                 ex = '__无需保号，放心食用__'
             await editMessage(send,

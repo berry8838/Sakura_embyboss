@@ -57,6 +57,7 @@ tz_id = config.tz_id
 w_anti_channel_ids = config.w_anti_channel_ids
 kk_gift_days = config.kk_gift_days
 fuxx_pitao = config.fuxx_pitao
+activity_check_days = config.activity_check_days
 red_envelope = config.red_envelope
 
 moviepilot = config.moviepilot

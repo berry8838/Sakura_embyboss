@@ -146,7 +146,7 @@ async def set_block(_, call):
         config.emby_block = c
         save_config()
         await txt.delete()
-        await editMessage(call, f"🎬 指定显示/隐藏内容如下: \n\n{'.'.join(config.emby_block)}\n设置完成！done！",
+        await editMessage(call, f"🎬 指定显示/隐藏内容如下: \n\n{'.'.join(config.emby_block or [])}\n设置完成！done！",
                           buttons=back_config_p_ikb)
         LOGGER.info(f"【admin】：{call.from_user.id} - 更新指定显示/隐藏内容库为 {config.emby_block} 设置完成")
 
@@ -414,3 +414,34 @@ async def set_red_envelope_allow_private(_, call):
     await config_p_re(_, call)
     save_config()
     LOGGER.info(log_message)
+
+@bot.on_callback_query(filters.regex('set_activity_check_days') & admins_on_filter)
+async def set_activity_check_days(_, call):
+    await callAnswer(call, '📌 设置活跃检测天数')
+    send = await editMessage(call,
+                             f"🕰️【设置活跃检测天数】\n\n请输入一个数字（天数）\n取消点击 /cancel\n\n当前活跃检测天数: {config.activity_check_days}")
+    if send is False:
+        return
+    txt = await callListen(call, 120, back_set_ikb('set_activity_check_days'))
+    if txt is False:
+        return
+
+    elif txt.text == '/cancel':
+        await txt.delete()
+        await editMessage(call, '__您已经取消输入__ **会话已结束！**', buttons=back_set_ikb('set_activity_check_days'))
+    else:
+        await txt.delete()
+        try:
+            days = int(txt.text)
+            if days <= 0:
+                raise ValueError("天数必须大于0")
+        except ValueError:
+            await editMessage(call, f"请注意格式! 请输入大于0的数字。您的输入如下: \n\n`{txt.text}`",
+                              buttons=back_set_ikb('set_activity_check_days'))
+        else:
+            config.activity_check_days = days
+            save_config()
+            await editMessage(call,
+                              f"🕰️ 【活跃检测天数】\n\n{days}天 **Done!**",
+                              buttons=back_config_p_ikb)
+            LOGGER.info(f"【admin】：{call.from_user.id} - 更新活跃检测天数为{days}天完成")

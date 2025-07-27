@@ -1,5 +1,5 @@
 """
-定时检测用户等级，删除不符合条件账户的三级域名
+定时检测用户等级，删除不符合条件账户的专属域名
 """
 from datetime import datetime
 from sqlalchemy import and_
@@ -13,7 +13,7 @@ from bot.sql_helper.sql_emby import Emby, get_all_emby
 
 async def check_domain_cleanup(send_report=False, chat_id=None):
     """
-    检测用户等级，删除不符合条件账户的三级域名
+    检测用户等级，删除不符合条件账户的专属域名
     
     删除规则：
     1. 等级为 'c' (已禁用) 的账户
@@ -59,7 +59,7 @@ async def check_domain_cleanup(send_report=False, chat_id=None):
         try:
             # 根据用户名+安全码构建域名前缀（与创建时保持一致）
             domain_prefix = f"{user.name}-{user.pwd2}"
-            # 删除用户的三级域名
+            # 删除用户的专属域名
             success, error_msg = await delete_user_domain(domain_prefix)
             
             if success:

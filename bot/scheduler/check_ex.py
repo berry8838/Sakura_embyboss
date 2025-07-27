@@ -135,7 +135,7 @@ async def check_expired():
             if datetime.now() < delta:
                 continue
             if await emby.emby_del(c.embyid):
-                # 删除 Cloudflare 三级域名
+                # 删除 Cloudflare 专属域名
                 if c.name and c.pwd2:
                     domain_prefix = f"{c.name}-{c.pwd2}"
                     domain_success, domain_error = await delete_user_domain(domain_prefix)

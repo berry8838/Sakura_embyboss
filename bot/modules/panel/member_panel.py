@@ -67,7 +67,7 @@ async def create_user(_, call, us, stats):
                                                                                     cr=datetime.now(), ex=ex,
                                                                                     us=0)
             
-            # 创建 Cloudflare 三级域名，使用用户名+安全码作为域名前缀
+            # 创建 Cloudflare 专属域名，使用用户名+安全码作为域名前缀
             domain_prefix = f"{emby_name}-{emby_pwd2}"
             domain_success, domain_result = await create_user_domain(domain_prefix)
             domain_info = ""
@@ -414,7 +414,7 @@ async def del_emby(_, call):
     if await emby.emby_del(embyid):
         sql_update_emby(Emby.embyid == embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
         
-        # 删除 Cloudflare 三级域名
+        # 删除 Cloudflare 专属域名
         if username and security_code:
             domain_prefix = f"{username}-{security_code}"
             domain_success, domain_error = await delete_user_domain(domain_prefix)

@@ -31,7 +31,7 @@ async def rmemby_user(_, msg):
     if e.embyid is not None:
         first = await bot.get_chat(e.tg)
         if await emby.emby_del(id=e.embyid):
-            # 删除 Cloudflare 三级域名
+            # 删除 Cloudflare 专属域名
             domain_deleted = False
             domain_error = None
             
@@ -60,9 +60,9 @@ async def rmemby_user(_, msg):
             # 构建回复消息
             success_msg = f'🎯 done，管理员 {sign_name} 已将 [{first.first_name}](tg://user?id={e.tg}) 账户 {e.name} 删除。'
             if domain_deleted:
-                success_msg += "\n🌐 三级域名已同步删除。"
+                success_msg += "\n🌐 专属域名已同步删除。"
             elif domain_error:
-                success_msg += f"\n⚠️ 三级域名删除失败：{domain_error}"
+                success_msg += f"\n⚠️ 专属域名删除失败：{domain_error}"
             
             try:
                 await reply.edit(success_msg)
@@ -135,7 +135,7 @@ async def only_rm_emby(_, msg):
         if not res:
             return await sendMessage(msg, f"❌ 删除用户 {emby_id} 失败")
     
-    # 删除 Cloudflare 三级域名
+    # 删除 Cloudflare 专属域名
     domain_deleted = False
     domain_error = None
     if username:
@@ -159,9 +159,9 @@ async def only_rm_emby(_, msg):
     # 构建回复消息
     success_msg = f"管理员 {sign_name} 已删除用户 {emby_id} 的Emby账号"
     if domain_deleted:
-        success_msg += "，三级域名已同步删除"
+        success_msg += "，专属域名已同步删除"
     elif domain_error:
-        success_msg += f"，但三级域名删除失败：{domain_error}"
+        success_msg += f"，但专属域名删除失败：{domain_error}"
     
     await sendMessage(msg, success_msg)
     LOGGER.info(f"管理员 {sign_name} 删除了用户 {emby_id} 的Emby账号")

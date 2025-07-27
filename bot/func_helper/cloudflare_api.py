@@ -99,7 +99,7 @@ class CloudflareAPI:
             # 首先查找 DNS 记录
             record_id = await self._find_dns_record(subdomain)
             if not record_id:
-                LOGGER.warning(f"未找到域名记录: {subdomain}")
+                LOGGER.info(f"未找到域名记录: {subdomain}，可能已经删除或不存在")
                 return True, None  # 如果记录不存在，视为删除成功
             
             # 删除 DNS 记录
@@ -131,8 +131,7 @@ class CloudflareAPI:
             async with aiohttp.ClientSession() as session:
                 url = f"{self.base_url}/zones/{self.zone_id}/dns_records"
                 params = {
-                    "name": domain_name,
-                    "type": self.record_type.upper()
+                    "name": domain_name
                 }
                 
                 async with session.get(url, params=params, headers=self.headers) as response:
@@ -140,8 +139,17 @@ class CloudflareAPI:
                     
                     if response.status == 200 and result.get("success"):
                         records = result.get("result", [])
-                        if records:
-                            return records[0]["id"]
+                        # 查找匹配的记录，优先匹配指定类型，如果没有则返回第一个
+                        target_record = None
+                        for record in records:
+                            if record["name"] == domain_name:
+                                if record["type"] == self.record_type.upper():
+                                    return record["id"]
+                                elif target_record is None:
+                                    target_record = record
+                        
+                        if target_record:
+                            return target_record["id"]
                     return None
                     
         except Exception as e:

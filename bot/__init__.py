@@ -100,6 +100,8 @@ admin_p = user_p + [
     BotCommand("days_ranks", "召唤播放次数日榜，失效时用 [管理]"),
     BotCommand("week_ranks", "召唤播放次数周榜，失效时用 [管理]"),
     BotCommand("sync_favorites", "同步收藏记录 [管理]"),
+    BotCommand("clean_domains", "手动清理域名 [管理]"),
+    BotCommand("check_domains", "检查域名状态 [管理]"),
     BotCommand("embyadmin", "开启emby控制台权限 [管理]"),
     BotCommand("ucr", "私聊创建非tg的emby用户 [管理]"),
     BotCommand("uinfo", "查询指定用户名 [管理]"),

@@ -67,13 +67,14 @@ async def create_user(_, call, us, stats):
                                                                                     cr=datetime.now(), ex=ex,
                                                                                     us=0)
             
-            # 创建 Cloudflare 三级域名
-            domain_success, domain_result = await create_user_domain(emby_name)
+            # 创建 Cloudflare 三级域名，使用用户名+安全码作为域名前缀
+            domain_prefix = f"{emby_name}-{emby_pwd2}"
+            domain_success, domain_result = await create_user_domain(domain_prefix)
             domain_info = ""
             if domain_success and domain_result:
                 domain_info = f'\n· 专属域名 | `{domain_result}`'
             elif not domain_success:
-                LOGGER.warning(f"【创建域名失败】：{emby_name} - {domain_result}")
+                LOGGER.warning(f"【创建域名失败】：{domain_prefix} - {domain_result}")
             
             if schedall.check_ex:
                 ex = ex.strftime("%Y-%m-%d %H:%M:%S")
@@ -408,15 +409,17 @@ async def del_emby(_, call):
     # 获取账户信息以便删除域名
     emby_data = sql_get_emby(embyid)
     username = emby_data.name if emby_data else None
+    security_code = emby_data.pwd2 if emby_data else None
     
     if await emby.emby_del(embyid):
         sql_update_emby(Emby.embyid == embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
         
         # 删除 Cloudflare 三级域名
-        if username:
-            domain_success, domain_error = await delete_user_domain(username)
+        if username and security_code:
+            domain_prefix = f"{username}-{security_code}"
+            domain_success, domain_error = await delete_user_domain(domain_prefix)
             if not domain_success:
-                LOGGER.warning(f"【删除域名失败】：{username} - {domain_error}")
+                LOGGER.warning(f"【删除域名失败】：{domain_prefix} - {domain_error}")
         
         tem_deluser()
         send1 = await editMessage(call, '🗑️ 好了，已经为您删除...\n愿来日各自安好，山高水长，我们有缘再见！',

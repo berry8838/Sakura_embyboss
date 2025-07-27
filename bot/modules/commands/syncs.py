@@ -15,13 +15,14 @@ from datetime import datetime, timedelta
 from asyncio import sleep
 from pyrogram import filters
 from pyrogram.errors import FloodWait
-from bot import bot, prefixes, bot_photo, LOGGER, owner, group
+from bot import bot, prefixes, bot_photo, LOGGER, owner, group, cloudflare, schedall
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.utils import tem_deluser
 from bot.sql_helper.sql_emby import get_all_emby, Emby, sql_get_emby, sql_update_embys, sql_delete_emby, sql_update_emby
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto
 from bot.sql_helper.sql_emby2 import sql_get_emby2
+from bot.scheduler.check_domain_cleanup import check_domain_cleanup
 
 
 @bot.on_message(filters.command('syncgroupm', prefixes) & admins_on_filter)
@@ -321,3 +322,109 @@ async def scan_embyname(_, msg):
         await sendMessage(msg, c)
     LOGGER.info(
         f"【扫描重复用户名任务结束】 - {msg.from_user.id} 共发现 {len(duplicate_names)} 个重复用户名")
+
+
+@bot.on_message(filters.command('clean_domains', prefixes) & admins_on_filter)
+async def manual_clean_domains(_, msg):
+    """手动执行域名清理任务"""
+    await deleteMessage(msg)
+    
+    # 检查 Cloudflare 是否启用
+    if not cloudflare.status:
+        return await sendMessage(msg, "❌ Cloudflare 功能未启用，无法清理域名。", send=True)
+    
+    send = await msg.reply("🗑️ **手动域名清理任务**\n\n正在启动域名清理任务，请稍候...")
+    
+    LOGGER.info(f"【手动域名清理任务开启】 - {msg.from_user.first_name} - {msg.from_user.id}")
+    
+    try:
+        # 首先查询需要清理的账户数量
+        from sqlalchemy import and_
+        users_to_cleanup = get_all_emby(
+            and_(
+                Emby.name.isnot(None),  # 有用户名的账户才可能有域名
+                (Emby.lv.in_(['c', 'd']) | Emby.embyid.is_(None))  # 等级为 c/d 或没有 embyid
+            )
+        )
+        
+        if not users_to_cleanup:
+            await send.edit("🗑️ **手动域名清理任务**\n\n✅ 未发现需要清理域名的账户。")
+            return
+        
+        await send.edit(f"🗑️ **手动域名清理任务**\n\n"
+                       f"📋 发现 {len(users_to_cleanup)} 个需要清理域名的账户\n"
+                       f"⏳ 正在执行清理任务，详情请查看日志...")
+        
+        # 执行域名清理任务（手动执行，只打印日志）
+        await check_domain_cleanup(send_report=False)
+        
+        # 简单的完成提示
+        await sendMessage(msg, f"✅ 域名清理任务已完成，详情请查看日志")
+        
+        LOGGER.info(f"【手动域名清理任务完成】 - {msg.from_user.id} 处理了 {len(users_to_cleanup)} 个账户")
+        
+    except Exception as e:
+        error_msg = f"🗑️ **手动域名清理任务**\n\n❌ 执行过程中出现错误：\n`{str(e)}`"
+        await sendMessage(msg, error_msg)
+        LOGGER.error(f"【手动域名清理任务失败】 - {msg.from_user.id}: {str(e)}")
+
+
+@bot.on_message(filters.command('check_domains', prefixes) & admins_on_filter) 
+async def check_domains_status(_, msg):
+    """检查域名状态和配置"""
+    await deleteMessage(msg)
+    
+    send = await msg.reply("🔍 **域名系统状态检查**\n\n正在检查配置和状态...")
+    
+    # 检查 Cloudflare 配置
+    config_status = "✅ 已启用" if cloudflare.status else "❌ 未启用"
+    
+    config_details = ""
+    if cloudflare.status:
+        config_details = f"• 记录类型: {cloudflare.record_type}\n"
+        config_details += f"• 域名: {cloudflare.domain}\n"
+        if cloudflare.record_type.upper() == "A":
+            config_details += f"• 目标IP: {cloudflare.target_ip}\n"
+        else:
+            config_details += f"• 目标域名: {cloudflare.target_domain}\n"
+    
+    # 查询需要清理的账户
+    from sqlalchemy import and_
+    users_to_cleanup = get_all_emby(
+        and_(
+            Emby.name.isnot(None),
+            (Emby.lv.in_(['c', 'd']) | Emby.embyid.is_(None))
+        )
+    )
+    
+    cleanup_count = len(users_to_cleanup) if users_to_cleanup else 0
+    
+    # 统计各类账户数量
+    c_level_count = len([u for u in (users_to_cleanup or []) if u.lv == 'c'])
+    d_level_count = len([u for u in (users_to_cleanup or []) if u.lv == 'd'])
+    no_embyid_count = len([u for u in (users_to_cleanup or []) if u.embyid is None])
+    
+    # 检查定时任务状态
+    schedule_status = "✅ 已启用" if schedall.domain_cleanup else "❌ 未启用"
+    
+    status_text = f"🔍 **域名系统状态检查**\n\n"
+    status_text += f"**📡 Cloudflare 配置:**\n{config_status}\n"
+    if cloudflare.status:
+        status_text += f"{config_details}\n"
+    
+    status_text += f"**⏰ 定时清理任务:**\n{schedule_status}\n"
+    status_text += f"执行时间: 每天 03:00\n\n"
+    
+    status_text += f"**📊 待清理账户统计:**\n"
+    status_text += f"• 总计: {cleanup_count} 个账户\n"
+    status_text += f"• C级(已禁用): {c_level_count} 个\n"
+    status_text += f"• D级(未注册): {d_level_count} 个\n"
+    status_text += f"• 无EmbyID: {no_embyid_count} 个\n\n"
+    
+    if cleanup_count > 0:
+        status_text += f"💡 使用 `/clean_domains` 命令可手动清理域名"
+    else:
+        status_text += f"✨ 当前无需清理的域名"
+    
+    await send.edit(status_text)
+    LOGGER.info(f"【域名状态检查】 - {msg.from_user.id} 查看了域名系统状态")

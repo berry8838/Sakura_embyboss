@@ -32,23 +32,44 @@ async def rmemby_user(_, msg):
         first = await bot.get_chat(e.tg)
         if await emby.emby_del(id=e.embyid):
             # 删除 Cloudflare 三级域名
+            domain_deleted = False
+            domain_error = None
+            
             if e.name:
+                # 尝试用原始用户名删除域名
                 domain_success, domain_error = await delete_user_domain(e.name)
-                if not domain_success:
-                    LOGGER.warning(f"【删除域名失败】：{e.name} - {domain_error}")
+                if domain_success:
+                    domain_deleted = True
+                    LOGGER.info(f"【删除域名成功】：{e.name}")
+                else:
+                    # 如果用户名删除失败，尝试用用户名+密码组合删除
+                    if e.pwd2:
+                        domain_success2, domain_error2 = await delete_user_domain(f"{e.name}-{e.pwd2}")
+                        if domain_success2:
+                            domain_deleted = True
+                            LOGGER.info(f"【删除域名成功】：{e.name}-{e.pwd2}")
+                        else:
+                            LOGGER.warning(f"【删除域名失败】：{e.name} - {domain_error}, {e.name}-{e.pwd2} - {domain_error2}")
+                    else:
+                        LOGGER.warning(f"【删除域名失败】：{e.name} - {domain_error}")
             
             sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
             tem_deluser()
             sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
+            
+            # 构建回复消息
+            success_msg = f'🎯 done，管理员 {sign_name} 已将 [{first.first_name}](tg://user?id={e.tg}) 账户 {e.name} 删除。'
+            if domain_deleted:
+                success_msg += "\n🌐 三级域名已同步删除。"
+            elif domain_error:
+                success_msg += f"\n⚠️ 三级域名删除失败：{domain_error}"
+            
             try:
-                await reply.edit(
-                    f'🎯 done，管理员  {sign_name} 已将 [{first.first_name}](tg://user?id={e.tg}) 账户 {e.name} 删除。')
-                await bot.send_message(e.tg,
-                                       f'🎯 done，管理员 {sign_name} 已将 您的账户 {e.name} 删除。')
+                await reply.edit(success_msg)
+                await bot.send_message(e.tg, f'🎯 done，管理员 {sign_name} 已将 您的账户 {e.name} 删除。')
             except:
                 pass
-            LOGGER.info(
-                f"【admin】：管理员 {sign_name} 执行删除 {first.first_name}-{e.tg} 账户 {e.name}")
+            LOGGER.info(f"【admin】：管理员 {sign_name} 执行删除 {first.first_name}-{e.tg} 账户 {e.name}")
     else:
         await reply.edit(f"💢 [ta](tg://user?id={b}) 还没有注册账户呢")
 @bot.on_message(filters.command('only_rm_record', prefixes) & admins_on_filter)
@@ -90,13 +111,19 @@ async def only_rm_emby(_, msg):
     
     # 获取用户名用于删除域名
     username = None
+    pwd2 = None
     if not emby_id.isdigit():  # 如果输入的是用户名而不是ID
         username = emby_id
+        # 尝试从数据库获取完整信息
+        e = sql_get_emby(name=emby_id)
+        if e:
+            pwd2 = e.pwd2
     else:
         # 通过 embyid 查找用户名
         e = sql_get_emby(emby_id)
         if e:
             username = e.name
+            pwd2 = e.pwd2
     
     res = await emby.emby_del(emby_id)
     if not res:
@@ -109,12 +136,32 @@ async def only_rm_emby(_, msg):
             return await sendMessage(msg, f"❌ 删除用户 {emby_id} 失败")
     
     # 删除 Cloudflare 三级域名
+    domain_deleted = False
+    domain_error = None
     if username:
+        # 先尝试用原始用户名删除
         domain_success, domain_error = await delete_user_domain(username)
-        if not domain_success:
+        if domain_success:
+            domain_deleted = True
+        elif pwd2:
+            # 如果失败且有pwd2，尝试用组合名称删除
+            domain_success2, domain_error2 = await delete_user_domain(f"{username}-{pwd2}")
+            if domain_success2:
+                domain_deleted = True
+            else:
+                domain_error = f"{domain_error}, {domain_error2}"
+        
+        if not domain_deleted and domain_error:
             LOGGER.warning(f"【删除域名失败】：{username} - {domain_error}")
     
     sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
-    await sendMessage(msg, f"管理员 {sign_name} 已删除用户 {emby_id} 的Emby账号")
-    LOGGER.info(
-        f"管理员 {sign_name} 删除了用户 {emby_id} 的Emby账号")
+    
+    # 构建回复消息
+    success_msg = f"管理员 {sign_name} 已删除用户 {emby_id} 的Emby账号"
+    if domain_deleted:
+        success_msg += "，三级域名已同步删除"
+    elif domain_error:
+        success_msg += f"，但三级域名删除失败：{domain_error}"
+    
+    await sendMessage(msg, success_msg)
+    LOGGER.info(f"管理员 {sign_name} 删除了用户 {emby_id} 的Emby账号")

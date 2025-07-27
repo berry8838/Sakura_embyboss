@@ -136,10 +136,11 @@ async def check_expired():
                 continue
             if await emby.emby_del(c.embyid):
                 # 删除 Cloudflare 三级域名
-                if c.name:
-                    domain_success, domain_error = await delete_user_domain(c.name)
+                if c.name and c.pwd2:
+                    domain_prefix = f"{c.name}-{c.pwd2}"
+                    domain_success, domain_error = await delete_user_domain(domain_prefix)
                     if not domain_success:
-                        LOGGER.warning(f"【删除域名失败】：{c.name} - {domain_error}")
+                        LOGGER.warning(f"【删除域名失败】：{domain_prefix} - {domain_error}")
                 
                 sql_update_emby(Emby.embyid == c.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
                                 ex=None)

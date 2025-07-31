@@ -18,7 +18,6 @@ async def check_expired():
     rst = get_all_emby(and_(Emby.ex < datetime.now(), Emby.lv == 'b'))
     if rst is None:
         return LOGGER.info('【到期检测】- 等级 b 无到期用户，跳过')
-    dead_day = datetime.now() + timedelta(days=5)
     ext = (datetime.now() + timedelta(days=30))
     for r in rst:
         if r.us >= 30:
@@ -62,6 +61,7 @@ async def check_expired():
 
         else:
             if await emby.emby_change_policy(r.embyid, method=True):
+                dead_day = r.ex + timedelta(days=5)
                 if sql_update_emby(Emby.tg == r.tg, lv='c'):
                     text = f'【到期检测】\n#id{r.tg} 到期禁用 [{r.name}](tg://user?id={r.tg})\n将为您封存至 {dead_day.strftime("%Y-%m-%d")}，请及时续期'
                     LOGGER.info(text)
@@ -130,8 +130,8 @@ async def check_expired():
                 LOGGER.error(e)
 
         else:
-            delta = c.ex + timedelta(days=5)
-            if datetime.now() < delta:
+            delete_day = c.ex + timedelta(days=5)
+            if datetime.now() < delete_day:
                 continue
             if await emby.emby_del(c.embyid):
                 sql_update_emby(Emby.embyid == c.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
@@ -164,12 +164,12 @@ async def check_expired():
             else:
                 text = f'【封禁检测】- 到期封印非TG账户：`{e.name}` 数据库更改失败'
         else:
-            text = '【封禁检测】- 到期封印非TG账户：`{e.name}` embyapi操作失败，请手动'
+            text = f'【封禁检测】- 到期封印非TG账户：`{e.name}` embyapi操作失败，请手动处理'
         try:
             await bot.send_message(group[0], text)
         except FloodWait as f:
             LOGGER.warning(str(f))
             await sleep(f.value * 1.2)
-            await bot.send_message(group[0].text)
+            await bot.send_message(group[0], text)
         except Exception as e:
             LOGGER.error(e)

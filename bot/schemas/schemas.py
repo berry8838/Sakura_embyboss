@@ -3,8 +3,10 @@ import os
 from pydantic import BaseModel, Field
 from typing import List, Optional, Union
 
-
 # 嵌套式的数据设计，规范数据 config.json
+
+MAX_INT_VALUE = 2147483647  # 2^31 - 1
+MIN_INT_VALUE = -2147483648  # -2^31
 
 class ExDate(BaseModel):
     mon: int = 30

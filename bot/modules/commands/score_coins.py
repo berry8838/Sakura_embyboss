@@ -6,7 +6,7 @@ score +-
 coins +-
 """
 import asyncio
-
+from bot.schemas import MAX_INT_VALUE, MIN_INT_VALUE
 from pyrogram import filters
 from pyrogram.errors import BadRequest
 from bot import bot, prefixes, LOGGER, sakura_b
@@ -49,6 +49,10 @@ async def score_user(_, msg):
         return await sendMessage(msg, f"数据库中没有[ta](tg://user?id={uid}) 。请先私聊我", buttons=group_f)
 
     us = e.us + b
+    # 检查计算结果是否超出安全范围
+    if us > MAX_INT_VALUE or us < MIN_INT_VALUE:
+        return await sendMessage(msg, f"❌ 操作失败！计算结果超出安全范围（{MIN_INT_VALUE} 到 {MAX_INT_VALUE}）。", timer=60)
+    
     if sql_update_emby(Emby.tg == uid, us=us):
         await asyncio.gather(sendMessage(msg,
                                          f"· 🎯 {gm_name} 调节了 [{first.first_name}](tg://user?id={uid}) 积分： {b}"
@@ -74,6 +78,10 @@ async def coins_user(_, msg):
 
     # 加上判定send_chat
     us = e.iv + b
+    # 检查计算结果是否超出安全范围
+    if us > MAX_INT_VALUE or us < MIN_INT_VALUE:
+        return await sendMessage(msg, f"❌ 操作失败！计算结果超出安全范围（{MIN_INT_VALUE} 到 {MAX_INT_VALUE}）。", timer=60)
+    
     if sql_update_emby(Emby.tg == uid, iv=us):
         await asyncio.gather(sendMessage(msg,
                                          f"· 🎯 {gm_name} 调节了 [{first.first_name}](tg://user?id={uid}) {sakura_b}： {b}"

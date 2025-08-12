@@ -22,7 +22,7 @@ from bot.func_helper.utils import pwd_create, judge_admins, get_users, cache
 from bot.sql_helper import Session
 from bot.sql_helper.sql_emby import Emby, sql_get_emby, sql_update_emby
 from bot.ranks_helper.ranks_draw import RanksDraw
-from bot.schemas import Yulv
+from bot.schemas import Yulv, MAX_INT_VALUE, MIN_INT_VALUE
 
 # 小项目，说实话不想写数据库里面。放内存里了，从字典里面每次拿分
 
@@ -249,6 +249,8 @@ async def grab_red_envelope(_, call):
 
     # 更新用户余额
     new_balance = e.iv + amount
+    if new_balance > MAX_INT_VALUE or new_balance < MIN_INT_VALUE:
+        return await callAnswer(call, f"账户余额超出安全范围（{MIN_INT_VALUE} 到 {MAX_INT_VALUE}）。", True)
     sql_update_emby(Emby.tg == call.from_user.id, iv=new_balance)
 
     # 更新红包信息
@@ -375,9 +377,7 @@ async def generate_final_message(envelope):
     return text
 
 
-@bot.on_message(
-    filters.command("srank", prefixes) & user_in_group_on_filter & filters.group
-)
+@bot.on_message(filters.command("srank", prefixes) & user_in_group_on_filter & filters.group)
 async def s_rank(_, msg):
     await msg.delete()
     sender = None

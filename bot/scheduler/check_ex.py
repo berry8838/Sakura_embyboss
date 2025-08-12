@@ -6,7 +6,7 @@ from datetime import timedelta, datetime
 from pyrogram.errors import FloodWait
 from sqlalchemy import and_
 from asyncio import sleep
-from bot import bot, group, LOGGER, _open
+from bot import bot, group, LOGGER, _open, config
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import tem_deluser
 from bot.sql_helper.sql_emby import Emby, get_all_emby, sql_update_emby
@@ -61,7 +61,7 @@ async def check_expired():
 
         else:
             if await emby.emby_change_policy(r.embyid, method=True):
-                dead_day = r.ex + timedelta(days=5)
+                dead_day = r.ex + timedelta(days=config.freeze_days)
                 if sql_update_emby(Emby.tg == r.tg, lv='c'):
                     text = f'【到期检测】\n#id{r.tg} 到期禁用 [{r.name}](tg://user?id={r.tg})\n将为您封存至 {dead_day.strftime("%Y-%m-%d")}，请及时续期'
                     LOGGER.info(text)
@@ -125,19 +125,19 @@ async def check_expired():
             except FloodWait as f:
                 LOGGER.warning(str(f))
                 await sleep(f.value * 1.2)
-                await bot.send_message(c.tg.text)
+                await bot.send_message(c.tg, text)
             except Exception as e:
                 LOGGER.error(e)
 
         else:
-            delete_day = c.ex + timedelta(days=5)
+            delete_day = c.ex + timedelta(days=config.freeze_days)
             if datetime.now() < delete_day:
                 continue
             if await emby.emby_del(c.embyid):
                 sql_update_emby(Emby.embyid == c.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
                                 ex=None)
                 tem_deluser()
-                text = f'【到期检测】\n#id{c.tg} 删除账户 [{c.name}](tg://user?id={c.tg})\n已到期 5 天，执行清除任务。期待下次与你相遇'
+                text = f'【到期检测】\n#id{c.tg} 删除账户 [{c.name}](tg://user?id={c.tg})\n已到期 {config.freeze_days} 天，执行清除任务。期待下次与你相遇'
                 LOGGER.info(text)
             else:
                 text = f'【到期检测】\n#id{c.tg} #删除账户 [{c.name}](tg://user?id={c.tg})\n到期删除失败，请检查以免无法进行后续使用'
@@ -148,7 +148,7 @@ async def check_expired():
             except FloodWait as f:
                 LOGGER.warning(str(f))
                 await sleep(f.value * 1.2)
-                send = await bot.send_message(c.tg.text)
+                send = await bot.send_message(c.tg, text)
                 await send.forward(group[0])
             except Exception as e:
                 LOGGER.error(e)

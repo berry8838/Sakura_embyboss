@@ -347,6 +347,7 @@ def config_preparation() -> InlineKeyboardMarkup:
          [(f'{auto_up} 自动更新bot', 'set_update'), (f'{mp_set} Moviepilot点播', 'set_mp')],
          [(f'{red_envelope_status} 红包', 'set_red_envelope_status'), (f'{allow_private} 专属红包', 'set_red_envelope_allow_private')],
          [(f'设置赠送资格天数({config.kk_gift_days}天)', 'set_kk_gift_days'), (f'设置活跃检测天数({config.activity_check_days}天)', 'set_activity_check_days')],
+         [(f'设置封存账号天数({config.freeze_days}天)', 'set_freeze_days')],
          [('🔙 返回', 'manage')]])
     return keyboard
 

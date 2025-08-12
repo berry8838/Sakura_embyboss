@@ -6,7 +6,7 @@ import asyncio
 
 from pyrogram import filters
 
-from bot import bot, _open, save_config, bot_photo, LOGGER, bot_name, admins, owner
+from bot import bot, _open, save_config, bot_photo, LOGGER, bot_name, admins, owner, config
 from bot.func_helper.filters import admins_on_filter
 from bot.schemas import ExDate
 from bot.sql_helper.sql_code import sql_count_code, sql_count_p_code, sql_delete_all_unused, sql_delete_unused_by_days
@@ -382,6 +382,32 @@ async def set_renew(_, call):
     finally:
         await editMessage(call, text='⭕ **关于用户组的续期功能**\n\n选择点击下方按钮开关任意兑换功能',
                           buttons=cr_renew_ikb())
+@bot.on_callback_query(filters.regex('set_freeze_days') & admins_on_filter)
+async def set_freeze_days(_, call):
+    await callAnswer(call, '⭕ 设置封存天数')
+    send = await call.message.edit(
+        "🦄 请在 120s 内发送封存账号天数，\n**注**：用户到期后被禁用，再过指定天数后会被删除 取消 /cancel")
+    if send is False:
+        return
+
+    txt = await callListen(call, 120, buttons=back_free_ikb)
+    if txt is False:
+        return
+    elif txt.text == "/cancel":
+        await txt.delete()
+        return await open_menu(_, call)
+
+    try:
+        await txt.delete()
+        a = int(txt.text)
+    except ValueError:
+        await editMessage(call, f"❌ 八嘎，请输入一个数字给我。", buttons=back_free_ikb)
+    else:
+        config.freeze_days = a
+        save_config()
+        await editMessage(call, f"✔️ 成功，您已设置 **封存账号天数 {a}**", buttons=back_free_ikb)
+        LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 调整了封存账号天数：{a}")
+
 @bot.on_callback_query(filters.regex('set_invite_lv'))
 async def invite_lv_set(_, call):
     try:

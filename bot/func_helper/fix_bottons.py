@@ -23,6 +23,7 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
         d.append(['👑 创建账户', 'create'])
         d.append(['⭕ 换绑TG', 'changetg'])
         d.append(['🔍 绑定TG', 'bindtg'])
+        d.append([('🔛账号启用', 'resume')])
         # 如果邀请等级为d （未注册用户也能使用），则显示兑换商店
         if _open.invite_lv == 'd':
             d.append(['🏪 兑换商店', 'storeall'])
@@ -54,6 +55,7 @@ def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboard
         normal = [[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
                     [('❤️ 我的收藏', 'my_favorites'),('⚙️ 我的设备', 'my_devices')],
+                    [('🛑账号停用', 'suspend')],
                     ]
         if moviepilot.status:
             normal.append([('🍿 点播中心', 'download_center')])
@@ -309,7 +311,8 @@ def cr_renew_ikb():
         'a': '白名单',
         'b': '普通用户',
         'c': '已禁用用户',
-        'd': '无账号用户'
+        'd': '无账号用户',
+        'e': '停用用户'
     }.get(_open.invite_lv, '未知')
     keyboard = InlineKeyboard(row_width=2)
     keyboard.add(InlineButton(f'{checkin} 每日签到', f'set_renew-checkin'),
@@ -324,7 +327,7 @@ def invite_lv_ikb():
     keyboard = ikb([
         [('🅰️ 白名单', 'set_invite_lv-a'), ('🅱️ 普通用户', 'set_invite_lv-b')],
         [('©️ 已禁用用户', 'set_invite_lv-c'), ('🅳️ 无账号用户', 'set_invite_lv-d')],
-        [('🔙 返回', 'set_renew')]
+        [('停用用户', 'set_invite_lv-c'),('🔙 返回', 'set_renew')]
     ])
     return keyboard
 

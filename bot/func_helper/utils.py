@@ -48,7 +48,7 @@ async def members_info(tg=None, name=None):
             ex = ' __无需保号，放心食用__'
         elif data.lv == 'e':
             # 展示账号停用截止时间
-            ex = f"账号已停用，截止时间：{getattr(data, 'strftime', '未知')}"
+            ex = f"账号已停用，截止时间：{getattr(e, "suspend_until", None)}"
         else:
             ex = data.ex or '无账户信息'
         return name, lv, ex, us, embyid, pwd2

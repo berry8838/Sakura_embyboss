@@ -29,7 +29,7 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
     else:
         d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server']]
         if schedall.check_ex: d.append(['🎟️ 使用续期码', 'exchange'])
-    if _open.checkin: d.append([f'🎯 签到', 'checkin'])
+    if _open.checkin: b.append([f'🎯 签到', 'checkin'])
     lines = array_chunk(d, 2)
     if is_admin: lines.append([['👮🏻‍♂️ admin', 'manage']])
     keyword = ikb(lines)
@@ -53,7 +53,7 @@ def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboard
     if account:
         normal = [[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
-                    [('💖 我的收藏', 'my_favorites'),('💠 我的设备', 'my_devices')],
+                    [('❤️ 我的收藏', 'my_favorites'),('⚙️ 我的设备', 'my_devices')],
                     ]
         if moviepilot.status:
             normal.append([('🍿 点播中心', 'download_center')])

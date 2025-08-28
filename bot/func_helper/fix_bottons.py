@@ -36,7 +36,6 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
     keyword = ikb(lines)
     return keyword
 
-
 # un_group_answer
 group_f = ikb([[('点击我(●ˇ∀ˇ●)', f't.me/{bot_name}', 'url')]])
 # un in group

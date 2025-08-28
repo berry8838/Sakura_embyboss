@@ -842,15 +842,7 @@ async def resume_account(_, call):
     sql_update_emby(Emby.tg == call.from_user.id, suspend_until=None, lv="b")
     await editMessage(call, f'✅ 账号已启用，无需消耗{sakura_b}。', buttons=back_members_ikb)
 
-async def auto_delete_if_expired(call, e):
-    """账号面板等入口调用此函数，自动检测停用到期删号"""
-    until = parse_suspend_until(getattr(e, "suspend_until", None))
-    if until and e.lv == "e":
-        if datetime.now() > until:
-            sql_delete_emby(Emby.tg == e.tg)
-            await editMessage(call, f"❌ 账号停用到期未启用，已被删除。", buttons=back_members_ikb)
-            return True
-    return False
+
 
 # 你需要在 members_ikb 按钮生成处，判断 e.lv，加上如下按钮（伪代码）：
 # if e.lv != "e":

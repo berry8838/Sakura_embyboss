@@ -46,7 +46,9 @@ async def members_info(tg=None, name=None):
             ex = f'__若{config.activity_check_days}天无观看将封禁__'
         elif data.name is not None and not schedall.low_activity and not schedall.check_ex:
             ex = ' __无需保号，放心食用__'
-        
+        elif data.lv == 'e':
+            # 展示账号停用截止时间
+            ex = f"账号已停用，截止时间：{getattr(data, 'strftime', '未知')}"
         else:
             ex = data.ex or '无账户信息'
         return name, lv, ex, us, embyid, pwd2

@@ -327,7 +327,7 @@ def invite_lv_ikb():
     keyboard = ikb([
         [('🅰️ 白名单', 'set_invite_lv-a'), ('🅱️ 普通用户', 'set_invite_lv-b')],
         [('©️ 已禁用用户', 'set_invite_lv-c'), ('🅳️ 无账号用户', 'set_invite_lv-d')],
-        [('停用用户', 'set_invite_lv-c'),('🔙 返回', 'set_renew')]
+        [('停用用户', 'set_invite_lv-e'),('🔙 返回', 'set_renew')]
     ])
     return keyboard
 

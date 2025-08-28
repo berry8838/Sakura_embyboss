@@ -173,3 +173,42 @@ async def check_expired():
             await bot.send_message(group[0], text)
         except Exception as e:
             LOGGER.error(e)
+
+#停用账号
+    now = datetime.now()
+    # 1. 到期前3天提醒
+    remind_time = now + timedelta(days=3)
+    rse_remind = get_all_emby(and_(Emby.ex > now, Emby.ex <= remind_time, Emby.lv == 'e'))
+    if rse_remind:
+        for e in rse_remind:
+            try:
+                remind_text = (
+                    f'【到期提醒】\n#id{e.tg} 停用账号 [{e.name}](tg://user?id={e.tg}) '
+                    f'将在 {e.ex.strftime("%Y-%m-%d %H:%M:%S")} 到期，请及时启用，否则将被自动删除。'
+                )
+                await bot.send_message(e.tg, remind_text)
+            except Exception as err:
+                LOGGER.error(err)
+
+    # 2. 到期未启用自动删除
+    rse_expired = get_all_emby(and_(Emby.ex < now, Emby.lv == 'e'))
+    if rse_expired:
+        for e in rse_expired:
+            until = parse_suspend_until(getattr(e, "suspend_until", None))
+            if until and now > until:
+                if sql_delete_emby(Emby.tg == e.tg):
+                    del_text = (
+                        f'【到期检测】\n#id{e.tg} 停用账号 [{e.name}](tg://user?id={e.tg})，因到期未启用。'
+                    )
+                    LOGGER.info(del_text)
+                else:
+                    del_text = (
+                        f'【到期检测】\n#id{e.tg} 停用账号 [{e.name}](tg://user?id={e.tg}) 失败，请检查数据库。'
+                    )
+                    LOGGER.warning(del_text)
+                try:
+                    await bot.send_message(e.tg, del_text)
+                except Exception as err:
+                    LOGGER.error(err)
+
+    # ... 其它等级处理 ...

@@ -774,3 +774,88 @@ async def my_devices(_, call):
             if not chunk_text.strip():
                 continue
             await sendMessage(call.message, chunk_text, buttons=close_it_ikb)
+
+"""
+账号停用与恢复功能扩展
+（账号停用需要消耗币，账号启用不再扣币，币变量统一为{sakura_b}，停用账号等级为e）
+数据库 emby 表需增加 suspend_until DATETIME 字段（可为空），用于记录停用到期时间。
+"""
+
+from datetime import datetime, timedelta
+from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby
+from bot.func_helper.msg_utils import callAnswer, editMessage, callListen
+from bot.func_helper.fix_bottons import back_members_ikb
+from bot import bot, sakura_b
+from pyrogram import filters
+
+def parse_suspend_until(suspend_until):
+    if suspend_until is None:
+        return None
+    if isinstance(suspend_until, datetime):
+        return suspend_until
+    try:
+        return datetime.strptime(str(suspend_until), "%Y-%m-%d %H:%M:%S")
+    except Exception:
+        return None
+
+@bot.on_callback_query(filters.regex('suspend'))
+async def suspend_account(_, call):
+    e = sql_get_emby(tg=call.from_user.id)
+    if not e or not e.embyid:
+        return await callAnswer(call, '❌ 未查询到账户', True)
+    # 已处于停用中则不允许再次停用
+    if e.lv == "e" and parse_suspend_until(getattr(e, "suspend_until", None)):
+        return await callAnswer(call, '⚠️ 账号已处于停用状态', True)
+    if e.iv < 1:
+        return await callAnswer(call, f'❌ {sakura_b}不足，无法停用', True)
+    await callAnswer(call, '🟡 账号停用申请')
+    msg = await editMessage(call,
+        f'请输入停用天数（1~60），每1天消耗1{sakura_b}。\n\n账号停用期间不会被删除，停用到期未启用将被删除。\n回复 /cancel 退出。'
+    )
+    if msg is False:
+        return
+    m = await callListen(call, 120, buttons=back_members_ikb)
+    if m is False or m.text == '/cancel':
+        if m: await m.delete()
+        return await editMessage(call, '⏹️ 已取消', buttons=back_members_ikb)
+    try:
+        days = int(m.text)
+        assert 1 <= days <= 60
+    except Exception:
+        await m.delete()
+        return await editMessage(call, '❌ 请输入1~60的数字', buttons=back_members_ikb)
+    if e.iv < days:
+        await m.delete()
+        return await editMessage(call, f'❌ 您只有{e.iv}{sakura_b}，无法停用{days}天', buttons=back_members_ikb)
+    until = datetime.now() + timedelta(days=days)
+    sql_update_emby(Emby.tg == call.from_user.id, suspend_until=until.strftime("%Y-%m-%d %H:%M:%S"), lv="e", iv=e.iv - days)
+    await m.delete()
+    await editMessage(call,
+        f'✅ 账号已停用至 {until.strftime("%Y-%m-%d")}，本次消耗{days}{sakura_b}。\n停用期间账号不会被删除，停用结束未恢复账号将被删除。', buttons=back_members_ikb)
+
+@bot.on_callback_query(filters.regex('resume'))
+async def resume_account(_, call):
+    e = sql_get_emby(tg=call.from_user.id)
+    until = parse_suspend_until(getattr(e, "suspend_until", None))
+    if not e or not until or e.lv != "e":
+        return await callAnswer(call, '❌ 账号未处于停用状态', True)
+    sql_update_emby(Emby.tg == call.from_user.id, suspend_until=None, lv="b")
+    await editMessage(call, f'✅ 账号已启用，无需消耗{sakura_b}。', buttons=back_members_ikb)
+
+async def auto_delete_if_expired(call, e):
+    """账号面板等入口调用此函数，自动检测停用到期删号"""
+    until = parse_suspend_until(getattr(e, "suspend_until", None))
+    if until and e.lv == "e":
+        if datetime.now() > until:
+            sql_delete_emby(Emby.tg == e.tg)
+            await editMessage(call, f"❌ 账号停用到期未启用，已被删除。", buttons=back_members_ikb)
+            return True
+    return False
+
+# 你需要在 members_ikb 按钮生成处，判断 e.lv，加上如下按钮（伪代码）：
+# if e.lv != "e":
+#     ikb.append([("账号停用", "suspend")])
+# else:
+#     ikb.append([("账号启用", "resume")])
+
+# 并在主面板入口调用 auto_delete_if_expired 即可

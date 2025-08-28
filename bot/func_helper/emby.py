@@ -556,10 +556,10 @@ class Embyservice(metaclass=Singleton):
                 movie_count = result.get("MovieCount") or 0
                 tv_count = result.get("SeriesCount") or 0
                 episode_count = result.get("EpisodeCount") or 0
-                music_count = result.get("SongCount") or 0
+                #music_count = result.get("SongCount") or 0
                 txt = f'🎬 电影数量：{movie_count}\n' \
                       f'📽️ 剧集数量：{tv_count}\n' \
-                      f'🎵 音乐数量：{music_count}\n' \
+                      #f'🎵 音乐数量：{music_count}\n' \
                       f'🎞️ 总集数：{episode_count}\n'
                 return txt
             else:

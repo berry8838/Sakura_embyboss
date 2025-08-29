@@ -101,7 +101,7 @@
   "lottery_max_entry_cost": 1000,
   "lottery_max_participants": 500,
   "lottery_max_duration": 1440
-}
+},
   "auto_update": {
     "status": true,
     "git_repo": "berry8838/Sakura_embyboss",

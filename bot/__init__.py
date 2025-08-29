@@ -53,19 +53,19 @@ db_backup_maxcount = config.db_backup_maxcount
 tz_ad = config.tz_ad
 tz_api = config.tz_api
 tz_id = config.tz_id
-#抽奖
-lottery = config.lottery
+
 
 w_anti_channel_ids = config.w_anti_channel_ids
 kk_gift_days = config.kk_gift_days
 fuxx_pitao = config.fuxx_pitao
 activity_check_days = config.activity_check_days
 red_envelope = config.red_envelope
-lottery = config.lottery
 
 moviepilot = config.moviepilot
 auto_update = config.auto_update
 api = config.api
+#抽奖
+lottery = config.lottery
 save_config()
 
 LOGGER.info("配置文件加载完毕")

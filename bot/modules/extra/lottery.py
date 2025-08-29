@@ -572,3 +572,62 @@ async def close_lottery_command(_, msg):
         # 如果图片生成失败，返回默认图片
         from bot import bot_photo
         return bot_photo
+
+async def generate_lottery_image(lottery):
+    """生成抽奖图片"""
+    from io import BytesIO
+    from PIL import Image, ImageDraw, ImageFont
+    import os
+
+    width, height = 800, 600
+    background_color = (72, 61, 139)
+    img = Image.new('RGBA', (width, height), background_color)
+    draw = ImageDraw.Draw(img)
+
+    try:
+        font_path = os.path.join('bot', 'ranks_helper', 'resource', 'font', 'PingFang Bold.ttf')
+        if os.path.exists(font_path):
+            title_font = ImageFont.truetype(font_path, 48)
+            text_font = ImageFont.truetype(font_path, 32)
+        else:
+            title_font = ImageFont.load_default()
+            text_font = ImageFont.load_default()
+    except:
+        title_font = ImageFont.load_default()
+        text_font = ImageFont.load_default()
+
+    title_text = f"🎲 {lottery.title}"
+    title_bbox = draw.textbbox((0, 0), title_text, font=title_font)
+    title_width = title_bbox[2] - title_bbox[0]
+    title_x = (width - title_width) // 2
+    draw.text((title_x, 80), title_text, fill=(255, 215, 0), font=title_font)
+
+    info_lines = [
+        f"💰 参与费用: {lottery.entry_cost} 樱花币",
+        f"👥 最大人数: {lottery.max_participants}",
+        f"⏰ 结束时间: {lottery.end_time.strftime('%H:%M')}",
+        f"🎁 丰富奖品等你来拿！"
+    ]
+
+    y_offset = 200
+    for line in info_lines:
+        line_bbox = draw.textbbox((0, 0), line, font=text_font)
+        line_width = line_bbox[2] - line_bbox[0]
+        line_x = (width - line_width) // 2
+        draw.text((line_x, y_offset), line, fill=(255, 255, 255), font=text_font)
+        y_offset += 50
+
+    prize_y = y_offset + 30
+    draw.text((50, prize_y), "🏆 奖品设置:", fill=(255, 215, 0), font=text_font)
+    prize_y += 40
+
+    for i, prize in enumerate(lottery.prizes[:4]):  # 最多显示4个奖品
+        prob_text = f"{prize.probability * 100:.1f}%"
+        prize_text = f"• {prize.name}: {prize.value}币 ({prob_text})"
+        draw.text((70, prize_y), prize_text, fill=(255, 255, 255), font=text_font)
+        prize_y += 35
+
+    img_bytes = BytesIO()
+    img.save(img_bytes, format='PNG')
+    img_bytes.seek(0)
+    return img_bytes

@@ -9,6 +9,7 @@ from bot.modules.panel import *
 from bot.modules.commands import *
 # 其他
 from bot.modules.extra import *
+from bot.modules.extra import lottery
 from bot.modules.callback import *
 from bot.web import *
 

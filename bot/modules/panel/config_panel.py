@@ -445,3 +445,33 @@ async def set_activity_check_days(_, call):
                               f"🕰️ 【活跃检测天数】\n\n{days}天 **Done!**",
                               buttons=back_config_p_ikb)
             LOGGER.info(f"【admin】：{call.from_user.id} - 更新活跃检测天数为{days}天完成")
+
+
+@bot.on_callback_query(filters.regex('set_lottery_status') & admins_on_filter)
+async def set_lottery_status(_, call):
+    config.lottery.status = not config.lottery.status
+    if config.lottery.status:
+        message = '👮🏻‍♂️ 您已开启 抽奖功能，现在用户可以参与抽奖了'
+        log_message = f"【admin】：管理员 {call.from_user.first_name} 已调整 抽奖功能 True"
+    else:
+        message = '👮🏻‍♂️ 您已关闭 抽奖功能，现在用户不能参与抽奖了'
+        log_message = f"【admin】：管理员 {call.from_user.first_name} 已调整 抽奖功能 False"
+    await callAnswer(call, message, True)
+    await config_p_re(_, call)
+    save_config()
+    LOGGER.info(log_message)
+
+
+@bot.on_callback_query(filters.regex('set_lottery_admin_only') & admins_on_filter)
+async def set_lottery_admin_only(_, call):
+    config.lottery.admin_only = not config.lottery.admin_only
+    if config.lottery.admin_only:
+        message = '👮🏻‍♂️ 您已开启 管理员创建抽奖，现在只有管理员可以创建抽奖'
+        log_message = f"【admin】：管理员 {call.from_user.first_name} 已调整 管理员创建抽奖 True"
+    else:
+        message = '👮🏻‍♂️ 您已关闭 管理员创建抽奖，现在所有用户都可以创建抽奖'
+        log_message = f"【admin】：管理员 {call.from_user.first_name} 已调整 管理员创建抽奖 False"
+    await callAnswer(call, message, True)
+    await config_p_re(_, call)
+    save_config()
+    LOGGER.info(log_message)

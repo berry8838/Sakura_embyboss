@@ -13,7 +13,7 @@ cache = Cache()
 """start面板 ↓"""
 
 
-def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
+def judge_start_ikb(is_admin: bool, account: bool, emby_user=None) -> InlineKeyboardMarkup:
     """
     start面板按钮
     """
@@ -23,14 +23,20 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
         d.append(['👑 创建账户', 'create'])
         d.append(['⭕ 换绑TG', 'changetg'])
         d.append(['🔍 绑定TG', 'bindtg'])
-        d.append([('🔛账号启用', 'resume')])
+        # 只有当用户等级为 "e" (停用状态) 时才显示账号启用按钮
+        if emby_user and hasattr(emby_user, 'lv') and emby_user.lv == "e":
+            d.append([('🔛账号启用', 'resume')])
         # 如果邀请等级为d （未注册用户也能使用），则显示兑换商店
         if _open.invite_lv == 'd':
             d.append(['🏪 兑换商店', 'storeall'])
     else:
         d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server']]
         if schedall.check_ex: d.append(['🎟️ 使用续期码', 'exchange'])
-    if lv == 'b' and _open.checkin:
+        # 为已有账号的用户添加账号启用按钮（如果用户处于停用状态）
+        if emby_user and hasattr(emby_user, 'lv') and emby_user.lv == "e":
+            d.append(['🔛账号启用', 'resume'])
+    # 修复原来的问题：使用 emby_user.lv 而不是未定义的 lv 变量
+    if emby_user and hasattr(emby_user, 'lv') and emby_user.lv == 'b' and _open.checkin:
         d.append(['🎯 签到', 'checkin'])
     lines = array_chunk(d, 2)
     if is_admin: lines.append([['👮🏻‍♂️ admin', 'manage']])
@@ -47,7 +53,7 @@ judge_group_ikb = ikb([[('🌟 频道入口 ', f't.me/{chanel}', 'url'),
 """members ↓"""
 
 
-def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboardMarkup:
+def members_ikb(is_admin: bool = False, account: bool = False, emby_user=None) -> InlineKeyboardMarkup:
     """
     判断用户面板
     """
@@ -55,14 +61,17 @@ def members_ikb(is_admin: bool = False, account: bool = False) -> InlineKeyboard
         normal = [[('🏪 兑换商店', 'storeall'), ('🗑️ 删除账号', 'delme')],
                     [('🎬 显示/隐藏', 'embyblock'), ('⭕ 重置密码', 'reset')],
                     [('❤️ 我的收藏', 'my_favorites'),('⚙️ 我的设备', 'my_devices')],
-                    [('🛑账号停用', 'suspend')],
                     ]
+        # 根据用户状态显示停用或启用按钮
+        if emby_user and hasattr(emby_user, 'lv') and emby_user.lv != "e":
+            normal.append([('🛑账号停用', 'suspend')])
+        
         if moviepilot.status:
             normal.append([('🍿 点播中心', 'download_center')])
         normal.append([('♻️ 主界面', 'back_start')])
         return ikb(normal)
     else:
-        return judge_start_ikb(is_admin, account)
+        return judge_start_ikb(is_admin, account, emby_user)
         # return ikb(
         #     [[('👑 创建账户', 'create')], [('⭕ 换绑TG', 'changetg'), ('🔍 绑定TG', 'bindtg')],
         #      [('♻️ 主界面', 'back_start')]])

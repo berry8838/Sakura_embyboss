@@ -86,14 +86,19 @@ async def p_start(_, msg):
                f"**· ®️ 注册状态** | {stat}\n" \
                f"**· 🎫 总注册限制** | {all_user}\n" \
                f"**· 🎟️ 可注册席位** | {all_user - tem}\n"
+        
+        # 获取 emby 用户对象以传递给按钮生成函数
+        from bot.sql_helper.sql_emby import sql_get_emby
+        emby_user = sql_get_emby(tg=msg.from_user.id)
+        
         if not embyid:
             await asyncio.gather(deleteMessage(msg),
-                                 sendPhoto(msg, bot_photo, caption=text, buttons=judge_start_ikb(is_admin, False)))
+                                 sendPhoto(msg, bot_photo, caption=text, buttons=judge_start_ikb(is_admin, False, emby_user)))
         else:
             await asyncio.gather(deleteMessage(msg),
                                  sendPhoto(msg, bot_photo,
                                            f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) 请选择功能__👇",
-                                           buttons=judge_start_ikb(is_admin, True)))
+                                           buttons=judge_start_ikb(is_admin, True, emby_user)))
 
 
 # 返回面板
@@ -101,10 +106,13 @@ async def p_start(_, msg):
 async def b_start(_, call):
     if await user_in_group_filter(_, call):
         is_admin = judge_admins(call.from_user.id)
+        # 获取 emby 用户对象以传递给按钮生成函数
+        from bot.sql_helper.sql_emby import sql_get_emby
+        emby_user = sql_get_emby(tg=call.from_user.id)
         await asyncio.gather(callAnswer(call, "⭐ 返回start"),
                              editMessage(call,
                                          text=f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n🍉__你好鸭 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 请选择功能__👇",
-                                         buttons=judge_start_ikb(is_admin, account=True)))
+                                         buttons=judge_start_ikb(is_admin, account=True, emby_user=emby_user)))
     elif not await user_in_group_filter(_, call):
         await asyncio.gather(callAnswer(call, "⭐ 返回start"),
                              editMessage(call, text='💢 拜托啦！请先点击下面加入我们的群组和频道，然后再 /start 一下好吗？\n\n'

@@ -99,11 +99,15 @@ async def members(_, call):
            f"**· 🍒 积分{sakura_b}** | {us}\n" \
            f"**· 💠 账号名称** | [{name}](tg://user?id={call.from_user.id})\n" \
            f"**· 🚨 到期时间** | {ex}"
+    
+    # 获取 emby 用户对象以传递给按钮生成函数
+    emby_user = sql_get_emby(tg=call.from_user.id)
+    
     if not embyid:
         is_admin = judge_admins(call.from_user.id)
-        await editMessage(call, text, members_ikb(is_admin, False))
+        await editMessage(call, text, members_ikb(is_admin, False, emby_user))
     else:
-        await editMessage(call, text, members_ikb(account=True))
+        await editMessage(call, text, members_ikb(account=True, emby_user=emby_user))
 
 
 # 创建账户

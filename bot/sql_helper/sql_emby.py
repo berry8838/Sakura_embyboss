@@ -25,6 +25,7 @@ class Emby(Base):
     us = Column(Integer, default=0)
     iv = Column(Integer, default=0)
     ch = Column(DateTime, nullable=True)
+    suspend_until = Column(DateTime, nullable=True)
 
 
 Emby.__table__.create(bind=engine, checkfirst=True)

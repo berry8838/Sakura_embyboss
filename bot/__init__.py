@@ -9,7 +9,7 @@ LOGGER = logu(__name__)
 from .schemas import Config
 
 config = Config.load_config()
-
+lottery = config.lottery
 
 def save_config():
     config.save_config()
@@ -82,7 +82,8 @@ user_p = [
     BotCommand("count", "[用户] 媒体库数量"),
     BotCommand("red", "[用户/禁言] 发红包"),
     BotCommand("lotteries", "[用户] 查看活跃抽奖"),
-    BotCommand("srank", "[用户/禁言] 查看计分")]
+    BotCommand("srank", "[用户/禁言] 查看计分"),
+    BotCommand("lotteries", "[用户] 查看活跃抽奖"),]
 
 # 取消 BotCommand("exchange", "[私聊] 使用注册码")
 admin_p = user_p + [
@@ -121,6 +122,8 @@ admin_p = user_p + [
     BotCommand("only_rm_record", "删除指定的tgid数据库记录 [管理]"),
     BotCommand("restart", "重启bot [管理]"),
     BotCommand("update_bot", "更新bot [管理]"),
+    BotCommand("lottery", "创建抽奖 [管理]"),
+    BotCommand("lottery_close", "关闭抽奖 [管理]")
 ]
 
 owner_p = admin_p + [

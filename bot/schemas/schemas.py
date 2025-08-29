@@ -197,6 +197,20 @@ class Config(BaseModel):
     red_envelope: RedEnvelope = Field(default_factory=RedEnvelope)
     lottery: LotteryConfig = Field(default_factory=LotteryConfig)
     api: API = Field(default_factory=API)
+    
+    @classmethod
+    def load_config(cls):
+        with open("config.json", "r", encoding="utf-8") as f:
+            config = json.load(f)
+            # 这里补全
+            if 'lottery' not in config:
+                config['lottery'] = {
+                    "status": True,
+                    "admin_only": True,
+                    "max_entry_cost": 1000,
+                    "max_participants": 1000,
+                    "max_duration": 1440
+                }
 
     def __init__(self, **data):
         super().__init__(**data)

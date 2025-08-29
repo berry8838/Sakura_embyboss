@@ -55,11 +55,6 @@ tz_api = config.tz_api
 tz_id = config.tz_id
 #抽奖
 lottery = config.lottery
-lottery_enabled = getattr(config, "lottery_enabled", True)
-lottery_admin_only = getattr(config, "lottery_admin_only", True)
-lottery_max_entry_cost = getattr(config, "lottery_max_entry_cost", 1000)
-lottery_max_participants = getattr(config, "lottery_max_participants", 500)
-lottery_max_duration = getattr(config, "lottery_max_duration", 1440)
 
 w_anti_channel_ids = config.w_anti_channel_ids
 kk_gift_days = config.kk_gift_days

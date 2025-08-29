@@ -9,7 +9,7 @@ LOGGER = logu(__name__)
 from .schemas import Config
 
 config = Config.load_config()
-lottery = config.lottery
+
 
 def save_config():
     config.save_config()
@@ -54,6 +54,7 @@ tz_ad = config.tz_ad
 tz_api = config.tz_api
 tz_id = config.tz_id
 #抽奖
+lottery = config.lottery
 lottery_enabled = getattr(config, "lottery_enabled", True)
 lottery_admin_only = getattr(config, "lottery_admin_only", True)
 lottery_max_entry_cost = getattr(config, "lottery_max_entry_cost", 1000)

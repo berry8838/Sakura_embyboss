@@ -223,16 +223,27 @@ class Config(BaseModel):
             config = json.load(f)
             return cls(**config)
 
-    def save_config(self):
-        with open("config.json", "w", encoding="utf-8") as f:
-            json.dump(self.model_dump(), f, indent=4, ensure_ascii=False)
 
    @classmethod
 def load_config(cls):
     with open("config.json", "r", encoding="utf-8") as f:
         config = json.load(f)
-        return cls(**config)
 
+        if 'lottery' not in config:
+                config['lottery'] = {
+                    "status": True,
+                    "admin_only": True,
+                    "max_entry_cost": 1000,
+                    "max_participants": 1000,
+                    "max_duration": 1440
+                }
+
+        
+        return cls(**config)
+        
+ def save_config(self):
+        with open("config.json", "w", encoding="utf-8") as f:
+            json.dump(self.model_dump(), f, indent=4, ensure_ascii=False)
 
 class Yulv(BaseModel):
     wh_msg: List[str]

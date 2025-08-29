@@ -95,23 +95,12 @@
     "access_token": null,
     "price": 1
   },
-  "lottery":{
-  // ... 其他已有配置项 ...
+  {
   "lottery_enabled": true,
-  // 抽奖功能开关，true 为开启，false 为关闭
-
   "lottery_admin_only": true,
-  // 仅允许管理员创建抽奖，true 为只限管理员，false 为所有人可创建
-
   "lottery_max_entry_cost": 1000,
-  // 单次抽奖允许的最大参与费用（樱花币）
-
   "lottery_max_participants": 500,
-  // 单次抽奖允许的最大参与人数
-
   "lottery_max_duration": 1440
-  // 单次抽奖允许的最长持续时间，单位：分钟（例：1440 为一天）
-  // ... 其他已有配置项 ...
 }
   "auto_update": {
     "status": true,

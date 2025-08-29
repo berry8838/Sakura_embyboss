@@ -19,6 +19,7 @@ from bot.func_helper.msg_utils import sendPhoto, sendMessage, callAnswer, editMe
 from bot.func_helper.utils import pwd_create, judge_admins, get_users
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby
 from bot.ranks_helper.ranks_draw import RanksDraw
+from bot import LOGGER
 
 # 抽奖数据存储 (内存中)
 lotteries = {}
@@ -86,9 +87,10 @@ class Lottery:
         
         self.status = "drawing"
         self.results = {}
+        participant_list = list(self.participants.keys())
         
         # 为每个参与者进行抽奖
-        for user_id in self.participants.keys():
+        for user_id in participant_list:
             prize = self._draw_single_prize()
             if prize:
                 self.results[user_id] = prize.name
@@ -97,22 +99,26 @@ class Lottery:
         self.status = "finished"
 
     def _draw_single_prize(self) -> Optional[LotteryPrize]:
-        """为单个用户抽奖"""
-        # 计算总概率
-        total_prob = sum(prize.probability for prize in self.prizes if len(prize.winners) < prize.quantity)
+        """为单个用户抽奖 - 使用加权随机算法"""
+        # 获取还有剩余数量的奖品
+        available_prizes = [prize for prize in self.prizes if len(prize.winners) < prize.quantity]
         
-        if total_prob == 0:
+        if not available_prizes:
             return None
         
-        # 随机选择
-        rand = random.random() * total_prob
+        # 计算权重
+        weights = [prize.probability for prize in available_prizes]
+        total_weight = sum(weights)
+        
+        if total_weight == 0:
+            return None
+        
+        # 加权随机选择
+        rand = random.random() * total_weight
         current = 0
         
-        for prize in self.prizes:
-            if len(prize.winners) >= prize.quantity:
-                continue
-                
-            current += prize.probability
+        for i, prize in enumerate(available_prizes):
+            current += weights[i]
             if rand <= current:
                 return prize
         
@@ -133,6 +139,10 @@ async def create_lottery(title: str, entry_cost: int, creator_id: int, creator_n
     lottery.add_prize("参与奖", entry_cost * 2, 0.3, 20)   # 30% 概率
     
     lotteries[lottery_id] = lottery
+    
+    # 记录日志
+    LOGGER.info(f"【抽奖】：管理员 {creator_name}({creator_id}) 创建抽奖 '{title}' (ID: {lottery_id})")
+    
     return lottery_id
 
 
@@ -233,6 +243,7 @@ async def create_lottery_command(_, msg):
             msg,
             photo=cover,
             caption=f"🎲 **{title}** 抽奖开始！\n\n"
+                   f"🆔 抽奖ID: `{lottery_id}`\n"
                    f"💰 参与费用: {entry_cost} {sakura_b}\n"
                    f"👥 最大人数: {max_participants}\n"
                    f"⏰ 结束时间: {lottery.end_time.strftime('%H:%M')}\n"
@@ -268,6 +279,9 @@ async def join_lottery(_, call):
         # 扣除费用并加入抽奖
         sql_update_emby(call.from_user.id, sakura=user.sakura - lottery.entry_cost)
         lottery.add_participant(call.from_user.id, call.from_user.first_name)
+        
+        # 记录日志
+        LOGGER.info(f"【抽奖】：用户 {call.from_user.first_name}({call.from_user.id}) 参与抽奖 '{lottery.title}' (ID: {lottery_id})")
         
         await callAnswer(call, f"✅ 成功参与抽奖！花费 {lottery.entry_cost} {sakura_b}")
         
@@ -384,13 +398,177 @@ async def draw_lottery(_, call):
         # 更新消息为结果
         await editMessage(call, result_text)
         
+        # 清理过期抽奖
+        await cleanup_expired_lotteries()
+        
     except Exception as e:
         await callAnswer(call, "❌ 抽奖失败，请重试", True)
 
 
-async def generate_lottery_image(lottery):
-    """生成抽奖图片 (简化版本，可以后续扩展)"""
-    # 这里可以使用现有的 RanksDraw 来生成更漂亮的图片
-    # 目前返回一个简单的占位图片路径或者使用 bot_photo
-    from bot import bot_photo
-    return bot_photo
+async def cleanup_expired_lotteries():
+    """清理过期的抽奖"""
+    current_time = datetime.now()
+    expired_ids = []
+    
+    for lottery_id, lottery_obj in lotteries.items():
+        if lottery_obj.status == "active" and current_time > lottery_obj.end_time:
+            lottery_obj.status = "expired"
+            expired_ids.append(lottery_id)
+    
+    # 可以选择删除过期的抽奖记录
+    # for lottery_id in expired_ids:
+    #     del lotteries[lottery_id]
+
+
+@bot.on_message(
+    filters.command("lotteries", prefixes) & user_in_group_on_filter & filters.group
+)
+async def list_lotteries_command(_, msg):
+    """查看活跃抽奖命令"""
+    await msg.delete()
+    
+    if not lottery.status:
+        return await sendMessage(msg, "🚫 抽奖功能已关闭！", timer=60)
+    
+    active_lotteries = [l for l in lotteries.values() if l.status == "active"]
+    
+    if not active_lotteries:
+        return await sendMessage(msg, "🤷‍♂️ 当前没有进行中的抽奖", timer=60)
+    
+    text = "🎲 **当前活跃的抽奖:**\n\n"
+    for lottery_obj in active_lotteries:
+        time_left = lottery_obj.end_time - datetime.now()
+        if time_left.total_seconds() > 0:
+            minutes_left = int(time_left.total_seconds() / 60)
+            text += f"🎯 **{lottery_obj.title}** (ID: `{lottery_obj.id}`)\n"
+            text += f"   💰 费用: {lottery_obj.entry_cost} {sakura_b}\n"
+            text += f"   👥 人数: {len(lottery_obj.participants)}/{lottery_obj.max_participants}\n"
+            text += f"   ⏰ 剩余: {minutes_left}分钟\n\n"
+        else:
+            lottery_obj.status = "expired"
+    
+    await sendMessage(msg, text, timer=120)
+
+
+@bot.on_message(
+    filters.command("lottery_close", prefixes) & user_in_group_on_filter & filters.group
+)
+async def close_lottery_command(_, msg):
+    """关闭抽奖命令 (管理员专用)"""
+    if not judge_admins(msg.from_user.id):
+        return await asyncio.gather(
+            msg.delete(),
+            sendMessage(msg, "🚫 只有管理员可以关闭抽奖！", timer=60)
+        )
+    
+    try:
+        lottery_id = msg.command[1]
+        lottery_obj = lotteries.get(lottery_id)
+        
+        if not lottery_obj:
+            return await asyncio.gather(
+                msg.delete(),
+                sendMessage(msg, "❌ 抽奖不存在", timer=60)
+            )
+        
+        if lottery_obj.status != "active":
+            return await asyncio.gather(
+                msg.delete(),
+                sendMessage(msg, "❌ 抽奖已结束", timer=60)
+            )
+        
+        # 退还参与费用
+        for user_id in lottery_obj.participants.keys():
+            user = sql_get_emby(tg=user_id)
+            if user:
+                sql_update_emby(user_id, sakura=user.sakura + lottery_obj.entry_cost)
+        
+        lottery_obj.status = "closed"
+        
+        await asyncio.gather(
+            msg.delete(),
+            sendMessage(
+                msg, 
+                f"✅ 已关闭抽奖 **{lottery_obj.title}**\n"
+                f"💰 已退还所有参与者费用 ({len(lottery_obj.participants)} 人)",
+                timer=60
+            )
+        )
+        
+    except IndexError:
+        await asyncio.gather(
+            msg.delete(),
+            sendMessage(msg, "❌ 请提供抽奖ID\n格式: `/lottery_close [抽奖ID]`", timer=60)
+        )
+    """生成抽奖图片"""
+    try:
+        # 尝试使用现有的 RanksDraw 来生成图片
+        # 这里创建一个简单的抽奖封面
+        from io import BytesIO
+        from PIL import Image, ImageDraw, ImageFont
+        import os
+        
+        # 创建基础图片
+        width, height = 800, 600
+        background_color = (72, 61, 139)  # 深蓝紫色
+        img = Image.new('RGBA', (width, height), background_color)
+        draw = ImageDraw.Draw(img)
+        
+        # 尝试加载字体
+        try:
+            # 使用现有的字体文件
+            font_path = os.path.join('bot', 'ranks_helper', 'resource', 'font', 'PingFang Bold.ttf')
+            if os.path.exists(font_path):
+                title_font = ImageFont.truetype(font_path, 48)
+                text_font = ImageFont.truetype(font_path, 32)
+            else:
+                title_font = ImageFont.load_default()
+                text_font = ImageFont.load_default()
+        except:
+            title_font = ImageFont.load_default()
+            text_font = ImageFont.load_default()
+        
+        # 绘制标题
+        title_text = f"🎲 {lottery.title}"
+        title_bbox = draw.textbbox((0, 0), title_text, font=title_font)
+        title_width = title_bbox[2] - title_bbox[0]
+        title_x = (width - title_width) // 2
+        draw.text((title_x, 80), title_text, fill=(255, 215, 0), font=title_font)
+        
+        # 绘制抽奖信息
+        info_lines = [
+            f"💰 参与费用: {lottery.entry_cost} 樱花币",
+            f"👥 最大人数: {lottery.max_participants}",
+            f"⏰ 结束时间: {lottery.end_time.strftime('%H:%M')}",
+            f"🎁 丰富奖品等你来拿！"
+        ]
+        
+        y_offset = 200
+        for line in info_lines:
+            line_bbox = draw.textbbox((0, 0), line, font=text_font)
+            line_width = line_bbox[2] - line_bbox[0]
+            line_x = (width - line_width) // 2
+            draw.text((line_x, y_offset), line, fill=(255, 255, 255), font=text_font)
+            y_offset += 50
+        
+        # 绘制奖品信息
+        prize_y = y_offset + 30
+        draw.text((50, prize_y), "🏆 奖品设置:", fill=(255, 215, 0), font=text_font)
+        prize_y += 40
+        
+        for i, prize in enumerate(lottery.prizes[:4]):  # 最多显示4个奖品
+            prob_text = f"{prize.probability * 100:.1f}%"
+            prize_text = f"• {prize.name}: {prize.value}币 ({prob_text})"
+            draw.text((70, prize_y), prize_text, fill=(255, 255, 255), font=text_font)
+            prize_y += 35
+        
+        # 保存为BytesIO
+        img_bytes = BytesIO()
+        img.save(img_bytes, format='PNG')
+        img_bytes.seek(0)
+        return img_bytes
+        
+    except Exception as e:
+        # 如果图片生成失败，返回默认图片
+        from bot import bot_photo
+        return bot_photo

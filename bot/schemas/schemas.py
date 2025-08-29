@@ -213,6 +213,12 @@ class Config(BaseModel):
         with open("config.json", "w", encoding="utf-8") as f:
             json.dump(self.model_dump(), f, indent=4, ensure_ascii=False)
 
+   @classmethod
+def load_config(cls):
+    with open("config.json", "r", encoding="utf-8") as f:
+        config = json.load(f)
+        return cls(**config)
+
 
 class Yulv(BaseModel):
     wh_msg: List[str]

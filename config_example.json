@@ -108,9 +108,11 @@
       "*"
     ]
   },
-  "lottery_enabled": true,
-  "lottery_admin_only": true,
-  "lottery_max_entry_cost": 1000,
-  "lottery_max_participants": 500,
-  "lottery_max_duration": 1440
+  "lottery": {
+    "status": true,
+    "admin_only": true,
+    "max_entry_cost": 1000,
+    "max_participants": 1000,
+    "max_duration": 1440
+}
 } 

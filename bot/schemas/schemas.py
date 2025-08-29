@@ -217,27 +217,6 @@ class Config(BaseModel):
         if self.owner in self.admins:
             self.admins.remove(self.owner)
 
-    @classmethod
-    def load_config(cls):
-        with open("config.json", "r", encoding="utf-8") as f:
-            config = json.load(f)
-            return cls(**config)
-
-
-   @classmethod
-def load_config(cls):
-    with open("config.json", "r", encoding="utf-8") as f:
-        config = json.load(f)
-
-        if 'lottery' not in config:
-                config['lottery'] = {
-                    "status": True,
-                    "admin_only": True,
-                    "max_entry_cost": 1000,
-                    "max_participants": 1000,
-                    "max_duration": 1440
-                }
-
         
         return cls(**config)
         

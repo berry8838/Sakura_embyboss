@@ -89,3 +89,20 @@ def sql_get_favorites(embyid: str, page: int = 1, page_size: int = 20) -> list:
         LOGGER.error(f"获取收藏记录失败: {str(e)}")
         return []
     
+def sql_update_favorites(condition, **kwargs):
+    """
+    更新收藏记录，根据condition来匹配，批量更新所有符合条件的记录
+    """
+    with Session() as session:
+        try:
+            favorites = session.query(EmbyFavorites).filter(condition).all()
+            if not favorites:
+                return False
+            for favorite in favorites:
+                for k, v in kwargs.items():
+                    setattr(favorite, k, v)
+            session.commit()
+            return True
+        except Exception as e:
+            LOGGER.error(f"更新收藏记录失败: {str(e)}")
+            return False

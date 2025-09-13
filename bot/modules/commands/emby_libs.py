@@ -23,13 +23,13 @@ async def embylibs_blockall(_, msg):
     text = ''
     all_libs = await emby.get_emby_libs()
     for i in rst:
-        success, rep = emby.user(embyid=i.embyid)
+        success, rep = await emby.user(emby_id=i.embyid)
         if success:
             allcount += 1
             currentblock = ['播放列表'] + all_libs
             # 去除相同的元素
             currentblock = list(set(currentblock))
-            re = await emby.emby_block(i.embyid, 0, block=currentblock)
+            re = await emby.emby_block(emby_id=i.embyid, stats=0, block=currentblock)
             if re is True:
                 successcount += 1
                 text += f'已关闭了 [{i.name}](tg://user?id={i.tg}) 的媒体库权限\n'
@@ -65,12 +65,12 @@ async def embylibs_unblockall(_, msg):
     start = time.perf_counter()
     text = ''
     for i in rst:
-        success, rep = emby.user(embyid=i.embyid)
+        success, rep = await emby.user(emby_id=i.embyid)
         if success:
             allcount += 1
             currentblock = ['播放列表']
             # 去除相同的元素
-            re = await emby.emby_block(i.embyid, 0, block=currentblock)
+            re = await emby.emby_block(emby_id=i.embyid, stats=0, block=currentblock)
             if re is True:
                 successcount += 1
                 text += f'已开启了 [{i.name}](tg://user?id={i.tg}) 的媒体库权限\n'
@@ -107,7 +107,7 @@ async def extraembylibs_blockall(_, msg):
     start = time.perf_counter()
     text = ''
     for i in rst:
-        success, rep = emby.user(embyid=i.embyid)
+        success, rep = await emby.user(emby_id=i.embyid)
         if success:
             allcount += 1
             try:
@@ -117,7 +117,7 @@ async def extraembylibs_blockall(_, msg):
             if not set(extra_emby_libs).issubset(set(currentblock)):
                 # 去除相同的元素
                 currentblock = list(set(currentblock + extra_emby_libs))
-                re = await emby.emby_block(i.embyid, 0, block=currentblock)
+                re = await emby.emby_block(emby_id=i.embyid, stats=0, block=currentblock)
                 if re is True:
                     successcount += 1
                     text += f'已关闭了 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'
@@ -158,7 +158,7 @@ async def extraembylibs_unblockall(_, msg):
     start = time.perf_counter()
     text = ''
     for i in rst:
-        success, rep = emby.user(embyid=i.embyid)
+        success, rep = await emby.user(emby_id=i.embyid)
         if success:
             allcount += 1
             try:
@@ -169,7 +169,7 @@ async def extraembylibs_unblockall(_, msg):
             except KeyError:
                 currentblock = ['播放列表']
             if not set(extra_emby_libs).issubset(set(currentblock)):
-                re = await emby.emby_block(i.embyid, 0, block=currentblock)
+                re = await emby.emby_block(emby_id=i.embyid, stats=0, block=currentblock)
                 if re is True:
                     successcount += 1
                     text += f'已开启了 [{i.name}](tg://user?id={i.tg}) 的额外媒体库权限\n'

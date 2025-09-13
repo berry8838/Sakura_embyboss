@@ -18,7 +18,7 @@ async def leave_del_emby(_, event: ChatMemberUpdated):
                 e = sql_get_emby(tg=user_id)
                 if e is None or e.embyid is None:
                     return
-                if await emby.emby_del(id=e.embyid):
+                if await emby.emby_del(emby_id=e.embyid):
                     sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
                     tem_deluser()
                     LOGGER.info(
@@ -45,7 +45,7 @@ async def leave_del_emby(_, event: ChatMemberUpdated):
                 e = sql_get_emby(tg=user_id)
                 if e is None or e.embyid is None:
                     return
-                if await emby.emby_del(id=e.embyid):
+                if await emby.emby_del(emby_id=e.embyid):
                     sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
                                     ex=None)
                     tem_deluser()

@@ -69,7 +69,7 @@ async def check_and_notify_person_update(item_data: dict):
             return
             
         # 获取演员信息
-        success, people_list = await emby.item_id_people(item_id)
+        success, people_list = await emby.item_id_people(item_id=item_id)
         if not success:
             return
         session = Session()

@@ -71,13 +71,13 @@ class RanksDraw:
             if self.backdrop:
                 resize = (242, 160)
                 xy = (103 + 302 * index, 140)
-                prisuccess, data = await emby.backdrop(item_id)
+                prisuccess, data = await emby.backdrop(item_id=item_id)
                 if not prisuccess:
-                    prisuccess, data = await emby.primary(item_id)
+                    prisuccess, data = await emby.primary(item_id=item_id)
                     resize = (110, 160)
                     xy = (169 + 302 * index, 140)
             else:
-                prisuccess, data = await emby.primary(item_id)
+                prisuccess, data = await emby.primary(item_id=item_id)
                 resize = (144, 210)
                 xy = (601, 162 + 230 * index)
             if not prisuccess:
@@ -116,7 +116,7 @@ class RanksDraw:
             user_id, item_id, item_type, name, count, duarion = tuple(i)
             # 图片获取，剧集主封面获取
             # 获取剧ID
-            success, data = await emby.items(user_id, item_id)
+            success, data = await emby.items(emby_id=user_id, item_id=item_id)
             if success:
                 item_id = data["SeriesId"]
             else:
@@ -128,15 +128,15 @@ class RanksDraw:
                     logging.info(f'{name} 已更新使用正确ID：{item_id}')
             # 封面图像获取
             if self.backdrop:
-                prisuccess, data = await emby.backdrop(item_id)
+                prisuccess, data = await emby.backdrop(item_id=item_id)
                 resize = (242, 160)
                 xy = (408 + 302 * index, 444)
                 if not prisuccess:
-                    prisuccess, data = await emby.primary(item_id)
+                    prisuccess, data = await emby.primary(item_id=item_id)
                     resize = (110, 160)
                     xy = (474 + 302 * index, 444)
             else:
-                prisuccess, data = await emby.primary(item_id)
+                prisuccess, data = await emby.primary(item_id=item_id)
                 resize = (144, 210)
                 xy = (770, 985 - 232 * index)
             if not prisuccess:

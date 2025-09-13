@@ -50,7 +50,7 @@ async def rgs_code(_, msg, register_code):
             ex_new = datetime.now()
             if ex_new > ex:
                 ex_new = ex_new + timedelta(days=us1)
-                await emby.emby_change_policy(id=embyid, method=False)
+                await emby.emby_change_policy(emby_id=embyid, disable=False)
                 if lv == 'c':
                     session.query(Emby).filter(Emby.tg == msg.from_user.id).update({Emby.ex: ex_new, Emby.lv: 'b'})
                 else:

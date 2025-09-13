@@ -40,7 +40,7 @@ async def my_info(_, msg):
 @bot.on_message(filters.command('count', prefixes) & user_in_group_on_filter & filters.private)
 async def count_info(_, msg):
     await deleteMessage(msg)
-    text = Embyservice.get_medias_count()
+    text = await Embyservice.get_medias_count()
     await sendMessage(msg, text, timer=60)
 
 

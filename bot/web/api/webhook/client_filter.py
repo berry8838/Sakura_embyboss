@@ -14,7 +14,6 @@ DEFAULT_BLOCKED_CLIENTS = [
     r".*curl.*",
     r".*wget.*",
     r".*python.*",
-    r".*bot.*",
     r".*spider.*",
     r".*crawler.*",
     r".*scraper.*",
@@ -149,7 +148,7 @@ async def handle_client_filter_webhook(request: Request):
         session_info = webhook_data.get("Session", {})
         user_info = webhook_data.get("User", {})
         user_name = user_info.get("Name", "")
-        user_id = user_info.get("Id", "")
+        emby_id = user_info.get("Id", "")
         session_id = session_info.get("Id", "")
         client_name = session_info.get("Client", "")
 
@@ -165,16 +164,16 @@ async def handle_client_filter_webhook(request: Request):
                 await terminate_blocked_session(session_id, client_name)
             block_success = False
 
-            user_details = sql_get_emby(user_id)
+            user_details = sql_get_emby(emby_id)
             if getattr(config, "client_filter_block_user", False):
-                block_success = await emby.emby_change_policy(user_id, method=True)
+                block_success = await emby.emby_change_policy(emby_id=emby_id, disable=True)
                 if block_success:
                     if user_details:
                         sql_update_emby(Emby.tg == user_details.tg, lv="c")
 
             # 记录拦截信息
             await log_blocked_request(
-                user_id=user_id,
+                user_id=emby_id,
                 user_name=user_name,
                 session_id=session_id,
                 client_name=client_name,
@@ -186,7 +185,7 @@ async def handle_client_filter_webhook(request: Request):
                 "status": "blocked",
                 "message": "Client blocked",
                 "data": {
-                    "user_id": user_id,
+                    "user_id": emby_id,
                     "user_name": user_name,
                     "session_id": session_id,
                     "client_name": client_name,
@@ -199,7 +198,7 @@ async def handle_client_filter_webhook(request: Request):
         return {
             "status": "allowed",
             "message": "Client allowed",
-            "data": {"client": client_name, "user_id": user_id, "event": event},
+            "data": {"client": client_name, "user_id": emby_id, "event": event},
         }
 
     except Exception as e:

@@ -101,8 +101,8 @@ async def favorite_item(_, call):
     item_id = call.data.split(':')[1]
     try:
         e = sql_get_emby(call.from_user.id).embyid
-        success, title = await asyncio.gather(emby.add_favotire_items(user_id=e, item_id=item_id),
-                                              emby.item_id_namme(user_id=e, item_id=item_id))
+        success, title = await asyncio.gather(emby.add_favorite_items(emby_id=e, item_id=item_id),
+                                              emby.item_id_name(emby_id=e, item_id=item_id))
         if success:
             _url = f"{emby.url}/emby/Items/{item_id}/Images/Primary?maxHeight=400&maxWidth=600&quality=90"
             try:

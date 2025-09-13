@@ -24,7 +24,7 @@ async def ban_playlist(eid: str):
     user = sql_get_emby(eid)
     if user is None:
         details = ''
-        if await emby.emby_change_policy(id=eid, method=True):
+        if await emby.emby_change_policy(emby_id=eid, disable=True):
             details += "已拦截到疑似敏感操作播放列表，未在emby数据库中找到此数据，但已斩杀该用户（封禁）"
         else:
             details += "已拦截到疑似敏感操作播放列表，未在emby数据库中找到此数据，未能斩杀该用户（封禁）。详细时间见log记录，请手动斩杀。"
@@ -35,7 +35,7 @@ async def ban_playlist(eid: str):
         LOGGER.info(text)
         return info
 
-    if await emby.emby_change_policy(id=eid, method=True):
+    if await emby.emby_change_policy(emby_id=eid, disable=True):
         info = {"user_id": user.tg, "emby_name": user.name, "embyid": eid, "is_baned": True,
                 "details": "已拦截疑似敏感操作播放列表，用户已被斩杀（封禁）。请向权限管理员描述信息。"}
         text = (f"【新建播放列表拦截】\n\n"

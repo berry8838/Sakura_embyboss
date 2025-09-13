@@ -74,7 +74,7 @@ async def kk_user_ban(_, call):
     else:
         text = f'🎯 管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id}) 对 [{first.first_name}](tg://user?id={b}) - {e.name} 的'
         if e.lv != "c":
-            if await emby.emby_change_policy(id=e.embyid, method=True) is True:
+            if await emby.emby_change_policy(emby_id=e.embyid, disable=True) is True:
                 if sql_update_emby(Emby.tg == b, lv='c') is True:
                     text += f'封禁完成，此状态可在下次续期时刷新'
                     LOGGER.info(text)
@@ -85,7 +85,7 @@ async def kk_user_ban(_, call):
                 text += f'封禁失败，请检查emby服务器。响应错误'
                 LOGGER.error(text)
         elif e.lv == "c":
-            if await emby.emby_change_policy(id=e.embyid):
+            if await emby.emby_change_policy(emby_id=e.embyid):
                 if sql_update_emby(Emby.tg == b, lv='b'):
                     text += '解禁完成'
                     LOGGER.info(text)
@@ -110,7 +110,7 @@ async def user_embyextralib_unblock(_, call):
     if e.embyid is None:
         await editMessage(call, f'💢 ta 没有注册账户。', timer=60)
     embyid = e.embyid
-    success, rep = emby.user(embyid=embyid)
+    success, rep = await emby.user(emby_id=embyid)
     currentblock = []
     if success:
         try:
@@ -120,7 +120,7 @@ async def user_embyextralib_unblock(_, call):
                                                                                     x not in currentblock]
         except KeyError:
             currentblock = ["播放列表"]
-        re = await emby.emby_block(embyid, 0, block=currentblock)
+        re = await emby.emby_block(emby_id=embyid, stats=0, block=currentblock)
         if re is True:
             await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
                                     f'已开启了 [TA](tg://user?id={tgid}) 的额外媒体库权限\n{extra_emby_libs}')
@@ -140,7 +140,7 @@ async def user_embyextralib_block(_, call):
     if e.embyid is None:
         await editMessage(call, f'💢 ta 没有注册账户。', timer=60)
     embyid = e.embyid
-    success, rep = emby.user(embyid=embyid)
+    success, rep = await emby.user(emby_id=embyid)
     currentblock = []
     if success:
         try:
@@ -148,7 +148,7 @@ async def user_embyextralib_block(_, call):
             currentblock = list(set(currentblock + extra_emby_libs))
         except KeyError:
             currentblock = ["播放列表"] + extra_emby_libs
-        re = await emby.emby_block(embyid, 0, block=currentblock)
+        re = await emby.emby_block(emby_id=embyid, stats=0, block=currentblock)
         if re is True:
             await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
                                     f'已关闭了 [TA](tg://user?id={tgid}) 的额外媒体库权限\n{extra_emby_libs}')
@@ -199,7 +199,7 @@ async def close_emby(_, call):
     if e.embyid is None:
         return await editMessage(call, f'💢 ta 还没有注册账户。', timer=60)
 
-    if await emby.emby_del(e.embyid):
+    if await emby.emby_del(emby_id=e.embyid):
         sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
         tem_deluser()
         await editMessage(call,

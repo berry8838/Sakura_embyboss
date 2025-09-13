@@ -43,7 +43,7 @@ async def sync_emby_group(_, msg):
     for i in r:
         b += 1
         if i.tg not in members:
-            if await emby.emby_del(i.embyid):
+            if await emby.emby_del(emby_id=i.embyid):
                 sql_update_emby(Emby.embyid == i.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
                                 ex=None)
                 tem_deluser()
@@ -113,7 +113,7 @@ async def sync_emby_unbound(_, msg):
                         if e1 is None:
                             a += 1
                             if confirm_delete:
-                                await emby.emby_del(embyid)
+                                await emby.emby_del(emby_id=embyid)
                                 text += f"🎯 #{v['Name']} 未绑定bot，删除\n"
                             else:
                                 text += f"🎯 #{v['Name']} 未绑定bot\n"
@@ -179,7 +179,7 @@ async def reload_admins(_, msg):
     await deleteMessage(msg)
     e = sql_get_emby(tg=msg.from_user.id)
     if e.embyid is not None:
-        await emby.emby_change_policy(id=e.embyid, admin=True)
+        await emby.emby_change_policy(emby_id=e.embyid, admin=True)
         LOGGER.info(f"{msg.from_user.first_name} - {msg.from_user.id} 开启了 emby 后台")
         await sendMessage(msg, "👮🏻 授权完成。已开启emby后台", timer=60)
     else:
@@ -258,7 +258,7 @@ async def restore_from_db(_, msg):
             if embyuser.tg in chat_members:
                 try:
                     # emby api操作
-                    data = await emby.emby_create(embyuser.name, embyuser.us)
+                    data = await emby.emby_create(name=embyuser.name, days=embyuser.us)
                     if not data:
                         text += f'**- ❎ 已有此账户名\n- ❎ 或检查有无特殊字符\n- ❎ 或emby服务器连接不通\n- ❎ 跳过恢复用户：#id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) \n**'
                         LOGGER.error(

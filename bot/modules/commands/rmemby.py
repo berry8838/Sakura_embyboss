@@ -29,7 +29,7 @@ async def rmemby_user(_, msg):
 
     if e.embyid is not None:
         first = await bot.get_chat(e.tg)
-        if await emby.emby_del(id=e.embyid):
+        if await emby.emby_del(emby_id=e.embyid):
             sql_update_emby(Emby.embyid == e.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None, ex=None)
             tem_deluser()
             sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
@@ -81,12 +81,13 @@ async def only_rm_emby(_, msg):
     except (IndexError, ValueError):
         return await sendMessage(msg, "❌ 使用格式：/only_rm_emby embyid或者embyname")
     
-    res = await emby.emby_del(emby_id)
+    res = await emby.emby_del(emby_id=emby_id)
     if not res:
-        success, embyuser = await emby.get_emby_user_by_name(emby_id)
+        # 使用 emby_name 获取此用户的 emby_id
+        success, embyuser = await emby.get_emby_user_by_name(emby_name=emby_id)
         if not success:
             return await sendMessage(msg, f"❌ 未找到此用户 {emby_id} 的记录")
-        res = await emby.emby_del(embyuser.get("Id"))
+        res = await emby.emby_del(emby_id=embyuser.get("Id"))
         if not res:
             return await sendMessage(msg, f"❌ 删除用户 {emby_id} 失败")
         sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'

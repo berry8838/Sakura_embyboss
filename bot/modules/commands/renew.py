@@ -59,7 +59,7 @@ async def renew_user(_, msg):
     # 无脑 允许播放
     if ex_new > Now:
         lv = 'a' if e.lv == 'a' else 'b'
-        await emby.emby_change_policy(e.embyid, method=False)
+        await emby.emby_change_policy(emby_id=e.embyid, disable=False)
 
     # 没有白名单就寄
     elif ex_new < Now:
@@ -67,7 +67,7 @@ async def renew_user(_, msg):
             pass
         else:
             lv = 'c'
-            await emby.emby_change_policy(e.embyid, method=True)
+            await emby.emby_change_policy(emby_id=e.embyid, disable=True)
 
     if stats == 1:
         expired = 1 if lv == 'c' else 0

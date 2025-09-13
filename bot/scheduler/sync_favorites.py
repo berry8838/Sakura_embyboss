@@ -18,7 +18,7 @@ async def sync_favorites():
 
         for user in users:
             # 获取用户的收藏列表
-            favorites = await emby.get_favorite_items(user.embyid)
+            favorites = await emby.get_favorite_items(emby_id=user.embyid)
             if not favorites:
                 continue
             #  清除数据库中该用户的收藏记录
@@ -32,7 +32,7 @@ async def sync_favorites():
                 # 获取项目名称
                 item_name = item.get("Name", "")
                 if not item_name:
-                    item_name = await emby.item_id_namme(user.embyid, item_id) or "未知"
+                    item_name = await emby.item_id_name(emby_id=user.embyid, item_id=item_id) or "未知"
 
                 # 添加到数据库
                 sql_add_favorites(

@@ -27,7 +27,7 @@ async def login_account(_, msg):
             f'🆗 收到设置\n\n'
             f'用户名：**{name}**\n\n'
             f'__正在为您初始化账户，更新用户策略__......')
-        result = await emby.emby_create(name, days)
+        result = await emby.emby_create(name=name, days=days)
         if not result:
             await send.edit(
                 '创建失败，原因可能如下：\n\n'
@@ -71,7 +71,7 @@ async def urm_user(_, msg):
         e = e2
         stats = 1
 
-    if await emby.emby_del(id=e.embyid):
+    if await emby.emby_del(emby_id=e.embyid):
         sql_update_emby(Emby.tg == e.tg, lv='d', name=None, embyid=None, cr=None,
                         ex=None) if not stats else sql_delete_emby2(e.embyid)
         try:
@@ -146,7 +146,7 @@ async def user_cha_ip(_, msg, name = None):
     if not e:
         return await sendMessage(msg, f"数据库中未查询到 {user_id}，请手动确认")
         
-    success, result = await emby.get_emby_userip(e.embyid)
+    success, result = await emby.get_emby_userip(emby_id = e.embyid)
     if not success or len(result) == 0:
         return await sendMessage(msg, 'TA好像没播放信息吖')
     else:

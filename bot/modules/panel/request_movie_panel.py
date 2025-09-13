@@ -55,7 +55,7 @@ async def download_media(_, call):
 
     # 先查询emby库中是否存在
     await editMessage(call, '🔍 正在查询Emby库，请稍后...')
-    emby_results = await emby.get_movies(txt.text)
+    emby_results = await emby.get_movies(title=txt.text)
     if emby_results:
         text = "🎯 Emby库中已存在以下相关资源:\n\n"
         for item in emby_results:

@@ -26,6 +26,9 @@ from bot.sql_helper.sql_code import sql_count_c_code
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby
 from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2
 
+# 添加全局锁
+_create_user_lock = asyncio.Lock()
+
 # 创号函数
 async def create_user(_, call, us, stats):
     msg = await ask_return(call,
@@ -43,46 +46,57 @@ async def create_user(_, call, us, stats):
     except (IndexError, ValueError):
         await msg.reply(f'⚠️ 输入格式错误\n\n`{msg.text}`\n **会话已结束！**')
     else:
-        if _open.tem >= _open.all_user: return await msg.reply(
-            f'**🚫 很抱歉，注册总数({_open.tem})已达限制({_open.all_user})。**')
-        send = await msg.reply(
-            f'🆗 会话结束，收到设置\n\n用户名：**{emby_name}**  安全码：**{emby_pwd2}** \n\n__正在为您初始化账户，更新用户策略__......')
-        # emby api操作
-        data = await emby.emby_create(name=emby_name, days=us)
-        if not data:
-            await editMessage(send,
-                              '**- ❎ 已有此账户名，请重新输入注册\n- ❎ 或检查有无特殊字符\n- ❎ 或emby服务器连接不通，会话已结束！**',
-                              re_create_ikb)
-            LOGGER.error("【创建账户】：重复账户 or 未知错误！")
-        else:
-            tg = call.from_user.id
-            pwd = data[1]
-            eid = data[0]
-            ex = data[2]
-            sql_update_emby(Emby.tg == tg, embyid=eid, name=emby_name, pwd=pwd, pwd2=emby_pwd2, lv='b',
-                            cr=datetime.now(), ex=ex) if stats else sql_update_emby(Emby.tg == tg, embyid=eid,
-                                                                                    name=emby_name, pwd=pwd,
-                                                                                    pwd2=emby_pwd2, lv='b',
-                                                                                    cr=datetime.now(), ex=ex,
-                                                                                    us=0)
-            if schedall.check_ex:
-                ex = ex.strftime("%Y-%m-%d %H:%M:%S")
-            elif schedall.low_activity:
-                ex = f'__若{config.activity_check_days}天无观看将封禁__'
+        # 使用锁保护检查和创建过程
+        async with _create_user_lock:
+            # 再次检查限制（双重检查）
+            if _open.tem >= _open.all_user:
+                return await msg.reply(f'**🚫 很抱歉，注册总数({_open.tem})已达限制({_open.all_user})。**')
+            
+            send = await msg.reply(
+                f'🆗 会话结束，收到设置\n\n用户名：**{emby_name}**  安全码：**{emby_pwd2}** \n\n__正在为您初始化账户，更新用户策略__......')
+            
+            # emby api操作
+            data = await emby.emby_create(name=emby_name, days=us)
+            if not data:
+                await editMessage(send,
+                                  '**- ❎ 已有此账户名，请重新输入注册\n- ❎ 或检查有无特殊字符\n- ❎ 或emby服务器连接不通，会话已结束！**',
+                                  re_create_ikb)
+                LOGGER.error("【创建账户】：重复账户 or 未知错误！")
             else:
-                ex = '__无需保号，放心食用__'
-            await editMessage(send,
-                              f'**▎创建用户成功🎉**\n\n'
-                              f'· 用户名称 | `{emby_name}`\n'
-                              f'· 用户密码 | `{pwd}`\n'
-                              f'· 安全密码 | `{emby_pwd2}`（仅发送一次）\n'
-                              f'· 到期时间 | `{ex}`\n'
-                              f'· 当前线路：\n'
-                              f'{emby_line}\n\n'
-                              f'**·【服务器】 - 查看线路和密码**')
-            LOGGER.info(f"【创建账户】[开注状态]：{call.from_user.id} - 建立了 {emby_name} ") if stats else LOGGER.info(
-                f"【创建账户】：{call.from_user.id} - 建立了 {emby_name} ")
-            tem_adduser()
+                # 创建成功后立即更新计数器
+                tg = call.from_user.id
+                pwd = data[1]
+                eid = data[0]
+                ex = data[2]
+                
+                # 数据库操作
+                if stats:
+                    sql_update_emby(Emby.tg == tg, embyid=eid, name=emby_name, pwd=pwd, pwd2=emby_pwd2, lv='b', cr=datetime.now(), ex=ex) 
+                else:
+                    sql_update_emby(Emby.tg == tg, embyid=eid, name=emby_name, pwd=pwd, pwd2=emby_pwd2, lv='b', cr=datetime.now(), ex=ex, us=0)
+                
+                # 在锁内更新计数器
+                tem_adduser()
+                
+                if schedall.check_ex:
+                    ex = ex.strftime("%Y-%m-%d %H:%M:%S")
+                elif schedall.low_activity:
+                    ex = f'__若{config.activity_check_days}天无观看将封禁__'
+                else:
+                    ex = '__无需保号，放心食用__'
+                    
+                await editMessage(send,
+                                  f'**▎创建用户成功🎉**\n\n'
+                                  f'· 用户名称 | `{emby_name}`\n'
+                                  f'· 用户密码 | `{pwd}`\n'
+                                  f'· 安全密码 | `{emby_pwd2}`（仅发送一次）\n'
+                                  f'· 到期时间 | `{ex}`\n'
+                                  f'· 当前线路：\n'
+                                  f'{emby_line}\n\n'
+                                  f'**·【服务器】 - 查看线路和密码**')
+                
+                LOGGER.info(f"【创建账户】[开注状态]：{call.from_user.id} - 建立了 {emby_name} ") if stats else LOGGER.info(
+                    f"【创建账户】：{call.from_user.id} - 建立了 {emby_name} ")
 
 
 # 键盘中转

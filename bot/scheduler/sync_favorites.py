@@ -22,7 +22,7 @@ async def sync_favorites():
             if not favorites:
                 continue
             #  清除数据库中该用户的收藏记录
-            sql_clear_favorites(user.embyid)
+            sql_clear_favorites(user.name)
             # 遍历收藏项目并添加到数据库
             for item in favorites.get("Items", []):
                 item_id = item.get("Id")

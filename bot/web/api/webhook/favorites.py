@@ -87,7 +87,7 @@ async def handle_favorite_webhook(request: Request):
             session = Session()
             try:
                 user = session.query(Emby).filter(
-                    Emby.embyid == embyid
+                    Emby.name == embyname
                 ).first()
                 
                 if user and user.tg:

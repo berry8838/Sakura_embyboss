@@ -160,7 +160,10 @@ async def bindall_id(_, msg):
     if sql_update_embys(some_list=ls, method='bind'):
         # 更新收藏记录
         for i in ls:
-            sql_update_favorites(condition=EmbyFavorites.embyname == i[1], embyid=i[2])
+           favorites_updated = sql_update_favorites(condition=EmbyFavorites.embyname == i[1], embyid=i[2])
+           if not favorites_updated:
+               LOGGER.warning(f"用户 {i[1]} 的收藏记录更新失败，可能存在数据冲突")
+               pass
         end = time.perf_counter()
         times = end - start
         n = 1000
@@ -268,8 +271,15 @@ async def restore_from_db(_, msg):
                         embyid = data[0]
                         pwd = data[1]
                         sql_update_emby(Emby.tg == tg, embyid=embyid, pwd=pwd)
-                        sql_update_favorites(condition=EmbyFavorites.embyname == embyuser.name, embyid=embyid)
-                        text += f'**- ✅ 恢复用户：#id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 成功！\n**'
+                        
+                        # 更安全的收藏记录更新，带错误处理
+                        favorites_updated = sql_update_favorites(condition=EmbyFavorites.embyname == embyuser.name, embyid=embyid)
+                        if not favorites_updated:
+                            LOGGER.warning(f"用户 {embyuser.name} 的收藏记录更新失败，可能存在数据冲突")
+                            text += f'**- ⚠️ 恢复用户：#id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 成功，但收藏记录更新失败\n**'
+                        else:
+                            text += f'**- ✅ 恢复用户：#id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 成功！\n**'
+                        
                         LOGGER.info(f"恢复 #id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 成功")
                 except Exception as e:
                     text += f'**- ❎ 恢复 #id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 失败 \n**'

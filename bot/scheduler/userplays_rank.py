@@ -110,8 +110,9 @@ class Uplaysinfo:
         success, users = await emby.users()
         if not success:
             return await bot.send_message(chat_id=group[0], text='⭕ 调用emby api失败')
-        msg = ''
-        # print(users)
+        from bot import config
+        activity_check_days = config.activity_check_days
+        msg = f'正在执行**{activity_check_days}天活跃检测**...\n'
         for user in users:
             # 数据库先找
             e = sql_get_emby(tg=user["Name"])
@@ -119,7 +120,6 @@ class Uplaysinfo:
                 continue
 
             elif e.lv == 'c':
-                # print(e.tg)
                 try:
                     ac_date = convert_to_beijing_time(user["LastActivityDate"])
                 except KeyError:
@@ -138,8 +138,7 @@ class Uplaysinfo:
             elif e.lv == 'b':
                 try:
                     ac_date = convert_to_beijing_time(user["LastActivityDate"])
-                    from bot import config
-                    activity_check_days = config.activity_check_days
+                    
                     # print(e.name, ac_date, now)
                     if ac_date + timedelta(days=activity_check_days) < now:
                         if await emby.emby_change_policy(emby_id=user["Id"], disable=True):
@@ -157,6 +156,7 @@ class Uplaysinfo:
                     else:
                         msg += f"**🎂活跃检测** - [{user['Name']}](tg://user?id={e.tg})\n#id{e.tg} 注册后未活跃，禁用失败啦！检查emby连通性\n\n"
                         LOGGER.info(f"【活跃检测】- 禁用账户 {user['Name']} #id{e.tg}：禁用失败啦！检查emby连通性")
+        msg += '**活跃检测结束**\n'
         n = 1000
         chunks = [msg[i:i + n] for i in range(0, len(msg), n)]
         for c in chunks:

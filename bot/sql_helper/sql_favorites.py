@@ -131,7 +131,7 @@ def sql_update_favorites(condition, **kwargs):
         try:
             favorites = session.query(EmbyFavorites).filter(condition).all()
             if not favorites:
-                return False
+                return True 
 
             new_embyid = kwargs.get('embyid')
             if not new_embyid:

@@ -181,3 +181,30 @@ async def user_cha_ip(_, msg, name = None):
             if not chunk_text.strip():
                 continue
             await sendMessage(msg, chunk_text)
+@bot.on_message(filters.command('udeviceid', prefixes) & admins_on_filter)
+async def get_user_by_deviceid(_, msg, deviceid = None):
+    try:
+        deviceid = msg.command[1]
+    except IndexError:
+        return await sendMessage(msg, "⭕ 用法：/udeviceid + 设备ID")
+    await msg.delete()
+    success, result = await emby.get_device_by_deviceid(deviceid = deviceid)
+    if not success:
+        return await sendMessage(msg, '获取设备信息失败')
+    else:
+        if isinstance(result, dict) and len(result) > 0:
+            text = '▎ 查询返回:\n'
+            text += f'•🧢 设备名称: {result.get("Name", "无设备名称")}\n'
+            text += f'•🙆‍ App名称: {result.get("AppName", "无App名称")}\n'
+            text += f'•👔 App版本: {result.get("AppVersion", "无App版本")}\n'
+            text += f'•👖 用户名称: {result.get("LastUserName", "无用户名称")}\n'
+            text += f'•👟 用户Id: {result.get("LastUserId", "无用户Id")}\n'
+            text += f'•💼 最后活动时间: {result.get("DateLastActivity", "无最后活动时间")}\n'
+            text += f'•🔐 Ip地址: {result.get("IpAddress", "无Ip地址")}\n'
+            icon = result.get("IconUrl")
+            if icon:
+                await sendPhoto(msg, photo=icon, caption=text)
+            else:
+                await sendMessage(msg, text)
+        else:
+            await sendMessage(msg, "获取设备信息失败")

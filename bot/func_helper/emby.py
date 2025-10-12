@@ -973,6 +973,24 @@ class Embyservice(metaclass=Singleton):
             LOGGER.error(f"搜索电影异常: {title} - {str(e)}")
             return []
 
+    async def get_device_by_deviceid(self, deviceid: str) -> Tuple[bool, Union[Dict, Dict[str, str]]]:
+        """
+        通过设备ID获取设备信息
+        :param deviceid: 设备ID
+        :return: (是否成功, 设备信息或错误信息)
+        """
+        try:
+            result = await self._request('GET', f'/emby/Devices/Info?Id={deviceid}')
+            if result.success:
+                LOGGER.debug(f"获取设备信息成功: {deviceid}")
+                return True, result.data
+            else:
+                LOGGER.error(f"获取设备信息失败: {deviceid} - {result.error}")
+                return False, "获取设备信息失败"
+        except Exception as e:
+            LOGGER.error(f"获取设备信息异常: {deviceid} - {str(e)}")
+            return False, '获取设备信息异常'
+
     def __del__(self):
         """析构函数，确保资源清理"""
         if hasattr(self, '_session') and self._session and not self._session.closed:

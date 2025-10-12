@@ -103,6 +103,7 @@ admin_p = user_p + [
     BotCommand("ucr", "私聊创建非tg的emby用户 [管理]"),
     BotCommand("uinfo", "查询指定用户名 [管理]"),
     BotCommand("urm", "删除指定用户名 [管理]"),
+    BotCommand("udeviceid", "查询指定设备ID [管理]"),
     BotCommand("renewall", "一键派送天数给所有未封禁的用户 [管理]"),
     BotCommand("coinsall", "一键派送币币给所有未封禁的用户 [管理]"),
     BotCommand("coinsclear", "一键清除所有用户的币币 [管理]"),

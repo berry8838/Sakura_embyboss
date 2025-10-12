@@ -7,8 +7,8 @@ from pyrogram.types import CallbackQuery
 from bot import bot, prefixes, LOGGER, emby_line, owner, bot_photo, schedall, config
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
-from bot.func_helper.fix_bottons import cv_user_playback_reporting
-from bot.func_helper.msg_utils import sendMessage, editMessage, callAnswer, sendPhoto
+from bot.func_helper.fix_bottons import cv_user_playback_reporting, close_it_ikb
+from bot.func_helper.msg_utils import sendMessage, editMessage, sendPhoto 
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2, sql_add_emby2
 
@@ -203,8 +203,8 @@ async def get_user_by_deviceid(_, msg, deviceid = None):
             text += f'•🔐 Ip地址: {result.get("IpAddress", "无Ip地址")}\n'
             icon = result.get("IconUrl")
             if icon:
-                await sendPhoto(msg, photo=icon, caption=text)
+                await sendPhoto(msg, photo=icon, caption=text, buttons=close_it_ikb)
             else:
-                await sendMessage(msg, text)
+                await sendMessage(msg, text, buttons=close_it_ikb)
         else:
             await sendMessage(msg, "获取设备信息失败")

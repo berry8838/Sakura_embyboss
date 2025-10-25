@@ -30,8 +30,8 @@ async def sync_emby_group(_, msg):
     await deleteMessage(msg)
     send = await sendPhoto(msg, photo=bot_photo, caption="⚡群组成员同步任务\n  **正在开启中...消灭未在群组的账户**",
                            send=True)
-    LOGGER.info(
-        f"【群组成员同步任务开启】 - {msg.from_user.first_name} - {msg.from_user.id}")
+    sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'{msg.from_user.first_name}'
+    LOGGER.info(f"{sign_name} 执行了群组成员同步任务")
     # 减少api调用
     members = [member.user.id async for member in bot.get_chat_members(group[0])]
     r = get_all_emby(Emby.lv == 'b')
@@ -76,7 +76,7 @@ async def sync_emby_group(_, msg):
                           text=f"**⚡群组成员同步任务 结束！**\n  共检索出 {b} 个账户，处刑 {a} 个账户，耗时：{times:.3f}s")
     else:
         await sendMessage(msg, text="** 群组成员同步任务 结束！没人偷跑~**")
-    LOGGER.info(f"【群组同步任务结束】 - {msg.from_user.id} 共检索出 {b} 个账户，处刑 {a} 个账户，耗时：{times:.3f}s")
+    LOGGER.info(f"【群组同步任务结束】 - {sign_name} 共检索出 {b} 个账户，处刑 {a} 个账户，耗时：{times:.3f}s")
 
 
 @bot.on_message(filters.command('syncunbound', prefixes) & admins_on_filter)
@@ -84,8 +84,8 @@ async def sync_emby_unbound(_, msg):
     await deleteMessage(msg)
     send = await sendPhoto(msg, photo=bot_photo, caption="⚡扫描未绑定Bot任务\n  **正在开启中...消灭扫描bot的emby账户**",
                            send=True)
-    LOGGER.info(
-        f"【扫描未绑定Bot任务开启】 - {msg.from_user.first_name} - {msg.from_user.id}")
+    sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'{msg.from_user.first_name}'
+    LOGGER.info(f"{sign_name} 执行了扫描未绑定Bot任务")
     confirm_delete = False
     try:
         confirm_delete = msg.command[1]
@@ -130,7 +130,7 @@ async def sync_emby_unbound(_, msg):
         await sendMessage(msg, text=f"⚡扫描未绑定Bot任务 done\n  共检索出 {b} 个账户， {a}个未绑定，耗时：{times:.3f}s，如需删除请输入 `/syncunbound true`")
     else:
         await sendMessage(msg, text=f"**扫描未绑定Bot任务 结束！搞毛，没有人被干掉。**")
-    LOGGER.info(f"【扫描未绑定Bot任务结束】 - {msg.from_user.id} 共检索出 {b} 个账户， {a}个未绑定，耗时：{times:.3f}s")
+    LOGGER.info(f"{sign_name} 扫描未绑定Bot任务结束，共检索出 {b} 个账户， {a}个未绑定，耗时：{times:.3f}s")
 
 
 @bot.on_message(filters.command('bindall_id', prefixes) & filters.user(owner))
@@ -224,7 +224,8 @@ async def kick_not_emby(_, msg):
         return await sendMessage(msg,
                                  '注意: 此操作会将 当前群组中无emby账户的选手kick, 如确定使用请输入 `/kick_not_emby true`')
     if open_kick == 'true':
-        LOGGER.info(f"{msg.from_user.first_name} - {msg.from_user.id} 执行了踢出非emby用户的操作")
+        sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'{msg.from_user.first_name}'
+        LOGGER.info(f"{sign_name} 执行了踢出非emby用户的操作")
         embyusers = get_all_emby(Emby.embyid is not None and Emby.embyid != '')
         # get tgid
         embytgs = []
@@ -250,8 +251,9 @@ async def restore_from_db(_, msg):
         return await sendMessage(msg,
                                  '注意: 此操作会将 从数据库中恢复用户到Emby中, 请在需要恢复的群组中执行此命令, 如确定使用请输入 `/restore_from_db true`')
     if confirm_restore == 'true':
+        sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'{msg.from_user.first_name}'    
         LOGGER.info(
-            f"{msg.from_user.first_name} - {msg.from_user.id} 执行了从数据库中恢复用户到Emby中的操作")
+            f"{sign_name} 执行了从数据库中恢复用户到Emby中的操作")
         embyusers = get_all_emby(Emby.embyid is not None and Emby.embyid != '')
         # 获取当前执行命令的群组成员
         chat_members = [member.user.id async for member in bot.get_chat_members(chat_id=msg.chat.id)]
@@ -297,8 +299,9 @@ async def restore_from_db(_, msg):
 async def scan_embyname(_, msg):
     await deleteMessage(msg)
     send = await msg.reply("🔍 正在扫描重复用户名...")
+    sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'{msg.from_user.first_name}'
     LOGGER.info(
-        f"【扫描重复用户名任务开启】 - {msg.from_user.first_name} - {msg.from_user.id}")
+        f"{sign_name} 执行了扫描重复用户名操作")
 
     # 获取所有有效的emby用户
     emby_users = get_all_emby(Emby.name is not None)
@@ -331,4 +334,4 @@ async def scan_embyname(_, msg):
     for c in chunks:
         await sendMessage(msg, c)
     LOGGER.info(
-        f"【扫描重复用户名任务结束】 - {msg.from_user.id} 共发现 {len(duplicate_names)} 个重复用户名")
+        f"{sign_name} 扫描重复用户名任务结束，共发现 {len(duplicate_names)} 个重复用户名")

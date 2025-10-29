@@ -47,10 +47,16 @@ async def rmemby_user(_, msg):
 @bot.on_message(filters.command('only_rm_record', prefixes) & admins_on_filter)
 async def only_rm_record(_, msg):
     await deleteMessage(msg)
-    try:
-        tg_id = int(msg.command[1])
-    except (IndexError, ValueError):
-        return await sendMessage(msg, "❌ 使用格式：/only_rm_record tg_id")
+    tg_id = None
+    if msg.reply_to_message is None:
+        try:
+            tg_id = int(msg.command[1])
+        except (IndexError, ValueError):
+            tg_id = None
+    else:
+        tg_id = msg.reply_to_message.from_user.id
+    if tg_id is None:
+        return await sendMessage(msg, "❌ 使用格式：/only_rm_record tg_id或回复用户的消息")
 
     e = sql_get_emby(tg=tg_id)
     if not e:

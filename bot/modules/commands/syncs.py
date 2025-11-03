@@ -255,8 +255,9 @@ async def restore_from_db(_, msg):
         LOGGER.info(
             f"{sign_name} 执行了从数据库中恢复用户到Emby中的操作")
         embyusers = get_all_emby(Emby.embyid is not None and Emby.embyid != '')
+        group_id = group[0]
         # 获取当前执行命令的群组成员
-        chat_members = [member.user.id async for member in bot.get_chat_members(chat_id=msg.chat.id)]
+        chat_members = [member.user.id async for member in bot.get_chat_members(chat_id=group_id)]
         await sendMessage(msg, '** 恢复中, 请耐心等待... **')
         text = ''
         for embyuser in embyusers:
@@ -283,6 +284,15 @@ async def restore_from_db(_, msg):
                             text += f'**- ✅ 恢复用户：#id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 成功！\n**'
                         
                         LOGGER.info(f"恢复 #id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 成功")
+                        try:
+                            user_notification = f'🤖 #恢复成功：id：{embyuser.tg} \n\n🧬您的账号`{embyuser.name}`已恢复成功 ！\n🪅密码为：`{pwd}`\n🔮安全码为：`{embyuser.pwd2}`\n'
+                            await bot.send_message(tg, user_notification)
+                        except FloodWait as f:
+                            LOGGER.warning(str(f))
+                            await sleep(f.value * 1.2)
+                            await bot.send_message(tg, user_notification)
+                        except Exception as e:
+                            LOGGER.error(e)
                 except Exception as e:
                     text += f'**- ❎ 恢复 #id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 失败 \n**'
                     LOGGER.info(f"恢复 #id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 失败，原因: {e}")

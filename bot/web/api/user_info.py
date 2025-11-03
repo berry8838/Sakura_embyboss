@@ -20,7 +20,7 @@ async def user_info(tg: str):
 
     if not user:
         return {"code": 404, "message": "用户不存在"}
-    return {"code": 200, "data": {"tg": user.tg, "iv": user.iv}}
+    return {"code": 200, "data": {"tg": user.tg, "iv": user.iv, "name": user.name, "embyid": user.embyid, "lv": user.lv, "cr": user.cr, "ex": user.ex}}
 
 
 @route.post("/update_credit")

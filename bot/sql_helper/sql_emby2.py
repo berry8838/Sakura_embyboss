@@ -102,3 +102,20 @@ def sql_delete_emby2(embyid):
             # 记录错误信息
             print(e)
             return False
+def sql_delete_emby2_by_name(name):
+    """
+    根据name删除一条emby记录
+    """
+    with Session() as session:
+        try:
+            emby = session.query(Emby2).filter_by(name=name).first()
+            if emby:
+                session.delete(emby)
+                session.commit()
+                return True
+            else:
+                return False
+        except Exception as e:
+            # 记录错误信息
+            print(e)
+            return False

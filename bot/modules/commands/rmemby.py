@@ -6,6 +6,7 @@ from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.msg_utils import deleteMessage, editMessage, sendMessage
 from bot.func_helper.utils import tem_deluser
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby_by_tg, sql_delete_emby
+from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2_by_name
 
 
 # 删除账号命令
@@ -50,7 +51,7 @@ async def only_rm_record(_, msg):
     tg_id = None
     if msg.reply_to_message is None:
         try:
-            tg_id = int(msg.command[1])
+            tg_id = msg.command[1]
         except (IndexError, ValueError):
             tg_id = None
     else:
@@ -58,25 +59,30 @@ async def only_rm_record(_, msg):
     if tg_id is None:
         return await sendMessage(msg, "❌ 使用格式：/only_rm_record tg_id或回复用户的消息")
 
-    e = sql_get_emby(tg=tg_id)
-    if not e:
-        return await sendMessage(msg, f"❌ 未找到 TG ID: {tg_id} 的记录")
-
+    emby1 = sql_get_emby(tg=tg_id)
+    # 获取 emby2 表中的用户信息
+    emby2 = sql_get_emby2(name=tg_id)
+    if not emby1 and not emby2:
+        return await sendMessage(msg, f"❌ 未找到 {tg_id} 的记录")
     try:
-        res = sql_delete_emby_by_tg(tg_id)
+        res1 = False
+        res2 = False
+        if emby1:
+            res1 = sql_delete_emby_by_tg(tg_id)
+        if emby2:
+            res2 = sql_delete_emby2_by_name(name=tg_id)
         sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
-        if res:
+        if res1 or res2:
             await sendMessage(msg, f"管理员 {sign_name} 已删除 TG ID: {tg_id} 的数据库记录")
             LOGGER.info(
                 f"管理员 {sign_name} 删除了用户 {tg_id} 的数据库记录")
         else:
-            await sendMessage(msg, f"❌ 删除记录失败")
+            await sendMessage(msg, "❌ 删除记录失败")
             LOGGER.error(
                 f"管理员 {sign_name} 删除用户 {tg_id} 的数据库记录失败")
-    except Exception as e:
-        await sendMessage(msg, f"❌ 删除记录失败: {str(e)}")
-
-        LOGGER.error(f"删除用户 {tg_id} 的数据库记录失败: {str(e)}")
+    except Exception as ex:
+        await sendMessage(msg, "❌ 删除记录失败")
+        LOGGER.error(f"删除用户 {tg_id} 的数据库记录失败, {ex}")
 
 
 @bot.on_message(filters.command('only_rm_emby', prefixes) & admins_on_filter)

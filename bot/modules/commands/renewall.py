@@ -35,6 +35,8 @@ async def renew_all(_, msg):
     ls = []
     start = time.perf_counter()
     for i in rst:
+        if i.ex is None:
+            continue
         b += 1
         ex_new = i.ex + timedelta(days=a)
         ls.append([i.tg, ex_new])

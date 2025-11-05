@@ -823,6 +823,254 @@ class Embyservice(metaclass=Singleton):
             LOGGER.error(f"获取用户设备信息异常: {emby_id} - {str(e)}")
             return False, str(e)
 
+    async def get_users_by_ip(self, ip_address: str, days: int = None) -> Tuple[bool, Union[List[Dict], str]]:
+        """
+        根据IP地址查询使用该IP的用户信息（已修复SQL注入问题）
+        :param ip_address: IP地址
+        :param days: 查询天数范围，默认30天
+        :return: (是否成功, 用户信息列表或错误信息)
+        """
+        try:
+            # 验证IP地址格式（简单验证）
+            import re
+            ip_pattern = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+            if not re.match(ip_pattern, ip_address):
+                LOGGER.error(f"无效的IP地址格式: {ip_address}")
+                return False, "无效的IP地址格式"
+            
+            
+            
+            # 构建安全的SQL查询，查询使用指定IP的用户
+            sql = f"""
+                SELECT DISTINCT UserId, 
+                       DeviceName, 
+                       ClientName, 
+                       RemoteAddress,
+                       MAX(DateCreated) AS LastActivity,
+                       COUNT(*) AS ActivityCount
+                FROM PlaybackActivity 
+                WHERE RemoteAddress = '{ip_address}' 
+                
+            """
+            if days:
+                # 计算查询时间范围
+                sub_time = datetime.now(timezone(timedelta(hours=8)))
+                start_time = (sub_time - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+                end_time = sub_time.strftime("%Y-%m-%d %H:%M:%S")
+                sql += f" AND DateCreated >= '{start_time}' AND DateCreated <= '{end_time}'"
+            sql += " GROUP BY UserId, DeviceName, ClientName, RemoteAddress"
+            sql += " ORDER BY LastActivity DESC"
+            
+            data = {
+                "CustomQueryString": sql,
+                "ReplaceUserId": False
+            }
+            
+            result = await self._request('POST', f'/emby/user_usage_stats/submit_custom_query?api_key={emby_api}', json=data)
+            if result.success and result.data:
+                ret = result.data
+                if len(ret.get("colums", [])) == 0:
+                    return False, ret.get("message", "无数据")
+                
+                # 获取查询结果
+                results = ret.get("results", [])
+                
+                # 为每个用户获取用户名信息
+                enriched_results = []
+                for result_item in results:
+                    user_id = result_item[0]  # UserId 是第一列
+                    
+                    # 获取用户详细信息
+                    user_success, user_info = await self.user(user_id)
+                    username = "未知用户"
+                    if user_success and isinstance(user_info, dict):
+                        username = user_info.get("Name", "未知用户")
+                    
+                    enriched_item = {
+                        "UserId": user_id,
+                        "Username": username,
+                        "DeviceName": result_item[1],
+                        "ClientName": result_item[2], 
+                        "RemoteAddress": result_item[3],
+                        "LastActivity": result_item[4],
+                        "ActivityCount": result_item[5]
+                    }
+                    enriched_results.append(enriched_item)
+                
+                LOGGER.info(f"根据IP查询用户成功: {ip_address} - 找到 {len(enriched_results)} 个用户")
+                return True, enriched_results
+            else:
+                LOGGER.error(f"根据IP查询用户失败: {ip_address} - {result.error}")
+                return False, f"🤕Emby 服务器连接失败: {result.error}"
+                
+        except Exception as e:
+            LOGGER.error(f"根据IP查询用户异常: {ip_address} - {str(e)}")
+            return False, str(e)
+
+    async def get_users_by_device_name(self, device_name: str, days: int = None) -> Tuple[bool, Union[List[Dict], str]]:
+        """
+        根据设备名关键词查询使用该设备的用户信息（已修复SQL注入问题）
+        :param device_name: 设备名关键词
+        :param days: 查询天数范围，None表示查询所有时间
+        :return: (是否成功, 用户信息列表或错误信息)
+        """
+        try:
+            # 验证关键词（基本的安全检查）
+            if not device_name or len(device_name.strip()) == 0:
+                LOGGER.error("设备名关键词不能为空")
+                return False, "设备名关键词不能为空"
+            
+            # 清理关键词，防止SQL注入
+            safe_keyword = device_name.replace("'", "''").replace(";", "").replace("--", "")
+            
+            # 构建安全的SQL查询，查询使用包含指定关键词的设备名的用户
+            sql = f"""
+                SELECT DISTINCT UserId, 
+                       DeviceName, 
+                       ClientName, 
+                       RemoteAddress,
+                       MAX(DateCreated) AS LastActivity,
+                       COUNT(*) AS ActivityCount
+                FROM PlaybackActivity 
+                WHERE DeviceName LIKE '%{safe_keyword}%' 
+            """
+            if days:
+                # 计算查询时间范围
+                sub_time = datetime.now(timezone(timedelta(hours=8)))
+                start_time = (sub_time - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+                end_time = sub_time.strftime("%Y-%m-%d %H:%M:%S")
+                sql += f" AND DateCreated >= '{start_time}' AND DateCreated <= '{end_time}'"
+            sql += " GROUP BY UserId, DeviceName, ClientName, RemoteAddress"
+            sql += " ORDER BY LastActivity DESC"
+            
+            data = {
+                "CustomQueryString": sql,
+                "ReplaceUserId": False
+            }
+            
+            result = await self._request('POST', f'/emby/user_usage_stats/submit_custom_query?api_key={emby_api}', json=data)
+            if result.success and result.data:
+                ret = result.data
+                if len(ret.get("colums", [])) == 0:
+                    return False, ret.get("message", "无数据")
+                
+                # 获取查询结果
+                results = ret.get("results", [])
+                
+                # 为每个用户获取用户名信息
+                enriched_results = []
+                for result_item in results:
+                    user_id = result_item[0]  # UserId 是第一列
+                    
+                    # 获取用户详细信息
+                    user_success, user_info = await self.user(user_id)
+                    username = "未知用户"
+                    if user_success and isinstance(user_info, dict):
+                        username = user_info.get("Name", "未知用户")
+                    
+                    enriched_item = {
+                        "UserId": user_id,
+                        "Username": username,
+                        "DeviceName": result_item[1],
+                        "ClientName": result_item[2], 
+                        "RemoteAddress": result_item[3],
+                        "LastActivity": result_item[4] if len(result_item) > 4 else "未知",
+                        "ActivityCount": result_item[5] if len(result_item) > 5 else 0
+                    }
+                    enriched_results.append(enriched_item)
+                
+                LOGGER.info(f"根据设备名查询用户成功: {device_name} - 找到 {len(enriched_results)} 个用户")
+                return True, enriched_results
+            else:
+                LOGGER.error(f"根据设备名查询用户失败: {device_name} - {result.error}")
+                return False, f"🤕Emby 服务器连接失败: {result.error}"
+                
+        except Exception as e:
+            LOGGER.error(f"根据设备名查询用户异常: {device_name} - {str(e)}")
+            return False, str(e)
+
+    async def get_users_by_client_name(self, client_name: str, days: int = None) -> Tuple[bool, Union[List[Dict], str]]:
+        """
+        根据客户端名关键词查询使用该客户端的用户信息（已修复SQL注入问题）
+        :param client_name: 客户端名关键词
+        :param days: 查询天数范围，None表示查询所有时间
+        :return: (是否成功, 用户信息列表或错误信息)
+        """
+        try:
+            # 验证关键词（基本的安全检查）
+            if not client_name or len(client_name.strip()) == 0:
+                LOGGER.error("客户端名关键词不能为空")
+                return False, "客户端名关键词不能为空"
+            
+            # 清理关键词，防止SQL注入
+            safe_keyword = client_name.replace("'", "''").replace(";", "").replace("--", "")
+            
+            # 构建安全的SQL查询，查询使用包含指定关键词的客户端名的用户
+            sql = f"""
+                SELECT DISTINCT UserId, 
+                       DeviceName, 
+                       ClientName, 
+                       RemoteAddress,
+                       MAX(DateCreated) AS LastActivity,
+                       COUNT(*) AS ActivityCount
+                FROM PlaybackActivity 
+                WHERE ClientName LIKE '%{safe_keyword}%' 
+            """
+            if days:
+                # 计算查询时间范围
+                sub_time = datetime.now(timezone(timedelta(hours=8)))
+                start_time = (sub_time - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+                end_time = sub_time.strftime("%Y-%m-%d %H:%M:%S")
+                sql += f" AND DateCreated >= '{start_time}' AND DateCreated <= '{end_time}'"
+            sql += " GROUP BY UserId, DeviceName, ClientName, RemoteAddress"
+            sql += " ORDER BY LastActivity DESC"
+            
+            data = {
+                "CustomQueryString": sql,
+                "ReplaceUserId": False
+            }
+            
+            result = await self._request('POST', f'/emby/user_usage_stats/submit_custom_query?api_key={emby_api}', json=data)
+            if result.success and result.data:
+                ret = result.data
+                if len(ret.get("colums", [])) == 0:
+                    return False, ret.get("message", "无数据")
+                
+                # 获取查询结果
+                results = ret.get("results", [])
+                
+                # 为每个用户获取用户名信息
+                enriched_results = []
+                for result_item in results:
+                    user_id = result_item[0]  # UserId 是第一列
+                    
+                    # 获取用户详细信息
+                    user_success, user_info = await self.user(user_id)
+                    username = "未知用户"
+                    if user_success and isinstance(user_info, dict):
+                        username = user_info.get("Name", "未知用户")
+                    
+                    enriched_item = {
+                        "UserId": user_id,
+                        "Username": username,
+                        "DeviceName": result_item[1],
+                        "ClientName": result_item[2], 
+                        "RemoteAddress": result_item[3],
+                        "LastActivity": result_item[4] if len(result_item) > 4 else "未知",
+                        "ActivityCount": result_item[5] if len(result_item) > 5 else 0
+                    }
+                    enriched_results.append(enriched_item)
+                
+                LOGGER.info(f"根据客户端名查询用户成功: {client_name} - 找到 {len(enriched_results)} 个用户")
+                return True, enriched_results
+            else:
+                LOGGER.error(f"根据客户端名查询用户失败: {client_name} - {result.error}")
+                return False, f"🤕Emby 服务器连接失败: {result.error}"
+                
+        except Exception as e:
+            LOGGER.error(f"根据客户端名查询用户异常: {client_name} - {str(e)}")
+            return False, str(e)
+
     async def get_emby_user_devices(self, offset: int = 0, limit: int = 20) -> Tuple[bool, List[Dict], bool, bool]:
         """
         获取用户设备统计，支持分页

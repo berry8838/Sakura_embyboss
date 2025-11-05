@@ -8,54 +8,9 @@ from bot.func_helper.utils import convert_s
 from bot.func_helper.emby import emby
 from bot.ranks_helper import ranks_draw
 from bot import bot, group, ranks, LOGGER, schedall, save_config
+from bot.func_helper.utils import split_long_message
 
 
-def split_long_message(content, max_length=1000):
-    """
-    将过长的消息内容分割成多个部分，确保每部分都不超过Telegram的长度限制
-    
-    Args:
-        content (str): 要分割的内容
-        max_length (int): 每条消息的最大长度限制，默认1000字符（留缓冲）
-    
-    Returns:
-        list: 分割后的消息列表
-    """
-    if len(content) <= max_length:
-        return [content]
-    
-    messages = []
-    lines = content.split('\n')
-    current_message = ""
-    
-    for line in lines:
-        # 检查添加这一行后是否会超长
-        test_message = current_message + ('\n' if current_message else '') + line
-        
-        if len(test_message) <= max_length:
-            current_message = test_message
-        else:
-            # 如果当前消息不为空，保存它
-            if current_message:
-                messages.append(current_message)
-                current_message = line
-            else:
-                # 如果单行就超长，需要强制分割
-                if len(line) > max_length:
-                    # 按字符分割超长的单行
-                    while len(line) > max_length:
-                        messages.append(line[:max_length])
-                        line = line[max_length:]
-                    if line:
-                        current_message = line
-                else:
-                    current_message = line
-    
-    # 添加最后一部分
-    if current_message:
-        messages.append(current_message)
-    
-    return messages
 
 
 async def send_multi_message(chat_id, photo_path, caption, parse_mode, pin_first=True):

@@ -109,7 +109,7 @@ admin_p = user_p + [
     BotCommand("auditdevice", "根据设备名审计用户 [管理]"),
     BotCommand("auditclient", "根据客户端名审计用户 [管理]"),
     BotCommand("renewall", "一键派送天数给所有未封禁的用户 [管理]"),
-    BotCommand("coinsall", "一键派送币币给所有未封禁的用户 [管理]"),
+    BotCommand("coinsall", "一键派送币币给指定等级的用户 [管理]"),
     BotCommand("coinsclear", "一键清除所有用户的币币 [管理]"),
     BotCommand("callall", "群发消息给每个人 [管理]"),
     BotCommand("only_rm_emby", "删除指定的Emby账号 [管理]"),

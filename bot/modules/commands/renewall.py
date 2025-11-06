@@ -7,7 +7,7 @@ from datetime import timedelta
 
 from pyrogram import filters
 from pyrogram.errors import FloodWait
-
+from sqlalchemy import or_
 from bot import bot, prefixes, bot_photo, LOGGER, sakura_b
 from bot.func_helper.msg_utils import sendMessage, deleteMessage, ask_return
 from bot.func_helper.filters import admins_on_filter
@@ -67,7 +67,7 @@ async def coins_all(_, msg):
                                  f"🔔 **使用格式：**/coinsall [+/-数量]\n\n  给所有未封禁emby [+/- {sakura_b}]", timer=60)
     send = await bot.send_photo(msg.chat.id, photo=bot_photo,
                                 caption=f"⚡【{sakura_b}任务】\n  **正在开启派送{sakura_b}中...请稍后**")
-    rst = get_all_emby(Emby.lv == 'b')
+    rst = get_all_emby(or_(Emby.lv == 'b', Emby.lv =='c'))
     if rst is None:
         LOGGER.info(
             f"【{sakura_b}任务】 -{msg.from_user.first_name}({msg.from_user.id}) 没有检测到任何emby账户，结束")
@@ -77,21 +77,32 @@ async def coins_all(_, msg):
     ls = []
     start = time.perf_counter()
     for i in rst:
+        print(i.lv)
         b += 1
         iv_new = i.iv + a
         ls.append([i.tg, iv_new])
     if sql_update_embys(some_list=ls, method='iv'):
         end = time.perf_counter()
         times = end - start
+        sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'{msg.from_user.first_name}'
         await send.edit(
             f"⚡【{sakura_b}任务】\n\n  批量派出 {a} {sakura_b} * {b} ，耗时：{times:.3f}s\n 已到账，正在向每个拥有emby的用户私发消息，短时间内请不要重复使用")
         LOGGER.info(
-            f"【派送{sakura_b}任务】 - {msg.from_user.first_name}({msg.from_user.id}) 派出 {a} * {b} 更改用时{times:.3f} s")
+            f"【派送{sakura_b}任务】 - {sign_name}({msg.from_user.id}) 派出 {a} * {b} 更改用时{times:.3f} s")
         for l in ls:
-            await bot.send_message(l[0], f"🎯 管理员 {msg.from_user.first_name} 调节了您的账户{sakura_b} {a}"
+            try:
+                await bot.send_message(l[0], f"🎯 管理员 {sign_name} 调节了您的账户{sakura_b} {a}"
                                          f'\n📅 实时数量：{l[1]}')
+            except FloodWait as f:
+                LOGGER.warning(str(f))
+                await asyncio.sleep(f.value * 1.2)
+                await bot.send_message(l[0], f"🎯 管理员 {sign_name} 调节了您的账户{sakura_b} {a}"
+                                         f'\n📅 实时数量：{l[1]}')
+            except Exception as e:
+                LOGGER.error(f"派送{sakura_b}任务失败：{l[0]} {e}")
+                continue
         LOGGER.info(
-            f"【派送{sakura_b}任务】 - {msg.from_user.first_name}({msg.from_user.id}) 派出 {a} {sakura_b} * {b}，消息私发完成")
+            f"【派送{sakura_b}任务】 - {sign_name}({msg.from_user.id}) 派出 {a} {sakura_b} * {b}，消息私发完成")
     else:
         await msg.reply("数据库操作出错，请检查重试")
 

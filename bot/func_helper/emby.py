@@ -46,7 +46,7 @@ def create_policy(admin=False, disable=False, limit: int = 2, block: list = None
         "EnableSubtitleManagement": False,
         "EnableSyncTranscoding": False,
         "EnableMediaConversion": False,
-        "EnableAllDevices": True,
+        "EnableAllDevices": True, 
         "SimultaneousStreamLimit": limit,
         "BlockedMediaFolders": block,
         "AllowCameraUpload": False  # 新版api 控制开关相机上传
@@ -375,6 +375,67 @@ class Embyservice(metaclass=Singleton):
         except Exception as e:
             LOGGER.error(f"获取媒体库异常: {str(e)}")
             return None
+
+    async def get_folder_ids_by_names(self, folder_names: List[str]) -> List[str]:
+        """
+        根据媒体库名称获取对应的ID列表
+        :param folder_names: 媒体库名称列表
+        :return: 媒体库ID列表
+        """
+        try:
+            result = await self._request('GET', f'/emby/Library/VirtualFolders?api_key={self.api_key}')
+            if result.success and result.data:
+                folder_ids = []
+                for lib in result.data:
+                    if lib.get('Name') in folder_names:
+                        if lib.get('Guid') is not None:
+                            folder_ids.append(lib.get('Guid'))
+                LOGGER.debug(f"获取文件夹ID成功: {folder_names} -> {folder_ids}")
+                return folder_ids
+            else:
+                LOGGER.error(f"获取文件夹ID失败: {result.error}")
+                return []
+        except Exception as e:
+            LOGGER.error(f"获取文件夹ID异常: {str(e)}")
+            return []
+
+    async def update_user_enabled_folder(self, emby_id: str, enabled_folder_ids: List[str] = None, 
+                                enable_all_folders: bool = True) -> bool:
+        """
+        更新用户策略 - 新版本API方法
+        :param emby_id: 用户ID
+        :param enabled_folder_ids: 启用的文件夹ID列表
+        :param enable_all_folders: 是否启用所有文件夹
+        :return: 是否成功
+        """
+        try:
+            # 首先获取当前用户策略
+            user_result = await self._request('GET', f'/emby/Users/{emby_id}?api_key={self.api_key}')
+            if not user_result.success:
+                LOGGER.error(f"获取用户信息失败: {emby_id} - {user_result.error}")
+                return False
+            
+            current_policy = user_result.data.get('Policy', {})
+            
+            # 更新策略中的文件夹访问设置
+            updated_policy = current_policy.copy()
+            updated_policy['EnableAllFolders'] = enable_all_folders
+            
+            if enabled_folder_ids is not None:
+                updated_policy['EnabledFolders'] = enabled_folder_ids
+            
+            # 发送更新请求
+            result = await self._request('POST', f'/emby/Users/{emby_id}/Policy', json=updated_policy)
+            if result.success:
+                LOGGER.info(f"成功更新用户策略: {emby_id} - EnableAllFolders: {enable_all_folders} - EnabledFolders: {enabled_folder_ids}")
+                return True
+            else:
+                LOGGER.error(f"更新用户策略失败: {emby_id} - {result.error}")
+                return False
+                
+        except Exception as e:
+            LOGGER.error(f"更新用户策略异常: {emby_id} - {str(e)}")
+            return False
 
     @cache.memoize(ttl=120)
     async def get_current_playing_count(self) -> int:

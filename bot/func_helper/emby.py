@@ -424,7 +424,6 @@ class Embyservice(metaclass=Singleton):
             if enabled_folder_ids is not None:
                 updated_policy['EnabledFolders'] = enabled_folder_ids
             
-            print(enabled_folder_ids)
             # 发送更新请求
             result = await self._request('POST', f'/emby/Users/{emby_id}/Policy', json=updated_policy)
             if result.success:

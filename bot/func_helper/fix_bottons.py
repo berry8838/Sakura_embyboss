@@ -3,7 +3,7 @@ from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
 from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, sakura_b, \
-    schedall, auto_update, fuxx_pitao, moviepilot, red_envelope, config
+    schedall, auto_update, fuxx_pitao, moviepilot, red_envelope, config, LOGGER
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
 from bot.func_helper.utils import members_info
@@ -385,13 +385,34 @@ async def cr_kk_ikb(uid, first):
                 success, rep = await emby.user(emby_id=embyid)
                 if success:
                     try:
-                        currentblock = rep["Policy"]["BlockedMediaFolders"]
-                    except KeyError:
-                        currentblock = []
-                    # 此处符号用于展示是否开启的状态
-                    libs, embyextralib = ['✖️', f'embyextralib_unblock-{uid}'] if set(extra_emby_libs).issubset(
-                        set(currentblock)) else ['✔️', f'embyextralib_block-{uid}']
-                    keyboard.append([f'{libs} 额外媒体库', embyextralib])
+                        # 新版本API：使用EnabledFolders控制访问
+                        policy = rep.get("Policy", {})
+                        current_enabled_folders = policy.get("EnabledFolders", [])
+                        enable_all_folders = policy.get("EnableAllFolders", False)
+                        
+                        # 获取额外媒体库对应的文件夹ID
+                        extra_folder_ids = await emby.get_folder_ids_by_names(extra_emby_libs)
+                        
+                        # 判断额外媒体库是否显示
+                        if enable_all_folders is True:
+                            # 如果启用所有文件夹，额外媒体库是显示的,显示关闭按钮
+                            libs, embyextralib = ['关闭', f'embyextralib_ block-{uid}']
+                        elif extra_folder_ids and len(extra_folder_ids) > 0:
+                            # 检查额外媒体库的文件夹ID是否都在启用列表中
+                            if all(folder_id in current_enabled_folders for folder_id in extra_folder_ids):
+                                # 额外媒体库已启用，显示关闭按钮
+                                libs, embyextralib = ['关闭', f'embyextralib_block-{uid}']
+                            else:
+                                # 额外媒体库未启用，显示开启按钮
+                                libs, embyextralib = ['开启', f'embyextralib_unblock-{uid}']
+                        else:
+                            # 如果无法获取额外媒体库的文件夹ID，默认显示为未启用状态
+                            libs, embyextralib = ['关闭', f'embyextralib_block-{uid}']
+                        keyboard.append([f'{libs} 额外媒体库', embyextralib])
+                    except Exception as e:
+                        # 如果获取策略信息失败，默认显示为未启用状态
+                        LOGGER.error(f"获取额外媒体库状态失败: {str(e)}")
+                        keyboard.append([f'关闭额外媒体库', f'embyextralib_block-{uid}'])
             try:
                 rst = await emby.emby_cust_commit(emby_id=embyid, days=30)
                 last_time = rst[0][0]

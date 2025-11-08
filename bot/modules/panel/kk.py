@@ -104,27 +104,40 @@ async def kk_user_ban(_, call):
 async def user_embyextralib_unblock(_, call):
     if not judge_admins(call.from_user.id):
         return await call.answer("请不要以下犯上 ok？", show_alert=True)
-    await call.answer(f'🎬 正在为TA开启显示ing')
+    await call.answer('🎬 正在为TA开启显示ing')
     tgid = int(call.data.split("-")[1])
     e = sql_get_emby(tg=tgid)
     if e.embyid is None:
         await editMessage(call, f'💢 ta 没有注册账户。', timer=60)
+        return
     embyid = e.embyid
     success, rep = await emby.user(emby_id=embyid)
-    currentblock = []
     if success:
         try:
-            currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
-            # 保留不同的元素
-            currentblock = [x for x in currentblock if x not in extra_emby_libs] + [x for x in extra_emby_libs if
-                                                                                    x not in currentblock]
-        except KeyError:
-            currentblock = ["播放列表"]
-        re = await emby.emby_block(emby_id=embyid, stats=0, block=currentblock)
-        if re is True:
-            await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
-                                    f'已开启了 [TA](tg://user?id={tgid}) 的额外媒体库权限\n{extra_emby_libs}')
-        else:
+            # 新版本API：使用EnabledFolders控制访问
+            policy = rep.get("Policy", {})
+            current_enabled_folders = policy.get("EnabledFolders", [])
+            enable_all_folders = policy.get("EnableAllFolders")
+            
+            # 获取额外媒体库对应的文件夹ID
+            extra_folder_ids = await emby.get_folder_ids_by_names(extra_emby_libs)
+            
+            if enable_all_folders is True:
+                # 如果已经启用所有文件夹，则不需要修改（因为已经可以看到所有文件夹）
+                re = await emby.update_user_enabled_folder(emby_id=embyid, enable_all_folders=True)
+            else:
+                # 将额外媒体库的文件夹ID添加到启用列表中
+                current_enabled_folders = list(set(current_enabled_folders + extra_folder_ids))
+                re = await emby.update_user_enabled_folder(emby_id=embyid, enabled_folder_ids=current_enabled_folders, enable_all_folders=False)
+            
+            if re is True:
+                await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
+                                        f'已开启了 [TA](tg://user?id={tgid}) 的额外媒体库权限\n{extra_emby_libs}')
+            else:
+                await editMessage(call,
+                                  f'🌧️ Error！管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n操作失败请检查设置！')
+        except Exception as e:
+            LOGGER.error(f"开启额外媒体库失败: {str(e)}")
             await editMessage(call,
                               f'🌧️ Error！管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n操作失败请检查设置！')
 
@@ -134,25 +147,46 @@ async def user_embyextralib_unblock(_, call):
 async def user_embyextralib_block(_, call):
     if not judge_admins(call.from_user.id):
         return await call.answer("请不要以下犯上 ok？", show_alert=True)
-    await call.answer(f'🎬 正在为TA关闭显示ing')
+    await call.answer('🎬 正在为TA关闭显示ing')
     tgid = int(call.data.split("-")[1])
     e = sql_get_emby(tg=tgid)
     if e.embyid is None:
         await editMessage(call, f'💢 ta 没有注册账户。', timer=60)
+        return
     embyid = e.embyid
     success, rep = await emby.user(emby_id=embyid)
-    currentblock = []
     if success:
         try:
-            currentblock = list(set(rep["Policy"]["BlockedMediaFolders"] + ['播放列表']))
-            currentblock = list(set(currentblock + extra_emby_libs))
-        except KeyError:
-            currentblock = ["播放列表"] + extra_emby_libs
-        re = await emby.emby_block(emby_id=embyid, stats=0, block=currentblock)
-        if re is True:
-            await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
-                                    f'已关闭了 [TA](tg://user?id={tgid}) 的额外媒体库权限\n{extra_emby_libs}')
-        else:
+            # 新版本API：使用EnabledFolders控制访问
+            policy = rep.get("Policy", {})
+            current_enabled_folders = policy.get("EnabledFolders", [])
+            enable_all_folders = policy.get("EnableAllFolders")
+            
+            # 获取额外媒体库对应的文件夹ID
+            extra_folder_ids = await emby.get_folder_ids_by_names(extra_emby_libs)
+            
+            if enable_all_folders is True:
+                # 如果启用所有文件夹，需要先获取所有文件夹ID，然后移除额外媒体库
+                all_libs = await emby.get_emby_libs()
+                all_folder_ids = await emby.get_folder_ids_by_names(all_libs)
+                # 从所有文件夹中移除额外媒体库
+                current_enabled_folders = [folder_id for folder_id in all_folder_ids 
+                                          if folder_id not in extra_folder_ids]
+                re = await emby.update_user_enabled_folder(emby_id=embyid, enabled_folder_ids=current_enabled_folders, enable_all_folders=False)
+            else:
+                # 从启用列表中移除额外媒体库的文件夹ID
+                current_enabled_folders = [folder_id for folder_id in current_enabled_folders 
+                                          if folder_id not in extra_folder_ids]
+                re = await emby.update_user_enabled_folder(emby_id=embyid, enabled_folder_ids=current_enabled_folders, enable_all_folders=False)
+            
+            if re is True:
+                await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
+                                        f'已关闭了 [TA](tg://user?id={tgid}) 的额外媒体库权限\n{extra_emby_libs}')
+            else:
+                await editMessage(call,
+                                  f'🌧️ Error！管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n操作失败请检查设置！')
+        except Exception as e:
+            LOGGER.error(f"关闭额外媒体库失败: {str(e)}")
             await editMessage(call,
                               f'🌧️ Error！管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n操作失败请检查设置！')
 

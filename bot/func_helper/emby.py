@@ -46,9 +46,7 @@ def create_policy(admin=False, disable=False, limit: int = 2, block: list = None
         "EnableSubtitleManagement": False,
         "EnableSyncTranscoding": False,
         "EnableMediaConversion": False,
-        "EnableAllDevices": [],
-        "EnableAllFolders": True,
-        "EnabledFolders": block,
+        "EnableAllDevices": True, 
         "SimultaneousStreamLimit": limit,
         "BlockedMediaFolders": block,
         "AllowCameraUpload": False  # 新版api 控制开关相机上传
@@ -390,14 +388,8 @@ class Embyservice(metaclass=Singleton):
                 folder_ids = []
                 for lib in result.data:
                     if lib.get('Name') in folder_names:
-                        # 获取库中的实际文件夹ID
-                        locations = lib.get('Locations', [])
-                        if locations:
-                            # 使用库的ItemId作为文件夹ID
-                            if 'ItemId' in lib:
-                                folder_ids.append(lib['ItemId'])
-                            elif 'Id' in lib:
-                                folder_ids.append(lib['Id'])
+                        if lib.get('Guid') is not None:
+                            folder_ids.append(lib.get('Guid'))
                 LOGGER.debug(f"获取文件夹ID成功: {folder_names} -> {folder_ids}")
                 return folder_ids
             else:
@@ -407,12 +399,12 @@ class Embyservice(metaclass=Singleton):
             LOGGER.error(f"获取文件夹ID异常: {str(e)}")
             return []
 
-    async def update_user_policy(self, emby_id: str, enabled_folders: List[str] = None, 
+    async def update_user_enabled_folder(self, emby_id: str, enabled_folder_ids: List[str] = None, 
                                 enable_all_folders: bool = True) -> bool:
         """
         更新用户策略 - 新版本API方法
         :param emby_id: 用户ID
-        :param enabled_folders: 启用的文件夹ID列表
+        :param enabled_folder_ids: 启用的文件夹ID列表
         :param enable_all_folders: 是否启用所有文件夹
         :return: 是否成功
         """
@@ -429,22 +421,14 @@ class Embyservice(metaclass=Singleton):
             updated_policy = current_policy.copy()
             updated_policy['EnableAllFolders'] = enable_all_folders
             
-            if enabled_folders is not None:
-                updated_policy['EnabledFolders'] = enabled_folders
-            elif not enable_all_folders:
-                # 如果不启用所有文件夹但没有指定启用列表，则获取所有非阻止的文件夹
-                all_libs = await self.get_emby_libs()
-                if all_libs:
-                    blocked_folder_ids = await self.get_folder_ids_by_names(emby_block)
-                    all_folder_ids = await self.get_folder_ids_by_names(all_libs)
-                    enabled_folder_ids = [fid for fid in all_folder_ids if fid not in blocked_folder_ids]
-                    updated_policy['EnabledFolders'] = enabled_folder_ids
+            if enabled_folder_ids is not None:
+                updated_policy['EnabledFolders'] = enabled_folder_ids
             
             print(enabled_folder_ids)
             # 发送更新请求
             result = await self._request('POST', f'/emby/Users/{emby_id}/Policy', json=updated_policy)
             if result.success:
-                LOGGER.info(f"成功更新用户策略: {emby_id} - EnableAllFolders: {enable_all_folders}")
+                LOGGER.info(f"成功更新用户策略: {emby_id} - EnableAllFolders: {enable_all_folders} - EnabledFolders: {enabled_folder_ids}")
                 return True
             else:
                 LOGGER.error(f"更新用户策略失败: {emby_id} - {result.error}")

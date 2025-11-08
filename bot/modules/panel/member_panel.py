@@ -501,7 +501,7 @@ async def embyblocks(_, call):
             else:
                 # 新版本使用 EnabledFolders 和 EnableAllFolders 控制访问
                 policy = rep.get("Policy", {})
-                enable_all_folders = policy.get("EnableAllFolders", True)
+                enable_all_folders = policy.get("EnableAllFolders")
                 enabled_folders = policy.get("EnabledFolders", [])
                 
                 if enable_all_folders:
@@ -536,17 +536,22 @@ async def user_emby_block(_, call):
         try:
             # 新版本API：使用EnabledFolders控制访问
             policy = rep.get("Policy", {})
-            current_enabled_folders = policy.get("EnabledFolders", [])
+            original_enable_all_folders = policy.get("EnableAllFolders")
+            if (original_enable_all_folders is True):
+                all_libs = await emby.get_emby_libs()
+                current_enabled_folder_ids = await emby.get_folder_ids_by_names(all_libs)
+            else:
+                current_enabled_folder_ids = policy.get("EnabledFolders", [])
+
             
             # 获取目标文件夹ID
             target_folder_ids = await emby.get_folder_ids_by_names(config.emby_block)
             
             # 从启用列表中移除目标文件夹（实现隐藏）
-            new_enabled_folders = [folder_id for folder_id in current_enabled_folders 
+            new_enabled_folder_ids = [folder_id for folder_id in current_enabled_folder_ids 
                                  if folder_id not in target_folder_ids]
-            
             # 更新用户策略
-            re = await emby.update_user_policy(emby_id=embyid, enabled_folders=new_enabled_folders, enable_all_folders=True)
+            re = await emby.update_user_enabled_folder(emby_id=embyid, enabled_folder_ids=new_enabled_folder_ids, enable_all_folders=False)
             if re is True:
                 send1 = await editMessage(call, f'🕶️ ο(=•ω＜=)ρ⌒☆\n 小尾巴隐藏好了！ ', buttons=user_emby_block_ikb)
                 if send1 is False:
@@ -571,24 +576,23 @@ async def user_emby_unblock(_, call):
             # 新版本API：使用EnabledFolders控制访问
             policy = rep.get("Policy", {})
             current_enabled_folders = policy.get("EnabledFolders", [])
-            
-            # 获取目标文件夹ID
-            target_folder_ids = await emby.get_folder_ids_by_names(config.emby_block)
-            
-            # 将目标文件夹添加到启用列表中（实现显示）
-            new_enabled_folders = list(set(current_enabled_folders + target_folder_ids))
-            
-            # 更新用户策略
-            re = await emby.update_user_policy(emby_id=embyid, enabled_folders=new_enabled_folders, enable_all_folders=True)
+            enable_all_folders = policy.get("EnableAllFolders")
+            if enable_all_folders is False:
+                # 获取目标文件夹ID
+                target_folder_ids = await emby.get_folder_ids_by_names(config.emby_block)
+                current_enabled_folders = list(set(current_enabled_folders + target_folder_ids))
+                re = await emby.update_user_enabled_folder(emby_id=embyid, enabled_folder_ids=current_enabled_folders, enable_all_folders=False)
+            else:
+                re = await emby.update_user_enabled_folder(emby_id=embyid, enable_all_folders=True)
             if re is True:
-                send1 = await editMessage(call, f'🕶️ ┭┮﹏┭┮\n 小尾巴被抓住辽！ ', buttons=user_emby_unblock_ikb)
+                send1 = await editMessage(call, f'🕶️ ο(=•ω＜=)ρ⌒☆\n 小尾巴显示好了！ ', buttons=user_emby_unblock_ikb)
                 if send1 is False:
                     return
             else:
-                await editMessage(call, f'🎬 Error!\n 显示失败，请上报管理检查设置', buttons=back_members_ikb)
+                await editMessage(call, f'🕶️ Error!\n 显示失败，请上报管理检查设置', buttons=back_members_ikb)
         except Exception as e:
             LOGGER.error(f"显示媒体库失败: {str(e)}")
-            await editMessage(call, f'🎬 Error!\n 显示失败，请上报管理检查设置', buttons=back_members_ikb)
+            await editMessage(call, f'🕶️ Error!\n 显示失败，请上报管理检查设置', buttons=back_members_ikb)
 
 
 @bot.on_callback_query(filters.regex('exchange') & user_in_group_on_filter)

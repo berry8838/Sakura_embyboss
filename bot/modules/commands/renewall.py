@@ -63,9 +63,14 @@ async def coins_all(_, msg):
     try:
         coin = int(msg.command[1])
         lv = msg.command[2]
+        # 获取是否发送私信的参数，默认为 False（不发送）
+        send_msg = False
+        if len(msg.command) > 3:
+            send_msg_param = msg.command[3].lower()
+            send_msg = send_msg_param in ['true', '1', 'yes', 'y', 'send']
     except (IndexError, ValueError):
         return await sendMessage(msg,
-                                 f"🔔 **使用格式：**/coinsall [+/-数量] [等级]\n\n给指定等级的用户 [+/- {sakura_b}]\n示例： `/coinsall 100 b` 给所有b级用户加100{sakura_b}\n等级说明:\na- 白名单账户\nb - 正常账户\nc- 已封禁账户\n", timer=60)
+                                 f"🔔 **使用格式：**/coinsall [+/-数量] [等级] [发送消息]\n\n给指定等级的用户 [+/- {sakura_b}]\n示例： `/coinsall 100 b` 给所有b级用户加100{sakura_b}\n示例： `/coinsall 100 b true` 给所有b级用户加100{sakura_b}并私发消息\n等级说明:\na- 白名单账户\nb - 正常账户\nc- 已封禁账户\n发送消息参数：true/1/yes/y/send 表示发送私信，默认不发送\n", timer=60)
     send = await bot.send_photo(msg.chat.id, photo=bot_photo,
                                 caption=f"⚡【{sakura_b}任务】\n  **正在开启派送{sakura_b}中...请稍后**")
     rst = get_all_emby(Emby.lv == lv)
@@ -85,24 +90,31 @@ async def coins_all(_, msg):
         end = time.perf_counter()
         times = end - start
         sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'{msg.from_user.first_name}'
-        await send.edit(
-            f"⚡【{sakura_b}任务】\n\n  批量派出 {coin} {sakura_b} * {b} ，耗时：{times:.3f}s\n 已到账，正在向每个拥有emby的用户私发消息，短时间内请不要重复使用")
+        if send_msg:
+            await send.edit(
+                f"⚡【{sakura_b}任务】\n\n  批量派出 {coin} {sakura_b} * {b} ，耗时：{times:.3f}s\n 已到账，正在向每个拥有emby的用户私发消息，短时间内请不要重复使用")
+        else:
+            await send.edit(
+                f"⚡【{sakura_b}任务】\n\n  批量派出 {coin} {sakura_b} * {b} ，耗时：{times:.3f}s\n 已到账")
         LOGGER.info(
             f"【派送{sakura_b}任务】 - {sign_name}({msg.from_user.id}) 派出 {coin} * {b} 更改用时{times:.3f} s")
-        for l in ls:
-            try:
-                await bot.send_message(l[0], f"🎯 管理员 {sign_name} 调节了您的账户{sakura_b} {coin}"
-                                         f'\n📅 实时数量：{l[1]}')
-            except FloodWait as f:
-                LOGGER.warning(str(f))
-                await asyncio.sleep(f.value * 1.2)
-                await bot.send_message(l[0], f"🎯 管理员 {sign_name} 调节了您的账户{sakura_b} {coin}"
-                                         f'\n📅 实时数量：{l[1]}')
-            except Exception as e:
-                LOGGER.error(f"派送{sakura_b}任务失败：{l[0]} {e}")
-                continue
-        LOGGER.info(
-            f"【派送{sakura_b}任务】 - {sign_name}({msg.from_user.id}) 派出 {coin} {sakura_b} * {b}，消息私发完成")
+        
+        # 根据参数决定是否发送私信
+        if send_msg:
+            for l in ls:
+                try:
+                    await bot.send_message(l[0], f"🎯 管理员 {sign_name} 调节了您的账户{sakura_b} {coin}"
+                                             f'\n📅 实时数量：{l[1]}')
+                except FloodWait as f:
+                    LOGGER.warning(str(f))
+                    await asyncio.sleep(f.value * 1.2)
+                    await bot.send_message(l[0], f"🎯 管理员 {sign_name} 调节了您的账户{sakura_b} {coin}"
+                                             f'\n📅 实时数量：{l[1]}')
+                except Exception as e:
+                    LOGGER.error(f"派送{sakura_b}任务失败：{l[0]} {e}")
+                    continue
+            LOGGER.info(
+                f"【派送{sakura_b}任务】 - {sign_name}({msg.from_user.id}) 派出 {coin} {sakura_b} * {b}，消息私发完成")
     else:
         await msg.reply("数据库操作出错，请检查重试")
 

@@ -260,39 +260,11 @@ class Embyservice(metaclass=Singleton):
             
             # 4. 隐藏 emby_block 和 extra_emby_libs 媒体库
             try:
-                # 获取所有媒体库的文件夹ID
-                all_libs = await self.get_emby_libs()
-                if all_libs:
-                    all_folder_ids = await self.get_folder_ids_by_names(all_libs)
-                    
-                    # 获取要隐藏的媒体库（emby_block + extra_emby_libs）的文件夹ID
-                    block_libs = emby_block + extra_emby_libs
-                    block_folder_ids = await self.get_folder_ids_by_names(block_libs)
-                    
-                    # 从所有文件夹ID中移除要隐藏的文件夹ID
-                    enabled_folder_ids = [folder_id for folder_id in all_folder_ids 
-                                         if folder_id not in block_folder_ids]
-                    
-                    # 使用新版本API设置媒体库访问权限
-                    if enabled_folder_ids:
-                        result = await self.update_user_enabled_folder(
-                            emby_id=user_id, 
-                            enabled_folder_ids=enabled_folder_ids, 
-                            enable_all_folders=False
-                        )
-                        if not result:
-                            LOGGER.warning(f"设置媒体库权限失败: {user_id}，但用户已创建成功")
-                    else:
-                        # 如果没有可用的媒体库，设置为空列表
-                        result = await self.update_user_enabled_folder(
-                            emby_id=user_id, 
-                            enabled_folder_ids=[], 
-                            enable_all_folders=False
-                        )
-                        if not result:
-                            LOGGER.warning(f"设置媒体库权限失败: {user_id}，但用户已创建成功")
-                else:
-                    LOGGER.warning("无法获取媒体库列表，跳过设置媒体库权限")
+                # 使用封装的隐藏方法
+                block_libs = emby_block + extra_emby_libs
+                result = await self.hide_folders_by_names(user_id, block_libs)
+                if not result:
+                    LOGGER.warning(f"设置媒体库权限失败: {user_id}，但用户已创建成功")
             except Exception as e:
                 # 如果设置媒体库权限失败，记录错误但不影响用户创建
                 LOGGER.error(f"设置媒体库权限异常: {name} (ID: {user_id}) - {str(e)}")
@@ -475,6 +447,132 @@ class Embyservice(metaclass=Singleton):
         except Exception as e:
             LOGGER.error(f"更新用户策略异常: {emby_id} - {str(e)}")
             return False
+
+    async def get_current_enabled_folder_ids(self, emby_id: str) -> Tuple[List[str], bool]:
+        """
+        获取当前启用的文件夹ID列表（处理 EnableAllFolders 的情况）
+        :param emby_id: 用户ID
+        :return: (启用的文件夹ID列表, 是否启用所有文件夹)
+        """
+        try:
+            success, rep = await self.user(emby_id=emby_id)
+            if not success:
+                LOGGER.error(f"获取用户信息失败: {emby_id}")
+                return [], False
+            
+            policy = rep.get("Policy", {})
+            enable_all_folders = policy.get("EnableAllFolders", False)
+            
+            if enable_all_folders is True:
+                # 如果启用所有文件夹，需要获取所有媒体库的文件夹ID
+                all_libs = await self.get_emby_libs()
+                if all_libs:
+                    all_folder_ids = await self.get_folder_ids_by_names(all_libs)
+                    return all_folder_ids, True
+                else:
+                    return [], True
+            else:
+                current_enabled_folders = policy.get("EnabledFolders", [])
+                return current_enabled_folders, False
+                
+        except Exception as e:
+            LOGGER.error(f"获取当前启用文件夹ID异常: {emby_id} - {str(e)}")
+            return [], False
+
+    async def hide_folders_by_names(self, emby_id: str, folder_names: List[str]) -> bool:
+        """
+        根据媒体库名称隐藏指定的媒体库
+        :param emby_id: 用户ID
+        :param folder_names: 要隐藏的媒体库名称列表
+        :return: 是否成功
+        """
+        try:
+            # 获取当前启用的文件夹ID列表
+            current_enabled_folders, enable_all_folders = await self.get_current_enabled_folder_ids(emby_id)
+            
+            # 获取要隐藏的媒体库对应的文件夹ID
+            hide_folder_ids = await self.get_folder_ids_by_names(folder_names)
+            
+            if not hide_folder_ids:
+                LOGGER.warning(f"未找到要隐藏的媒体库: {folder_names}")
+                return True  # 如果找不到，认为操作成功（可能已经隐藏了）
+            
+            # 从启用列表中移除要隐藏的文件夹ID
+            new_enabled_folders = [folder_id for folder_id in current_enabled_folders 
+                                  if folder_id not in hide_folder_ids]
+            
+            # 更新用户策略
+            return await self.update_user_enabled_folder(
+                emby_id=emby_id,
+                enabled_folder_ids=new_enabled_folders,
+                enable_all_folders=False
+            )
+            
+        except Exception as e:
+            LOGGER.error(f"隐藏媒体库异常: {emby_id} - {str(e)}")
+            return False
+
+    async def show_folders_by_names(self, emby_id: str, folder_names: List[str]) -> bool:
+        """
+        根据媒体库名称显示指定的媒体库
+        :param emby_id: 用户ID
+        :param folder_names: 要显示的媒体库名称列表
+        :return: 是否成功
+        """
+        try:
+            # 获取当前启用的文件夹ID列表
+            current_enabled_folders, enable_all_folders = await self.get_current_enabled_folder_ids(emby_id)
+            
+            # 如果已经启用所有文件夹，则不需要修改
+            if enable_all_folders is True:
+                return await self.update_user_enabled_folder(
+                    emby_id=emby_id,
+                    enable_all_folders=True
+                )
+            
+            # 获取要显示的媒体库对应的文件夹ID
+            show_folder_ids = await self.get_folder_ids_by_names(folder_names)
+            
+            if not show_folder_ids:
+                LOGGER.warning(f"未找到要显示的媒体库: {folder_names}")
+                return True  # 如果找不到，认为操作成功
+            
+            # 将文件夹ID添加到启用列表中（去重）
+            new_enabled_folders = list(set(current_enabled_folders + show_folder_ids))
+            
+            # 更新用户策略
+            return await self.update_user_enabled_folder(
+                emby_id=emby_id,
+                enabled_folder_ids=new_enabled_folders,
+                enable_all_folders=False
+            )
+            
+        except Exception as e:
+            LOGGER.error(f"显示媒体库异常: {emby_id} - {str(e)}")
+            return False
+
+    async def enable_all_folders_for_user(self, emby_id: str) -> bool:
+        """
+        启用所有媒体库
+        :param emby_id: 用户ID
+        :return: 是否成功
+        """
+        return await self.update_user_enabled_folder(
+            emby_id=emby_id,
+            enable_all_folders=True
+        )
+
+    async def disable_all_folders_for_user(self, emby_id: str) -> bool:
+        """
+        禁用所有媒体库（关闭所有媒体库访问）
+        :param emby_id: 用户ID
+        :return: 是否成功
+        """
+        return await self.update_user_enabled_folder(
+            emby_id=emby_id,
+            enabled_folder_ids=[],
+            enable_all_folders=False
+        )
 
     @cache.memoize(ttl=120)
     async def get_current_playing_count(self) -> int:

@@ -114,21 +114,8 @@ async def user_embyextralib_unblock(_, call):
     success, rep = await emby.user(emby_id=embyid)
     if success:
         try:
-            # 新版本API：使用EnabledFolders控制访问
-            policy = rep.get("Policy", {})
-            current_enabled_folders = policy.get("EnabledFolders", [])
-            enable_all_folders = policy.get("EnableAllFolders")
-            
-            # 获取额外媒体库对应的文件夹ID
-            extra_folder_ids = await emby.get_folder_ids_by_names(extra_emby_libs)
-            
-            if enable_all_folders is True:
-                # 如果已经启用所有文件夹，则不需要修改（因为已经可以看到所有文件夹）
-                re = await emby.update_user_enabled_folder(emby_id=embyid, enable_all_folders=True)
-            else:
-                # 将额外媒体库的文件夹ID添加到启用列表中
-                current_enabled_folders = list(set(current_enabled_folders + extra_folder_ids))
-                re = await emby.update_user_enabled_folder(emby_id=embyid, enabled_folder_ids=current_enabled_folders, enable_all_folders=False)
+            # 使用封装的显示额外媒体库方法
+            re = await emby.show_folders_by_names(embyid, extra_emby_libs)
             
             if re is True:
                 await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'
@@ -157,27 +144,8 @@ async def user_embyextralib_block(_, call):
     success, rep = await emby.user(emby_id=embyid)
     if success:
         try:
-            # 新版本API：使用EnabledFolders控制访问
-            policy = rep.get("Policy", {})
-            current_enabled_folders = policy.get("EnabledFolders", [])
-            enable_all_folders = policy.get("EnableAllFolders")
-            
-            # 获取额外媒体库对应的文件夹ID
-            extra_folder_ids = await emby.get_folder_ids_by_names(extra_emby_libs)
-            
-            if enable_all_folders is True:
-                # 如果启用所有文件夹，需要先获取所有文件夹ID，然后移除额外媒体库
-                all_libs = await emby.get_emby_libs()
-                all_folder_ids = await emby.get_folder_ids_by_names(all_libs)
-                # 从所有文件夹中移除额外媒体库
-                current_enabled_folders = [folder_id for folder_id in all_folder_ids 
-                                          if folder_id not in extra_folder_ids]
-                re = await emby.update_user_enabled_folder(emby_id=embyid, enabled_folder_ids=current_enabled_folders, enable_all_folders=False)
-            else:
-                # 从启用列表中移除额外媒体库的文件夹ID
-                current_enabled_folders = [folder_id for folder_id in current_enabled_folders 
-                                          if folder_id not in extra_folder_ids]
-                re = await emby.update_user_enabled_folder(emby_id=embyid, enabled_folder_ids=current_enabled_folders, enable_all_folders=False)
+            # 使用封装的隐藏额外媒体库方法
+            re = await emby.hide_folders_by_names(embyid, extra_emby_libs)
             
             if re is True:
                 await editMessage(call, f'🌟 好的，管理员 [{call.from_user.first_name}](tg://user?id={call.from_user.id})\n'

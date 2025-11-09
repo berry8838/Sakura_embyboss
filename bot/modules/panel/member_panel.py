@@ -534,24 +534,8 @@ async def user_emby_block(_, call):
     success, rep = await emby.user(emby_id=embyid)
     if success:
         try:
-            # 新版本API：使用EnabledFolders控制访问
-            policy = rep.get("Policy", {})
-            original_enable_all_folders = policy.get("EnableAllFolders")
-            if (original_enable_all_folders is True):
-                all_libs = await emby.get_emby_libs()
-                current_enabled_folder_ids = await emby.get_folder_ids_by_names(all_libs)
-            else:
-                current_enabled_folder_ids = policy.get("EnabledFolders", [])
-
-            
-            # 获取目标文件夹ID
-            target_folder_ids = await emby.get_folder_ids_by_names(config.emby_block)
-            
-            # 从启用列表中移除目标文件夹（实现隐藏）
-            new_enabled_folder_ids = [folder_id for folder_id in current_enabled_folder_ids 
-                                 if folder_id not in target_folder_ids]
-            # 更新用户策略
-            re = await emby.update_user_enabled_folder(emby_id=embyid, enabled_folder_ids=new_enabled_folder_ids, enable_all_folders=False)
+            # 使用封装的隐藏媒体库方法
+            re = await emby.hide_folders_by_names(embyid, config.emby_block)
             if re is True:
                 send1 = await editMessage(call, f'🕶️ ο(=•ω＜=)ρ⌒☆\n 小尾巴隐藏好了！ ', buttons=user_emby_block_ikb)
                 if send1 is False:
@@ -573,17 +557,8 @@ async def user_emby_unblock(_, call):
     success, rep = await emby.user(emby_id=embyid)
     if success:
         try:
-            # 新版本API：使用EnabledFolders控制访问
-            policy = rep.get("Policy", {})
-            current_enabled_folders = policy.get("EnabledFolders", [])
-            enable_all_folders = policy.get("EnableAllFolders")
-            if enable_all_folders is False:
-                # 获取目标文件夹ID
-                target_folder_ids = await emby.get_folder_ids_by_names(config.emby_block)
-                current_enabled_folders = list(set(current_enabled_folders + target_folder_ids))
-                re = await emby.update_user_enabled_folder(emby_id=embyid, enabled_folder_ids=current_enabled_folders, enable_all_folders=False)
-            else:
-                re = await emby.update_user_enabled_folder(emby_id=embyid, enable_all_folders=True)
+            # 使用封装的显示媒体库方法
+            re = await emby.show_folders_by_names(embyid, config.emby_block)
             if re is True:
                 send1 = await editMessage(call, f'🕶️ ο(=•ω＜=)ρ⌒☆\n 小尾巴显示好了！ ', buttons=user_emby_unblock_ikb)
                 if send1 is False:

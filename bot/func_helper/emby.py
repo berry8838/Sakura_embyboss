@@ -258,6 +258,45 @@ class Embyservice(metaclass=Singleton):
                 LOGGER.error(f"设置策略失败: {result.error}")
                 return False
             
+            # 4. 隐藏 emby_block 和 extra_emby_libs 媒体库
+            try:
+                # 获取所有媒体库的文件夹ID
+                all_libs = await self.get_emby_libs()
+                if all_libs:
+                    all_folder_ids = await self.get_folder_ids_by_names(all_libs)
+                    
+                    # 获取要隐藏的媒体库（emby_block + extra_emby_libs）的文件夹ID
+                    block_libs = emby_block + extra_emby_libs
+                    block_folder_ids = await self.get_folder_ids_by_names(block_libs)
+                    
+                    # 从所有文件夹ID中移除要隐藏的文件夹ID
+                    enabled_folder_ids = [folder_id for folder_id in all_folder_ids 
+                                         if folder_id not in block_folder_ids]
+                    
+                    # 使用新版本API设置媒体库访问权限
+                    if enabled_folder_ids:
+                        result = await self.update_user_enabled_folder(
+                            emby_id=user_id, 
+                            enabled_folder_ids=enabled_folder_ids, 
+                            enable_all_folders=False
+                        )
+                        if not result:
+                            LOGGER.warning(f"设置媒体库权限失败: {user_id}，但用户已创建成功")
+                    else:
+                        # 如果没有可用的媒体库，设置为空列表
+                        result = await self.update_user_enabled_folder(
+                            emby_id=user_id, 
+                            enabled_folder_ids=[], 
+                            enable_all_folders=False
+                        )
+                        if not result:
+                            LOGGER.warning(f"设置媒体库权限失败: {user_id}，但用户已创建成功")
+                else:
+                    LOGGER.warning("无法获取媒体库列表，跳过设置媒体库权限")
+            except Exception as e:
+                # 如果设置媒体库权限失败，记录错误但不影响用户创建
+                LOGGER.error(f"设置媒体库权限异常: {name} (ID: {user_id}) - {str(e)}")
+            
             LOGGER.info(f"成功创建用户: {name} (ID: {user_id})")
             return user_id, password, expiry_date
             

@@ -67,10 +67,10 @@ async def coins_all(_, msg):
         send_msg = False
         if len(msg.command) > 3:
             send_msg_param = msg.command[3].lower()
-            send_msg = send_msg_param in ['true', '1', 'yes', 'y', 'send']
+            send_msg = send_msg_param == 'true'
     except (IndexError, ValueError):
         return await sendMessage(msg,
-                                 f"🔔 **使用格式：**/coinsall [+/-数量] [等级] [发送消息]\n\n给指定等级的用户 [+/- {sakura_b}]\n示例： `/coinsall 100 b` 给所有b级用户加100{sakura_b}\n示例： `/coinsall 100 b true` 给所有b级用户加100{sakura_b}并私发消息\n等级说明:\na- 白名单账户\nb - 正常账户\nc- 已封禁账户\n发送消息参数：true/1/yes/y/send 表示发送私信，默认不发送\n", timer=60)
+                                 f"🔔 **使用格式：**/coinsall [+/-数量] [等级] [发送消息]\n\n给指定等级的用户 [+/- {sakura_b}]\n示例： `/coinsall 100 b` 给所有b级用户加100{sakura_b}\n示例： `/coinsall 100 b true` 给所有b级用户加100{sakura_b}并私发消息\n等级说明:\na- 白名单账户\nb- 正常账户\nc- 已封禁账户\n发送消息参数：true 表示发送私信，默认不发送\n", timer=60)
     send = await bot.send_photo(msg.chat.id, photo=bot_photo,
                                 caption=f"⚡【{sakura_b}任务】\n  **正在开启派送{sakura_b}中...请稍后**")
     rst = get_all_emby(Emby.lv == lv)
@@ -118,26 +118,62 @@ async def coins_all(_, msg):
     else:
         await msg.reply("数据库操作出错，请检查重试")
 
-# coinsclear 清除所有用户币币
+# coinsclear 清除用户币币
 @bot.on_message(filters.command('coinsclear', prefixes) & admins_on_filter)
 async def coinsclear(_, msg):
     await deleteMessage(msg)
     try:
-        confirm_clear = msg.command[1]
+        level_param = msg.command[1].lower()
+        confirm_param = msg.command[2].lower() if len(msg.command) > 2 else None
     except (IndexError, ValueError):
         return await sendMessage(msg,
-                                 f"🔔 如果确定清除所有用户币币，请输入 `/coinsclear true`", timer=60)
-    if confirm_clear == 'true':
+                                 f"🔔 **使用格式：**\n\n`/coinsclear [等级/all] true`\n\n清除指定等级用户的币币\n等级说明:\na- 白名单账户\nb - 正常账户\nc- 已封禁账户\nd- 无账号用户\n\n示例：\n`/coinsclear all true` - 清除所有用户币币\n`/coinsclear a true` - 清除a级用户币币\n`/coinsclear b true` - 清除b级用户币币\n`/coinsclear c true` - 清除c级用户币币\n`/coinsclear d true` - 清除d级用户币币", timer=60)
+    
+    # 验证第二个参数必须是 true
+    if confirm_param != 'true':
+        return await sendMessage(msg,
+                                 f"🔔 **使用格式：**\n\n`/coinsclear [等级/all] true`\n\n⚠️ 第二个参数必须是 `true` 才能执行清除操作\n\n示例：\n`/coinsclear all true` - 清除所有用户币币\n`/coinsclear b true` - 清除b级用户币币", timer=60)
+    
+    sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'{msg.from_user.first_name}'
+    
+    # 清除所有用户币币
+    if level_param == 'all':
         send = await bot.send_photo(msg.chat.id, photo=bot_photo,
                                 caption=f"⚡【{sakura_b}任务】\n  **正在清除所有用户币币...请稍后**")
         rst = sql_clear_emby_iv()
         if rst:
             await send.edit(f"⚡【{sakura_b}任务】\n\n  清除所有用户币币完成")
+            LOGGER.info(f"【清除{sakura_b}任务】 - {sign_name}({msg.from_user.id}) 清除所有用户币币完成")
         else:
             await send.edit(f"⚡【{sakura_b}任务】\n\n  清除所有用户币币失败")
+            LOGGER.error(f"【清除{sakura_b}任务】 - {sign_name}({msg.from_user.id}) 清除所有用户币币失败")
+    # 根据等级清除币币
+    elif level_param in ['a', 'b', 'c', 'd']:
+        lv = level_param
+        send = await bot.send_photo(msg.chat.id, photo=bot_photo,
+                                caption=f"⚡【{sakura_b}任务】\n  **正在清除{lv}级用户币币...请稍后**")
+        
+        # 获取指定等级的所有用户
+        rst = get_all_emby(Emby.lv == lv)
+        if rst is None or len(rst) == 0:
+            LOGGER.info(f"【清除{sakura_b}任务】 - {sign_name}({msg.from_user.id}) 没有检测到{lv}级用户")
+            return await send.edit(f"⚡【{sakura_b}任务】\n\n  没有检测到{lv}级用户")
+        
+        # 批量将币币设置为0
+        ls = []
+        for i in rst:
+            ls.append([i.tg, 0])
+        
+        if sql_update_embys(some_list=ls, method='iv'):
+            count = len(ls)
+            await send.edit(f"⚡【{sakura_b}任务】\n\n  清除{lv}级用户币币完成\n  共清除 {count} 个用户")
+            LOGGER.info(f"【清除{sakura_b}任务】 - {sign_name}({msg.from_user.id}) 清除{lv}级用户币币完成，共 {count} 个用户")
+        else:
+            await send.edit(f"⚡【{sakura_b}任务】\n\n  清除{lv}级用户币币失败")
+            LOGGER.error(f"【清除{sakura_b}任务】 - {sign_name}({msg.from_user.id}) 清除{lv}级用户币币失败")
     else:
         return await sendMessage(msg,
-                                 f"🔔 如果确定清除所有用户币币，请输入 `/coinsclear true`", timer=60)
+                                 f"🔔 **使用格式：**\n\n`/coinsclear [等级/all] true`\n\n⚠️ 等级参数必须是：`all`、`a`、`b`、`c` 或 `d`\n\n等级说明:\na- 白名单账户\nb - 正常账户\nc- 已封禁账户\nd- 无账号用户\n\n示例：\n`/coinsclear all true` - 清除所有用户币币\n`/coinsclear b true` - 清除b级用户币币", timer=60)
 @bot.on_message(filters.command('callall', prefixes) & admins_on_filter & filters.private)
 async def call_all(_, msg):
     await msg.delete()

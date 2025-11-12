@@ -127,7 +127,10 @@ async def sync_emby_unbound(_, msg):
     end = time.perf_counter()
     times = end - start
     if a != 0:
-        await sendMessage(msg, text=f"⚡扫描未绑定Bot任务 done\n  共检索出 {b} 个账户， {a}个未绑定，耗时：{times:.3f}s，如需删除请输入 `/syncunbound true`")
+        if confirm_delete:
+            await sendMessage(msg, text=f"⚡扫描未绑定Bot任务 done\n  共检索出 {b} 个账户， {a}个未绑定，耗时：{times:.3f}s，已删除")
+        else:
+            await sendMessage(msg, text=f"⚡扫描未绑定Bot任务 done\n  共检索出 {b} 个账户， {a}个未绑定，耗时：{times:.3f}s，如需删除请输入 `/syncunbound true`")
     else:
         await sendMessage(msg, text=f"**扫描未绑定Bot任务 结束！搞毛，没有人被干掉。**")
     LOGGER.info(f"{sign_name} 扫描未绑定Bot任务结束，共检索出 {b} 个账户， {a}个未绑定，耗时：{times:.3f}s")

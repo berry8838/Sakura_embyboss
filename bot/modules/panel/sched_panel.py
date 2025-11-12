@@ -115,9 +115,16 @@ async def week_r_ranks(_, msg):
 @bot.on_message(filters.command('low_activity', prefixes) & admins_on_filter)
 async def run_low_ac(_, msg):
     await deleteMessage(msg)
-    send = await msg.reply(f"⭕ 不活跃检测运行ing···")
-    await asyncio.gather(check_low_activity(), send.delete())
-
+    confirm = False
+    try:
+        confirm = msg.command[1]
+    except:
+        pass
+    if confirm == 'true':
+        send = await msg.reply("⭕ 不活跃检测运行ing···")
+        await asyncio.gather(check_low_activity(), send.delete())
+    else:
+        await msg.reply("🔔 请输入 `/low_activity true` 确认运行")
 
 @bot.on_message(filters.command('uranks', prefixes) & admins_on_filter)
 async def shou_dong_uplayrank(_, msg):

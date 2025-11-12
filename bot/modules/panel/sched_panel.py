@@ -91,9 +91,17 @@ async def sched_change_policy(_, call):
 
 @bot.on_message(filters.command('check_ex', prefixes) & admins_on_filter)
 async def check_ex_admin(_, msg):
-    send = await msg.reply("🍥 正在运行 【到期检测】。。。")
-    await check_expired()
-    await asyncio.gather(msg.delete(), send.edit("✅ 【到期检测结束】"))
+    await deleteMessage(msg)
+    confirm = False
+    try:
+        confirm = msg.command[1]
+    except:
+        pass
+    if confirm == 'true':
+        send = await msg.reply("🍥 正在运行 【到期检测】。。。")
+        await asyncio.gather(check_expired(), send.edit("✅ 【到期检测结束】"))
+    else:
+        await msg.reply("🔔 请输入 `/check_ex true` 确认运行")
 
 
 # bot数据库手动备份

@@ -78,24 +78,43 @@ def sql_clear_emby_iv():
 def sql_delete_emby(tg=None, embyid=None, name=None):
     """
     根据tg, embyid或name删除一条emby记录
+    至少需要提供一个参数，如果所有参数都为None，则返回False
     """
     with Session() as session:
         try:
-            # 构造一个or_条件，只要有一个参数不为None就可以匹配
-            condition = or_(Emby.tg == tg, Emby.embyid == embyid, Emby.name == name)
-            # 用filter来过滤，注意要加括号
+            # 构建条件列表，只包含非None的参数
+            conditions = []
+            if tg is not None:
+                conditions.append(Emby.tg == tg)
+            if embyid is not None:
+                conditions.append(Emby.embyid == embyid)
+            if name is not None:
+                conditions.append(Emby.name == name)
+            
+            # 如果所有参数都为None，返回False
+            if not conditions:
+                LOGGER.warning("sql_delete_emby: 所有参数都为None，无法删除记录")
+                return False
+            
+            # 使用or_组合所有条件
+            condition = or_(*conditions)
+            LOGGER.debug(f"删除数据库记录，条件: tg={tg}, embyid={embyid}, name={name}")
+            
+            # 用filter来过滤，使用with_for_update锁定记录
             emby = session.query(Emby).filter(condition).with_for_update().first()
             if emby:
+                LOGGER.info(f"删除数据库记录 {emby.name} - {emby.embyid} - {emby.tg}")
                 session.delete(emby)
                 try:
                     session.commit()
+                    LOGGER.info(f"成功删除数据库记录: tg={tg}, embyid={embyid}, name={name}")
                     return True
                 except Exception as e:
                     LOGGER.error(f"删除数据库记录时提交事务失败 {e}")
                     session.rollback()
                     return False
             else:
-                LOGGER.info(f"数据库记录不存在 {tg}")
+                LOGGER.info(f"数据库记录不存在: tg={tg}, embyid={embyid}, name={name}")
                 return False
         except Exception as e:
             LOGGER.error(f"删除数据库记录时发生异常 {e}")

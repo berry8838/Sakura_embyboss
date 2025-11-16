@@ -34,55 +34,61 @@ from bot.sql_helper.sql_favorites import sql_update_favorites, EmbyFavorites
 @bot.on_message(filters.command('syncgroupm', prefixes) & admins_on_filter)
 async def sync_emby_group(_, msg):
     await deleteMessage(msg)
-    send = await sendPhoto(msg, photo=bot_photo, caption="⚡群组成员同步任务\n  **正在开启中...消灭未在群组的账户**",
-                           send=True)
-    sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'{msg.from_user.first_name}'
-    LOGGER.info(f"{sign_name} 执行了群组成员同步任务")
-    # 减少api调用
-    members = [member.user.id async for member in bot.get_chat_members(group[0])]
-    r = get_all_emby(Emby.lv == 'b')
-    if not r:
-        return await send.edit("⚡群组同步任务\n\n结束！搞毛，没有人。")
-    a = b = 0
-    text = ''
-    start = time.perf_counter()
-    for i in r:
-        b += 1
-        if i.tg not in members:
-            if await emby.emby_del(emby_id=i.embyid):
-                sql_update_emby(Emby.embyid == i.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
-                                ex=None)
-                tem_deluser()
-                a += 1
-                reply_text = f'{b}. #id{i.tg} - [{i.name}](tg://user?id={i.tg}) 删除\n'
-                LOGGER.info(reply_text)
-                sql_delete_emby(tg=i.tg)
-            else:
-                reply_text = f'{b}. #id{i.tg} - [{i.name}](tg://user?id={i.tg}) 删除错误\n'
-                LOGGER.error(reply_text)
-            text += reply_text
-            try:
-                await bot.send_message(i.tg, reply_text)
-            except FloodWait as f:
-                LOGGER.warning(str(f))
-                await sleep(f.value * 1.2)
-                await bot.send_message(i.tg, reply_text)
-            except Exception as e:
-                LOGGER.error(e)
+    try:
+        confirm_delete = msg.command[1]
+    except:
+        return await sendMessage(msg,
+                                 '⚠️ 注意: 此操作将删除所有未在群组的Emby账户, 如确定使用请输入 `/syncgroupm true`')
+    if confirm_delete == 'true':
+        send = await sendPhoto(msg, photo=bot_photo, caption="⚡群组成员同步任务\n  **正在开启中...消灭未在群组的账户**",
+                            send=True)
+        sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'{msg.from_user.first_name}'
+        LOGGER.info(f"{sign_name} 执行了群组成员同步任务")
+        # 减少api调用
+        members = [member.user.id async for member in bot.get_chat_members(group[0])]
+        r = get_all_emby(Emby.lv == 'b')
+        if not r:
+            return await send.edit("⚡群组同步任务\n\n结束！搞毛，没有人。")
+        a = b = 0
+        text = ''
+        start = time.perf_counter()
+        for i in r:
+            b += 1
+            if i.tg not in members:
+                if await emby.emby_del(emby_id=i.embyid):
+                    sql_update_emby(Emby.embyid == i.embyid, embyid=None, name=None, pwd=None, pwd2=None, lv='d', cr=None,
+                                    ex=None)
+                    tem_deluser()
+                    a += 1
+                    reply_text = f'{b}. #id{i.tg} - [{i.name}](tg://user?id={i.tg}) 删除\n'
+                    LOGGER.info(reply_text)
+                    sql_delete_emby(tg=i.tg)
+                else:
+                    reply_text = f'{b}. #id{i.tg} - [{i.name}](tg://user?id={i.tg}) 删除错误\n'
+                    LOGGER.error(reply_text)
+                text += reply_text
+                try:
+                    await bot.send_message(i.tg, reply_text)
+                except FloodWait as f:
+                    LOGGER.warning(str(f))
+                    await sleep(f.value * 1.2)
+                    await bot.send_message(i.tg, reply_text)
+                except Exception as e:
+                    LOGGER.error(e)
 
-    # 防止触发 MESSAGE_TOO_LONG 异常，text可以是4096，caption为1024，取小会使界面好看些
-    n = 1000
-    chunks = [text[i:i + n] for i in range(0, len(text), n)]
-    for c in chunks:
-        await sendMessage(msg, c + f'\n🔈 当前时间：{datetime.now().strftime("%Y-%m-%d")}')
-    end = time.perf_counter()
-    times = end - start
-    if a != 0:
-        await sendMessage(msg,
-                          text=f"**⚡群组成员同步任务 结束！**\n  共检索出 {b} 个账户，处刑 {a} 个账户，耗时：{times:.3f}s")
-    else:
-        await sendMessage(msg, text="** 群组成员同步任务 结束！没人偷跑~**")
-    LOGGER.info(f"【群组同步任务结束】 - {sign_name} 共检索出 {b} 个账户，处刑 {a} 个账户，耗时：{times:.3f}s")
+        # 防止触发 MESSAGE_TOO_LONG 异常，text可以是4096，caption为1024，取小会使界面好看些
+        n = 1000
+        chunks = [text[i:i + n] for i in range(0, len(text), n)]
+        for c in chunks:
+            await sendMessage(msg, c + f'\n🔈 当前时间：{datetime.now().strftime("%Y-%m-%d")}')
+        end = time.perf_counter()
+        times = end - start
+        if a != 0:
+            await sendMessage(msg,
+                            text=f"**⚡群组成员同步任务 结束！**\n  共检索出 {b} 个账户，处刑 {a} 个账户，耗时：{times:.3f}s")
+        else:
+            await sendMessage(msg, text="** 群组成员同步任务 结束！没人偷跑~**")
+        LOGGER.info(f"【群组同步任务结束】 - {sign_name} 共检索出 {b} 个账户，处刑 {a} 个账户，耗时：{times:.3f}s")
 
 
 @bot.on_message(filters.command('syncunbound', prefixes) & admins_on_filter)
@@ -202,26 +208,33 @@ async def reload_admins(_, msg):
 @bot.on_message(filters.command('deleted', prefixes) & admins_on_filter)
 async def clear_deleted_account(_, msg):
     await deleteMessage(msg)
-    send = await msg.reply("🔍 正在运行清理程序...")
-    a = b = 0
-    text = '️⛔ 清理结束\n'
-    async for d in bot.get_chat_members(group[0]):  # 以后别写group了,绑定一下聊天群更优雅
-        b += 1
-        try:
-            # and d.is_member or any(keyword in l.user.first_name for keyword in keywords) 关键词检索，没模板不加了
-            if d.user.is_deleted:
-                await msg.chat.ban_member(d.user.id)
-                sql_delete_emby(tg=d.user.id)
-                a += 1
-                # 打个注释，scheduler 默认出群就删号了，不需要再执行删除
-                text += f'{a}. `{d.user.id}` 已注销\n'
-        except Exception as e:
-            LOGGER.error(e)
-    await send.delete()
-    n = 1024
-    chunks = [text[i:i + n] for i in range(0, len(text), n)]
-    for c in chunks:
-        await sendMessage(msg, c)
+    try:
+        confirm_delete = msg.command[1]
+    except:
+        return await sendMessage(msg,
+                                 '⚠️ 注意: 此操作将清理所有注销用户, 如确定使用请输入 `/deleted true`')
+    
+    if confirm_delete == 'true':
+        send = await msg.reply("🔍 正在运行清理程序...")
+        a = b = 0
+        text = '️⛔ 清理结束\n'
+        async for d in bot.get_chat_members(group[0]):  # 以后别写group了,绑定一下聊天群更优雅
+            b += 1
+            try:
+                # and d.is_member or any(keyword in l.user.first_name for keyword in keywords) 关键词检索，没模板不加了
+                if d.user.is_deleted:
+                    await msg.chat.ban_member(d.user.id)
+                    sql_delete_emby(tg=d.user.id)
+                    a += 1
+                    # 打个注释，scheduler 默认出群就删号了，不需要再执行删除
+                    text += f'{a}. `{d.user.id}` 已注销\n'
+            except Exception as e:
+                LOGGER.error(e)
+        await send.delete()
+        n = 1024
+        chunks = [text[i:i + n] for i in range(0, len(text), n)]
+        for c in chunks:
+            await sendMessage(msg, c)
 
 
 @bot.on_message(filters.command('kick_not_emby', prefixes) & admins_on_filter & filters.group)

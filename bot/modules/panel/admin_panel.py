@@ -12,7 +12,7 @@ from bot.schemas import ExDate
 from bot.sql_helper.sql_code import sql_count_code, sql_count_p_code, sql_delete_all_unused, sql_delete_unused_by_days
 from bot.sql_helper.sql_emby import sql_count_emby
 from bot.func_helper.fix_bottons import gm_ikb_content, open_menu_ikb, gog_rester_ikb, back_open_menu_ikb, \
-    back_free_ikb, re_cr_link_ikb, close_it_ikb, ch_link_ikb, date_ikb, cr_paginate, cr_renew_ikb, invite_lv_ikb
+    back_free_ikb, re_cr_link_ikb, close_it_ikb, ch_link_ikb, date_ikb, cr_paginate, cr_renew_ikb, invite_lv_ikb, checkin_lv_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, sendPhoto, callListen, deleteMessage, sendMessage
 from bot.func_helper.utils import open_check, cr_link_one,rn_link_one
 
@@ -425,10 +425,34 @@ async def invite_lv_set(_, call):
             "请选择邀请等级:\n\n"
             f"当前等级: {_open.invite_lv}\n\n"
             "🅰️ - 白名单可使用\n"
-            "🅱️ - 注册用户可使用\n" 
-            "©️ - 已禁用用户可使用\n"
-            "🅳️ - 无账号用户可使用",
+            "🅱️ - 普通用户及以上可使用\n" 
+            "©️ - 已禁用用户及以上可使用\n"
+            "🅳️ - 所有用户可使用",
             buttons=invite_lv_ikb())
+        return
+    except IndexError:
+        pass
+@bot.on_callback_query(filters.regex('set_checkin_lv'))
+async def checkin_lv_set(_, call):
+    try:
+        method = call.data
+        if method.startswith('set_checkin_lv-'):
+            # 当选择具体等级时
+            level = method.split('-')[1]
+            if level in ['a', 'b', 'c', 'd']:
+                _open.checkin_lv = level
+                save_config()
+                await callAnswer(call, f'✅ 已设置签到等级为 {level}', show_alert=True)
+        await callAnswer(call, '🚀 进入签到等级设置')
+        # 当点击设置签到等级按钮时
+        await editMessage(call, 
+            "请选择签到等级:\n\n"
+            f"当前等级: {_open.checkin_lv}\n\n"
+            "🅰️ - 白名单可签到\n"
+            "🅱️ - 普通用户及以上可签到\n" 
+            "©️ - 已禁用用户及以上可签到\n"
+            "🅳️ - 所有用户可签到",
+            buttons=checkin_lv_ikb())
         return
     except IndexError:
         pass

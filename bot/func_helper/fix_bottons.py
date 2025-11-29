@@ -305,14 +305,17 @@ def cr_renew_ikb():
     whitelist = '✔️' if _open.whitelist else '❌'
     invite = '✔️' if _open.invite else '❌'
     # 添加邀请等级的显示
-    invite_lv_text = {
+    lv_dic = {
         'a': '白名单',
         'b': '普通用户',
         'c': '已禁用用户',
-        'd': '无账号用户'
-    }.get(_open.invite_lv, '未知')
+        'd': '所有人'
+    }
+    invite_lv_text = lv_dic.get(_open.invite_lv, '未知')
+    checkin_lv_text = lv_dic.get(_open.checkin_lv, '未知')
     keyboard = InlineKeyboard(row_width=2)
     keyboard.add(InlineButton(f'{checkin} 每日签到', f'set_renew-checkin'),
+                 InlineButton(f'签到等级: {checkin_lv_text}', f'set_checkin_lv'),
                  InlineButton(f'{exchange} 自动{sakura_b}续期', f'set_renew-exchange'),
                  InlineButton(f'{whitelist} 兑换白名单', f'set_renew-whitelist'),
                  InlineButton(f'{invite} 兑换邀请码', f'set_renew-invite'),
@@ -323,11 +326,18 @@ def cr_renew_ikb():
 def invite_lv_ikb():
     keyboard = ikb([
         [('🅰️ 白名单', 'set_invite_lv-a'), ('🅱️ 普通用户', 'set_invite_lv-b')],
-        [('©️ 已禁用用户', 'set_invite_lv-c'), ('🅳️ 无账号用户', 'set_invite_lv-d')],
+        [('©️ 已禁用用户', 'set_invite_lv-c'), ('🅳️  所有用户', 'set_invite_lv-d')],
         [('🔙 返回', 'set_renew')]
     ])
     return keyboard
 
+def checkin_lv_ikb():
+    keyboard = ikb([
+        [('🅰️ 白名单', 'set_checkin_lv-a'), ('🅱️ 普通用户', 'set_checkin_lv-b')],
+        [('©️ 已禁用用户', 'set_checkin_lv-c'), ('🅳️  所有用户', 'set_checkin_lv-d')],
+        [('🔙 返回', 'set_renew')]
+    ])
+    return keyboard
 """ config_panel ↓"""
 
 
@@ -339,6 +349,7 @@ def config_preparation() -> InlineKeyboardMarkup:
     fuxx_pt = '✅' if fuxx_pitao else '❎'
     red_envelope_status = '✅' if red_envelope.status else '❎'
     allow_private = '✅' if red_envelope.allow_private else '❎'
+    checkin_lv_text = {'a': '白名单', 'b': '普通用户', 'd': '所有人'}.get(_open.checkin_lv, '所有人')
     keyboard = ikb(
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
          [('🎬 显/隐指定库', 'set_block'), (f'{fuxx_pt} 皮套人过滤功能', 'set_fuxx_pitao')],
@@ -348,6 +359,7 @@ def config_preparation() -> InlineKeyboardMarkup:
          [(f'{red_envelope_status} 红包', 'set_red_envelope_status'), (f'{allow_private} 专属红包', 'set_red_envelope_allow_private')],
          [(f'设置赠送资格天数({config.kk_gift_days}天)', 'set_kk_gift_days'), (f'设置活跃检测天数({config.activity_check_days}天)', 'set_activity_check_days')],
          [(f'设置封存账号天数({config.freeze_days}天)', 'set_freeze_days')],
+         [(f'设置签到权限({checkin_lv_text})', 'set_checkin_lv')],
          [('🔙 返回', 'manage')]])
     return keyboard
 

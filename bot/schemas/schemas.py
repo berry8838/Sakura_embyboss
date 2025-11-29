@@ -47,6 +47,7 @@ class Open(BaseModel):
     #     return v
 
     checkin: bool
+    checkin_lv: Optional[str] = 'd'
     exchange: bool
     whitelist: bool
     invite: bool

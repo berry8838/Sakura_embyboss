@@ -20,6 +20,10 @@ async def user_in_checkin(_, call):
             await callAnswer(call, '🧮 未查询到数据库', True)
 
         elif not e.ch or e.ch.strftime("%Y-%m-%d") < today:
+            if _open.checkin_lv:
+                if e.lv > _open.checkin_lv:
+                    await callAnswer(call, f'❌ 您无权签到，如有异议，请不要有异议。', True)
+                    return
             reward = random.randint(_open.checkin_reward[0], _open.checkin_reward[1])
             s = e.iv + reward
             sql_update_emby(Emby.tg == call.from_user.id, iv=s, ch=now)

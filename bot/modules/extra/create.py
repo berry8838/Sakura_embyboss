@@ -123,12 +123,23 @@ async def uun_info(_, msg, name = None):
         ex = ' __无需保号，放心食用__'
     else:
         ex = e.ex or '无账户信息'
+    str_lv = ''
+    str_ex = ex
+    if e.lv == 'a': 
+        str_lv = 'a (白名单)'
+        str_ex = '白名单用户，无到期时间'
+    elif e.lv == 'b':
+        str_lv = 'b (普通用户)'
+    elif e.lv == 'c':
+        str_lv = 'c (已封禁用户)'
+    elif e.lv == 'd':
+        str_lv = 'd (已删除用户)'
+
     text += f"▎ 查询返回\n" \
             f"**· 🍉 账户名称** | {e.name}\n{a}" \
-            f"**· 🍓 当前状态** | {e.lv}\n" \
+            f"**· 🍓 当前状态** | {str_lv}\n" \
             f"**· 🍒 创建时间** | {e.cr}\n" \
-            f"**· 🚨 到期时间** | **{ex}**\n"
-
+            f"**· 🚨 到期时间** | **{str_ex}**\n"
     await asyncio.gather(sendPhoto(msg, photo=bot_photo, caption=text, buttons=cv_user_playback_reporting(e.embyid)), msg.delete())
 
 

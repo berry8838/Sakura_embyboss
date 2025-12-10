@@ -153,12 +153,13 @@ async def check_expired():
             except Exception as e:
                 LOGGER.error(e)
 
-    rseired = get_all_emby2(and_(Emby2.expired == 0, Emby2.ex < datetime.now()))
+    rseired = get_all_emby2(and_(Emby2.lv == 'b', Emby2.expired == 0, Emby2.ex < datetime.now()))
     if rseired is None:
         return LOGGER.info(f'【封禁检测】- emby2 无数据，跳过')
     for e in rseired:
+        print(e.embyid)
         if await emby.emby_change_policy(emby_id=e.embyid, disable=True):
-            if sql_update_emby2(Emby2.embyid == e.embyid, expired=1):
+            if sql_update_emby2(Emby2.embyid == e.embyid, expired=1, lv='c'):
                 text = f"【封禁检测】- 到期封印非TG账户 [{e.name}](google.com?q={e.embyid}) Done！"
                 LOGGER.info(text)
             else:

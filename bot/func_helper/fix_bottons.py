@@ -408,7 +408,7 @@ async def cr_kk_ikb(uid, first):
                         # 判断额外媒体库是否显示
                         if enable_all_folders is True:
                             # 如果启用所有文件夹，额外媒体库是显示的,显示关闭按钮
-                            libs, embyextralib = ['关闭', f'embyextralib_ block-{uid}']
+                            libs, embyextralib = ['关闭', f'embyextralib_block-{uid}']
                         elif extra_folder_ids and len(extra_folder_ids) > 0:
                             # 检查额外媒体库的文件夹ID是否都在启用列表中
                             if all(folder_id in current_enabled_folders for folder_id in extra_folder_ids):

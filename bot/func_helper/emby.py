@@ -369,15 +369,16 @@ class Embyservice(metaclass=Singleton):
             LOGGER.error(f"设置用户权限异常: {emby_id} - {str(e)}")
             return False
 
-    async def get_emby_libs(self) -> Optional[List[str]]:
+    async def get_emby_libs(self) -> Optional[Dict[str, str]]:
         """
         获取所有媒体库
-        :return: 媒体库名称列表
+        :return: 媒体库字典 {guid: name}
         """
         try:
             result = await self._request('GET', f'/emby/Library/VirtualFolders?api_key={self.api_key}')
             if result.success and result.data:
-                libs = [lib['Name'] for lib in result.data]
+                # {guid: lib_name, ...}
+                libs = {lib['Guid']: lib['Name'] for lib in result.data}
                 LOGGER.debug(f"获取媒体库成功: {libs}")
                 return libs
             else:
@@ -410,7 +411,7 @@ class Embyservice(metaclass=Singleton):
             LOGGER.error(f"获取文件夹ID异常: {str(e)}")
             return []
 
-    async def update_user_enabled_folder(self, emby_id: str, enabled_folder_ids: List[str] = None, 
+    async def update_user_enabled_folder(self, emby_id: str, enabled_folder_ids: List[str] = None, blocked_media_folders: List[str] = None, 
                                 enable_all_folders: bool = True) -> bool:
         """
         更新用户策略 - 新版本API方法
@@ -431,6 +432,8 @@ class Embyservice(metaclass=Singleton):
             # 更新策略中的文件夹访问设置
             updated_policy = current_policy.copy()
             updated_policy['EnableAllFolders'] = enable_all_folders
+            if blocked_media_folders is not None:
+                updated_policy['BlockedMediaFolders'] = blocked_media_folders
             
             if enabled_folder_ids is not None:
                 updated_policy['EnabledFolders'] = enabled_folder_ids
@@ -448,11 +451,11 @@ class Embyservice(metaclass=Singleton):
             LOGGER.error(f"更新用户策略异常: {emby_id} - {str(e)}")
             return False
 
-    async def get_current_enabled_folder_ids(self, emby_id: str) -> Tuple[List[str], bool]:
+    async def get_current_enabled_folder_ids(self, emby_id: str) -> Tuple[List[str], bool, List[str]]:
         """
         获取当前启用的文件夹ID列表（处理 EnableAllFolders 的情况）
         :param emby_id: 用户ID
-        :return: (启用的文件夹ID列表, 是否启用所有文件夹)
+        :return: (启用的文件夹ID列表, 是否启用所有文件夹, 阻止的媒体库名称列表)
         """
         try:
             success, rep = await self.user(emby_id=emby_id)
@@ -462,18 +465,16 @@ class Embyservice(metaclass=Singleton):
             
             policy = rep.get("Policy", {})
             enable_all_folders = policy.get("EnableAllFolders", False)
+            blocked_media_folders = policy.get("BlockedMediaFolders", [])
             
             if enable_all_folders is True:
                 # 如果启用所有文件夹，需要获取所有媒体库的文件夹ID
                 all_libs = await self.get_emby_libs()
-                if all_libs:
-                    all_folder_ids = await self.get_folder_ids_by_names(all_libs)
-                    return all_folder_ids, True
-                else:
-                    return [], True
+                all_folder_ids = list(all_libs.keys()) if all_libs else []
+                return all_folder_ids, True, blocked_media_folders
             else:
                 current_enabled_folders = policy.get("EnabledFolders", [])
-                return current_enabled_folders, False
+                return current_enabled_folders, False, blocked_media_folders
                 
         except Exception as e:
             LOGGER.error(f"获取当前启用文件夹ID异常: {emby_id} - {str(e)}")
@@ -488,7 +489,7 @@ class Embyservice(metaclass=Singleton):
         """
         try:
             # 获取当前启用的文件夹ID列表
-            current_enabled_folders, enable_all_folders = await self.get_current_enabled_folder_ids(emby_id)
+            current_enabled_folders, enable_all_folders, blocked_media_folders = await self.get_current_enabled_folder_ids(emby_id)
             
             # 获取要隐藏的媒体库对应的文件夹ID
             hide_folder_ids = await self.get_folder_ids_by_names(folder_names)
@@ -500,11 +501,13 @@ class Embyservice(metaclass=Singleton):
             # 从启用列表中移除要隐藏的文件夹ID
             new_enabled_folders = [folder_id for folder_id in current_enabled_folders 
                                   if folder_id not in hide_folder_ids]
-            
+            # 将媒体库名称添加到阻止列表中（去重）
+            new_blocked_folders = list(set(blocked_media_folders + folder_names)) if blocked_media_folders else folder_names
             # 更新用户策略
             return await self.update_user_enabled_folder(
                 emby_id=emby_id,
                 enabled_folder_ids=new_enabled_folders,
+                blocked_media_folders=new_blocked_folders,
                 enable_all_folders=False
             )
             
@@ -521,13 +524,14 @@ class Embyservice(metaclass=Singleton):
         """
         try:
             # 获取当前启用的文件夹ID列表
-            current_enabled_folders, enable_all_folders = await self.get_current_enabled_folder_ids(emby_id)
+            current_enabled_folders, enable_all_folders, blocked_media_folders = await self.get_current_enabled_folder_ids(emby_id)
             
             # 如果已经启用所有文件夹，则不需要修改
             if enable_all_folders is True:
                 return await self.update_user_enabled_folder(
                     emby_id=emby_id,
-                    enable_all_folders=True
+                    blocked_media_folders=[],
+                    enable_all_folders=True,
                 )
             
             # 获取要显示的媒体库对应的文件夹ID
@@ -539,11 +543,13 @@ class Embyservice(metaclass=Singleton):
             
             # 将文件夹ID添加到启用列表中（去重）
             new_enabled_folders = list(set(current_enabled_folders + show_folder_ids))
+            new_blocked_folders = [name for name in blocked_media_folders if name not in folder_names] if blocked_media_folders else []
             
             # 更新用户策略
             return await self.update_user_enabled_folder(
                 emby_id=emby_id,
                 enabled_folder_ids=new_enabled_folders,
+                blocked_media_folders=new_blocked_folders,
                 enable_all_folders=False
             )
             
@@ -557,9 +563,13 @@ class Embyservice(metaclass=Singleton):
         :param emby_id: 用户ID
         :return: 是否成功
         """
+        all_libs = await self.get_emby_libs()
+        all_lib_guids = list(all_libs.keys()) if all_libs else []
         return await self.update_user_enabled_folder(
             emby_id=emby_id,
-            enable_all_folders=True
+            enable_all_folders=True,
+            enabled_folder_ids=all_lib_guids,
+            blocked_media_folders=[]
         )
 
     async def disable_all_folders_for_user(self, emby_id: str) -> bool:
@@ -568,9 +578,12 @@ class Embyservice(metaclass=Singleton):
         :param emby_id: 用户ID
         :return: 是否成功
         """
+        all_libs = await self.get_emby_libs()
+        all_lib_names = list(all_libs.values()) if all_libs else []
         return await self.update_user_enabled_folder(
             emby_id=emby_id,
             enabled_folder_ids=[],
+            blocked_media_folders=all_lib_names,
             enable_all_folders=False
         )
 

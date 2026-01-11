@@ -11,10 +11,12 @@ from .webhook.favorites import router as favorites_router
 from .webhook.media import router as media_router
 from .webhook.client_filter import router as client_filter_router
 from .user_info import route as user_info_route
+from .login import router as login_router
 from bot import bot_token, LOGGER
 
 emby_api_route = APIRouter(prefix="/emby", tags=["对接Emby的接口"])
 user_api_route = APIRouter(prefix="/user", tags=["对接用户信息的接口"])
+auth_api_route = APIRouter(prefix="/auth", tags=["用户认证接口"])
 
 async def verify_token(request: Request):
     """验证API请求的token"""
@@ -51,6 +53,10 @@ emby_api_route.include_router(
 )
 user_api_route.include_router(
     user_info_route,
+    dependencies=[Depends(verify_token)]
+)
+auth_api_route.include_router(
+    login_router,
     dependencies=[Depends(verify_token)]
 )
 

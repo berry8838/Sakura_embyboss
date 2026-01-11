@@ -11,7 +11,7 @@ import errno
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from .api import emby_api_route, user_api_route
+from .api import emby_api_route, user_api_route, auth_api_route
 from bot import api as config_api, LOGGER
 
 
@@ -36,6 +36,7 @@ class Web:
         # 添加路由 /
         self.app.include_router(emby_api_route)
         self.app.include_router(user_api_route)
+        self.app.include_router(auth_api_route)
         # 配字 CORS 的中间件
         self.app.add_middleware(
             CORSMiddleware,

@@ -9,6 +9,7 @@ Date:2024/8/27
 import json
 from fastapi import APIRouter, Request
 from bot.sql_helper.sql_emby import Emby, sql_get_emby, sql_update_emby
+from bot.func_helper.emby import emby
 
 route = APIRouter()
 
@@ -64,6 +65,48 @@ async def update_credit(request: Request):
             }
         else:
             return {"code": 500, "message": "更新失败"}
+    except json.JSONDecodeError:
+        return {"code": 400, "message": "无效的JSON格式"}
+    except Exception as e:
+        return {"code": 500, "message": f"服务器错误: {str(e)}"}
+
+@route.post("/ban")
+async def ban_user(request: Request):
+    """
+    封禁用户
+    :param request: 请求对象
+    """
+    try:
+        content_type = request.headers.get("content-type", "").lower()
+        if "application/json" in content_type:
+            data = await request.json()
+            if isinstance(data, str):
+                data = json.loads(data)
+        else:
+            form_data = await request.form()
+            data = json.loads(form_data["data"]) if "data" in form_data else {}
+
+        query = data.get("query")
+        if not query:
+            return {"code": 400, "message": "参数错误"}
+
+        # 获取用户信息 query 可以是 tg 或 embyname 或 embyid
+        user = sql_get_emby(tg = query)
+        if not user or not user.embyid:
+            return {"code": 404, "message": "用户不存在"}
+        
+        disable_emby = await emby.emby_change_policy(emby_id=user.embyid, disable=True)
+        
+        if disable_emby:
+            # 更新用户等级为封禁状态
+            user.lv = 'c'  # 封禁状态
+            sql_update_emby(Emby.tg == user.tg, lv='c')
+            return {
+                "code": 200,
+                "data": {"tg": user.tg,"embyid": user.embyid, "name": user.name, "lv": user.lv},
+            }
+        else:
+            return {"code": 500, "message": "封禁失败"}
     except json.JSONDecodeError:
         return {"code": 400, "message": "无效的JSON格式"}
     except Exception as e:

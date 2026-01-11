@@ -57,13 +57,13 @@ class Uplaysinfo:
 
                 for rank, play_record in enumerate(play_list[start_index:end_index], start=start_index + 1):
                     medal = rank_medals[rank - 1] if rank < 4 else rank_medals[3]
-                    emby_name = play_record[0]
                     member_info = members_dict.get(play_record[0], None)
 
                     if not member_info or not member_info["tg"]:
-                        emby_name += ' (未绑定Bot)' 
+                        emby_name = play_record[0] + ' (未绑定Bot)'
                         tg = 'None'
                     else:
+                        emby_name = member_info["name"]
                         tg = member_info["tg"]
 
                         # 计算积分

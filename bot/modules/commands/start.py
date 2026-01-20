@@ -10,7 +10,7 @@ from pyrogram import filters
 from bot.func_helper.emby import Embyservice
 from bot.func_helper.utils import judge_admins, members_info, open_check
 from bot.modules.commands.exchange import rgs_code
-from bot.sql_helper.sql_emby import sql_add_emby
+from bot.sql_helper.sql_emby import sql_add_emby, sql_get_emby
 from bot.func_helper.filters import user_in_group_filter, user_in_group_on_filter
 from bot.func_helper.msg_utils import deleteMessage, sendMessage, sendPhoto, callAnswer, editMessage
 from bot.func_helper.fix_bottons import group_f, judge_start_ikb, judge_group_ikb, cr_kk_ikb
@@ -66,17 +66,13 @@ async def p_start(_, msg):
         else:
             await asyncio.gather(sendMessage(msg, '🤺 你也想和bot击剑吗 ?'), msg.delete())
     except (IndexError, TypeError):
-        data = await members_info(tg=msg.from_user.id)
-        is_admin = judge_admins(msg.from_user.id)
-        if not data:
+        exist_emby_data = sql_get_emby(msg.from_user.id)
+        if not exist_emby_data:
             sql_add_emby(msg.from_user.id)
-            await asyncio.gather(deleteMessage(msg),
-                                 sendPhoto(msg, bot_photo,
-                                           f"**✨ 只有你想见我的时候我们的相遇才有意义**\n\n"
-                                           f"🍉__你好鸭 [{msg.from_user.first_name}](tg://user?id={msg.from_user.id}) \n\n"
-                                           f"初次使用，录入数据库完成。\n"
-                                           f"请点击 /start 重新召唤面板"))
-            return
+        data = await members_info(tg=msg.from_user.id)
+        if not data:
+            return await sendMessage(msg, "❌ 出现错误，请稍后再试")
+        is_admin = judge_admins(msg.from_user.id)
         name, lv, ex, us, embyid, pwd2 = data
         stat, all_user, tem, timing = await open_check()
         text = f"▎__欢迎进入用户面板！{msg.from_user.first_name}__\n\n" \

@@ -53,6 +53,9 @@ db_backup_maxcount = config.db_backup_maxcount
 tz_ad = config.tz_ad
 tz_api = config.tz_api
 tz_id = config.tz_id
+tz_version = config.tz_version
+tz_username = config.tz_username
+tz_password = config.tz_password
 
 w_anti_channel_ids = config.w_anti_channel_ids
 kk_gift_days = config.kk_gift_days

@@ -62,6 +62,9 @@
   "tz_ad": "",
   "tz_api": "",
   "tz_id": [],
+  "tz_version": "v0",
+  "tz_username": "",
+  "tz_password": "",
   "ranks": {
     "logo": "SAKURA",
     "backdrop": false

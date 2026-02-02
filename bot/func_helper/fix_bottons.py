@@ -2,7 +2,7 @@ from cacheout import Cache
 from pykeyboard import InlineKeyboard, InlineButton
 from pyrogram.types import InlineKeyboardMarkup
 from pyromod.helpers import ikb, array_chunk
-from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, _open, sakura_b, \
+from bot import chanel, main_group, bot_name, extra_emby_libs, tz_id, tz_ad, tz_api, tz_version, tz_username, tz_password, _open, sakura_b, \
     schedall, auto_update, fuxx_pitao, moviepilot, red_envelope, config, LOGGER
 from bot.func_helper import nezha_res
 from bot.func_helper.emby import emby
@@ -117,7 +117,7 @@ async def cr_page_server():
     翻页服务器面板
     :return:
     """
-    sever = nezha_res.sever_info(tz_ad, tz_api, tz_id)
+    sever = await nezha_res.sever_info(tz_ad, tz_api, tz_id, tz_version, tz_username, tz_password)
     if not sever:
         return ikb([[('🔙 - 用户', 'members'), ('❌ - 上一级', 'back_start')]]), None
     d = []

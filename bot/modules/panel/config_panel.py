@@ -39,11 +39,71 @@ async def log_out(_, call):
     LOGGER.info(f"【admin】：{call.from_user.id} - 导出日志成功！")
 
 
-@bot.on_callback_query(filters.regex("set_tz") & admins_on_filter)
+@bot.on_callback_query(filters.regex("set_tz$") & admins_on_filter)
 async def set_tz(_, call):
+    """显示探针设置菜单"""
+    from pyromod.helpers import ikb
     await callAnswer(call, '📌 设置探针')
-    send = await editMessage(call,
-                             "【设置探针】\n\n请依次输入探针地址，api_token，设置的检测多个id 如：\n**【地址】https://tz.susuyyds.xyz\n【api_token】xxxxxx\n【数字】1 2 3**\n取消点击 /cancel")
+    
+    v0_status = '✅' if config.tz_version == 'v0' else '❎'
+    v1_status = '✅' if config.tz_version == 'v1' else '❎'
+    
+    keyboard = ikb([
+        [(f'{v0_status} 使用 V0 API', 'set_tz_version_v0'), (f'{v1_status} 使用 V1 API', 'set_tz_version_v1')],
+        [('📝 设置探针参数', 'set_tz_params')],
+        [('🔙 返回', 'back_config')]
+    ])
+    
+    version_info = "V0 (Token认证)" if config.tz_version == 'v0' else "V1 (用户名密码认证)"
+    text = f"📌 **探针设置**\n\n" \
+           f"当前API版本：**{version_info}**\n" \
+           f"探针地址：`{config.tz_ad or '未设置'}`\n"
+    
+    if config.tz_version == 'v0':
+        text += f"API Token：`{config.tz_api[:10] + '...' if config.tz_api and len(config.tz_api) > 10 else config.tz_api or '未设置'}`\n"
+    else:
+        text += f"用户名：`{config.tz_username or '未设置'}`\n"
+    
+    text += f"监控的服务器ID：`{config.tz_id or '未设置'}`"
+    
+    await editMessage(call, text, buttons=keyboard)
+
+
+@bot.on_callback_query(filters.regex("set_tz_version_v0") & admins_on_filter)
+async def set_tz_version_v0(_, call):
+    """设置使用 V0 API"""
+    config.tz_version = 'v0'
+    save_config()
+    await callAnswer(call, '✅ 已切换到 V0 API (Token认证)', True)
+    LOGGER.info(f"【admin】：{call.from_user.id} - 切换探针API版本为 V0")
+    await set_tz(_, call)
+
+
+@bot.on_callback_query(filters.regex("set_tz_version_v1") & admins_on_filter)
+async def set_tz_version_v1(_, call):
+    """设置使用 V1 API"""
+    config.tz_version = 'v1'
+    save_config()
+    await callAnswer(call, '✅ 已切换到 V1 API (用户名密码认证)', True)
+    LOGGER.info(f"【admin】：{call.from_user.id} - 切换探针API版本为 V1")
+    await set_tz(_, call)
+
+
+@bot.on_callback_query(filters.regex("set_tz_params") & admins_on_filter)
+async def set_tz_params(_, call):
+    """设置探针参数"""
+    await callAnswer(call, '📝 设置探针参数')
+    
+    if config.tz_version == 'v0':
+        prompt = "【设置 V0 探针】\n\n请依次输入探针地址，API Token，设置的检测多个id 如：\n" \
+                 "**【地址】https://tz.example.com\n【api_token】xxxxxx\n【数字】1 2 3**\n" \
+                 "（留空ID则显示所有服务器）\n取消点击 /cancel"
+    else:
+        prompt = "【设置 V1 探针】\n\n请依次输入探针地址，用户名，密码，设置的检测多个id 如：\n" \
+                 "**【地址】https://tz.example.com\n【用户名】admin\n【密码】password\n【数字】1 2 3**\n" \
+                 "（留空ID则显示所有服务器）\n取消点击 /cancel"
+    
+    send = await editMessage(call, prompt)
     if send is False:
         return
 
@@ -58,20 +118,37 @@ async def set_tz(_, call):
         await txt.delete()
         try:
             c = txt.text.split("\n")
-            s_tz = c[0]
-            s_tzapi = c[1]
-            s_tzid = c[2].split()
+            s_tz = c[0].strip()
+            
+            if config.tz_version == 'v0':
+                s_tzapi = c[1].strip()
+                s_tzid = c[2].split() if len(c) > 2 else []
+                
+                config.tz_ad = s_tz
+                config.tz_api = s_tzapi
+                config.tz_id = s_tzid
+                save_config()
+                await editMessage(call,
+                                  f"【V0 探针设置完成】\n\n【网址】\n{s_tz}\n\n【api_token】\n{s_tzapi}\n\n【检测的ids】\n{config.tz_id} **Done！**",
+                                  buttons=back_config_p_ikb)
+            else:
+                s_username = c[1].strip()
+                s_password = c[2].strip()
+                s_tzid = c[3].split() if len(c) > 3 else []
+                
+                config.tz_ad = s_tz
+                config.tz_username = s_username
+                config.tz_password = s_password
+                config.tz_id = s_tzid
+                save_config()
+                await editMessage(call,
+                                  f"【V1 探针设置完成】\n\n【网址】\n{s_tz}\n\n【用户名】\n{s_username}\n\n【检测的ids】\n{config.tz_id} **Done！**",
+                                  buttons=back_config_p_ikb)
+            
+            LOGGER.info(f"【admin】：{call.from_user.id} - 更新探针设置完成")
         except IndexError:
             await editMessage(call, f"请注意格式！您的输入如下：\n\n`{txt.text}`", buttons=back_set_ikb('set_tz'))
-        else:
-            config.tz_ad = s_tz
-            config.tz_api = s_tzapi
-            config.tz_id = s_tzid
-            save_config()
-            await editMessage(call,
-                              f"【网址】\n{s_tz}\n\n【api_token】\n{s_tzapi}\n\n【检测的ids】\n{config.tz_id} **Done！**",
-                              buttons=back_config_p_ikb)
-            LOGGER.info(f"【admin】：{call.from_user.id} - 更新探针设置完成")
+
 
 
 # 设置 emby 线路

@@ -96,7 +96,6 @@ def sever_info_v0(tz, tz_api, tz_id):
     """V0 API: 使用 token 认证"""
     if not tz or not tz_api or not tz_id: 
         return None
-
     # 请求头
     tz_headers = {
         'Authorization': tz_api  # 后台右上角下拉菜单获取 API Token
@@ -212,6 +211,7 @@ async def sever_info(tz, tz_api, tz_id, tz_version="v0", tz_username=None, tz_pa
     :param tz_password: V1 密码
     :return: 服务器信息列表
     """
+    print(f"使用哪吒探针 API 版本: {tz_version}")
     if tz_version == "v1":
         # V1 使用异步调用
         return await sever_info_v1_async(tz, tz_username, tz_password, tz_id)

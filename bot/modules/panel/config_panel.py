@@ -129,7 +129,7 @@ async def set_tz_params(_, call):
                 config.tz_id = s_tzid
                 save_config()
                 await editMessage(call,
-                                  f"【V0 探针设置完成】\n\n【网址】\n{s_tz}\n\n【api_token】\n{s_tzapi}\n\n【检测的ids】\n{config.tz_id or '全部'} **Done！**",
+                                  f"【V0 探针设置完成】\n\n【网址】\n{s_tz}\n\n【api_token】\n{s_tzapi}\n\n【检测的ids】\n{config.tz_id} **Done！**",
                                   buttons=back_config_p_ikb)
             else:
                 s_username = c[1].strip()
@@ -142,7 +142,7 @@ async def set_tz_params(_, call):
                 config.tz_id = s_tzid
                 save_config()
                 await editMessage(call,
-                                  f"【V1 探针设置完成】\n\n【网址】\n{s_tz}\n\n【用户名】\n{s_username}\n\n【检测的ids】\n{config.tz_id or '全部'} **Done！**",
+                                  f"【V1 探针设置完成】\n\n【网址】\n{s_tz}\n\n【用户名】\n{s_username}\n\n【检测的ids】\n{config.tz_id} **Done！**",
                                   buttons=back_config_p_ikb)
             
             LOGGER.info(f"【admin】：{call.from_user.id} - 更新探针设置完成")

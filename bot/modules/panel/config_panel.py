@@ -47,45 +47,64 @@ async def set_tz(_, call):
     
     v0_status = '✅' if config.tz_version == 'v0' else '❎'
     v1_status = '✅' if config.tz_version == 'v1' else '❎'
+    komari_status = '✅' if config.tz_version == 'komari' else '❎'
     
     keyboard = ikb([
-        [(f'{v0_status} 使用 V0 API', 'set_tz_version_v0'), (f'{v1_status} 使用 V1 API', 'set_tz_version_v1')],
+        [(f'{v0_status} Nezha V0', 'set_tz_version_v0'), (f'{v1_status} Nezha V1', 'set_tz_version_v1')],
+        [(f'{komari_status} Komari', 'set_tz_version_komari')],
         [('📝 设置探针参数', 'set_tz_params')],
         [('🔙 返回', 'back_config')]
     ])
     
-    version_info = "V0 (Token认证)" if config.tz_version == 'v0' else "V1 (用户名密码认证)"
+    version_map = {
+        'v0': "Nezha V0 (Token认证)",
+        'v1': "Nezha V1 (用户名密码认证)",
+        'komari': "Komari (API Key认证)"
+    }
+    version_info = version_map.get(config.tz_version, "Nezha V0 (Token认证)")
     text = f"📌 **探针设置**\n\n" \
            f"当前API版本：**{version_info}**\n" \
            f"探针地址：`{config.tz_ad or '未设置'}`\n"
     
     if config.tz_version == 'v0':
         text += f"API Token：`{config.tz_api[:10] + '...' if config.tz_api and len(config.tz_api) > 10 else config.tz_api or '未设置'}`\n"
-    else:
+    elif config.tz_version == 'v1':
         text += f"用户名：`{config.tz_username or '未设置'}`\n"
+    elif config.tz_version == 'komari':
+        text += f"API Key：`{config.tz_api[:10] + '...' if config.tz_api and len(config.tz_api) > 10 else config.tz_api or '未设置 (公开接口可不填)'}`\n"
     
-    text += f"监控的服务器ID：`{config.tz_id or '未设置'}`"
+    text += f"监控的节点ID：`{config.tz_id or '未设置'}`"
     
     await editMessage(call, text, buttons=keyboard)
 
 
 @bot.on_callback_query(filters.regex("set_tz_version_v0") & admins_on_filter)
 async def set_tz_version_v0(_, call):
-    """设置使用 V0 API"""
+    """设置使用 Nezha V0 API"""
     config.tz_version = 'v0'
     save_config()
-    await callAnswer(call, '✅ 已切换到 V0 API (Token认证)', True)
-    LOGGER.info(f"【admin】：{call.from_user.id} - 切换探针API版本为 V0")
+    await callAnswer(call, '✅ 已切换到 Nezha V0 API (Token认证)', True)
+    LOGGER.info(f"【admin】：{call.from_user.id} - 切换探针API版本为 Nezha V0")
     await set_tz(_, call)
 
 
 @bot.on_callback_query(filters.regex("set_tz_version_v1") & admins_on_filter)
 async def set_tz_version_v1(_, call):
-    """设置使用 V1 API"""
+    """设置使用 Nezha V1 API"""
     config.tz_version = 'v1'
     save_config()
-    await callAnswer(call, '✅ 已切换到 V1 API (用户名密码认证)', True)
-    LOGGER.info(f"【admin】：{call.from_user.id} - 切换探针API版本为 V1")
+    await callAnswer(call, '✅ 已切换到 Nezha V1 API (用户名密码认证)', True)
+    LOGGER.info(f"【admin】：{call.from_user.id} - 切换探针API版本为 Nezha V1")
+    await set_tz(_, call)
+
+
+@bot.on_callback_query(filters.regex("set_tz_version_komari") & admins_on_filter)
+async def set_tz_version_komari(_, call):
+    """设置使用 Komari API"""
+    config.tz_version = 'komari'
+    save_config()
+    await callAnswer(call, '✅ 已切换到 Komari 探针', True)
+    LOGGER.info(f"【admin】：{call.from_user.id} - 切换探针API版本为 Komari")
     await set_tz(_, call)
 
 
@@ -95,13 +114,19 @@ async def set_tz_params(_, call):
     await callAnswer(call, '📝 设置探针参数')
     
     if config.tz_version == 'v0':
-        prompt = "【设置 V0 探针】\n\n请依次输入探针地址，API Token，设置的检测多个id 如：\n" \
-                 "**【地址】https://tz.example.com\n【api_token】xxxxxx\n【数字】1 2 3**\n" \
+        prompt = "【设置 Nezha V0 探针】\n\n请输入探针地址，API Token，设置的检测多个id 如：\n" \
+                 "**https://tz.example.com\nxxxxxx\n1 2 3**\n" \
                  "（留空ID则显示所有服务器）\n取消点击 /cancel"
+    elif config.tz_version == 'v1':
+        prompt = "【设置 Nezha V1 探针】\n\n请依次输入探针地址，用户名，密码，设置的检测多个id 如：\n" \
+                 "**https://tz.example.com\nadmin\npassword\n1 2 3**\n" \
+                 "（留空ID则显示所有服务器）\n取消点击 /cancel"
+    elif config.tz_version == 'komari':
+        prompt = "【设置 Komari 探针】\n\n请依次输入探针地址，API Key（可选），设置的检测节点 UUID 如：\n" \
+                 "**https://komari.example.com\nxxxxxx（可留空）\nuuid1 uuid2**\n" \
+                 "（留空API Key使用公开接口，留空UUID则显示所有节点）\n取消点击 /cancel"
     else:
-        prompt = "【设置 V1 探针】\n\n请依次输入探针地址，用户名，密码，设置的检测多个id 如：\n" \
-                 "**【地址】https://tz.example.com\n【用户名】admin\n【密码】password\n【数字】1 2 3**\n" \
-                 "（留空ID则显示所有服务器）\n取消点击 /cancel"
+        prompt = "【设置探针】\n\n请先选择探针类型\n取消点击 /cancel"
     
     send = await editMessage(call, prompt)
     if send is False:
@@ -129,9 +154,9 @@ async def set_tz_params(_, call):
                 config.tz_id = s_tzid
                 save_config()
                 await editMessage(call,
-                                  f"【V0 探针设置完成】\n\n【网址】\n{s_tz}\n\n【api_token】\n{s_tzapi}\n\n【检测的ids】\n{config.tz_id} **Done！**",
+                                  f"【Nezha V0 探针设置完成】\n\n【网址】\n{s_tz}\n\n【api_token】\n{s_tzapi}\n\n【检测的ids】\n{config.tz_id} **Done！**",
                                   buttons=back_config_p_ikb)
-            else:
+            elif config.tz_version == 'v1':
                 s_username = c[1].strip()
                 s_password = c[2].strip()
                 s_tzid = c[3].split() if len(c) > 3 else []
@@ -142,7 +167,19 @@ async def set_tz_params(_, call):
                 config.tz_id = s_tzid
                 save_config()
                 await editMessage(call,
-                                  f"【V1 探针设置完成】\n\n【网址】\n{s_tz}\n\n【用户名】\n{s_username}\n\n【检测的ids】\n{config.tz_id} **Done！**",
+                                  f"【Nezha V1 探针设置完成】\n\n【网址】\n{s_tz}\n\n【用户名】\n{s_username}\n\n【检测的ids】\n{config.tz_id} **Done！**",
+                                  buttons=back_config_p_ikb)
+            elif config.tz_version == 'komari':
+                s_tzapi = c[1].strip() if len(c) > 1 else ''
+                s_tzid = c[2].split() if len(c) > 2 else []
+                
+                config.tz_ad = s_tz
+                config.tz_api = s_tzapi
+                config.tz_id = s_tzid
+                save_config()
+                api_display = s_tzapi if s_tzapi else '未设置 (使用公开接口)'
+                await editMessage(call,
+                                  f"【Komari 探针设置完成】\n\n【网址】\n{s_tz}\n\n【API Key】\n{api_display}\n\n【检测的节点】\n{config.tz_id if config.tz_id else '全部节点'} **Done！**",
                                   buttons=back_config_p_ikb)
             
             LOGGER.info(f"【admin】：{call.from_user.id} - 更新探针设置完成")

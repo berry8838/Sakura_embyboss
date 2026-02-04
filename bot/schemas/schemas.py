@@ -158,8 +158,8 @@ class Config(BaseModel):
     db_port: int = 3306
     tz_ad: Optional[str] = None
     tz_api: Optional[str] = None
-    tz_id: Optional[List[int]] = []
-    tz_version: Optional[str] = "v0"  # "v0" for old API, "v1" for new API
+    tz_id: Optional[List[Union[int, str]]] = []  # int for Nezha, str (UUID) for Komari
+    tz_version: Optional[str] = "v0"  # "v0" for Nezha V0, "v1" for Nezha V1, "komari" for Komari
     tz_username: Optional[str] = None  # V1 API only
     tz_password: Optional[str] = None  # V1 API only
     ranks: Ranks

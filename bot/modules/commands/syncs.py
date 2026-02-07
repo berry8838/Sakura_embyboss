@@ -434,7 +434,10 @@ async def unban_all_users(_, msg):
                         reply_text = f'{index}. [{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 解禁成功，但数据库更新失败\n'
                         LOGGER.warning(reply_text)
                 else:
-                    reply_text = f'[{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 解禁失败\n'
+                    if db_user:
+                        reply_text = f'[{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 解禁失败\n'
+                    else:
+                        reply_text = f'[{emby_name}] - Emby账户 解禁失败\n'
                     LOGGER.error(reply_text)
                 text += reply_text
                 continue
@@ -524,7 +527,10 @@ async def ban_all_users(_, msg):
                         reply_text = f'{index}. [{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 禁用成功，但数据库更新失败\n'
                         LOGGER.warning(reply_text)
                 else:
-                    reply_text = f'[{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 禁用失败\n'
+                    if db_user:
+                        reply_text = f'[{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 禁用失败\n'
+                    else:
+                        reply_text = f'[{emby_name}] - Emby账户 禁用失败\n'
                     LOGGER.error(reply_text)
                 text += reply_text
             except Exception as e:

@@ -14,7 +14,7 @@ from pyrogram import filters
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 from sqlalchemy import func
 
-from bot import bot, prefixes, sakura_b, bot_photo, red_envelope
+from bot import bot, prefixes, sakura_b, bot_photo, red_envelope, _open
 from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.fix_bottons import users_iv_button
 from bot.func_helper.msg_utils import sendPhoto, sendMessage, callAnswer, editMessage
@@ -385,28 +385,29 @@ async def s_rank(_, msg):
         e = sql_get_emby(tg=msg.from_user.id)
         if judge_admins(msg.from_user.id):
             sender = msg.from_user.id
-        elif not e or e.iv < 5:
-            await asyncio.gather(
-                msg.delete(),
-                msg.chat.restrict_member(
+        elif not e or e.iv < _open.srank_cost:
+            await msg.delete()
+            try:
+                await msg.chat.restrict_member(
                     msg.from_user.id,
                     ChatPermissions(),
                     datetime.now() + timedelta(minutes=1),
-                ),
-                sendMessage(
+                )
+                await sendMessage(
                     msg,
                     f"[{msg.from_user.first_name}]({msg.from_user.id}) "
-                    f"未私聊过bot或不足支付手续费5{sakura_b}，禁言一分钟。",
+                    f"未私聊过bot或不足支付手续费{_open.srank_cost}{sakura_b}，禁言一分钟。",
                     timer=60,
-                ),
-            )
+                )
+            except Exception as e:
+                print(e)
             return
         else:
-            sql_update_emby(Emby.tg == msg.from_user.id, iv=e.iv - 5)
+            sql_update_emby(Emby.tg == msg.from_user.id, iv=e.iv - _open.srank_cost)
             sender = msg.from_user.id
     elif msg.sender_chat.id == msg.chat.id:
         sender = msg.chat.id
-    reply = await msg.reply(f"已扣除手续5{sakura_b}, 请稍等......加载中")
+    reply = await msg.reply(f"已扣除手续{_open.srank_cost}{sakura_b}, 请稍等......加载中")
     text, i = await users_iv_rank()
     t = "❌ 数据库操作失败" if not text else text[0]
     button = await users_iv_button(i, 1, sender or msg.chat.id)

@@ -41,7 +41,7 @@ class RedEnvelope:
         self.type = envelope_type  # random/equal/private
         self.receivers = {}  # {user_id: {"amount": xx, "name": "xx"}}
         self.target_user = None  # 专享红包接收者ID
-        self.message = None  # 专享红包消息
+        self.message = None  # 红包消息/话术（普通红包和专享红包共用）
 
 
 async def create_reds(
@@ -57,8 +57,11 @@ async def create_reds(
     elif private:
         envelope.type = "private"
         envelope.target_user = private
+    if private_text is None:
+        # 专享红包：如果没有传入话术，则随机选择默认话术
+        envelope.message = random.choice(Yulv.load_yulv().red_bag)
+    else:
         envelope.message = private_text
-
     envelope.id = red_id
     red_envelopes[red_id] = envelope
 
@@ -169,8 +172,8 @@ async def send_red_envelope(_, msg):
             msg.delete(),
             sendMessage(
                 msg,
-                f"**🧧 发红包：\n\n/red [总{sakura_b}数] [份数] [mode]**\n\n"
-                f"[mode]留空为拼手气, 任意值为均分\n专享红包请回复 + {sakura_b}",
+                f"**🧧 发红包：\n\n/red [总{sakura_b}数] [份数] [mode] [话术（可选）]**\n\n"
+                f"[mode]留空为拼手气, 任意值为均分\n[话术]不传则随机默认话术\n专享红包请回复 + {sakura_b}",
                 timer=60,
             ),
         )
@@ -182,6 +185,7 @@ async def send_red_envelope(_, msg):
 
     # 创建并发送红包
     flag = msg.command[3] if len(msg.command) > 3 else (1 if money == members else None)
+    private_text = msg.command[4] if len(msg.command) > 4 else None
     reply, _ = await asyncio.gather(msg.reply("正在准备红包，稍等"), msg.delete())
 
     ikb = await create_reds(
@@ -190,6 +194,7 @@ async def send_red_envelope(_, msg):
         first_name=first_name,
         sender_id=msg.from_user.id if not msg.sender_chat else msg.sender_chat.id,
         flag=flag,
+        private_text=private_text
     )
 
     user_pic = await get_user_photo(msg.from_user if not msg.sender_chat else msg.chat)
@@ -362,9 +367,10 @@ async def generate_final_message(envelope):
     sorted_receivers = sorted(
         envelope.receivers.items(), key=lambda x: x[1]["amount"], reverse=True
     )
+    envelope.message = envelope.message[:50] + "..." if len(envelope.message) > 53 else envelope.message
 
     text = (
-        f"🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n"
+        f"🧧 {sakura_b}红包\n\n**{envelope.message}\n\n"
         f"😎 {envelope.sender_name} **的红包已经被抢光啦~\n\n"
     )
 

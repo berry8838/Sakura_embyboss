@@ -621,7 +621,7 @@ async def do_store_reborn(_, call):
         await sendMessage(call, '❌ 不满足以下要求！ヘ(￣ω￣ヘ)\n\n'
                                 '1. 被封禁账户\n'
                                 f'2. 至少持有 {_open.exchange_cost}{sakura_b}\n'
-                                f'3. 【定时策略】活跃检测开启'
+                                f'3. 【定时策略】活跃检测开启\n'
                                 f'此消息将在20s后自焚', timer=20)
 
 

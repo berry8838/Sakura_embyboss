@@ -41,7 +41,7 @@ class RedEnvelope:
         self.type = envelope_type  # random/equal/private
         self.receivers = {}  # {user_id: {"amount": xx, "name": "xx"}}
         self.target_user = None  # 专享红包接收者ID
-        self.message = None  # 红包消息/话术（普通红包和专享红包共用）
+        self.message = None  # 红包消息（普通红包和专享红包共用）
 
 
 async def create_reds(
@@ -58,7 +58,7 @@ async def create_reds(
         envelope.type = "private"
         envelope.target_user = private
     if private_text is None:
-        # 专享红包：如果没有传入话术，则随机选择默认话术
+        # 专享红包：如果没有传入祝福语，则随机选择默认祝福语
         envelope.message = random.choice(Yulv.load_yulv().red_bag)
     else:
         envelope.message = private_text
@@ -172,8 +172,8 @@ async def send_red_envelope(_, msg):
             msg.delete(),
             sendMessage(
                 msg,
-                f"**🧧 发红包：\n\n/red [总{sakura_b}数] [份数] [mode] [话术（可选）]**\n\n"
-                f"[mode]留空为拼手气, 任意值为均分\n[话术]不传则随机默认话术\n专享红包请回复 + {sakura_b}",
+                f"**🧧 发红包：\n\n/red [总{sakura_b}数] [份数] [mode] [祝福语（可选）]**\n\n"
+                f"[mode]留空为拼手气, 任意值为均分\n[祝福语]不传则随机默认祝福语\n专享红包请回复 + {sakura_b}",
                 timer=60,
             ),
         )

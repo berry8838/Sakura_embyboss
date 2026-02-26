@@ -1,7 +1,7 @@
 import json
 import os
 from pydantic import BaseModel, Field
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 # 嵌套式的数据设计，规范数据 config.json
 
@@ -78,6 +78,7 @@ class Schedall(BaseModel):
     weekplayrank: bool = True
     check_ex: bool = True
     low_activity: bool = False
+    partition_check: bool = True
     day_ranks_message_id: int = 0
     week_ranks_message_id: int = 0
     restart_chat_id: int = 0
@@ -190,6 +191,8 @@ class Config(BaseModel):
     client_filter_terminate_session: bool = True
     # 是否在检测到可疑客户端时封禁用户
     client_filter_block_user: bool = False
+    # 分区名 -> 库名列表
+    partition_libs: Dict[str, List[str]] = Field(default_factory=dict)
     moviepilot: MP = Field(default_factory=MP)
     auto_update: AutoUpdate = Field(default_factory=AutoUpdate)
     red_envelope: RedEnvelope = Field(default_factory=RedEnvelope)

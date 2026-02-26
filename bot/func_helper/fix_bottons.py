@@ -357,6 +357,7 @@ def config_preparation() -> InlineKeyboardMarkup:
          [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 观影奖励结算', 'set_uplays')],
          [(f'{auto_up} 自动更新bot', 'set_update'), (f'{mp_set} Moviepilot点播', 'set_mp')],
          [(f'{red_envelope_status} 红包', 'set_red_envelope_status'), (f'{allow_private} 专属红包', 'set_red_envelope_allow_private')],
+            [('🎟️ 分区通行码', 'partition_code_panel')],
          [(f'设置赠送资格天数({config.kk_gift_days}天)', 'set_kk_gift_days'), (f'设置活跃检测天数({config.activity_check_days}天)', 'set_activity_check_days')],
          [(f'设置封存账号天数({config.freeze_days}天)', 'set_freeze_days')],
          [(f'设置签到权限({checkin_lv_text})', 'set_checkin_lv')],
@@ -468,6 +469,7 @@ def sched_buttons():
     check_ex = '✅' if schedall.check_ex else '❎'
     low_activity = '✅' if schedall.low_activity else '❎'
     backup_db = '✅' if schedall.backup_db else '❎'
+    partition_check = '✅' if getattr(schedall, 'partition_check', True) else '❎'
     keyboard = InlineKeyboard(row_width=2)
     keyboard.add(InlineButton(f'{dayrank} 播放日榜', f'sched-dayrank'),
                  InlineButton(f'{weekrank} 播放周榜', f'sched-weekrank'),
@@ -475,7 +477,8 @@ def sched_buttons():
                  InlineButton(f'{weekplayrank} 观影周榜', f'sched-weekplayrank'),
                  InlineButton(f'{check_ex} 到期保号', f'sched-check_ex'),
                  InlineButton(f'{low_activity} 活跃保号', f'sched-low_activity'),
-                 InlineButton(f'{backup_db} 自动备份数据库', f'sched-backup_db')
+                 InlineButton(f'{backup_db} 自动备份数据库', f'sched-backup_db'),
+                 InlineButton(f'{partition_check} 分区授权检查', f'sched-partition_check')
                  )
     keyboard.row(InlineButton(f'🫧 返回', 'manage'))
     return keyboard

@@ -39,6 +39,7 @@ emby_line = config.emby_line
 emby_whitelist_line = config.emby_whitelist_line
 emby_block = config.emby_block
 extra_emby_libs = config.extra_emby_libs
+partition_libs = config.partition_libs
 # # 数据库
 db_host = config.db_host
 db_user = config.db_user

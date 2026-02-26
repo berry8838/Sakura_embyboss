@@ -4,6 +4,8 @@
 部分目前有 导出日志，更改探针，更改emby线路，设置购买按钮
 
 """
+from datetime import datetime
+
 from bot import bot, prefixes, bot_photo, Now, LOGGER, config, save_config, _open, auto_update, moviepilot, sakura_b
 from pyrogram import filters
 
@@ -12,6 +14,8 @@ from bot.func_helper.fix_bottons import config_preparation, close_it_ikb, back_c
 from bot.func_helper.msg_utils import deleteMessage, editMessage, callAnswer, callListen, sendPhoto, sendFile
 from bot.func_helper.scheduler import scheduler
 from bot.scheduler.sync_mp_download import sync_download_tasks
+from bot.sql_helper.sql_partition import sql_add_partition_codes
+from bot.func_helper.utils import pwd_create
 
 
 @bot.on_message(filters.command('config', prefixes=prefixes) & admins_on_filter)
@@ -19,6 +23,78 @@ async def config_p_set(_, msg):
     await deleteMessage(msg)
     await sendPhoto(msg, photo=bot_photo, caption="🌸 欢迎回来！\n\n👇点击你要修改的内容。",
                     buttons=config_preparation())
+
+
+@bot.on_callback_query(filters.regex('partition_code_panel') & admins_on_filter)
+async def partition_code_panel(_, call):
+    await callAnswer(call, "🎟️ 分区通行码")
+    partitions = config.partition_libs or {}
+    if not partitions:
+        return await editMessage(call, "⚠️ 未配置 partition_libs。请在 config.json 增加分区与库名映射后重试。",
+                                 buttons=back_config_p_ikb)
+
+    parts_text = "\n".join([f"- {name}: {', '.join(libs)}" for name, libs in partitions.items()])
+    prompt = (
+        "【生成分区通行码】\n\n"
+        f"当前分区与库：\n{parts_text}\n\n"
+        "按格式发送：分区名 时长(小时) 数量 [每码可用次数，默认1]\n"
+        "示例： anime 72 3 1\n取消请输入 /cancel"
+    )
+
+    send = await editMessage(call, prompt, buttons=back_config_p_ikb)
+    if send is False:
+        return
+
+    txt = await callListen(call, 120, back_config_p_ikb)
+    if txt is False:
+        return
+    if txt.text.strip() == '/cancel':
+        await txt.delete()
+        return await editMessage(call, '已取消生成分区通行码。', buttons=back_config_p_ikb)
+
+    try:
+        part, hours_s, count_s, *rest = txt.text.split()
+        hours = int(hours_s)
+        count = int(count_s)
+        uses = int(rest[0]) if rest else 1
+    except Exception:
+        await txt.delete()
+        return await editMessage(call, "❌ 格式错误，请按：分区名 时长(小时) 数量 [每码可用次数]，示例 anime 72 3 1",
+                                 buttons=back_config_p_ikb)
+
+    await txt.delete()
+
+    if part not in partitions:
+        return await editMessage(call, f"❌ 未找到分区 {part}，请检查 partition_libs 配置。",
+                                 buttons=back_config_p_ikb)
+
+    if hours <= 0 or count <= 0 or uses <= 0:
+        return await editMessage(call, "❌ 时长、数量、次数都需要为正数。", buttons=back_config_p_ikb)
+
+    now = datetime.now()
+    codes = [await pwd_create(12) for _ in range(count)]
+    rows = [
+        {
+            "code": c,
+            "partition": part,
+            "duration_hours": hours,
+            "uses_left": uses,
+            "created_by": call.from_user.id if call.from_user else None,
+            "created_at": now,
+        }
+        for c in codes
+    ]
+
+    ok = sql_add_partition_codes(rows)
+    if not ok:
+        return await editMessage(call, "❌ 创建分区通行码失败，请重试。", buttons=back_config_p_ikb)
+
+    code_list = "\n".join(codes)
+    text = (
+        f"✅ 已生成 {count} 个分区通行码\n"
+        f"分区：{part}\n时长：{hours} 小时\n每码可用：{uses} 次\n\n{code_list}"
+    )
+    await editMessage(call, text, buttons=back_config_p_ikb)
 
 
 @bot.on_callback_query(filters.regex('back_config') & admins_on_filter)

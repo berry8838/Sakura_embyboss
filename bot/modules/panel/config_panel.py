@@ -16,6 +16,7 @@ from bot.func_helper.scheduler import scheduler
 from bot.scheduler.sync_mp_download import sync_download_tasks
 from bot.sql_helper.sql_partition import sql_add_partition_codes
 from bot.func_helper.utils import pwd_create
+from pyromod.helpers import ikb
 
 
 @bot.on_message(filters.command('config', prefixes=prefixes) & admins_on_filter)
@@ -37,8 +38,8 @@ async def partition_code_panel(_, call):
     prompt = (
         "【生成分区通行码】\n\n"
         f"当前分区与库：\n{parts_text}\n\n"
-        "按格式发送：分区名 时长(小时) 数量 [每码可用次数，默认1]\n"
-        "示例： anime 72 3 1\n取消请输入 /cancel"
+        "按格式发送：分区名 时长(天) 数量\n"
+        "示例： anime 3 5\n取消请输入 /cancel"
     )
 
     send = await editMessage(call, prompt, buttons=back_config_p_ikb)
@@ -53,13 +54,12 @@ async def partition_code_panel(_, call):
         return await editMessage(call, '已取消生成分区通行码。', buttons=back_config_p_ikb)
 
     try:
-        part, hours_s, count_s, *rest = txt.text.split()
-        hours = int(hours_s)
+        part, days_s, count_s = txt.text.split()
+        days = int(days_s)
         count = int(count_s)
-        uses = int(rest[0]) if rest else 1
     except Exception:
         await txt.delete()
-        return await editMessage(call, "❌ 格式错误，请按：分区名 时长(小时) 数量 [每码可用次数]，示例 anime 72 3 1",
+        return await editMessage(call, "❌ 格式错误，请按：分区名 时长(天) 数量，示例 anime 3 5",
                                  buttons=back_config_p_ikb)
 
     await txt.delete()
@@ -68,8 +68,8 @@ async def partition_code_panel(_, call):
         return await editMessage(call, f"❌ 未找到分区 {part}，请检查 partition_libs 配置。",
                                  buttons=back_config_p_ikb)
 
-    if hours <= 0 or count <= 0 or uses <= 0:
-        return await editMessage(call, "❌ 时长、数量、次数都需要为正数。", buttons=back_config_p_ikb)
+    if days <= 0 or count <= 0:
+        return await editMessage(call, "❌ 时长和数量都需要为正数。", buttons=back_config_p_ikb)
 
     now = datetime.now()
     codes = [await pwd_create(12) for _ in range(count)]
@@ -77,8 +77,7 @@ async def partition_code_panel(_, call):
         {
             "code": c,
             "partition": part,
-            "duration_hours": hours,
-            "uses_left": uses,
+            "duration_days": days,
             "created_by": call.from_user.id if call.from_user else None,
             "created_at": now,
         }
@@ -92,9 +91,11 @@ async def partition_code_panel(_, call):
     code_list = "\n".join(codes)
     text = (
         f"✅ 已生成 {count} 个分区通行码\n"
-        f"分区：{part}\n时长：{hours} 小时\n每码可用：{uses} 次\n\n{code_list}"
+        f"分区：{part}\n时长：{days} 天\n每码单次使用\n\n{code_list}"
     )
-    await editMessage(call, text, buttons=back_config_p_ikb)
+
+    buttons = [("🔙 返回", "back_config")]
+    await editMessage(call, text, buttons=ikb(buttons))
 
 
 @bot.on_callback_query(filters.regex('back_config') & admins_on_filter)

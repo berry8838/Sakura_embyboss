@@ -21,6 +21,7 @@ from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create
     store_ikb, re_bindtg_ikb, close_it_ikb, store_query_page, re_born_ikb, send_changetg_ikb, favorites_page_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, callListen, sendMessage, ask_return, deleteMessage
 from bot.modules.commands import p_start
+from bot.modules.commands.partition_code import _redeem_partition_code
 from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_code import sql_count_c_code
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby
@@ -582,6 +583,21 @@ async def call_exchange(_, call):
         await asyncio.gather(msg.delete(), p_start(_, msg))
     else:
         await rgs_code(_, msg, register_code=msg.text)
+
+
+@bot.on_callback_query(filters.regex('partitioncode') & user_in_group_on_filter)
+async def call_partition_code(_, call):
+    await asyncio.gather(callAnswer(call, '🎟️ 使用分区码'), deleteMessage(call))
+    msg = await ask_return(call, text='🎟️ **【使用分区码】**：\n\n- 请在120s内发送分区码\n- 退出点 /cancel',
+                           button=re_exchange_b_ikb)
+    if not msg:
+        return
+    if msg.text == '/cancel':
+        await asyncio.gather(msg.delete(), p_start(_, msg))
+        return
+
+    ok, text = await _redeem_partition_code(msg.text.strip(), call.from_user.id)
+    await asyncio.gather(msg.delete(), sendMessage(call, text, timer=120 if ok else 60))
 
 
 @bot.on_callback_query(filters.regex('storeall'))

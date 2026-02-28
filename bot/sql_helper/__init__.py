@@ -7,11 +7,14 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 # 创建engine对象
-engine = create_engine(f"mysql+pymysql://{db_user}:{db_pwd}@{db_host}:{db_port}/{db_name}?utf8mb4", echo=False,
-                       echo_pool=False,
-                       pool_size=16,
-                       pool_recycle=60 * 30,
-                       )
+engine = create_engine(
+    f"mysql+pymysql://{db_user}:{db_pwd}@{db_host}:{db_port}/{db_name}?charset=utf8mb4",
+    echo=False,
+    echo_pool=False,
+    pool_size=16,
+    pool_recycle=60 * 30,
+    connect_args={"init_command": "SET NAMES utf8mb4"},
+)
 
 # 创建Base对象
 Base = declarative_base()

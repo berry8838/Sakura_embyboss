@@ -83,7 +83,7 @@ async def partition_code_panel(_, call):
         }
         for c in codes
     ]
-
+    
     ok = sql_add_partition_codes(rows)
     if not ok:
         return await editMessage(call, "❌ 创建分区通行码失败，请重试。", buttons=back_config_p_ikb)
@@ -91,11 +91,10 @@ async def partition_code_panel(_, call):
     code_list = "\n".join(codes)
     text = (
         f"✅ 已生成 {count} 个分区通行码\n"
-        f"分区：{part}\n时长：{days} 天\n每码单次使用\n\n{code_list}"
+        f"分区：{part}\n时长：{days} 天\n\n{code_list}"
     )
 
-    buttons = [("🔙 返回", "back_config")]
-    await editMessage(call, text, buttons=ikb(buttons))
+    await editMessage(call, text, buttons=back_config_p_ikb)
 
 
 @bot.on_callback_query(filters.regex('back_config') & admins_on_filter)

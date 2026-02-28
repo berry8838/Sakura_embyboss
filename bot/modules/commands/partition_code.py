@@ -18,8 +18,6 @@ async def _redeem_partition_code(code: str, tg_id: int):
     record = sql_get_partition_code(code)
     if not record:
         return False, "❌ 分区码无效。"
-    if record.expires_at and record.expires_at < now:
-        return False, "❌ 分区码已过期。"
 
     libs = partition_libs.get(record.partition, []) if partition_libs else []
     if not libs:
@@ -50,4 +48,10 @@ async def _redeem_partition_code(code: str, tg_id: int):
         return False, "❌ 更新授权失败，请稍后重试。"
 
     await emby.show_folders_by_names(emby_row.embyid, libs)
-    return True, f"✅ 已激活分区 {record.partition}\n可访问至：{expires_at:%Y-%m-%d %H:%M:%S}"
+    libs_text = "、".join(libs)
+    return (
+        True,
+        f"✅ 已激活分区 {record.partition}\n"
+        f"已激活媒体库：{libs_text}\n"
+        f"可访问至：{expires_at:%Y-%m-%d %H:%M:%S}",
+    )

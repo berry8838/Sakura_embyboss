@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import BigInteger, Column, DateTime, Integer, String
 
@@ -14,7 +14,6 @@ class PartitionCode(Base):
     duration_days = Column(Integer, nullable=False, default=1)
     created_by = Column(BigInteger, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
-    expires_at = Column(DateTime, nullable=True)
 
 
 PartitionCode.__table__.create(bind=engine, checkfirst=True)
@@ -161,17 +160,92 @@ def sql_mark_grants_expired(ids: List[int]) -> None:
             session.rollback()
 
 
-def sql_cleanup_partition_codes(now: datetime) -> int:
-    """清理 expires_at 早于 now 的分区码，返回删除数量。"""
+def sql_list_partition_codes(limit: int = 50, offset: int = 0) -> List[PartitionCode]:
+    with Session() as session:
+        return (
+            session.query(PartitionCode)
+            .order_by(PartitionCode.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+
+
+def sql_list_partition_grants(limit: int = 50, offset: int = 0) -> List[PartitionGrant]:
+    with Session() as session:
+        return (
+            session.query(PartitionGrant)
+            .order_by(PartitionGrant.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+            .all()
+        )
+
+
+def sql_count_partition_codes() -> int:
+    with Session() as session:
+        return session.query(PartitionCode).count()
+
+
+def sql_count_partition_grants() -> int:
+    with Session() as session:
+        return session.query(PartitionGrant).count()
+
+
+def sql_delete_partition_code_or_grant_by_code(code: str) -> Tuple[int, int]:
     with Session() as session:
         try:
-            q = session.query(PartitionCode).filter(
-                PartitionCode.expires_at.isnot(None),
-                PartitionCode.expires_at < now,
+            now = datetime.now()
+            unused_deleted = session.query(PartitionCode).filter(PartitionCode.code == code).delete(synchronize_session=False)
+            used_deleted = (
+                session.query(PartitionGrant)
+                .filter(
+                    PartitionGrant.code == code,
+                    ((PartitionGrant.status != "active") | (PartitionGrant.expires_at <= now)),
+                )
+                .delete(synchronize_session=False)
             )
-            count = q.delete(synchronize_session=False)
+            session.commit()
+            return unused_deleted, used_deleted
+        except Exception:
+            session.rollback()
+            return 0, 0
+
+
+def sql_clear_unused_partition_codes() -> int:
+    with Session() as session:
+        try:
+            count = session.query(PartitionCode).delete(synchronize_session=False)
             session.commit()
             return count
         except Exception:
             session.rollback()
             return 0
+
+
+def sql_clear_used_partition_grants() -> int:
+    with Session() as session:
+        try:
+            now = datetime.now()
+            count = (
+                session.query(PartitionGrant)
+                .filter((PartitionGrant.status != "active") | (PartitionGrant.expires_at <= now))
+                .delete(synchronize_session=False)
+            )
+            session.commit()
+            return count
+        except Exception:
+            session.rollback()
+            return 0
+
+
+def sql_clear_all_partition_data() -> Tuple[int, int]:
+    with Session() as session:
+        try:
+            unused_count = session.query(PartitionCode).delete(synchronize_session=False)
+            used_count = session.query(PartitionGrant).delete(synchronize_session=False)
+            session.commit()
+            return unused_count, used_count
+        except Exception:
+            session.rollback()
+            return 0, 0

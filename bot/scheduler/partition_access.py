@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import List, Set
 
-from bot import partition_libs
+from bot import partition_libs, bot, LOGGER
 from bot.func_helper.emby import emby
 from bot.sql_helper.sql_emby import sql_get_emby
 from bot.sql_helper.sql_partition import (
@@ -53,6 +53,27 @@ async def check_partition_access():
         hide_targets = [lib for lib in revoke_libs if lib not in keep_libs]
         if hide_targets:
             await emby.hide_folders_by_names(emby_row.embyid, hide_targets)
+
+        expired_parts = sorted({g.partition for g in grants})
+        expired_parts_text = "、".join(expired_parts)
+        if hide_targets:
+            hide_targets_text = "、".join(hide_targets)
+            notice = (
+                "❌ 分区授权到期提醒\n"
+                f"到期分区：{expired_parts_text}\n"
+                f"已禁用媒体库：{hide_targets_text}"
+            )
+        else:
+            notice = (
+                "ℹ️ 分区授权到期提醒\n"
+                f"到期分区：{expired_parts_text}\n"
+                "本次没有媒体库被禁用（可能仍被其他有效分区覆盖）。"
+            )
+
+        try:
+            await bot.send_message(tg_id, notice)
+        except Exception as e:
+            LOGGER.warning("分区到期通知发送失败 tg=%s: %s", tg_id, e)
 
         processed_ids.extend([g.id for g in grants])
 

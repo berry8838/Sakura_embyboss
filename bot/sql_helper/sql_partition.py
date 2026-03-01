@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import BigInteger, Column, DateTime, Integer, String
@@ -239,13 +239,64 @@ def sql_clear_used_partition_grants() -> int:
             return 0
 
 
-def sql_clear_all_partition_data() -> Tuple[int, int]:
+def sql_clear_all_partition_data() -> int:
     with Session() as session:
         try:
-            unused_count = session.query(PartitionCode).delete(synchronize_session=False)
-            used_count = session.query(PartitionGrant).delete(synchronize_session=False)
+            count = session.query(PartitionCode).delete(synchronize_session=False)
             session.commit()
-            return unused_count, used_count
+            return count
         except Exception:
             session.rollback()
-            return 0, 0
+            return 0 
+
+
+def sql_redeem_partition_code_atomic(code: str, tg: int, embyid: str, now: datetime) -> Tuple[bool, Optional[str], Optional[datetime]]:
+    """
+    原子化兑换分区码：同一事务内完成 校验码->写入/延长授权->删除分区码。
+    返回 (ok, partition, expires_at)。
+    """
+    with Session() as session:
+        try:
+            record = (
+                session.query(PartitionCode)
+                .filter(PartitionCode.code == code)
+                .with_for_update()
+                .first()
+            )
+            if not record:
+                return False, None, None
+
+            partition = record.partition
+            grant = (
+                session.query(PartitionGrant)
+                .filter(PartitionGrant.tg == tg, PartitionGrant.partition == partition)
+                .with_for_update()
+                .first()
+            )
+
+            start_from = grant.expires_at if grant and grant.expires_at > now else now
+            expires_at = start_from + timedelta(days=record.duration_days)
+
+            if grant:
+                if expires_at > grant.expires_at:
+                    grant.expires_at = expires_at
+                grant.status = "active"
+                grant.code = code
+                grant.updated_at = datetime.now()
+            else:
+                grant = PartitionGrant(
+                    tg=tg,
+                    embyid=embyid,
+                    partition=partition,
+                    expires_at=expires_at,
+                    status="active",
+                    code=code,
+                )
+                session.add(grant)
+
+            session.delete(record)
+            session.commit()
+            return True, partition, expires_at
+        except Exception:
+            session.rollback()
+            return False, None, None

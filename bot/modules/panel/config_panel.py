@@ -17,9 +17,7 @@ from bot.scheduler.sync_mp_download import sync_download_tasks
 from bot.sql_helper.sql_partition import (
     sql_add_partition_codes,
     sql_list_partition_codes,
-    sql_list_partition_grants,
     sql_count_partition_codes,
-    sql_count_partition_grants,
     sql_delete_partition_code_or_grant_by_code,
     sql_clear_unused_partition_codes,
     sql_clear_used_partition_grants,
@@ -28,7 +26,8 @@ from bot.sql_helper.sql_partition import (
 from bot.func_helper.utils import pwd_create
 from pyromod.helpers import ikb
 
-PARTITION_VIEW_PAGE_SIZE = 10
+PARTITION_VIEW_PAGE_SIZE = 20
+PARTITION_CREATE_MAX_COUNT = 500
 
 
 @bot.on_message(filters.command('config', prefixes=prefixes) & admins_on_filter)
@@ -51,7 +50,6 @@ async def partition_code_panel(_, call):
         "【分区通行码管理】\n\n"
         f"当前分区与库：\n{parts_text}\n\n"
         f"未使用分区码：{sql_count_partition_codes()}\n"
-        f"已使用记录：{sql_count_partition_grants()}\n\n"
         "请选择操作："
     )
     await editMessage(call, text, buttons=partition_code_menu_ikb())
@@ -103,25 +101,19 @@ def partition_code_view_page_ikb(page: int, total_pages: int):
 
 async def render_partition_code_view(call, page: int):
     total_unused = sql_count_partition_codes()
-    total_used = sql_count_partition_grants()
-    max_total = max(total_unused, total_used)
-    total_pages = max(1, (max_total + PARTITION_VIEW_PAGE_SIZE - 1) // PARTITION_VIEW_PAGE_SIZE)
+    total_pages = max(1, (total_unused + PARTITION_VIEW_PAGE_SIZE - 1) // PARTITION_VIEW_PAGE_SIZE)
     page = max(1, min(page, total_pages))
     offset = (page - 1) * PARTITION_VIEW_PAGE_SIZE
 
     unused = sql_list_partition_codes(limit=PARTITION_VIEW_PAGE_SIZE, offset=offset)
-    used = sql_list_partition_grants(limit=PARTITION_VIEW_PAGE_SIZE, offset=offset)
 
-    unused_text = "\n".join([f"- {i.code} | {i.partition} | {i.duration_days}天" for i in unused]) if unused else "- 无"
-    used_text = "\n".join([f"- {i.code or '无code'} | {i.partition} | TG:{i.tg}" for i in used]) if used else "- 无"
+    unused_text = "\n".join([f"- `{i.code}` | {i.partition} | {i.duration_days}天" for i in unused]) if unused else "- 无"
 
     text = (
         "【分区通行码查看】\n\n"
         f"未使用总数：{total_unused}\n"
-        f"已使用总数：{total_used}\n"
         f"当前页：{page}/{total_pages}（每页{PARTITION_VIEW_PAGE_SIZE}条）\n\n"
         f"【未使用】\n{unused_text}\n\n"
-        f"【已使用】\n{used_text}"
     )
     await editMessage(call, text, buttons=partition_code_view_page_ikb(page, total_pages))
 
@@ -166,6 +158,13 @@ async def partition_code_create(_, call):
 
     if days <= 0 or count <= 0:
         return await editMessage(call, "❌ 时长和数量都需要为正数。", buttons=partition_code_menu_ikb())
+
+    if count > PARTITION_CREATE_MAX_COUNT:
+        return await editMessage(
+            call,
+            f"❌ 单次最多创建 {PARTITION_CREATE_MAX_COUNT} 个分区码，请分批操作。",
+            buttons=partition_code_menu_ikb(),
+        )
 
     now = datetime.now()
     codes = [await pwd_create(12) for _ in range(count)]
@@ -273,7 +272,7 @@ async def partition_code_clear_all(_, call):
     await callAnswer(call, "💥 清理全部")
     await editMessage(
         call,
-        "⚠️ 危险操作：将删除所有未使用分区码和已使用记录。\n\n请确认是否继续？",
+        "⚠️ 危险操作：将删除所有分区码。\n\n请确认是否继续？",
         buttons=partition_code_clear_all_confirm_ikb(),
     )
 
@@ -281,10 +280,10 @@ async def partition_code_clear_all(_, call):
 @bot.on_callback_query(filters.regex('^partition_code_action_clear_all_confirm$') & admins_on_filter)
 async def partition_code_clear_all_confirm(_, call):
     await callAnswer(call, "⚠️ 已确认，正在清理")
-    unused_count, used_count = sql_clear_all_partition_data()
+    count = sql_clear_all_partition_data()
     await editMessage(
         call,
-        f"✅ 已清除全部分区码数据\n未使用：{unused_count} 条\n已使用：{used_count} 条",
+        f"✅ 已清除全部分区码：{count} 条",
         buttons=partition_code_menu_ikb(),
     )
 

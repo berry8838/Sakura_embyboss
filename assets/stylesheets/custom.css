@@ -1,0 +1,668 @@
+/* CSS动画关键帧定义，用于心形图标的跳动效果 */
+@keyframes heart {
+  0%, 40%, 80%, to {
+    transform: scale(1);
+  }
+  20%, 60% {
+    transform: scale(1.15);
+  }
+}
+
+/* 设置Twitter链接的颜色为蓝色 */
+.md-typeset .twitter {
+  color: #00acee;
+}
+
+/* 设置Mastodon链接的颜色为紫色 */
+.md-typeset .mastodon {
+  color: #897ff8;
+}
+
+/* 设置mdx-video的样式 */
+.md-typeset .mdx-video {
+  width: auto;
+}
+
+/* 设置mdx-video__inner的样式 */
+.md-typeset .mdx-video__inner {
+  height: 0;
+  padding-bottom: 56.138%;
+  position: relative;
+  width: 100%;
+}
+
+/* 设置mdx-video iframe的样式 */
+.md-typeset .mdx-video iframe {
+  border: none;
+  height: 100%;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+/* 设置心形图标的跳动动画效果 */
+.md-typeset .mdx-heart {
+  animation: heart 1s infinite;
+}
+
+/* 设置mdx-insiders的颜色为粉红色 */
+.md-typeset .mdx-insiders {
+  color: #e91e63;
+}
+
+/* 设置mdx-badge的字体大小为0.85em */
+.md-typeset .mdx-badge {
+  font-size: 0.85em;
+}
+
+/* 设置mdx-badge--heart的样式 */
+.md-typeset .mdx-badge--heart {
+  --md-typeset-a-color: #e92063;
+  --md-accent-fg-color: #ff4281;
+  --md-accent-fg-color--transparent: #e920631a;
+}
+
+/* 设置mdx-badge--heart的心形图标动画效果 */
+.md-typeset .mdx-badge--heart .twemoji {
+  animation: heart 1s infinite;
+}
+
+/* 设置mdx-badge--right的样式 */
+.md-typeset .mdx-badge--right {
+  float: right;
+  margin-left: 0.35em;
+}
+
+/* 设置mdx-badge__icon的边框圆角样式 */
+[dir=ltr] .md-typeset .mdx-badge__icon {
+  border-top-left-radius: 0.1rem;
+}
+
+[dir=rtl] .md-typeset .mdx-badge__icon {
+  border-top-right-radius: 0.1rem;
+}
+
+[dir=ltr] .md-typeset .mdx-badge__icon {
+  border-bottom-left-radius: 0.1rem;
+}
+
+[dir=rtl] .md-typeset .mdx-badge__icon {
+  border-bottom-right-radius: 0.1rem;
+}
+
+/* 设置mdx-badge__icon的样式 */
+.md-typeset .mdx-badge__icon {
+  background: var(--md-accent-fg-color--transparent);
+  padding: 0.2rem;
+}
+
+/* 设置mdx-badge__icon的最后一个子元素的圆角样式 */
+.md-typeset .mdx-badge__icon:last-child {
+  border-radius: 0.1rem;
+}
+
+/* 设置mdx-badge__text的边框阴影和样式 */
+[dir=ltr] .md-typeset .mdx-badge__text {
+  border-top-right-radius: 0.1rem;
+}
+
+[dir=rtl] .md-typeset .mdx-badge__text {
+  border-top-left-radius: 0.1rem;
+}
+
+[dir=ltr] .md-typeset .mdx-badge__text {
+  border-bottom-right-radius: 0.1rem;
+}
+
+[dir=rtl] .md-typeset .mdx-badge__text {
+  border-bottom-left-radius: 0.1rem;
+}
+
+.md-typeset .mdx-badge__text {
+  box-shadow: 0 0 0 1px inset var(--md-accent-fg-color--transparent);
+  padding: 0.2rem 0.3rem;
+}
+
+/* 设置mdx-switch button的过渡效果 */
+.md-typeset .mdx-switch button {
+  cursor: pointer;
+  transition: opacity 0.25s;
+}
+
+/* 设置mdx-switch button在焦点和悬停时的不透明度 */
+.md-typeset .mdx-switch button:focus,
+.md-typeset .mdx-switch button:hover {
+  opacity: 0.75;
+}
+
+/* 设置mdx-switch button>code的背景和颜色 */
+.md-typeset .mdx-switch button>code {
+  background-color: var(--md-primary-fg-color);
+  color: var(--md-primary-bg-color);
+  display: block;
+}
+
+/* 设置多列布局的样式，最大列数为2 */
+.md-typeset .mdx-columns ol,
+.md-typeset .mdx-columns ul {
+  -moz-columns: 2;
+  column-count: 2;
+}
+
+/* 在小屏幕上，取消多列布局 */
+@media screen and (max-width: 29.984375em) {
+  .md-typeset .mdx-columns ol,
+  .md-typeset .mdx-columns ul {
+    -moz-columns: initial;
+    columns: initial;
+  }
+}
+
+/* 设置多列布局中li元素的样式，避免分列时被切断 */
+.md-typeset .mdx-columns li {
+  -moz-column-break-inside: avoid;
+  break-inside: avoid;
+}
+
+/* 设置mdx-flags的样式 */
+.md-typeset .mdx-flags {
+  margin: 2em auto;
+}
+
+/* 设置mdx-flags ol的样式 */
+.md-typeset .mdx-flags ol {
+  list-style: none;
+}
+
+/* 设置mdx-flags ol li的样式 */
+.md-typeset .mdx-flags ol li {
+  margin-bottom: 1em;
+}
+
+/* 设置mdx-flags__item的样式 */
+.md-typeset .mdx-flags__item {
+  display: flex;
+  gap: 0.6rem;
+}
+
+/* 设置mdx-flags__content的样式 */
+.md-typeset .mdx-flags__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+/* 设置mdx-flags__content span的样式 */
+.md-typeset .mdx-flags__content span {
+  align-items: baseline;
+  display: inline-flex;
+  justify-content: space-between;
+}
+
+/* 设置mdx-flags__content第二个子元素的字体大小 */
+.md-typeset .mdx-flags__content>span:nth-child(2) {
+  font-size: 80%;
+}
+
+/* 设置mdx-flags__content code的浮动效果 */
+.md-typeset .mdx-flags__content code {
+  float: right;
+}
+
+/* 设置mdx-social的样式 */
+.md-typeset .mdx-social {
+  height: min(27rem, 80vw);
+  position: relative;
+}
+
+/* 鼠标悬停时改变mdx-social__image的背景颜色 */
+.md-typeset .mdx-social:hover .mdx-social__image {
+  background-color: #e4e4e40d;
+}
+
+/* 设置mdx-social__layer的样式 */
+.md-typeset .mdx-social__layer {
+  margin-top: 4rem;
+  position: absolute;
+  transform-style: preserve-3d;
+  transition: 0.25s cubic-bezier(.7, 0, .3, 1);
+}
+
+/* 鼠标悬停时改变mdx-social__label的不透明度和mdx-social__image的背景颜色 */
+.md-typeset .mdx-social__layer:hover .mdx-social__label {
+  opacity: 1;
+}
+
+.md-typeset .mdx-social__layer:hover .mdx-social__image {
+  background-color: #7f7f7ffc;
+}
+
+/* 鼠标悬停时隐藏其他mdx-social__layer */
+.md-typeset .mdx-social__layer:hover~.mdx-social__layer {
+  opacity: 0;
+}
+
+/* 设置mdx-social__image的阴影和变换效果 */
+.md-typeset .mdx-social__image {
+  box-shadow: -0.25rem 0.25rem 0.5rem #0000000d;
+  transform: rotate(-40deg) skew(15deg, 15deg) scale(0.7);
+  transition: all 0.25s;
+}
+
+/* 设置mdx-social__image img的样式 */
+.md-typeset .mdx-social__image img {
+  display: block;
+}
+
+/* 设置mdx-social__label的样式 */
+.md-typeset .mdx-social__label {
+  background-color: var(--md-default-fg-color--light);
+  color: var(--md-default-bg-color);
+  display: block;
+  opacity: 0;
+  padding: 0.2rem 0.4rem;
+  position: absolute;
+  transition: all 0.25s;
+}
+
+/* 鼠标悬停时移动mdx-social__layer的位置 */
+.md-typeset .mdx-social:hover .mdx-social__layer:nth-child(6) {
+  transform: translateY(-30px);
+}
+
+.md-typeset .mdx-social:hover .mdx-social__layer:nth-child(5) {
+  transform: translateY(-20px);
+}
+
+.md-typeset .mdx-social:hover .mdx-social__layer:nth-child(4) {
+  transform: translateY(-10px);
+}
+
+.md-typeset .mdx-social:hover .mdx-social__layer:nth-child(3) {
+  transform: translateY(0);
+}
+
+.md-typeset .mdx-social:hover .mdx-social__layer:nth-child(2) {
+  transform: translateY(10px);
+}
+
+.md-typeset .mdx-social:hover .mdx-social__layer:first-child {
+  transform: translateY(20px);
+}
+
+.md-typeset .mdx-social:hover .mdx-social__layer:nth-child(0) {
+  transform: translateY(30px);
+}
+
+/* 设置md-banner的样式 */
+.md-banner {
+  color: var(--md-footer-fg-color--lighter);
+}
+
+/* 设置md-banner strong的样式 */
+.md-banner strong {
+  white-space: nowrap;
+}
+
+/* 设置md-banner a和md-banner strong的颜色 */
+.md-banner a,
+.md-banner strong {
+  color: var(--md-footer-fg-color);
+}
+
+/* 鼠标悬停时改变md-banner a的颜色 */
+.md-banner a:focus,
+.md-banner a:hover {
+  color: currentcolor;
+}
+
+/* 鼠标悬停时改变md-banner a中的twemoji的背景颜色 */
+.md-banner a:focus .twemoji,
+.md-banner a:hover .twemoji {
+  background-color: var(--md-footer-fg-color);
+  box-shadow: none;
+}
+
+/* 设置md-banner中twemoji的样式 */
+.md-banner .twemoji {
+  border-radius: 100%;
+  box-shadow: inset 0 0 0 0.05rem currentcolor;
+  display: inline-block;
+  height: 1.2rem;
+  padding: 0.25rem;
+  transition: all 0.25s;
+  vertical-align: bottom;
+  width: 1.2rem;
+}
+
+/* 设置md-banner中twemoji svg的样式 */
+.md-banner .twemoji svg {
+  display: block;
+  max-height: none;
+}
+
+/* 设置mdx-container的背景图和渐变背景 */
+.mdx-container {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: hsla(0, 0%, 100%, 1)' /></svg>")
+      no-repeat bottom, linear-gradient(to bottom, var(--md-primary-fg-color), #a63fd9 99%, var(--md-default-bg-color) 99%);
+  padding-top: 1rem;
+}
+
+/* 设置深色主题下的mdx-container的背景图和渐变背景 */
+[data-md-color-scheme=slate] .mdx-container {
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1123 258'><path d='M1124,2c0,0 0,256 0,256l-1125,0l0,-48c0,0 16,5 55,5c116,0 197,-92 325,-92c121,0 114,46 254,46c140,0 214,-167 572,-166Z' style='fill: hsla(230, 15%, 14%, 1)' /></svg>")
+      no-repeat bottom, linear-gradient(to bottom, var(--md-primary-fg-color), #363949 99%, var(--md-default-bg-color) 99%);
+}
+
+/* 设置mdx-hero的样式 */
+.mdx-hero {
+  color: var(--md-primary-bg-color);
+  margin: 0 .8rem;
+}
+
+/* 设置mdx-hero h1的颜色、字体粗细和下边距 */
+.mdx-hero h1 {
+  color: currentcolor;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+/* 小屏幕下设置mdx-hero h1的字体大小 */
+@media screen and (max-width: 29.984375em) {
+  .mdx-hero h1 {
+    font-size: 1.4rem;
+  }
+}
+
+/* 设置mdx-hero__content的底部内边距 */
+.mdx-hero__content {
+  padding-bottom: 6rem;
+}
+
+/* 大屏幕下设置mdx-hero的布局和样式 */
+@media screen and (min-width: 60em) {
+  .mdx-hero {
+    align-items: stretch;
+    display: flex;
+  }
+
+  /* 设置mdx-hero__content的顶部外边距、最大宽度和底部内边距 */
+  .mdx-hero__content {
+    margin-top: 3.5rem;
+    max-width: 19rem;
+    padding-bottom: 14vw;
+  }
+
+  /* 设置mdx-hero__image的顺序和位移 */
+  .mdx-hero__image {
+    order: 1;
+    transform: translateX(4rem);
+    width: 38rem;
+  }
+}
+
+/* 大屏幕下进一步调整mdx-hero__image的位移 */
+@media screen and (min-width: 76.25em) {
+  .mdx-hero__image {
+    transform: translateX(8rem);
+  }
+}
+
+/* 设置mdx-hero中md-button的颜色和外边距 */
+.mdx-hero .md-button {
+  color: var(--md-primary-bg-color);
+  margin-right: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+/* 鼠标悬停时改变md-button的背景颜色、边框颜色和文字颜色 */
+.mdx-hero .md-button:focus,
+.mdx-hero .md-button:hover {
+  background-color: var(--md-accent-fg-color);
+  border-color: var(--md-accent-fg-color);
+  color: var(--md-accent-bg-color);
+}
+
+/* 设置md-button--primary的背景颜色、边框颜色和文字颜色 */
+.mdx-hero .md-button--primary {
+  background-color: var(--md-primary-bg-color);
+  border-color: var(--md-primary-bg-color);
+  color: #894da8;
+}
+
+/* 设置md-typeset中mdx-iconsearch的背景颜色、边框半径和阴影 */
+.md-typeset .mdx-iconsearch {
+  background-color: var(--md-default-bg-color);
+  border-radius: 0.1rem;
+  box-shadow: var(--md-shadow-z1);
+  position: relative;
+  transition: box-shadow 125ms;
+}
+
+/* 鼠标悬停时改变mdx-iconsearch的阴影 */
+.md-typeset .mdx-iconsearch:focus-within,
+.md-typeset .mdx-iconsearch:hover {
+  box-shadow: var(--md-shadow-z2);
+}
+
+/* 设置mdx-iconsearch中md-input的背景和阴影 */
+.md-typeset .mdx-iconsearch .md-input {
+  background: var(--md-default-bg-color);
+  box-shadow: none;
+}
+
+/* 在深色主题下改变mdx-iconsearch中md-input的背景 */
+[data-md-color-scheme=slate] .md-typeset .mdx-iconsearch .md-input {
+  background: var(--md-code-bg-color);
+}
+
+/* 设置mdx-iconsearch-result的最大高度、溢出样式和滚动条样式 */
+.md-typeset .mdx-iconsearch-result {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  max-height: 50vh;
+  overflow-y: auto;
+  scrollbar-color: var(--md-default-fg-color--lighter) #0000;
+  scrollbar-width: thin;
+  touch-action: pan-y;
+}
+
+/* 在md-tooltip中设置mdx-iconsearch-result的最大高度 */
+.md-tooltip .md-typeset .mdx-iconsearch-result {
+  max-height: 10.25rem;
+}
+
+/* 设置滚动条的样式 */
+.md-typeset .mdx-iconsearch-result::-webkit-scrollbar {
+  height: .2rem;
+  width: .2rem;
+}
+
+/* 设置滚动条滑块的背景颜色 */
+.md-typeset .mdx-iconsearch-result::-webkit-scrollbar-thumb {
+  background-color: var(--md-default-fg-color--lighter);
+}
+
+/* 鼠标悬停时改变滚动条滑块的背景颜色 */
+.md-typeset .mdx-iconsearch-result::-webkit-scrollbar-thumb:hover {
+  background-color: var(--md-accent-fg-color);
+}
+
+/* 设置mdx-iconsearch-result__meta的颜色、字体大小和位置 */
+.md-typeset .mdx-iconsearch-result__meta {
+  color: var(--md-default-fg-color--lighter);
+  font-size: .64rem;
+  position: absolute;
+  right: .6rem;
+  top: .4rem;
+}
+
+/* 设置mdx-iconsearch-result__list的左/右外边距 */
+[dir=ltr] .md-typeset .mdx-iconsearch-result__list {
+  margin-left: 0;
+}
+
+[dir=rtl] .md-typeset .mdx-iconsearch-result__list {
+  margin-right: 0;
+}
+
+/* 设置mdx-iconsearch-result__list的样式 */
+.md-typeset .mdx-iconsearch-result__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* 设置mdx-iconsearch-result__item的样式 */
+[dir=ltr] .md-typeset .mdx-iconsearch-result__item {
+  margin-left: 0;
+}
+
+[dir=rtl] .md-typeset .mdx-iconsearch-result__item {
+  margin-right: 0;
+}
+
+.md-typeset .mdx-iconsearch-result__item {
+  border-bottom: .05rem solid var(--md-default-fg-color--lightest);
+  margin: 0;
+  padding: .2rem .6rem;
+}
+
+/* 设置mdx-iconsearch-result__item的最后一个子元素的下边框 */
+.md-typeset .mdx-iconsearch-result__item:last-child {
+  border-bottom: none;
+}
+
+/* 设置mdx-iconsearch-result__item中子元素之间的右外边距 */
+.md-typeset .mdx-iconsearch-result__item>* {
+  margin-right: .6rem;
+}
+
+/* 设置mdx-iconsearch-result__item中img的高度、宽度和动画效果 */
+.md-typeset .mdx-iconsearch-result__item img {
+  height: .9rem;
+  width: .9rem;
+}
+
+/* 在深色主题下，反转Squidfunk的图标颜色 */
+[data-md-color-scheme=slate] .md-typeset .mdx-iconsearch-result__item img {
+  filter: invert(1);
+}
+
+/* 设置mdx-iconsearch-result__item中mdx-icon的颜色 */
+.md-typeset .mdx-iconsearch-result__item .mdx-icon {
+  fill: currentcolor;
+}
+
+/* 设置mdx-tooltip的背景颜色、边框半径、字体大小和最大宽度 */
+.md-typeset .mdx-tooltip {
+  background-color: var(--md-default-bg-color);
+  border-radius: 0.2rem;
+  font-size: 0.8rem;
+  max-width: 25rem;
+  padding: 0.4rem;
+}
+
+/* 设置mdx-tooltip中mdx-tooltip__content的样式 */
+.md-typeset .mdx-tooltip__content {
+  display: block;
+}
+
+/* 设置mdx-tooltip中mdx-tooltip__link的颜色和字体样式 */
+.md-typeset .mdx-tooltip__link {
+  color: var(--md-accent-fg-color);
+  text-decoration: none;
+}
+
+/* 鼠标悬停时改变mdx-tooltip__link的文本下划线 */
+.md-typeset .mdx-tooltip__link:hover {
+  text-decoration: underline;
+}
+
+/* 在深色主题下设置mdx-tooltip的背景颜色 */
+[data-md-color-scheme=slate] .md-typeset .mdx-tooltip {
+  background-color: var(--md-code-bg-color);
+}
+
+/* 设置mdx-ribbon的样式 */
+.md-typeset .mdx-ribbon {
+  display: block;
+  margin: 1em auto;
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 设置mdx-ribbon a的样式 */
+.md-typeset .mdx-ribbon a {
+  background-color: #3eaf7c;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  color: #fff;
+  display: block;
+  font-size: 0.8rem;
+  font-weight: bold;
+  line-height: 2;
+  padding: 0.5em 1em;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  transform: rotate(45deg);
+}
+
+/* 设置mdx-ribbon a的hover效果 */
+.md-typeset .mdx-ribbon a:hover {
+  background-color: #4caf99;
+}
+
+/* 设置mdx-ribbon a的before伪元素 */
+.md-typeset .mdx-ribbon a:before {
+  background-color: #9bd5af;
+  content: 'Fork me on GitHub';
+  display: block;
+  font-size: 0.75em;
+  padding: 0.25em 0.5em;
+  position: relative;
+  transform: rotate(-90deg);
+  transform-origin: 0 0;
+  white-space: nowrap;
+  width: 10em;
+}
+
+/* 设置mdx-ribbon a的before伪元素在hover状态下的样式 */
+.md-typeset .mdx-ribbon a:hover:before {
+  background-color: #afd5c5;
+}
+
+/* 设置mdx-readtime的样式 */
+.md-typeset .mdx-readtime {
+  color: var(--md-default-fg-color--lighter);
+  font-size: 0.85em;
+}
+
+/* 设置mdx-readtime中md-icon的颜色 */
+.md-typeset .mdx-readtime .md-icon {
+  fill: currentcolor;
+}
+
+/* 设置mdx-readtime中md-icon的宽度 */
+.md-typeset .mdx-readtime .md-icon {
+  width: 1em;
+}
+
+/* 设置mdx-readtime的文本和md-icon之间的间距 */
+.md-typeset .mdx-readtime .md-icon + span {
+  margin-left: 0.2em;
+}
+
+/* 设置mdx-readtime中mdx-link的颜色 */
+.md-typeset .mdx-readtime .mdx-link {
+  color: var(--md-default-fg-color--lighter);
+}
+
+/* 鼠标悬停时改变mdx-readtime中mdx-link的颜色 */
+.md-typeset .mdx-readtime .mdx-link:hover {
+  color: var(--md-accent-fg-color);
+}
+

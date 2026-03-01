@@ -33,6 +33,7 @@
   ],
   "client_filter_terminate_session": true,
   "client_filter_block_user": false,
+  "partition_libs": {},
   "db_host": "localhost",
   "db_user": "",
   "db_pwd": "",
@@ -57,7 +58,8 @@
     "uplays": true,
     "exchange_cost": 100,
     "whitelist_cost": 9999,
-    "invite_cost": 1000
+    "invite_cost": 1000,
+    "srank_cost": 5
   },
   "tz_ad": "",
   "tz_api": "",
@@ -65,6 +67,7 @@
   "tz_version": "v0",
   "tz_username": "",
   "tz_password": "",
+  "tz_note": "tz_version 可选值: v0 (Nezha V0 Token认证), v1 (Nezha V1 用户名密码认证), komari (Komari API Key认证)",
   "ranks": {
     "logo": "SAKURA",
     "backdrop": false
@@ -75,6 +78,7 @@
     "dayplayrank": false,
     "weekplayrank": false,
     "check_ex": true,
+    "partition_check": true,
     "low_activity": false,
     "backup_db": false
   },
@@ -102,6 +106,10 @@
     "status": true,
     "git_repo": "berry8838/Sakura_embyboss",
     "commit_sha": null
+  },
+  "red_envelope": {
+    "status": true,
+    "allow_private": true
   },
   "api": {
     "status": true,

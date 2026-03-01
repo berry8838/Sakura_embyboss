@@ -52,55 +52,76 @@
 <td>货币</td> <td>money</td> <td>功能货币的名称，默认<code>花币</code>. 私以为取名两个字会简单好听点</td>
 </tr>
 
-<tr><td rowspan="14">open<br>注册，兑换开关</td><td>stat</td><td>注册状态，默认 false <code>true</code> or <code>false</code></td></tr>
+<tr><td rowspan="19">open<br>注册，兑换开关</td><td>stat</td><td>注册状态，默认 false <code>true</code> or <code>false</code></td></tr>
 <tr><td>open_us</td><td>自由注册时创建的账号有效期，默认 <code>30</code></td></tr>
 <tr><td>all_user</td><td>注册人数限制，可在bot启动后进入admin设置，默认 <code>1000</code></td></tr>
 <tr><td>timing</td><td>定时注册计时参数，bot启动后开启定时注册有效，勿动，默认 <code>0</code></td></tr>
 <tr><td>tem</td><td>当前已注册用户计数，勿动，默认 <code>0</code></td></tr>
 <tr><td>allow_code</td><td>能否使用注册码续期，默认 true <code>true</code> or <code>false</code></td></tr>
 <tr><td>checkin</td><td>是否开启签到，默认 true <code>true</code> or <code>false</code></td></tr>
-<tr><td>exchange</td><td>是否开启花币月度自动续期，默认 true <code>true</code> or <code>false</code></td></tr>
+<tr><td>checkin_lv</td><td>可签到用户等级，默认 <code>d</code>。说明：a 为白名单，b 为正常用户，c 为被封禁用户，d 为无号用户</td></tr>
+<tr><td>checkin_reward</td><td>签到奖励区间，默认形如 <code>[1,10]</code>（最小值, 最大值）</td></tr>
+<tr><td>exchange</td><td>是否开启花币月度自动续期，默认 true</td></tr>
 <tr><td>exchange_cost</td><td>续期的价格 每30天，默认 <code>100</code></td></tr>
 <tr><td>whitelist</td><td>是否开启兑换白名单，默认 true <code>true</code> or <code>false</code></td></tr>
 <tr><td>whitelist_cost</td><td>兑换白名单价格，默认 <code>9999</code></td></tr>
-<tr><td>invite</td><td>是否开启邀请功能，默认 false <code>true</code> or <code>false</code></td></tr>
-<tr><td>invite_cost</td><td>邀请码价格 每30天，默认 <code>500</code></tr>
+<tr><td>invite</td><td>是否开启注册码兑换功能，默认 false <code>true</code> or <code>false</code></td></tr>
+<tr><td>invite_lv</td><td>可兑换邀请码的用户等级，默认 <code>d</code>。说明：a 为白名单，b 为正常用户，c 为被封禁用户，d 为无号用户</td></tr>
+<tr><td>invite_cost</td><td>邀请码价格 每30天，默认 <code>1000</code></td></tr>
+<tr><td>srank_cost</td><td>S级权益相关消耗价格，默认 <code>5</code></td></tr>
 <tr><td>leave_ban</td><td>是否开启退群封禁，默认 true <code>true</code> or <code>false</code></td></tr>
 <tr><td>uplays</td><td>是否开启用户播放结算奖励，默认 true <code>true</code> or <code>false</code></td></tr>
 <tr><td rowspan="2">Emby Media<br>媒体库控制</td><td>emby_block</td><td><code>["媒体库名称"]</code> 由用户能控制显示隐藏的媒体库，bot中也可设置 </td></tr>
 <tr><td>extra_emby_libs</td><td><code>["媒体库名称"]</code> 默认隐藏，不想对新用户显示的媒体库，用户无法控制显隐，管理通过命令/kk可指定开启</td></tr>
-<tr><td rowspan="3">Nezha<br>探针 <br><a href="./image/fwq.png">效果图</a></td><td>tz_ad</td><td> 探针地址 <code>https://xx.xx.xyz</code>或 <code>http://25.25.25.25:8008</code> 最后不带斜杠，没有请留空</td></tr>
+<tr><td rowspan="6">探针 <br><a href="./image/fwq.png">效果图</a></td><td>tz_ad</td><td> 探针地址 <code>https://xx.xx.xyz</code>或 <code>http://25.25.25.25:8008</code> 最后不带斜杠，没有请留空</td></tr>
 <tr><td>tz_api</td><td><a target="_blank" href="https://nezha.wiki/guide/api.html#%E5%88%9B%E5%BB%BA-token">探针后台生成的 api</a> </td></tr>
-<tr><td>tz_id</td><td> 需要展示的 机器的 id，tz开头的三项是和 nezha 探针在一起的项目，没有哪吒探针就忽略。</td></tr>
+<tr><td>tz_id</td><td> 需要展示的 机器的 id，tz开头的三项是和探针在一起的项目，没有哪吒或者komari探针就忽略。</td></tr>
+<tr><td>tz_version</td><td>tz_version 可选值: v0 (Nezha V0 Token认证), v1 (Nezha V1 用户名密码认证), komari (Komari API Key认证)</td></tr>
+<tr><td>tz_username</td><td>若探针站点需要登录访问，填写登录用户名；不需要则留空</td></tr>
+<tr><td>tz_password</td><td>若探针站点需要登录访问，填写登录密码；不需要则留空</td></tr>
 <tr><td rowspan="2">ranks </td><td>logo</td><td> 日榜/周榜推送榜单图片中的LOGO文字，同时也是注册、续期码的前缀，请尽量保持中间没有空格，影响体验。默认<code>SAKURA</code></td></tr>
 <tr><td>backdrop</td><td> 是否使用backdrop（即横版图）作为推送榜单的封面图 ，默认<code>false</code></td></tr>
 <tr><td rowspan="8">schedall <br>各种定时任务管理</td><td>dayrank</td><td>默认<code>true</code>，定时发送媒体播放次数日榜，<code>每日 18:30</code></td></tr>
-<tr><td>weekrank</td><td>默认，<code>true</code>，定时发送媒体播放次数周榜，<code>每周日 23:59</code></td></tr>
-<tr><td>dayplayrank</td><td>默认，<code>false</code>定时发送用户观看时长日榜，<code>每日 23:00</code></td></tr>
-<tr><td>weekplayrank</td><td>默认，<code>false</code>定时发送用户观看时长周榜，<code>每周日23:30</code></td></tr>
+<tr><td>weekrank</td><td>默认<code>true</code>，定时发送媒体播放次数周榜，<code>每周日 23:59</code></td></tr>
+<tr><td>dayplayrank</td><td>默认<code>false</code>定时发送用户观看时长日榜，<code>每日 23:00</code></td></tr>
+<tr><td>weekplayrank</td><td>默认<code>false</code>定时发送用户观看时长周榜，<code>每周日23:30</code></td></tr>
 <tr><td>check_ex <br>到期保号</td><td>默认，<code>true</code>检测用户到期时间与当前utc时间大小，过期封禁，5天后未续期删号，<code>每日 01:30</code></td></tr>
 <tr><td>low_activity <br>活跃保号</td><td>默认，<code>false</code>检测用户最后一次活跃时间，间隔当前超过21天封禁，<code>每日 08:30</code></td></tr>
-<tr><td>不开启保号</td><td>如都不开启上述两种保号 <code>false，false</code>,则无需保号</td></tr>
+<tr><td>partition_check</td><td>是否开启分区到期检查，默认 <code>true</code>，每 10 分钟检查一次</td></tr>
 <tr><td>backup_db</td><td>默认 <code>false</code>，自动定时备份数据库，<code>每日 02:30</code></td></tr>
 <tr><td rowspan="4">backup_db <br>数据库备份详细设置</td><td>db_is_docker</td><td>默认 <code>true</code>，数据库是否为docker模式启动，or false </td></tr>
-<tr><td>db_docker_name</td><td>默认 <code>mysql</code>，若docker模式启动的数据库，此数据库容器的名字`</td></tr>
-<tr><td>db_backup_dir</td><td>默认 <code>./backup</code>数据库备份文件所保存的目录 </td></tr>
+<tr><td>db_docker_name</td><td>默认 <code>mysql</code>，若docker模式启动的数据库，此数据库容器的名字</td></tr>
+<tr><td>db_backup_dir</td><td>默认 <code>./db_backup</code>，数据库备份文件保存目录</td></tr>
 <tr><td>db_backup_maxcount</td><td>默认 <code>7</code>数据库备份文件保留的个数 </td></tr>
-<tr><td>AntiChanel <br>反皮套白名单</td><td>w_anti_chanel_ids</td><td>本机器人默认开启反频道（杀皮套人）功能，除匿名群管皮套，如需要允许其发言请将其id或username加入列表，当然，支持命令操作，<a href="/#命令帮助">请查阅命令大全</a></td></tr>
+<tr><td>AntiChanel <br>反皮套白名单</td><td>w_anti_channel_ids</td><td>本机器人默认开启反频道（杀皮套人）功能，除匿名群管皮套，如需要允许其发言请将其id或username加入列表，当然，支持命令操作，<a href="/#命令帮助">请查阅命令大全</a></td></tr>
+<tr><td rowspan="4">运行策略</td><td>kk_gift_days</td><td>kk相关赠送天数，默认 <code>30</code></td></tr>
+<tr><td>fuxx_pitao</td><td>是否启用反皮套强化逻辑，默认 <code>true</code></td></tr>
+<tr><td>activity_check_days</td><td>活跃检测天数阈值，默认 <code>21</code></td></tr>
+<tr><td>freeze_days</td><td>冻结处理天数阈值，默认 <code>5</code></td></tr>
 <tr><td>白名单专属线路</td><td>emby_whitelist_line </td><td> 【服务器板块】展示给白名单用户的emby地址和信息，仅支持telegram的MarkdownV2写法 </td></tr>
 <tr><td rowspan="3">客户端过滤</td><td>blocked_clients </td><td> 通过 webhook 来拦截的客户端名字，示例：<code>[".*curl.*",".*wget.*",".*python.*",".*bot.*", ".*spider.*",".*crawler.*", ".*scraper.*",".*downloader.*",".*aria2.*",".*youtube-dl.*",".*yt-dlp.*",".*ffmpeg.*",".*vlc.*"] </code></td></tr>
 <tr><td>client_filter_terminate_session</td><td>拦截到客户端后是否自动终止客户端的播放，默认 <code>true</code> </td></tr>
 <tr><td>client_filter_block_user</td><td>拦截到客户端后是否封禁用户，默认 <code>false</code> </td></tr>
-<tr><td rowspan="3">AutoUpdate<br>自动更新Bot代码</td><td>status</td><td>默认<code>false</code>，是否开启自动更新程序，<code>每日 12:30</code></td></tr>
+<tr><td>分区资源</td><td>partition_libs</td><td>分区媒体库配置，默认 <code>{}</code>，用于按分区管理媒体库规则，示例：<code>{"4K": ["4K 剧集", "4K 电影"]}</code></td></tr>
+
+<tr><td rowspan="2">red_envelope<br>红包功能</td><td>status</td><td>默认 <code>true</code>，是否开启红包功能</td></tr>
+<tr><td>allow_private</td><td>默认 <code>true</code>，是否允许私聊使用红包功能</td></tr>
+<tr><td rowspan="4">AutoUpdate<br>自动更新Bot代码</td><td>status</td><td>默认<code>true</code>，是否开启自动更新程序，<code>每日 12:30</code></td></tr>
 <tr><td>git_repo<br>拉取的代码仓库名称</td><td>默认<code>berry8838/Sakura_embyboss</code>，如有魔改请填写自己的仓库，以免代码覆盖</td></tr>
 <tr><td>commit_sha<br>所获取的latest commit sha</td><td>默认<code>null</code>，无需动，自动更新时会保存进此处以便下次比对</td></tr>
-<tr><td rowspan="7">MoviePilotService<br>点播功能</td><td>status</td><td>默认<code>false</code>，是否开启求片程序</td></tr>
-<tr><td>host</td><td>默认<code>null</code>，形如：<a>http://xxx.xxx.xxx.xxx:3001</a> 的moviepilot的api地址</td></tr>
+<tr><td>up_description</td><td>更新说明文本，默认 <code>null</code>，自动更新时可用于展示变更描述</td></tr>
+<tr><td rowspan="4">api<br>内置接口服务</td><td>status</td><td>默认<code>true</code>，是否启用内置 HTTP 接口服务</td></tr>
+<tr><td>http_url</td><td>默认<code>0.0.0.0</code>，接口监听地址</td></tr>
+<tr><td>http_port</td><td>默认<code>8838</code>，接口监听端口</td></tr>
+<tr><td>allow_origins</td><td>CORS 允许来源列表，默认<code>["*"]</code>，可按需收紧</td></tr>
+<tr><td rowspan="8">MoviePilotService<br>点播功能</td><td>status</td><td>默认<code>false</code>，是否开启求片程序</td></tr>
+<tr><td>url</td><td>默认<code>null</code> 或空字符串，形如：<a>http://xxx.xxx.xxx.xxx:3001</a> 的moviepilot地址（旧版字段名可能为 <code>host</code>）</td></tr>
 <tr><td>username</td><td>默认<code>null</code>，登录的用户名</td></tr>
 <tr><td>password</td><td>默认<code>null</code>，登录的密码</td></tr>
 <tr><td>access_token</td><td>默认<code>null</code>，验证身份以后的token，会自动更新，勿动</td></tr>
 <tr><td>price</td><td>默认<code>1</code>，按体积计算，每1G 收取的花币</td></tr>
-<tr><td>photo_url</td><td>此为求片界面图，可自定义更改</td></tr>
+<tr><td>download_log_chatid</td><td>下载日志推送目标 chat id，默认 <code>null</code></td></tr>
+<tr><td>lv</td><td>点播所需等级，默认 <code>b</code>。说明：a 为白名单用户， b 为普通用户</td></tr>
 </tbody>
 <tfoot></tfoot>
 </table>

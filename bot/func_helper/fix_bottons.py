@@ -406,10 +406,10 @@ async def cr_kk_ikb(uid, first):
                         policy = rep.get("Policy", {})
                         current_enabled_folders = policy.get("EnabledFolders", [])
                         enable_all_folders = policy.get("EnableAllFolders", False)
-                        
+
                         # 获取额外媒体库对应的文件夹ID
                         extra_folder_ids = await emby.get_folder_ids_by_names(extra_emby_libs)
-                        
+
                         # 判断额外媒体库是否显示
                         if enable_all_folders is True:
                             # 如果启用所有文件夹，额外媒体库是显示的,显示关闭按钮
@@ -453,8 +453,25 @@ async def cr_kk_ikb(uid, first):
     return text, keyboard
 
 
-def cv_user_playback_reporting(user_id):
-    return ikb([[('🌏 播放查询', f'userip-{user_id}'), ('❌ 关闭', 'closeit')]])
+def uinfo_ikb(embyid, lv=None):
+    row1 = []
+    row2 = []
+    if lv == 'c':
+        row1.append(('✅ 启用账户', f'uinfo_enable-{embyid}'))
+    elif lv in ('a', 'b'):
+        row1.append(('🚫 禁用账户', f'uinfo_disable-{embyid}'))
+    if lv != 'd':
+        row1.append(('🌏 播放查询', f'userip-{embyid}'))
+        row2 = [('🗑️ 删除账户', f'uinfo_delete-{embyid}')]
+    row2.append(('❌ 关闭', 'closeit'))
+
+    return ikb([row1, row2])
+
+
+def uinfo_delete_confirm_ikb(embyid):
+    return ikb([
+        [('⚠️ 确认删除', f'uinfo_delete_confirm-{embyid}'), ('🔙 取消', f'uinfo_delete_cancel-{embyid}')]
+    ])
 
 
 def gog_rester_ikb(link=None) -> InlineKeyboardMarkup:
@@ -514,7 +531,7 @@ def get_resource_ikb(download_name: str):
     return ikb([[(f'下载本片', f'download_{download_name}'), ('激活订阅', f'submit_{download_name}')],
                 [('❌ 关闭', 'closeit')]])
 re_download_center_ikb = ikb([
-    [('🍿 点播', 'get_resource'), ('📶 下载进度', 'download_rate')], 
+    [('🍿 点播', 'get_resource'), ('📶 下载进度', 'download_rate')],
     [('🔙 返回', 'members')]])
 continue_search_ikb = ikb([
     [('🔄 继续搜索', 'continue_search'), ('❌ 取消搜索', 'cancel_search')],

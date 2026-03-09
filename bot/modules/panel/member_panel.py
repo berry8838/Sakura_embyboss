@@ -9,9 +9,9 @@ import asyncio
 import datetime
 import math
 import random
-from datetime import timedelta, datetime
+from datetime import timedelta
 from bot.schemas import ExDate, Yulv
-from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, extra_emby_libs, config, bot_name, schedall
+from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, config, bot_name, schedall
 from pyrogram import filters
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import user_in_group_on_filter
@@ -24,7 +24,7 @@ from bot.modules.commands import p_start
 from bot.modules.commands.partition_code import _redeem_partition_code
 from bot.modules.commands.exchange import rgs_code
 from bot.sql_helper.sql_code import sql_count_c_code
-from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby, sql_delete_emby
+from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
 from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2
 
 # 添加全局锁
@@ -52,10 +52,10 @@ async def create_user(_, call, us, stats):
             # 再次检查限制（双重检查）
             if _open.tem >= _open.all_user:
                 return await msg.reply(f'**🚫 很抱歉，注册总数({_open.tem})已达限制({_open.all_user})。**')
-            
+
             send = await msg.reply(
                 f'🆗 会话结束，收到设置\n\n用户名：**{emby_name}**  安全码：**{emby_pwd2}** \n\n__正在为您初始化账户，更新用户策略__......')
-            
+
             # emby api操作
             data = await emby.emby_create(name=emby_name, days=us)
             if not data:
@@ -69,23 +69,23 @@ async def create_user(_, call, us, stats):
                 pwd = data[1]
                 eid = data[0]
                 ex = data[2]
-                
+
                 # 数据库操作
                 if stats:
-                    sql_update_emby(Emby.tg == tg, embyid=eid, name=emby_name, pwd=pwd, pwd2=emby_pwd2, lv='b', cr=datetime.now(), ex=ex) 
+                    sql_update_emby(Emby.tg == tg, embyid=eid, name=emby_name, pwd=pwd, pwd2=emby_pwd2, lv='b', cr=datetime.now(), ex=ex)
                 else:
                     sql_update_emby(Emby.tg == tg, embyid=eid, name=emby_name, pwd=pwd, pwd2=emby_pwd2, lv='b', cr=datetime.now(), ex=ex, us=0)
-                
+
                 # 在锁内更新计数器
                 tem_adduser()
-                
+
                 if schedall.check_ex:
                     ex = ex.strftime("%Y-%m-%d %H:%M:%S")
                 elif schedall.low_activity:
                     ex = f'__若{config.activity_check_days}天无观看将封禁__'
                 else:
                     ex = '__无需保号，放心食用__'
-                    
+
                 await editMessage(send,
                                   f'**▎创建用户成功🎉**\n\n'
                                   f'· 用户名称 | `{emby_name}`\n'
@@ -95,7 +95,7 @@ async def create_user(_, call, us, stats):
                                   f'· 当前线路：\n'
                                   f'{emby_line}\n\n'
                                   f'**·【服务器】 - 查看线路和密码**')
-                
+
                 LOGGER.info(f"【创建账户】[开注状态]：{call.from_user.id} - 建立了 {emby_name} ") if stats else LOGGER.info(
                     f"【创建账户】：{call.from_user.id} - 建立了 {emby_name} ")
 
@@ -173,9 +173,9 @@ async def change_tg(_, call):
                           f' ✅ 好的，[您](tg://user?id={call.from_user.id})已通过[{current_id}](tg://user?id={current_id})的换绑请求，原TG：`{replace_id}`。')
         e = sql_get_emby(tg=replace_id)
         if not e or not e.embyid: return await bot.send_message(current_id, '⁉️ 出错了，您所换绑账户已不存在。')
-        
+
         # 清空原账号信息但保留tg
-        if sql_update_emby(Emby.tg == replace_id, embyid=None, name=None, pwd=None, pwd2=None, 
+        if sql_update_emby(Emby.tg == replace_id, embyid=None, name=None, pwd=None, pwd2=None,
                           lv='d', cr=None, ex=None, us=0, iv=0, ch=None):
             LOGGER.info(f'【TG改绑】清空原账户 id{e.tg} 成功')
         else:
@@ -308,7 +308,7 @@ async def change_tg(_, call):
 @bot.on_callback_query(filters.regex('bindtg') & user_in_group_on_filter)
 async def bind_tg(_, call):
     d = sql_get_emby(tg=call.from_user.id)
-    if d.embyid is not None:
+    if d is not None and d.embyid is not None:
         return await callAnswer(call, '⚖️ 您已经拥有账户，请不要钻空子', True)
     await callAnswer(call, '⚖️ 将账户绑定TG')
     send = await editMessage(call,
@@ -504,7 +504,7 @@ async def embyblocks(_, call):
                 policy = rep.get("Policy", {})
                 enable_all_folders = policy.get("EnableAllFolders")
                 enabled_folders = policy.get("EnabledFolders", [])
-                
+
                 if enable_all_folders:
                     # 如果启用所有文件夹，检查是否有特定的阻止设置
                     stat = '🟢 显示'

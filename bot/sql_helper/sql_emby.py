@@ -14,6 +14,8 @@ class Emby(Base):
     emby表，tg主键，默认值lv，us，iv
     """
     __tablename__ = 'emby'
+    __table_args__ = {'mysql_charset': 'utf8mb4', 'mysql_collate': 'utf8mb4_unicode_ci'}
+    
     tg = Column(BigInteger, primary_key=True, autoincrement=False)
     embyid = Column(String(255), nullable=True)
     name = Column(String(255), nullable=True)

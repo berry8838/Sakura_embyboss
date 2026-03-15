@@ -30,6 +30,7 @@ async def _redeem_partition_code(code: str, tg_id: int):
         code=code,
         tg=tg_id,
         embyid=emby_row.embyid,
+        embyname=emby_row.name,
         now=now,
     )
     if not ok or not partition or not expires_at:

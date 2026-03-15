@@ -3,7 +3,7 @@ from typing import Dict, List, Optional, Tuple
 
 from sqlalchemy import BigInteger, Column, DateTime, Integer, String
 
-from bot.sql_helper import Base, Session, engine
+from bot.sql_helper import Base, Session
 
 
 class PartitionCode(Base):
@@ -15,26 +15,19 @@ class PartitionCode(Base):
     created_by = Column(BigInteger, nullable=True)
     created_at = Column(DateTime, default=datetime.now)
 
-
-PartitionCode.__table__.create(bind=engine, checkfirst=True)
-
-
 class PartitionGrant(Base):
     __tablename__ = "partition_grants"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     tg = Column(BigInteger, nullable=False, index=True)
     embyid = Column(String(255), nullable=True)
+    embyname = Column(String(255), nullable=True)
     partition = Column(String(64), nullable=False)
     expires_at = Column(DateTime, nullable=False)
     status = Column(String(20), default="active", index=True)
     code = Column(String(50), nullable=True)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
-
-
-PartitionGrant.__table__.create(bind=engine, checkfirst=True)
-
 
 def sql_add_partition_codes(items: List[Dict]) -> bool:
     """批量插入分区码记录。items 需包含 code/partition/duration_days/created_by/expires_at(optional)。"""
@@ -69,7 +62,14 @@ def sql_delete_partition_code(code: str) -> bool:
             return False
 
 
-def sql_upsert_partition_grant(tg: int, embyid: str, partition: str, expires_at: datetime, code: str = None) -> bool:
+def sql_upsert_partition_grant(
+    tg: int,
+    embyid: str,
+    partition: str,
+    expires_at: datetime,
+    code: str = None,
+    embyname: str = None,
+) -> bool:
     """插入或延长分区授权。若已有该用户同分区记录则延长到新的 expires_at (取较大者)。"""
     with Session() as session:
         try:
@@ -84,11 +84,13 @@ def sql_upsert_partition_grant(tg: int, embyid: str, partition: str, expires_at:
                     grant.expires_at = expires_at
                 grant.status = "active"
                 grant.code = code or grant.code
+                grant.embyname = embyname or grant.embyname
                 grant.updated_at = datetime.now()
             else:
                 grant = PartitionGrant(
                     tg=tg,
                     embyid=embyid,
+                    embyname=embyname,
                     partition=partition,
                     expires_at=expires_at,
                     status="active",
@@ -250,7 +252,13 @@ def sql_clear_all_partition_data() -> int:
             return 0 
 
 
-def sql_redeem_partition_code_atomic(code: str, tg: int, embyid: str, now: datetime) -> Tuple[bool, Optional[str], Optional[datetime]]:
+def sql_redeem_partition_code_atomic(
+    code: str,
+    tg: int,
+    embyid: str,
+    now: datetime,
+    embyname: str,
+) -> Tuple[bool, Optional[str], Optional[datetime]]:
     """
     原子化兑换分区码：同一事务内完成 校验码->写入/延长授权->删除分区码。
     返回 (ok, partition, expires_at)。
@@ -282,11 +290,13 @@ def sql_redeem_partition_code_atomic(code: str, tg: int, embyid: str, now: datet
                     grant.expires_at = expires_at
                 grant.status = "active"
                 grant.code = code
+                grant.embyname = embyname or grant.embyname
                 grant.updated_at = datetime.now()
             else:
                 grant = PartitionGrant(
                     tg=tg,
                     embyid=embyid,
+                    embyname=embyname,
                     partition=partition,
                     expires_at=expires_at,
                     status="active",

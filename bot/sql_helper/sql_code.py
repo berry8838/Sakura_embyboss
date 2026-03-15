@@ -1,15 +1,12 @@
 import math
 
-from bot.sql_helper import Base, Session, engine
+from bot.sql_helper import Base, Session
 from sqlalchemy import (
     Column,
     BigInteger,
     String,
     DateTime,
     Integer,
-    or_,
-    and_,
-    case,
     func,
 )
 from cacheout import Cache
@@ -28,10 +25,6 @@ class Code(Base):
     us = Column(Integer)
     used = Column(BigInteger, nullable=True)
     usedtime = Column(DateTime, nullable=True)
-
-
-Code.__table__.create(bind=engine, checkfirst=True)
-
 
 def sql_add_code(code_list: list, tg: int, us: int):
     """批量添加记录，如果code已存在则忽略"""

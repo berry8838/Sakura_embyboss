@@ -285,7 +285,8 @@ async def ch_link(_, call):
         text += f'\n👮🏻`{name.first_name}`: 月/{b}，季/{c}，半年/{d}，年/{f}，已用/{a}，未用/{e}'
         f = [f"🔎 {name.first_name}", f"ch_admin_link-{i}"]
         ls.append(f)
-    ls.append(["🚮 删除未使用码", f"delete_codes"])
+    if call.from_user.id == owner:
+        ls.append(["🚮 删除未使用码", "delete_codes"])
     admins.remove(owner)
     keyboard = ch_link_ikb(ls)
     text += '\n详情查询 👇'

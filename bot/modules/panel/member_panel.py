@@ -14,6 +14,7 @@ from bot.schemas import ExDate, Yulv
 from bot import bot, LOGGER, _open, emby_line, sakura_b, ranks, group, config, bot_name, schedall
 from pyrogram import filters
 from bot.func_helper.emby import emby
+from bot.func_helper.concurrency import get_user_lock
 from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.utils import members_info, tem_adduser, cr_link_one, judge_admins, tem_deluser, pwd_create
 from bot.func_helper.fix_bottons import members_ikb, back_members_ikb, re_create_ikb, del_me_ikb, re_delme_ikb, \
@@ -31,7 +32,7 @@ from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2
 _create_user_lock = asyncio.Lock()
 
 # 创号函数
-async def create_user(_, call, us, stats):
+async def create_user(_, call, stats):
     msg = await ask_return(call,
                            text='🤖**注意：您已进入注册状态:\n\n• 请在2min内输入 `[用户名][空格][安全码]`\n• 举个例子🌰：`苏苏 1234`**\n\n• 用户名中不限制中/英文/emoji，🚫**特殊字符**'
                                 '\n• 安全码为敏感操作时附加验证，请填入最熟悉的数字4~6位；退出请点 /cancel', timer=120,
@@ -49,15 +50,25 @@ async def create_user(_, call, us, stats):
     else:
         # 使用锁保护检查和创建过程
         async with _create_user_lock:
+            current = sql_get_emby(tg=call.from_user.id)
+            if not current:
+                return await msg.reply('⚠️ 数据库没有你，请重新 /start录入')
+            if current.embyid:
+                return await msg.reply('💦 你已经有账户啦！请勿重复注册。')
+            if not stats and int(current.us or 0) <= 0:
+                return await msg.reply('🤖 当前没有可用注册资格，请重新领取注册码后再试。')
+
             # 再次检查限制（双重检查）
             if _open.tem >= _open.all_user:
                 return await msg.reply(f'**🚫 很抱歉，注册总数({_open.tem})已达限制({_open.all_user})。**')
+
+            days = _open.open_us if stats else int(current.us)
 
             send = await msg.reply(
                 f'🆗 会话结束，收到设置\n\n用户名：**{emby_name}**  安全码：**{emby_pwd2}** \n\n__正在为您初始化账户，更新用户策略__......')
 
             # emby api操作
-            data = await emby.emby_create(name=emby_name, days=us)
+            data = await emby.emby_create(name=emby_name, days=days)
             if not data:
                 await editMessage(send,
                                   '**- ❎ 已有此账户名，请重新输入注册\n- ❎ 或检查有无特殊字符\n- ❎ 或emby服务器连接不通，会话已结束！**',
@@ -133,26 +144,29 @@ async def create(_, call):
     :param call:
     :return:
     """
-    e = sql_get_emby(tg=call.from_user.id)
-    if not e:
-        return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
+    stats = None
+    async with get_user_lock(call.from_user.id):
+        e = sql_get_emby(tg=call.from_user.id)
+        if not e:
+            return await callAnswer(call, '⚠️ 数据库没有你，请重新 /start录入', True)
 
-    if e.embyid:
-        await callAnswer(call, '💦 你已经有账户啦！请勿重复注册。', True)
-    elif not _open.stat and int(e.us) <= 0:
-        await callAnswer(call, f'🤖 自助注册已关闭，等待开启或使用注册码注册。', True)
-    elif not _open.stat and int(e.us) > 0:
-        send = await callAnswer(call, f'🪙 资质核验成功，请稍后。', True)
-        if send is False:
-            return
+        if e.embyid:
+            return await callAnswer(call, '💦 你已经有账户啦！请勿重复注册。', True)
+        if _open.stat:
+            stats = True
+        elif int(e.us or 0) > 0:
+            stats = False
         else:
-            await create_user(_, call, us=e.us, stats=False)
-    elif _open.stat:
+            return await callAnswer(call, f'🤖 自助注册已关闭，等待开启或使用注册码注册。', True)
+
+    if stats:
         send = await callAnswer(call, f"🪙 开放注册中，免除资质核验。", True)
-        if send is False:
-            return
-        else:
-            await create_user(_, call, us=_open.open_us, stats=True)
+    else:
+        send = await callAnswer(call, f'🪙 资质核验成功，请稍后。', True)
+
+    if send is False:
+        return
+    await create_user(_, call, stats=stats)
 
 
 # 换绑tg

@@ -37,6 +37,8 @@ class Open(BaseModel):
     stat: bool
     open_us: int = 30
     all_user: int
+    register_worker_count: int = 5
+    register_queue_limit: int = 100
     timing: int = 0
     tem: Optional[int] = 0
     # allow_code: StrictBool

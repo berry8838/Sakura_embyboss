@@ -47,6 +47,8 @@
   "open": {
     "stat": false,
     "all_user": 1000,
+    "register_worker_count": 5,
+    "register_queue_limit": 100,
     "timing": 0,
     "tem": 0,
     "allow_code": true,

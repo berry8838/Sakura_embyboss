@@ -9,7 +9,7 @@ from bot import db_host, db_user, db_pwd, db_name, db_port
 from bot import LOGGER
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import sessionmaker
 
 # 创建engine对象
 DATABASE_URL = f"mysql+pymysql://{db_user}:{db_pwd}@{db_host}:{db_port}/{db_name}?charset=utf8mb4"
@@ -74,9 +74,9 @@ def run_migrations():
         os.environ.pop(_MIGRATION_GUARD_ENV, None)
 
 
-# 调用sql_start()函数，返回一个Session对象
-def sql_start() -> scoped_session:
-    return scoped_session(sessionmaker(bind=engine, autoflush=False))
+# 调用sql_start()函数，返回一个Session工厂
+def sql_start() -> sessionmaker:
+    return sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 
 Session = sql_start()

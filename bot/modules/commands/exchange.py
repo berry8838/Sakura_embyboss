@@ -111,6 +111,12 @@ async def rgs_code(_, msg, register_code):
                 )
             if result["status"] == "no_account":
                 return await sendMessage(msg, "🔔 很遗憾，您使用的是续期码，无法启用注册功能，请悉知", timer=60)
+            if result["status"] == "no_user":
+                return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
+            if result["status"] == "has_account":
+                return await sendMessage(msg, "💦 你已经有账户啦！请勿重复操作。")
+            if result["status"] != "ok":
+                return await sendMessage(msg, "⚠️ 未知错误，请稍后重试。")
 
             if result["restore_policy"]:
                 try:
@@ -157,6 +163,12 @@ async def rgs_code(_, msg, register_code):
                 msg,
                 f'此 `{register_code}` \n注册码已被使用,是 [{used}](tg://user?id={used}) 的形状了喔',
             )
+        if result["status"] == "no_user":
+            return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
+        if result["status"] == "has_account":
+            return await sendMessage(msg, "💦 你已经有账户啦！请勿重复操作。")
+        if result["status"] != "ok":
+            return await sendMessage(msg, "⚠️ 未知错误，请稍后重试。")
 
         first = await bot.get_chat(result["issuer_tg"])
         us1 = result["days"]

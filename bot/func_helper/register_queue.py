@@ -60,7 +60,8 @@ class RegisterQueueManager:
         async with self._lock:
             if job.user_id in self._busy_users:
                 return False, "duplicate", None
-            if _open.tem + self._reserved_slots >= _open.all_user:
+            current_tem = int(_open.tem or 0)
+            if current_tem + self._reserved_slots >= _open.all_user:
                 return False, "slot_full", None
             if self._queue.qsize() >= self._max_waiting_queue_size_locked():
                 return False, "queue_full", None

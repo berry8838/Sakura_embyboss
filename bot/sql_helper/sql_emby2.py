@@ -1,4 +1,4 @@
-from bot.sql_helper import Base, Session, engine
+from bot.sql_helper import Base, Session
 from sqlalchemy import Column, String, DateTime, Integer
 from sqlalchemy import or_
 
@@ -16,10 +16,6 @@ class Emby2(Base):
     cr = Column(DateTime, nullable=True)
     ex = Column(DateTime, nullable=True)
     expired = Column(Integer, nullable=True)
-
-
-Emby2.__table__.create(bind=engine, checkfirst=True)
-
 
 def sql_add_emby2(embyid, name, cr, ex, pwd='5210', pwd2='1234', lv='b', expired=0):
     """

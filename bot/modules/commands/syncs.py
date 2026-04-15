@@ -282,6 +282,8 @@ async def restore_from_db(_, msg):
         chat_members = [member.user.id async for member in bot.get_chat_members(chat_id=group_id)]
         await sendMessage(msg, '** 恢复中, 请耐心等待... **')
         text = ''
+        success_count = 0
+        fail_count = 0
         for embyuser in embyusers:
             if embyuser.tg in chat_members:
                 try:
@@ -291,6 +293,7 @@ async def restore_from_db(_, msg):
                         text += f'**- ❎ 已有此账户名\n- ❎ 或检查有无特殊字符\n- ❎ 或emby服务器连接不通\n- ❎ 跳过恢复用户：#id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) \n**'
                         LOGGER.error(
                             f"【恢复账户】：重复账户 or 未知错误！{embyuser.name} 恢复失败！")
+                        fail_count += 1
                     else:
                         tg = embyuser.tg
                         embyid = data[0]
@@ -304,7 +307,7 @@ async def restore_from_db(_, msg):
                             text += f'**- ⚠️ 恢复用户：#id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 成功，但收藏记录更新失败\n**'
                         else:
                             text += f'**- ✅ 恢复用户：#id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 成功！\n**'
-                        
+                        success_count += 1
                         LOGGER.info(f"恢复 #id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 成功")
                         try:
                             user_notification = f'🤖 #恢复成功：id：{embyuser.tg} \n\n🧬您的账号`{embyuser.name}`已恢复成功 ！\n🪅密码为：`{pwd}`\n🔮安全码为：`{embyuser.pwd2}`\n'
@@ -317,13 +320,22 @@ async def restore_from_db(_, msg):
                             LOGGER.error(e)
                 except Exception as e:
                     text += f'**- ❎ 恢复 #id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 失败 \n**'
+                    fail_count += 1
                     LOGGER.info(f"恢复 #id{embyuser.tg} - [{embyuser.name}](tg://user?id={embyuser.tg}) 失败，原因: {e}")
                     pass
         # 防止触发 MESSAGE_TOO_LONG 异常，text可以是4096，caption为1024，取小会使界面好看些
         n = 1000
         chunks = [text[i:i + n] for i in range(0, len(text), n)]
         for c in chunks:
-            await sendMessage(msg, c + f'\n🔈 当前时间：{datetime.now().strftime("%Y-%m-%d")}')
+            try:
+                await sendMessage(msg, c + f'\n🔈 当前时间：{datetime.now().strftime("%Y-%m-%d")}')
+            except FloodWait as f:
+                LOGGER.warning(str(f))
+                await sleep(f.value * 1.2)
+                await sendMessage(msg, c + f'\n🔈 当前时间：{datetime.now().strftime("%Y-%m-%d")}')
+            except Exception as e:
+                LOGGER.error(f"发送消息失败: {e}")
+        LOGGER.info(f"{sign_name} 从数据库中恢复用户到Emby中操作结束，共成功 {success_count} 个用户，失败 {fail_count} 个用户！")
         await sendMessage(msg, '** 恢复完成 **')
 
 
@@ -434,7 +446,10 @@ async def unban_all_users(_, msg):
                         reply_text = f'{index}. [{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 解禁成功，但数据库更新失败\n'
                         LOGGER.warning(reply_text)
                 else:
-                    reply_text = f'[{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 解禁失败\n'
+                    if db_user:
+                        reply_text = f'[{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 解禁失败\n'
+                    else:
+                        reply_text = f'[{emby_name}] - Emby账户 解禁失败\n'
                     LOGGER.error(reply_text)
                 text += reply_text
                 continue
@@ -524,7 +539,10 @@ async def ban_all_users(_, msg):
                         reply_text = f'{index}. [{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 禁用成功，但数据库更新失败\n'
                         LOGGER.warning(reply_text)
                 else:
-                    reply_text = f'[{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 禁用失败\n'
+                    if db_user:
+                        reply_text = f'[{emby_name}](tg://user?id={db_user.tg}) - #id{db_user.tg} 禁用失败\n'
+                    else:
+                        reply_text = f'[{emby_name}] - Emby账户 禁用失败\n'
                     LOGGER.error(reply_text)
                 text += reply_text
             except Exception as e:

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, DateTime, BigInteger, Text, Float
 import datetime
-from bot.sql_helper import Base, Session, engine
+from bot.sql_helper import Base, Session
 from cacheout import Cache
 
 cache = Cache()
@@ -20,10 +20,6 @@ class RequestRecord(Base):
     create_at = Column(DateTime, default=datetime.datetime.utcnow)
     update_at = Column(DateTime, default=datetime.datetime.utcnow,
                       onupdate=datetime.datetime.utcnow)
-
-
-RequestRecord.__table__.create(bind=engine, checkfirst=True)
-
 
 def sql_add_request_record(tg: int, download_id: str, request_name: str, detail: str, cost: str):
     with Session() as session:

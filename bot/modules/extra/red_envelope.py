@@ -14,7 +14,7 @@ from pyrogram import filters
 from pyrogram.types import ChatPermissions, InlineKeyboardButton, InlineKeyboardMarkup
 from sqlalchemy import func
 
-from bot import bot, prefixes, sakura_b, bot_photo, red_envelope
+from bot import bot, prefixes, sakura_b, bot_photo, red_envelope, _open
 from bot.func_helper.filters import user_in_group_on_filter
 from bot.func_helper.fix_bottons import users_iv_button
 from bot.func_helper.msg_utils import sendPhoto, sendMessage, callAnswer, editMessage
@@ -41,24 +41,35 @@ class RedEnvelope:
         self.type = envelope_type  # random/equal/private
         self.receivers = {}  # {user_id: {"amount": xx, "name": "xx"}}
         self.target_user = None  # 专享红包接收者ID
-        self.message = None  # 专享红包消息
+        self.message = None  # 红包消息（普通红包和专享红包共用）
 
 
 async def create_reds(
-    money, members, first_name, sender_id, flag=None, private=None, private_text=None
+    money,
+    members,
+    first_name,
+    sender_id,
+    envelope_type="random",
+    private=None,
+    private_text=None,
 ):
     red_id = await pwd_create(5)
     envelope = RedEnvelope(
-        money=money, members=members, sender_id=sender_id, sender_name=first_name
+        money=money,
+        members=members,
+        sender_id=sender_id,
+        sender_name=first_name,
+        envelope_type=envelope_type,
     )
 
-    if flag:
-        envelope.type = "equal"
-    elif private:
+    if private:
         envelope.type = "private"
         envelope.target_user = private
+    if private_text is None:
+        # 专享红包：如果没有传入祝福语，则随机选择默认祝福语
+        envelope.message = random.choice(Yulv.load_yulv().red_bag)
+    else:
         envelope.message = private_text
-
     envelope.id = red_id
     red_envelopes[red_id] = envelope
 
@@ -89,6 +100,16 @@ async def send_red_envelope(_, msg):
 
     # 处理专享红包
     if msg.reply_to_message and red_envelope.allow_private:
+        target_from_user = msg.reply_to_message.from_user
+        target_sender_chat = msg.reply_to_message.sender_chat
+
+        # 不允许对机器人或频道发送专属红包
+        if (target_from_user and target_from_user.is_bot) or target_sender_chat:
+            return await asyncio.gather(
+                msg.delete(),
+                sendMessage(msg, "🚫 专属红包不能发给机器人或频道!", timer=60),
+            )
+
         try:
             money = int(msg.command[1])
             private_text = (
@@ -101,7 +122,7 @@ async def send_red_envelope(_, msg):
                 msg.delete(),
                 sendMessage(
                     msg,
-                    "**🧧 专享红包：\n\n请回复某人 [数额][空格][个性化留言（可选）]**",
+                    "**🧧 专享红包：\n\n请回复某人 [数额] [祝福语（可选）]**",
                     timer=60,
                 ),
             )
@@ -120,7 +141,7 @@ async def send_red_envelope(_, msg):
                     msg.delete(),
                     sendMessage(
                         msg,
-                        "**🧧 专享红包：\n\n请回复某人 [数额][空格][个性化留言（可选）]**",
+                        "**🧧 专享红包：\n\n请回复某人 [数额] [祝福语（可选）]**",
                         timer=60,
                     ),
                 )
@@ -150,13 +171,14 @@ async def send_red_envelope(_, msg):
             money, 1, user_pic, f"{msg.reply_to_message.from_user.first_name} 专享"
         )
 
+        sign_name = f'{msg.sender_chat.title}' if msg.sender_chat else f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
         await asyncio.gather(
             sendPhoto(msg, photo=cover, buttons=ikb),
             reply.edit(
                 f"🔥 [{msg.reply_to_message.from_user.first_name}]"
                 f"(tg://user?id={msg.reply_to_message.from_user.id})\n"
-                f"您收到一个来自 [{first_name}](tg://user?id={msg.from_user.id}) 的专属红包"
-            ),
+                f"您收到一个来自 {sign_name} 的专属红包"
+            )
         )
         return
 
@@ -169,8 +191,8 @@ async def send_red_envelope(_, msg):
             msg.delete(),
             sendMessage(
                 msg,
-                f"**🧧 发红包：\n\n/red [总{sakura_b}数] [份数] [mode]**\n\n"
-                f"[mode]留空为拼手气, 任意值为均分\n专享红包请回复 + {sakura_b}",
+                f"**🧧 发红包：\n\n/red [总{sakura_b}数] [份数] [mode] [祝福语（可选）]**\n\n"
+                f"[mode]填 1 为拼手气, 其他值为均分\n[祝福语]不传则随机默认祝福语\n专享红包请回复 + {sakura_b}",
                 timer=60,
             ),
         )
@@ -181,7 +203,9 @@ async def send_red_envelope(_, msg):
         return
 
     # 创建并发送红包
-    flag = msg.command[3] if len(msg.command) > 3 else (1 if money == members else None)
+    mode_param = msg.command[3] if len(msg.command) > 3 else None
+    envelope_type = "random" if (mode_param is None or str(mode_param) == "1") else "equal"
+    private_text = msg.command[4] if len(msg.command) > 4 else None
     reply, _ = await asyncio.gather(msg.reply("正在准备红包，稍等"), msg.delete())
 
     ikb = await create_reds(
@@ -189,7 +213,8 @@ async def send_red_envelope(_, msg):
         members=members,
         first_name=first_name,
         sender_id=msg.from_user.id if not msg.sender_chat else msg.sender_chat.id,
-        flag=flag,
+        envelope_type=envelope_type,
+        private_text=private_text
     )
 
     user_pic = await get_user_photo(msg.from_user if not msg.sender_chat else msg.chat)
@@ -362,9 +387,10 @@ async def generate_final_message(envelope):
     sorted_receivers = sorted(
         envelope.receivers.items(), key=lambda x: x[1]["amount"], reverse=True
     )
+    envelope.message = envelope.message[:50] + "..." if len(envelope.message) > 53 else envelope.message
 
     text = (
-        f"🧧 {sakura_b}红包\n\n**{random.choice(Yulv.load_yulv().red_bag)}\n\n"
+        f"🧧 {sakura_b}红包\n\n**{envelope.message}\n\n"
         f"😎 {envelope.sender_name} **的红包已经被抢光啦~\n\n"
     )
 
@@ -385,28 +411,29 @@ async def s_rank(_, msg):
         e = sql_get_emby(tg=msg.from_user.id)
         if judge_admins(msg.from_user.id):
             sender = msg.from_user.id
-        elif not e or e.iv < 5:
-            await asyncio.gather(
-                msg.delete(),
-                msg.chat.restrict_member(
+        elif not e or e.iv < _open.srank_cost:
+            await msg.delete()
+            try:
+                await msg.chat.restrict_member(
                     msg.from_user.id,
                     ChatPermissions(),
                     datetime.now() + timedelta(minutes=1),
-                ),
-                sendMessage(
+                )
+                await sendMessage(
                     msg,
                     f"[{msg.from_user.first_name}]({msg.from_user.id}) "
-                    f"未私聊过bot或不足支付手续费5{sakura_b}，禁言一分钟。",
+                    f"未私聊过bot或不足支付手续费{_open.srank_cost}{sakura_b}，禁言一分钟。",
                     timer=60,
-                ),
-            )
+                )
+            except Exception as e:
+                print(e)
             return
         else:
-            sql_update_emby(Emby.tg == msg.from_user.id, iv=e.iv - 5)
+            sql_update_emby(Emby.tg == msg.from_user.id, iv=e.iv - _open.srank_cost)
             sender = msg.from_user.id
     elif msg.sender_chat.id == msg.chat.id:
         sender = msg.chat.id
-    reply = await msg.reply(f"已扣除手续5{sakura_b}, 请稍等......加载中")
+    reply = await msg.reply(f"已扣除手续{_open.srank_cost}{sakura_b}, 请稍等......加载中")
     text, i = await users_iv_rank()
     t = "❌ 数据库操作失败" if not text else text[0]
     button = await users_iv_button(i, 1, sender or msg.chat.id)

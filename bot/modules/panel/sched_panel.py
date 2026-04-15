@@ -39,6 +39,7 @@ action_dict = {
     "check_ex": check_expired,
     "low_activity": check_low_activity,
     "backup_db": auto_backup_db,
+    "partition_check": check_partition_access,
 }
 
 # 字典，对应的操作函数的参数和id
@@ -50,6 +51,7 @@ args_dict = {
     "check_ex": {'hour': 1, 'minute': 30, 'id': 'check_expired'},
     "low_activity": {'hour': 8, 'minute': 30, 'id': 'check_low_activity'},
     "backup_db": {'hour': 2, 'minute': 30, 'id': 'backup_db'},
+    "partition_check": {'minute': '*/10', 'id': 'partition_check'},
 }
 
 

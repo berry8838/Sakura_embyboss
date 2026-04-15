@@ -36,9 +36,11 @@ WORKDIR ${WORKDIR}
 COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# 克隆项目代码
-RUN git clone https://github.com/berry8838/Sakura_embyboss . && \
-    rm -rf ./image
+# 复制本地项目代码
+COPY . .
+
+# 保持镜像体积精简
+RUN rm -rf ./image
 # 设置启动命令
 ENTRYPOINT [ "python3" ]
 CMD [ "main.py" ]

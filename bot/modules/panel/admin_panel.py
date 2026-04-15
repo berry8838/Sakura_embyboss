@@ -223,12 +223,12 @@ async def open_us(_, call):
 async def cr_link(_, call):
     await callAnswer(call, '✔️ 创建注册/续期码')
     send = await editMessage(call,
-                             f'🎟️ 请回复创建 [天数] [数量] [模式] [续期]\n\n'
-                             f'**天数**：月30，季90，半年180，年365\n'
-                             f'**模式**： link -深链接 | code -码\n'
-                             f'**续期**： F - 注册码，T - 续期码\n'
-                             f'**示例**：`30 1 link T` 记作 30天一条续期深链接\n'
-                             f'__取消本次操作，请 /cancel__')
+                             '🎟️ 请回复创建 [天数] [数量] [模式] [续期]\n\n'
+                             '**天数**：月30，季90，半年180，年365\n'
+                             '**模式**： link -深链接 | code -码\n'
+                             '**续期**： F - 注册码，T - 续期码\n'
+                             '**示例**：`30 1 link T` 记作 30天一条续期深链接\n'
+                             '__取消本次操作，请 /cancel__')
     if send is False:
         return
 
@@ -285,7 +285,8 @@ async def ch_link(_, call):
         text += f'\n👮🏻`{name.first_name}`: 月/{b}，季/{c}，半年/{d}，年/{f}，已用/{a}，未用/{e}'
         f = [f"🔎 {name.first_name}", f"ch_admin_link-{i}"]
         ls.append(f)
-    ls.append(["🚮 删除未使用码", f"delete_codes"])
+    if call.from_user.id == owner:
+        ls.append(["🚮 删除未使用码", "delete_codes"])
     admins.remove(owner)
     keyboard = ch_link_ikb(ls)
     text += '\n详情查询 👇'

@@ -52,9 +52,11 @@ async def renew_user(_, msg):
         name = f'[{e.name}]({e.tg})' if e.tg else e.name
     except:
         name = e.name
-    # 时间是 utc 来算的
+    # 时间是 utc 来算的；e.ex 可能为空，空时从当前时间起算
     Now = datetime.now()
-    ex_new = Now + timedelta(days=days) if Now > e.ex else e.ex + timedelta(days=days)
+    ex_base = e.ex if isinstance(e.ex, datetime) else None
+    start_from = ex_base if (ex_base and ex_base > Now) else Now
+    ex_new = start_from + timedelta(days=days)
     lv = e.lv
     # 无脑 允许播放
     if ex_new > Now:

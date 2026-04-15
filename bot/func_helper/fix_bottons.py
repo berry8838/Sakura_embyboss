@@ -28,8 +28,12 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
             d.append(['🏪 兑换商店', 'storeall'])
     else:
         d = [['️👥 用户功能', 'members'], ['🌐 服务器', 'server']]
-        if schedall.check_ex: d.append(['🎟️ 使用续期码', 'exchange'])
-    if _open.checkin: d.append([f'🎯 签到', 'checkin'])
+        if schedall.check_ex:
+            d.append(['🎟️ 使用续期码', 'exchange'])
+        if schedall.partition_check and len(config.partition_libs) > 0:
+            d.append(['🎟️ 使用分区码', 'partitioncode'])
+    if _open.checkin:
+        d.append(['🎯 签到', 'checkin'])
     lines = array_chunk(d, 2)
     if is_admin: lines.append([['👮🏻‍♂️ admin', 'manage']])
     keyword = ikb(lines)
@@ -357,6 +361,7 @@ def config_preparation() -> InlineKeyboardMarkup:
          [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 观影奖励结算', 'set_uplays')],
          [(f'{auto_up} 自动更新bot', 'set_update'), (f'{mp_set} Moviepilot点播', 'set_mp')],
          [(f'{red_envelope_status} 红包', 'set_red_envelope_status'), (f'{allow_private} 专属红包', 'set_red_envelope_allow_private')],
+            [('🎟️ 分区通行码', 'partition_code_panel')],
          [(f'设置赠送资格天数({config.kk_gift_days}天)', 'set_kk_gift_days'), (f'设置活跃检测天数({config.activity_check_days}天)', 'set_activity_check_days')],
          [(f'设置封存账号天数({config.freeze_days}天)', 'set_freeze_days')],
          [(f'设置签到权限({checkin_lv_text})', 'set_checkin_lv')],
@@ -401,10 +406,10 @@ async def cr_kk_ikb(uid, first):
                         policy = rep.get("Policy", {})
                         current_enabled_folders = policy.get("EnabledFolders", [])
                         enable_all_folders = policy.get("EnableAllFolders", False)
-                        
+
                         # 获取额外媒体库对应的文件夹ID
                         extra_folder_ids = await emby.get_folder_ids_by_names(extra_emby_libs)
-                        
+
                         # 判断额外媒体库是否显示
                         if enable_all_folders is True:
                             # 如果启用所有文件夹，额外媒体库是显示的,显示关闭按钮
@@ -448,8 +453,25 @@ async def cr_kk_ikb(uid, first):
     return text, keyboard
 
 
-def cv_user_playback_reporting(user_id):
-    return ikb([[('🌏 播放查询', f'userip-{user_id}'), ('❌ 关闭', 'closeit')]])
+def uinfo_ikb(embyid, lv=None):
+    row1 = []
+    row2 = []
+    if lv == 'c':
+        row1.append(('✅ 启用账户', f'uinfo_enable-{embyid}'))
+    elif lv in ('a', 'b'):
+        row1.append(('🚫 禁用账户', f'uinfo_disable-{embyid}'))
+    if lv != 'd':
+        row1.append(('🌏 播放查询', f'userip-{embyid}'))
+        row2 = [('🗑️ 删除账户', f'uinfo_delete-{embyid}')]
+    row2.append(('❌ 关闭', 'closeit'))
+
+    return ikb([row1, row2])
+
+
+def uinfo_delete_confirm_ikb(embyid):
+    return ikb([
+        [('⚠️ 确认删除', f'uinfo_delete_confirm-{embyid}'), ('🔙 取消', f'uinfo_delete_cancel-{embyid}')]
+    ])
 
 
 def gog_rester_ikb(link=None) -> InlineKeyboardMarkup:
@@ -468,6 +490,7 @@ def sched_buttons():
     check_ex = '✅' if schedall.check_ex else '❎'
     low_activity = '✅' if schedall.low_activity else '❎'
     backup_db = '✅' if schedall.backup_db else '❎'
+    partition_check = '✅' if getattr(schedall, 'partition_check', True) else '❎'
     keyboard = InlineKeyboard(row_width=2)
     keyboard.add(InlineButton(f'{dayrank} 播放日榜', f'sched-dayrank'),
                  InlineButton(f'{weekrank} 播放周榜', f'sched-weekrank'),
@@ -475,7 +498,8 @@ def sched_buttons():
                  InlineButton(f'{weekplayrank} 观影周榜', f'sched-weekplayrank'),
                  InlineButton(f'{check_ex} 到期保号', f'sched-check_ex'),
                  InlineButton(f'{low_activity} 活跃保号', f'sched-low_activity'),
-                 InlineButton(f'{backup_db} 自动备份数据库', f'sched-backup_db')
+                 InlineButton(f'{backup_db} 自动备份数据库', f'sched-backup_db'),
+                 InlineButton(f'{partition_check} 分区授权检查', f'sched-partition_check')
                  )
     keyboard.row(InlineButton(f'🫧 返回', 'manage'))
     return keyboard
@@ -507,7 +531,7 @@ def get_resource_ikb(download_name: str):
     return ikb([[(f'下载本片', f'download_{download_name}'), ('激活订阅', f'submit_{download_name}')],
                 [('❌ 关闭', 'closeit')]])
 re_download_center_ikb = ikb([
-    [('🍿 点播', 'get_resource'), ('📶 下载进度', 'download_rate')], 
+    [('🍿 点播', 'get_resource'), ('📶 下载进度', 'download_rate')],
     [('🔙 返回', 'members')]])
 continue_search_ikb = ikb([
     [('🔄 继续搜索', 'continue_search'), ('❌ 取消搜索', 'cancel_search')],

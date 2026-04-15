@@ -7,10 +7,11 @@ from pyrogram.types import CallbackQuery
 from bot import bot, prefixes, LOGGER, emby_line, owner, bot_photo, schedall, config
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
-from bot.func_helper.fix_bottons import cv_user_playback_reporting, close_it_ikb
-from bot.func_helper.msg_utils import sendMessage, editMessage, sendPhoto 
+from bot.func_helper.fix_bottons import uinfo_ikb, uinfo_delete_confirm_ikb, close_it_ikb
+from bot.func_helper.msg_utils import sendMessage, editMessage, sendPhoto, callAnswer
 from bot.sql_helper.sql_emby import sql_get_emby, sql_update_emby, Emby
-from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2, sql_add_emby2
+from bot.sql_helper.sql_emby2 import sql_get_emby2, sql_delete_emby2, sql_add_emby2, sql_update_emby2
+from bot.sql_helper.sql_emby2 import Emby2
 
 
 @bot.on_message(filters.command('ucr', prefixes) & admins_on_filter & filters.private)
@@ -125,7 +126,7 @@ async def uun_info(_, msg, name = None):
         ex = e.ex or '无账户信息'
     str_lv = ''
     str_ex = ex
-    if e.lv == 'a': 
+    if e.lv == 'a':
         str_lv = 'a (白名单)'
         str_ex = '白名单用户，无到期时间'
     elif e.lv == 'b':
@@ -140,7 +141,109 @@ async def uun_info(_, msg, name = None):
             f"**· 🍓 当前状态** | {str_lv}\n" \
             f"**· 🍒 创建时间** | {e.cr}\n" \
             f"**· 🚨 到期时间** | **{str_ex}**\n"
-    await asyncio.gather(sendPhoto(msg, photo=bot_photo, caption=text, buttons=cv_user_playback_reporting(e.embyid)), msg.delete())
+    await asyncio.gather(sendPhoto(msg, photo=bot_photo, caption=text, buttons=uinfo_ikb(e.embyid, e.lv)), msg.delete())
+
+
+@bot.on_callback_query(filters.regex(r'^uinfo_disable-') & admins_on_filter)
+async def uinfo_disable_cb(_, call):
+    embyid = call.data.split('-', 1)[1]
+    e = sql_get_emby(embyid)
+    stats = None
+    if not e:
+        e = sql_get_emby2(embyid)
+        if not e:
+            return await callAnswer(call, "❌ 未找到该用户", show_alert=True)
+        stats = 1
+    if e.lv == 'c':
+        return await callAnswer(call, "⚠️ 账户已是禁用状态", show_alert=True)
+    if await emby.emby_change_policy(emby_id=embyid, disable=True):
+        if stats:
+            sql_update_emby2(Emby2.embyid == embyid, lv='c')
+        else:
+            sql_update_emby(Emby.embyid == embyid, lv='c')
+        await call.message.edit_reply_markup(reply_markup=uinfo_ikb(embyid, 'c'))
+        await callAnswer(call, f"✅ 账户 {e.name} 已禁用", show_alert=True)
+        LOGGER.info(f"【uinfo】管理员通过 uinfo 禁用了账户 {e.name}[{embyid}]")
+    else:
+        await callAnswer(call, "❌ 禁用账户失败，请检查 Emby 状态", show_alert=True)
+
+
+@bot.on_callback_query(filters.regex(r'^uinfo_enable-') & admins_on_filter)
+async def uinfo_enable_cb(_, call):
+    embyid = call.data.split('-', 1)[1]
+    e = sql_get_emby(embyid)
+    stats = None
+    if not e:
+        e = sql_get_emby2(embyid)
+        if not e:
+            return await callAnswer(call, "❌ 未找到该用户", show_alert=True)
+        stats = 1
+    if e.lv != 'c':
+        return await callAnswer(call, "⚠️ 账户当前未被禁用", show_alert=True)
+    if await emby.emby_change_policy(emby_id=embyid, disable=False):
+        if stats:
+            sql_update_emby2(Emby2.embyid == embyid, lv='b')
+        else:
+            sql_update_emby(Emby.embyid == embyid, lv='b')
+        await call.message.edit_reply_markup(reply_markup=uinfo_ikb(embyid, 'b'))
+        await callAnswer(call, f"✅ 账户 {e.name} 已启用", show_alert=True)
+        LOGGER.info(f"【uinfo】管理员通过 uinfo 启用了账户 {e.name}[{embyid}]")
+    else:
+        await callAnswer(call, "❌ 启用账户失败，请检查 Emby 状态", show_alert=True)
+
+
+@bot.on_callback_query(filters.regex(r'^uinfo_delete-') & admins_on_filter)
+async def uinfo_delete_cb(_, call):
+    embyid = call.data.split('-', 1)[1]
+    e = sql_get_emby(embyid)
+    if not e:
+        e = sql_get_emby2(embyid)
+        if not e:
+            return await callAnswer(call, "❌ 未找到该用户", show_alert=True)
+    await call.message.edit_reply_markup(reply_markup=uinfo_delete_confirm_ikb(embyid))
+    await callAnswer(call, f"⚠️ 请确认是否删除账户 {e.name}，此操作不可恢复！", show_alert=True)
+
+
+@bot.on_callback_query(filters.regex(r'^uinfo_delete_confirm-') & admins_on_filter)
+async def uinfo_delete_confirm_cb(_, call):
+    embyid = call.data.split('-', 1)[1]
+    e = sql_get_emby(embyid)
+    stats = None
+    if not e:
+        e = sql_get_emby2(embyid)
+        if not e:
+            return await callAnswer(call, "❌ 未找到该用户", show_alert=True)
+        stats = 1
+    name = e.name
+    if await emby.emby_del(emby_id=embyid):
+        if stats:
+            sql_delete_emby2(embyid)
+        else:
+            sql_update_emby(Emby.embyid == embyid, lv='d', name=None, embyid=None, cr=None, ex=None)
+        try:
+            await call.message.edit_caption(
+                caption=f"🗑️ 账户 **{name}** 已被管理员删除。",
+                reply_markup=close_it_ikb
+            )
+        except Exception:
+            await call.message.edit_reply_markup(reply_markup=close_it_ikb)
+        await callAnswer(call, f"✅ 账户 {name} 已删除", show_alert=True)
+        LOGGER.info(f"【uinfo】管理员通过 uinfo 删除了账户 {name}[{embyid}]")
+    else:
+        await call.message.edit_reply_markup(reply_markup=uinfo_ikb(embyid, e.lv))
+        await callAnswer(call, "❌ 删除账户失败，请检查 Emby 状态", show_alert=True)
+        LOGGER.error(f"【uinfo】管理员通过 uinfo 删除账户失败 {name}[{embyid}]")
+
+
+@bot.on_callback_query(filters.regex(r'^uinfo_delete_cancel-') & admins_on_filter)
+async def uinfo_delete_cancel_cb(_, call):
+    embyid = call.data.split('-', 1)[1]
+    e = sql_get_emby(embyid)
+    if not e:
+        e = sql_get_emby2(embyid)
+    lv = e.lv if e else None
+    await call.message.edit_reply_markup(reply_markup=uinfo_ikb(embyid, lv))
+    await callAnswer(call, "✅ 已取消删除")
 
 
 @bot.on_callback_query(filters.regex('userip') & admins_on_filter)
@@ -162,11 +265,11 @@ async def user_cha_ip(_, msg, name = None):
             user_id = msg.reply_to_message.from_user.id
     if not user_id:
         return await sendMessage(msg, "⭕ 用法：/userip + emby用户名或tgid 或回复用户消息")
-        
+
     e = sql_get_emby(user_id)
     if not e:
         return await sendMessage(msg, f"数据库中未查询到 {user_id}，请手动确认")
-        
+
     success, result = await emby.get_emby_userip(emby_id = e.embyid)
     if not success or len(result) == 0:
         return await sendMessage(msg, 'TA好像没播放信息吖')

@@ -10,15 +10,15 @@ Date:2026/4/15
     将请求的 userId 和对应的线路名称转发到此端点。
     Bot 收到后进行线路权限检查，若违规则终止会话/封禁用户。
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from bot.sql_helper.sql_emby import Emby, sql_get_emby, sql_update_emby
 from bot import LOGGER, bot, config
 from bot.func_helper.emby import emby
 import json
 import re
-from typing import Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
 router = APIRouter()
 
@@ -106,6 +106,149 @@ async def get_session_server_address(session_id: str) -> Optional[str]:
     except Exception as e:
         LOGGER.error(f"获取会话服务器地址异常: {str(e)}")
         return None
+
+
+def parse_emby_authorization(auth_header: str) -> Dict[str, str]:
+    """解析 Emby Authorization/X-Emby-Authorization 头"""
+    if not auth_header:
+        return {}
+
+    matches = re.findall(r'([A-Za-z][A-Za-z0-9]*)="([^"]*)"', auth_header)
+    return {key: value for key, value in matches if value}
+
+
+def parse_original_request_uri(request_uri: str) -> Dict[str, str]:
+    """从 nginx 转发的原始 request_uri 中提取查询参数"""
+    if not request_uri:
+        return {}
+
+    try:
+        parsed = urlparse(request_uri)
+        query = parse_qs(parsed.query, keep_blank_values=False)
+        return {key: values[0] for key, values in query.items() if values and values[0]}
+    except Exception as e:
+        LOGGER.error(f"解析原始 request_uri 失败: {request_uri} - {e}")
+        return {}
+
+
+def normalize_identifier(value: Optional[str]) -> str:
+    """统一清洗用于匹配的标识符"""
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+async def fetch_active_sessions() -> List[Dict[str, Any]]:
+    """获取当前活跃会话列表"""
+    try:
+        result = await emby._request("GET", "/emby/Sessions")
+        if result.success and isinstance(result.data, list):
+            return result.data
+        LOGGER.error(f"获取活跃会话失败: {result.error}")
+        return []
+    except Exception as e:
+        LOGGER.error(f"获取活跃会话异常: {e}")
+        return []
+
+
+def find_matching_session(
+    sessions: List[Dict[str, Any]],
+    *,
+    user_id: str = "",
+    device_id: str = "",
+    session_id: str = "",
+    play_session_id: str = "",
+    token: str = "",
+) -> Optional[Dict[str, Any]]:
+    """根据多个线索在活跃会话中匹配最可能的会话"""
+    normalized_user_id = normalize_identifier(user_id)
+    normalized_device_id = normalize_identifier(device_id)
+    normalized_session_id = normalize_identifier(session_id)
+    normalized_play_session_id = normalize_identifier(play_session_id)
+    normalized_token = normalize_identifier(token)
+
+    def _match_value(session_value: Any, expected: str) -> bool:
+        return bool(expected) and normalize_identifier(session_value) == expected
+
+    def _session_matches(session: Dict[str, Any]) -> bool:
+        play_state = session.get("PlayState") or {}
+        candidates = (
+            _match_value(session.get("UserId"), normalized_user_id),
+            _match_value(session.get("DeviceId"), normalized_device_id),
+            _match_value(session.get("Id"), normalized_session_id),
+            _match_value(session.get("PlaySessionId"), normalized_play_session_id),
+            _match_value(play_state.get("PlaySessionId"), normalized_play_session_id),
+            _match_value(session.get("AccessToken"), normalized_token),
+        )
+        return any(candidates)
+
+    matched_sessions = [session for session in sessions if _session_matches(session)]
+    if not matched_sessions:
+        return None
+
+    # 优先使用当前确实处于播放态的会话
+    for session in matched_sessions:
+        if session.get("NowPlayingItem"):
+            return session
+    return matched_sessions[0]
+
+
+async def resolve_user_context(
+    *,
+    user_id: str = "",
+    device_id: str = "",
+    session_id: str = "",
+    play_session_id: str = "",
+    token: str = "",
+    auth_header: str = "",
+    original_request_uri: str = "",
+) -> Tuple[str, Optional[Dict[str, Any]]]:
+    """从 userId / 认证头 / 活跃会话中尽量反查用户上下文"""
+    auth_info = parse_emby_authorization(auth_header)
+    original_query = parse_original_request_uri(original_request_uri)
+
+    resolved_user_id = (
+        normalize_identifier(user_id)
+        or normalize_identifier(auth_info.get("UserId"))
+        or normalize_identifier(original_query.get("userId"))
+    )
+    resolved_device_id = (
+        normalize_identifier(device_id)
+        or normalize_identifier(auth_info.get("DeviceId"))
+        or normalize_identifier(original_query.get("X-Emby-Device-Id"))
+        or normalize_identifier(original_query.get("DeviceId"))
+    )
+    resolved_session_id = normalize_identifier(session_id) or normalize_identifier(original_query.get("SessionId"))
+    resolved_play_session_id = (
+        normalize_identifier(play_session_id)
+        or normalize_identifier(original_query.get("PlaySessionId"))
+    )
+    resolved_token = (
+        normalize_identifier(token)
+        or normalize_identifier(auth_info.get("Token"))
+        or normalize_identifier(original_query.get("X-Emby-Token"))
+        or normalize_identifier(original_query.get("api_key"))
+    )
+
+    if resolved_user_id and not any([resolved_device_id, resolved_session_id, resolved_play_session_id]):
+        return resolved_user_id, None
+
+    sessions = await fetch_active_sessions()
+    if not sessions:
+        return resolved_user_id, None
+
+    matched_session = find_matching_session(
+        sessions,
+        user_id=resolved_user_id,
+        device_id=resolved_device_id,
+        session_id=resolved_session_id,
+        play_session_id=resolved_play_session_id,
+        token=resolved_token,
+    )
+    if matched_session and not resolved_user_id:
+        resolved_user_id = normalize_identifier(matched_session.get("UserId"))
+
+    return resolved_user_id, matched_session
 
 
 async def log_line_violation(
@@ -273,7 +416,18 @@ async def check_line_permission(
 
 
 @router.get("/line_report")
-async def line_report(userId: str, line: str, host: str = ""):
+async def line_report(
+    userId: str = "",
+    line: str = "",
+    host: str = "",
+    deviceId: str = "",
+    sessionId: str = "",
+    playSessionId: str = "",
+    token: str = "",
+    x_emby_authorization: Optional[str] = Header(default=None, alias="X-Emby-Authorization"),
+    x_emby_token: Optional[str] = Header(default=None, alias="X-Emby-Token"),
+    x_original_uri: Optional[str] = Header(default=None, alias="X-Original-URI"),
+):
     """
     接收 nginx mirror 转发的线路访问通知。
 
@@ -283,24 +437,49 @@ async def line_report(userId: str, line: str, host: str = ""):
     :param userId: Emby 用户 ID（从 nginx $arg_userId 获取）
     :param line: 线路标识名称（在 nginx 中通过 set $line_name 定义）
     :param host: 用户访问的域名（从 nginx $server_name 获取）
+    :param deviceId: 客户端设备 ID（建议从 nginx $arg_X_Emby_Device_Id 转发）
+    :param sessionId: Emby 会话 ID（如能获取建议转发）
+    :param playSessionId: Emby 播放会话 ID（如能获取建议转发）
     """
-    if not userId or not line:
-        return {"status": "ignored", "message": "Missing userId or line"}
+    if not line:
+        return {"status": "ignored", "message": "Missing line"}
 
     # 检查是否配置了白名单线路
     whitelist_line = getattr(config, "emby_whitelist_line", None)
     if not whitelist_line:
         return {"status": "skipped", "message": "No whitelist line configured"}
 
+    resolved_user_id, matched_session = await resolve_user_context(
+        user_id=userId,
+        device_id=deviceId,
+        session_id=sessionId,
+        play_session_id=playSessionId,
+        token=token or (x_emby_token or ""),
+        auth_header=x_emby_authorization or "",
+        original_request_uri=x_original_uri or "",
+    )
+    if not resolved_user_id:
+        LOGGER.warning(
+            "线路上报忽略: 无法识别用户 "
+            f"(line={line}, host={host}, deviceId={deviceId}, sessionId={sessionId}, playSessionId={playSessionId})"
+        )
+        return {
+            "status": "ignored",
+            "message": "Missing user identity",
+            "line": line,
+            "host": host,
+            "deviceId": deviceId,
+        }
+
     # 构造 server_address 用于线路判断
     server_address = host or line
 
     # 获取用户详情
-    user_details = sql_get_emby(userId)
+    user_details = sql_get_emby(resolved_user_id)
 
     # 白名单用户可以用任何线路
     if is_user_whitelisted(user_details):
-        LOGGER.debug(f"线路检查通过: 白名单用户 {userId} 使用线路 {line}")
+        LOGGER.debug(f"线路检查通过: 白名单用户 {resolved_user_id} 使用线路 {line}")
         return {"status": "allowed", "message": "Whitelist user"}
 
     # 检查是否使用白名单线路
@@ -308,31 +487,30 @@ async def line_report(userId: str, line: str, host: str = ""):
 
     if using_whitelist:
         LOGGER.warning(
-            f"线路权限违规(nginx): 用户 {userId} 通过 {server_address} 使用白名单线路"
+            f"线路权限违规(nginx): 用户 {resolved_user_id} 通过 {server_address} 使用白名单线路"
         )
 
         # 查询活跃会话以获取 session_id 等信息
-        session_id = ""
-        client_name = ""
-        device_name = ""
-        remote_endpoint = ""
-        user_name = ""
-        try:
-            result = await emby._request("GET", "/emby/Sessions")
-            if result.success and result.data:
-                for session in result.data:
-                    if session.get("UserId") == userId:
-                        session_id = session.get("Id", "")
-                        client_name = session.get("Client", "")
-                        device_name = session.get("DeviceName", "")
-                        remote_endpoint = session.get("RemoteEndPoint", "")
-                        user_name = session.get("UserName", "")
-                        break
-        except Exception as e:
-            LOGGER.error(f"查询会话信息失败: {e}")
+        session = matched_session
+        if not session:
+            sessions = await fetch_active_sessions()
+            session = find_matching_session(
+                sessions,
+                user_id=resolved_user_id,
+                device_id=deviceId,
+                session_id=sessionId,
+                play_session_id=playSessionId,
+                token=token or (x_emby_token or ""),
+            )
+
+        session_id = normalize_identifier(session.get("Id")) if session else ""
+        client_name = normalize_identifier(session.get("Client")) if session else ""
+        device_name = normalize_identifier(session.get("DeviceName")) if session else deviceId
+        remote_endpoint = normalize_identifier(session.get("RemoteEndPoint")) if session else ""
+        user_name = normalize_identifier(session.get("UserName")) if session else ""
 
         result = await handle_line_violation(
-            emby_id=userId,
+            emby_id=resolved_user_id,
             user_name=user_name or (user_details.name if user_details else ""),
             session_id=session_id,
             client_name=client_name,
@@ -347,8 +525,9 @@ async def line_report(userId: str, line: str, host: str = ""):
             "message": "Line not allowed",
             "line": line,
             "host": host,
+            "userId": resolved_user_id,
             "action_result": result,
         }
 
-    LOGGER.debug(f"线路检查通过: 用户 {userId} 使用线路 {line}")
-    return {"status": "allowed", "line": line, "host": host}
+    LOGGER.debug(f"线路检查通过: 用户 {resolved_user_id} 使用线路 {line}")
+    return {"status": "allowed", "line": line, "host": host, "userId": resolved_user_id}

@@ -173,7 +173,6 @@ class Embyservice(metaclass=Singleton):
                             if response.content_type == 'application/json':
                                 try:
                                     data = await response.json()
-                                    LOGGER.debug(f"API请求成功: {method} {endpoint}")
                                     return EmbyApiResult(True, data)
                                 except Exception as e:
                                     LOGGER.error(f"JSON解析失败: {str(e)}")

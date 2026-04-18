@@ -74,7 +74,7 @@ async def log_blocked_request(
             f"🆔 Emby ID: {user_id or 'Unknown'}\n"
             f"🔑 会话ID: {session_id or 'Unknown'}\n"
             f"📺 客户端: {client_name or 'Unknown'}\n"
-            f"📱 TG ID: {f'tg://user?id={tg_id}' if tg_id else 'Unknown'}\n"
+            f"📱 TG ID: {f'[{tg_id}](tg://user?id={tg_id})' if tg_id else 'Unknown'}\n"
             f"🚨 处理措施: {block_action}\n"
             f"⏰ 时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )

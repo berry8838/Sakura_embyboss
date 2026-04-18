@@ -231,11 +231,10 @@ async def resolve_user_context(
     token: str = "",
     auth_header: str = "",
     original_request_uri: str = "",
-) -> Tuple[str, Optional[Dict[str, Any]], str, Dict[str, Any]]:
+) -> Tuple[str, Optional[Dict[str, Any]], str]:
     """从 userId / 认证头 / 活跃会话中尽量反查用户上下文"""
     auth_info = parse_emby_authorization(auth_header)
     original_query = parse_original_request_uri(original_request_uri)
-    redacted_original_request_uri = redact_request_uri(original_request_uri)
     resolved_from = ""
 
     direct_user_id = normalize_identifier(user_id)
@@ -275,40 +274,14 @@ async def resolve_user_context(
         or normalize_identifier(original_query.get("api_key"))
     )
 
-    resolution_debug = {
-        "direct_userId": direct_user_id,
-        "direct_user_exists": direct_user_exists,
-        "auth_userId": auth_user_id,
-        "auth_user_exists": auth_user_exists,
-        "original_query_userId": original_query_user_id,
-        "original_query_user_exists": original_query_user_exists,
-        "direct_deviceId": normalize_identifier(device_id),
-        "auth_deviceId": normalize_identifier(auth_info.get("DeviceId")),
-        "original_query_deviceId": (
-            normalize_identifier(original_query.get("X-Emby-Device-Id"))
-            or normalize_identifier(original_query.get("DeviceId"))
-        ),
-        "direct_sessionId": normalize_identifier(session_id),
-        "original_query_sessionId": normalize_identifier(original_query.get("SessionId")),
-        "direct_playSessionId": normalize_identifier(play_session_id),
-        "original_query_playSessionId": normalize_identifier(original_query.get("PlaySessionId")),
-        "direct_token": bool(normalize_identifier(token)),
-        "auth_token": bool(normalize_identifier(auth_info.get("Token"))),
-        "original_query_token": bool(
-            normalize_identifier(original_query.get("X-Emby-Token"))
-            or normalize_identifier(original_query.get("api_key"))
-        ),
-        "original_request_uri": redacted_original_request_uri,
-    }
-
     if resolved_user_id and not any([resolved_device_id, resolved_session_id, resolved_play_session_id]):
-        return resolved_user_id, None, resolved_from, resolution_debug
+        return resolved_user_id, None, resolved_from
 
     sessions = await fetch_active_sessions()
     if not sessions:
         if resolved_user_id and not resolved_from:
             resolved_from = "derived.before_session_lookup"
-        return resolved_user_id, None, resolved_from, resolution_debug
+        return resolved_user_id, None, resolved_from
 
     matched_session = find_matching_session(
         sessions,
@@ -334,7 +307,6 @@ async def resolve_user_context(
         )
         if retry_session:
             matched_session = retry_session
-            resolution_debug["session_retry_without_user"] = True
 
     if matched_session and not resolved_user_id:
         resolved_user_id = normalize_identifier(matched_session.get("UserId"))
@@ -369,17 +341,7 @@ async def resolve_user_context(
             else:
                 resolved_from = "emby.sessions.fallback.override_bad_query_userId"
 
-    resolution_debug["matched_session"] = {
-        "Id": normalize_identifier(matched_session.get("Id")) if matched_session else "",
-        "UserId": normalize_identifier(matched_session.get("UserId")) if matched_session else "",
-        "UserName": normalize_identifier(matched_session.get("UserName")) if matched_session else "",
-        "DeviceId": normalize_identifier(matched_session.get("DeviceId")) if matched_session else "",
-        "DeviceName": normalize_identifier(matched_session.get("DeviceName")) if matched_session else "",
-        "Client": normalize_identifier(matched_session.get("Client")) if matched_session else "",
-    }
-    resolution_debug["resolved_from"] = resolved_from
-
-    return resolved_user_id, matched_session, resolved_from, resolution_debug
+    return resolved_user_id, matched_session, resolved_from
 
 
 async def log_line_violation(
@@ -406,7 +368,6 @@ async def log_line_violation(
             f"📱 TG ID: {f'[{tg_id}](tg://user?id={tg_id})' if tg_id else 'Unknown'}\n"
             f"🏷️ 用户等级: {lv_display}\n"
             f"━━━━━━━━━━━━━━━\n"
-            f"🌐 使用线路: {server_address or 'Unknown'}\n"
             f"📺 客户端: {client_name or 'Unknown'}\n"
             f"💻 设备: {device_name or 'Unknown'}\n"
             f"🔑 会话ID: {session_id or 'Unknown'}\n"
@@ -580,15 +541,7 @@ async def line_report(
         return {"status": "skipped", "message": "No whitelist line configured"}
 
     redacted_original_request_uri = redact_request_uri(x_original_uri or "")
-    LOGGER.info(
-        "线路上报请求: "
-        f"line={line}, host={host}, userId={userId or '<empty>'}, deviceId={deviceId or '<empty>'}, "
-        f"sessionId={sessionId or '<empty>'}, playSessionId={playSessionId or '<empty>'}, "
-        f"x_original_uri={redacted_original_request_uri or '<empty>'}, "
-        f"has_auth_header={bool(x_emby_authorization)}, has_token_header={bool(x_emby_token)}"
-    )
-
-    resolved_user_id, matched_session, resolved_from, resolution_debug = await resolve_user_context(
+    resolved_user_id, matched_session, resolved_from = await resolve_user_context(
         user_id=userId,
         device_id=deviceId,
         session_id=sessionId,
@@ -597,12 +550,7 @@ async def line_report(
         auth_header=x_emby_authorization or "",
         original_request_uri=x_original_uri or "",
     )
-    LOGGER.info(
-        "线路上报解析结果: "
-        f"resolved_user_id={resolved_user_id or '<empty>'}, "
-        f"resolved_from={resolved_from or '<unknown>'}, "
-        f"details={json.dumps(resolution_debug, ensure_ascii=False)}"
-    )
+
     if not resolved_user_id:
         LOGGER.warning(
             "线路上报忽略: 无法识别用户 "

@@ -124,7 +124,7 @@ async def audit_ip_command(_, message: Message):
             report_text += f"发现 {len(result)} 个用户使用同一 IP 地址，请注意是否存在账号共享行为。\n\n"
         
         report_text += f"**📊 审计完成时间:** `{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}`"
-        report_texts = split_long_message(report_text, 2000)
+        report_texts = split_long_message(report_text)
         for report_text in report_texts:
             try:
                 await bot.send_message(message.chat.id, report_text)
@@ -259,7 +259,7 @@ async def audit_device_name_command(_, message: Message):
             report_text += f"发现 {len(result)} 个用户使用包含 '{device_keyword}' 的设备，请注意是否存在异常使用模式。\n\n"
         
         report_text += f"**📊 审计完成时间:** `{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}`"
-        report_texts = split_long_message(report_text, 2000)
+        report_texts = split_long_message(report_text)
         for report_text_part in report_texts:
             try:
                 await bot.send_message(message.chat.id, report_text_part)
@@ -395,7 +395,7 @@ async def audit_client_name_command(_, message: Message):
             report_text += f"发现 {len(result)} 个用户使用包含 '{client_keyword}' 的客户端，请注意是否存在异常使用模式。\n\n"
         
         report_text += f"**📊 审计完成时间:** `{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}`"
-        report_texts = split_long_message(report_text, 2000)
+        report_texts = split_long_message(report_text)
         for report_text_part in report_texts:
             try:
                 await bot.send_message(message.chat.id, report_text_part)

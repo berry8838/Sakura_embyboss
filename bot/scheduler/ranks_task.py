@@ -10,10 +10,13 @@ from bot.ranks_helper import ranks_draw
 from bot import bot, group, ranks, LOGGER, schedall, save_config
 from bot.func_helper.utils import split_long_message
 
+# send_photo 的 caption 有长度限制为 1024
+MEDIA_CAPTION_SAFE_LENGTH = 1000
 
 
 
-async def send_multi_message(chat_id, photo_path, caption, parse_mode, pin_first=True):
+
+async def send_multi_message_with_photo(chat_id, photo_path, caption, parse_mode, pin_first=True):
     """
     发送可能需要分割的长消息，第一条带图片，后续为纯文本
     
@@ -27,16 +30,17 @@ async def send_multi_message(chat_id, photo_path, caption, parse_mode, pin_first
     Returns:
         list: 发送的消息信息列表
     """
-    message_parts = split_long_message(caption)
+    message_parts = split_long_message(caption, max_length=MEDIA_CAPTION_SAFE_LENGTH)
     sent_messages = []
     
     # 发送第一条消息（带图片）
-    first_message = await bot.send_photo(
-        chat_id=chat_id, 
-        photo=open(photo_path, "rb"), 
-        caption=message_parts[0],
-        parse_mode=parse_mode
-    )
+    with open(photo_path, "rb") as photo:
+        first_message = await bot.send_photo(
+            chat_id=chat_id,
+            photo=photo,
+            caption=message_parts[0],
+            parse_mode=parse_mode
+        )
     sent_messages.append(first_message)
     
     # 如果需要置顶第一条消息
@@ -97,9 +101,9 @@ async def day_ranks(pin_mode=True):
         payload += tmp
     
     payload = f"**【{ranks.logo} 播放日榜】**\n\n" + payload + "\n#DayRanks" + "  " + date.today().strftime('%Y-%m-%d')
-    
+
     # 使用多消息发送功能
-    sent_messages = await send_multi_message(
+    sent_messages = await send_multi_message_with_photo(
         chat_id=group[0], 
         photo_path=path, 
         caption=payload,
@@ -154,7 +158,7 @@ async def week_ranks(pin_mode=True):
     payload = f"**【{ranks.logo} 播放周榜】**\n\n" + payload + "\n#WeekRanks" + "  " + date.today().strftime('%Y-%m-%d')
     
     # 使用多消息发送功能
-    sent_messages = await send_multi_message(
+    sent_messages = await send_multi_message_with_photo(
         chat_id=group[0], 
         photo_path=path, 
         caption=payload,

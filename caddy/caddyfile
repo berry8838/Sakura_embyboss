@@ -1,0 +1,97 @@
+{
+	# 本地测试关闭自动 HTTPS，开启 debug 日志方便排查。
+	auto_https off
+	debug
+}
+
+(emby_local_config) {
+	http://{args[0]}:{args[2]} {
+		log {
+			output file caddy-local.log
+			format console
+		}
+
+		# 播放线路审查：
+		# Emby Web 常见上报路径是 /emby/Sessions/Playing/Progress。
+		# 这里只要命中 /emby/Sessions/Playing 开头的请求，都会先走 line_report，再反代到 Emby。
+		@line_audit_play path /emby/Sessions/Playing /emby/Sessions/Playing/*
+
+		# 播放列表创建：直接重定向到 bot 的 ban_playlist 接口。
+		@playlist_create {
+			method POST
+			path /emby/Playlists
+		}
+
+		# 添加条目到播放列表。
+		@playlist_items_post {
+			method POST
+			path_regexp playlist_items_post ^/emby/Playlists/[^/]+/Items$
+		}
+
+		# 删除播放列表中的条目。
+		@playlist_item_delete {
+			method DELETE
+			path_regexp playlist_item_delete ^/emby/Playlists/[^/]+/Items/[^/]+$
+		}
+
+		# 移动播放列表条目。
+		@playlist_item_move {
+			method POST
+			path_regexp playlist_item_move ^/emby/Playlists/[^/]+/Items/[^/]+/Move/[^/]+$
+		}
+
+		# 读取播放列表条目时直接返回空列表，避免前端继续展示。
+		@playlist_items_get {
+			method GET
+			path_regexp playlist_items_get ^/emby/Playlists/[^/]+/Items$
+		}
+
+		route {
+			handle @playlist_create {
+				redir http://{args[4]}/emby/ban_playlist?eid={query.userId} 302
+			}
+
+			handle @playlist_items_post {
+				redir http://{args[4]}/emby/ban_playlist?eid={query.userId} 302
+			}
+
+			handle @playlist_item_delete {
+				redir http://{args[4]}/emby/ban_playlist?eid={query.userId} 302
+			}
+
+			handle @playlist_item_move {
+				redir http://{args[4]}/emby/ban_playlist?eid={query.userId} 302
+			}
+
+			handle @playlist_items_get {
+				header Content-Type application/json
+				respond `{"Items":[],"TotalRecordCount":0}` 200
+			}
+
+			handle @line_audit_play {
+				# forward_auth 在这里相当于“同步上报”：
+				# 先把原始请求地址和认证头转给 bot 的 /emby/line_report，
+				# 再继续反代到 Emby。
+				forward_auth {args[4]} {
+					uri /emby/line_report?line={args[1]}&host={args[0]}
+					header_up X-Original-URI {uri}
+					header_up X-Emby-Authorization {header.X-Emby-Authorization}
+					header_up X-Emby-Token {header.X-Emby-Token}
+				}
+				reverse_proxy {args[3]}
+			}
+
+			# 其余请求正常反代给 Emby。
+			handle {
+				reverse_proxy {args[3]}
+			}
+		}
+	}
+}
+# 用户只需要修改这一行参数
+# 参数1. server_name   访问域名，例如 vip.embyline.com
+# 参数2. line_name     上报给 bot 的线路名，例如 vipline
+# 参数3. caddy_port    Caddy 监听端口，例如 8080
+# 参数4. emby_upstream Emby 地址，例如 127.0.0.1:8096
+# 参数5. bot_upstream  Bot API 地址，例如 127.0.0.1:8838
+import emby_local_config localhost vipline 8080 127.0.0.1:8096 127.0.0.1:8838

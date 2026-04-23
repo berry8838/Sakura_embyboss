@@ -10,6 +10,7 @@ from .ban_playlist import route as ban_playlist_route
 from .webhook.favorites import router as favorites_router
 from .webhook.media import router as media_router
 from .webhook.client_filter import router as client_filter_router
+from .webhook.line_report import router as line_report_router
 from .user_info import route as user_info_route
 from .login import router as login_router
 from bot import bot_token, LOGGER
@@ -50,6 +51,9 @@ emby_api_route.include_router(
 emby_api_route.include_router(
     client_filter_router,
     dependencies=[Depends(verify_token)]
+)
+emby_api_route.include_router(
+    line_report_router,
 )
 user_api_route.include_router(
     user_info_route,

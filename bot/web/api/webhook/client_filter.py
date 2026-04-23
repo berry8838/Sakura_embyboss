@@ -70,13 +70,13 @@ async def log_blocked_request(
         block_action = "封禁用户" if block_success else "不封禁用户"
         log_message = (
             f"🚫 {action}\n"
-            f"用户ID: {user_id or 'Unknown'}\n"
-            f"用户名称: {user_name or 'Unknown'}\n"
-            f"会话ID: {session_id or 'Unknown'}\n"
-            f"客户端: {client_name or 'Unknown'}\n"
-            f"TG ID: {tg_id or 'Unknown'}\n"
-            f"是否封禁用户: {block_action}\n"
-            f"时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            f"👤 Emby用户: {user_name or 'Unknown'}\n"
+            f"🆔 Emby ID: {user_id or 'Unknown'}\n"
+            f"🔑 会话ID: {session_id or 'Unknown'}\n"
+            f"📺 客户端: {client_name or 'Unknown'}\n"
+            f"📱 TG ID: {f'[{tg_id}](tg://user?id={tg_id})' if tg_id else 'Unknown'}\n"
+            f"🚨 处理措施: {block_action}\n"
+            f"⏰ 时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
 
         LOGGER.warning(log_message)

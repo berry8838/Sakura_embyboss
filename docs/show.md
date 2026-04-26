@@ -54,7 +54,7 @@ author: false
     - [x] **进阶**
           - [x] 提示加群、退群删号、被拉入非授权群报警并退出
           - [x] 命令初始化根据身份显示不同的的命令
-          - [x] [各种命令管理](#命令帮助)
+          - [x] [各种命令管理](use_cases/commands.md)
           - [x] 添加用户播放时长，媒体播放数排行榜日推周推 [EmbyTools](https://github.com/Nolovenodie/EmbyTools)
           - [x] **支持docker部署**
     - [ ] 进阶的待定想法(有些不一定做)
@@ -72,6 +72,10 @@ author: false
           - [x] 群发消息
 
 ## 🎯命令帮助
+!!!tip
+
+    更完整的参数、示例和危险命令说明请看 [命令大全](use_cases/commands.md)。
+
 ???tip all_index "点击查看命令简述"
 
     - [x] 普通用户member

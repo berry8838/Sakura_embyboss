@@ -102,6 +102,8 @@
 <tr><td rowspan="3">客户端过滤</td><td>blocked_clients </td><td> 通过 webhook 来拦截的客户端名字，示例：<code>[".*curl.*",".*wget.*",".*python.*",".*bot.*", ".*spider.*",".*crawler.*", ".*scraper.*",".*downloader.*",".*aria2.*",".*youtube-dl.*",".*yt-dlp.*",".*ffmpeg.*",".*vlc.*"] </code></td></tr>
 <tr><td>client_filter_terminate_session</td><td>拦截到客户端后是否自动终止客户端的播放，默认 <code>true</code> </td></tr>
 <tr><td>client_filter_block_user</td><td>拦截到客户端后是否封禁用户，默认 <code>false</code> </td></tr>
+<tr><td rowspan="2">线路权限过滤</td><td>line_filter_terminate_session</td><td>普通用户使用白名单线路时是否自动终止播放，默认 <code>true</code>。需要配合 <a href="../../use_cases/line_filter/">白名单线路与 Nginx 上报</a> 使用</td></tr>
+<tr><td>line_filter_block_user</td><td>普通用户使用白名单线路时是否封禁用户，默认 <code>false</code>。建议确认无误判后再开启</td></tr>
 <tr><td>分区资源</td><td>partition_libs</td><td>分区媒体库配置，默认 <code>{}</code>，用于按分区管理媒体库规则，示例：<code>{"4K": ["4K 剧集", "4K 电影"]}</code></td></tr>
 
 <tr><td rowspan="2">red_envelope<br>红包功能</td><td>status</td><td>默认 <code>true</code>，是否开启红包功能</td></tr>

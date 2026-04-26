@@ -74,8 +74,17 @@ nav:
           - docker-compose.yml模板: deploy/compose.md
       - 二、源码 安装:
           - 配置说明: deploy/start_systemd.md
+      - 运维维护:
+          - 更新、备份与恢复: deploy/maintenance.md
+          - 故障排查: deploy/troubleshooting.md
   - 使用帮助:
       - Helper: use_cases/Helper.md
+      - 管理面板: use_cases/admin_panel.md
+      - 命令大全: use_cases/commands.md
+      - API 与 WebHook: use_cases/api.md
+      - MoviePilot 点播: use_cases/moviepilot.md
+      - 分区通行码: use_cases/partition.md
+      - 白名单线路: use_cases/line_filter.md
       - FAQ: use_cases/FAQ.md
   - 特别感谢: thanks/thanks.md
 

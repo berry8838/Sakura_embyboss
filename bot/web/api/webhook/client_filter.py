@@ -62,29 +62,44 @@ async def log_blocked_request(
     session_id: str = None,
     client_name: str = None,
     tg_id: int = None,
+    user_lv: str = None,
+    terminate_success: bool = False,
     block_success: bool = False,
 ):
     """记录被拦截的请求"""
     try:
-        action = "拦截可疑请求"
-        block_action = "封禁用户" if block_success else "不封禁用户"
+        lv_display = {'a': '白名单', 'b': '普通用户', 'c': '封禁用户', 'd': '未注册'}.get(user_lv, '未知')
+        action_list = []
+        if terminate_success:
+            action_list.append("✅ 已终止会话")
+        elif terminate_success is False and session_id:
+            action_list.append("❌ 终止会话失败")
+        if block_success:
+            action_list.append("✅ 已封禁用户")
+        action = " | ".join(action_list) if action_list else "仅记录，未采取行动"
         log_message = (
-            f"🚫 {action}\n"
-            f"👤 Emby用户: {user_name or 'Unknown'}\n"
+            f"🚫 拦截非法客户端\n"
+            f"━━━━━━━━━━━━━━━\n"
+            f"👤 用户: {user_name or 'Unknown'}\n"
             f"🆔 Emby ID: {user_id or 'Unknown'}\n"
-            f"🔑 会话ID: {session_id or 'Unknown'}\n"
-            f"📺 客户端: {client_name or 'Unknown'}\n"
             f"📱 TG ID: {f'[{tg_id}](tg://user?id={tg_id})' if tg_id else 'Unknown'}\n"
-            f"🚨 处理措施: {block_action}\n"
+            f"🏷️ 用户等级: {lv_display}\n"
+            f"━━━━━━━━━━━━━━━\n"
+            f"📺 客户端: {client_name or 'Unknown'}\n"
+            f"🔑 会话ID: {session_id or 'Unknown'}\n"
+            f"━━━━━━━━━━━━━━━\n"
+            f"🚨 处理措施: {action}\n"
             f"⏰ 时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
 
         LOGGER.warning(log_message)
 
-        # 如果配置了管理员群组，发送通知
+        # 如果配置了管理员群组，发送通知并转发给用户
         if hasattr(config, "group") and config.group:
             try:
-                await bot.send_message(chat_id=config.group[0], text=log_message)
+                out = await bot.send_message(chat_id=config.group[0], text=log_message)
+                if tg_id:
+                    await out.forward(tg_id)
             except Exception as e:
                 LOGGER.error(f"发送拦截通知失败: {str(e)}")
 
@@ -159,9 +174,10 @@ async def handle_client_filter_webhook(request: Request):
         is_blocked = await is_client_blocked(client_name)
 
         if is_blocked:
+            terminate_success = False
             # 根据配置决定是否终止会话
             if getattr(config, "client_filter_terminate_session", True):
-                await terminate_blocked_session(session_id, client_name)
+                terminate_success = await terminate_blocked_session(session_id, client_name)
             block_success = False
 
             user_details = sql_get_emby(emby_id)
@@ -178,6 +194,8 @@ async def handle_client_filter_webhook(request: Request):
                 session_id=session_id,
                 client_name=client_name,
                 tg_id=user_details.tg if user_details else None,
+                user_lv=user_details.lv if user_details else None,
+                terminate_success=terminate_success,
                 block_success=block_success,
             )
 

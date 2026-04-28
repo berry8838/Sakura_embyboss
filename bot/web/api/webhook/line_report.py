@@ -349,9 +349,6 @@ async def log_line_violation(
     user_name: str = None,
     session_id: str = None,
     client_name: str = None,
-    device_name: str = None,
-    remote_endpoint: str = None,
-    server_address: str = None,
     tg_id: int = None,
     user_lv: str = None,
     action_taken: str = None,
@@ -369,7 +366,6 @@ async def log_line_violation(
             f"🏷️ 用户等级: {lv_display}\n"
             f"━━━━━━━━━━━━━━━\n"
             f"📺 客户端: {client_name or 'Unknown'}\n"
-            f"💻 设备: {device_name or 'Unknown'}\n"
             f"🔑 会话ID: {session_id or 'Unknown'}\n"
             f"━━━━━━━━━━━━━━━\n"
             f"🚨 处理措施: {action_taken or '无'}\n"
@@ -380,7 +376,9 @@ async def log_line_violation(
 
         if hasattr(config, "group") and config.group:
             try:
-                await bot.send_message(chat_id=config.group[0], text=log_message)
+                out = await bot.send_message(chat_id=config.group[0], text=log_message)
+                if tg_id:
+                    await out.forward(tg_id)
             except Exception as e:
                 LOGGER.error(f"发送线路违规通知失败: {str(e)}")
 
@@ -393,9 +391,6 @@ async def handle_line_violation(
     user_name: str,
     session_id: str,
     client_name: str,
-    device_name: str,
-    remote_endpoint: str,
-    server_address: str,
     user_details: Emby,
 ) -> dict:
     """
@@ -437,9 +432,6 @@ async def handle_line_violation(
         user_name=user_name,
         session_id=session_id,
         client_name=client_name,
-        device_name=device_name,
-        remote_endpoint=remote_endpoint,
-        server_address=server_address,
         tg_id=user_details.tg if user_details else None,
         user_lv=user_details.lv if user_details else None,
         action_taken=action_taken,
@@ -450,60 +442,6 @@ async def handle_line_violation(
         "block_success": block_success,
         "action_taken": action_taken,
     }
-
-
-async def check_line_permission(
-    emby_id: str,
-    user_name: str,
-    session_id: str,
-    client_name: str,
-    device_name: str,
-    remote_endpoint: str,
-    server_address: str,
-) -> Tuple[bool, Optional[dict]]:
-    """
-    检查用户是否有权限使用当前线路
-    :return: (是否允许, 违规处理结果或None)
-    """
-    whitelist_line = getattr(config, "emby_whitelist_line", None)
-    if not whitelist_line:
-        LOGGER.debug("未配置白名单线路，跳过线路权限检查")
-        return True, None
-
-    if not server_address:
-        LOGGER.debug("无法获取服务器地址，跳过线路权限检查")
-        return True, None
-
-    user_details = sql_get_emby(emby_id)
-    using_whitelist_line = is_whitelist_line(server_address)
-    is_whitelist_user = is_user_whitelisted(user_details)
-
-    LOGGER.debug(
-        f"线路权限检查: user={user_name}, emby_id={emby_id}, "
-        f"server={server_address}, using_whitelist={using_whitelist_line}, "
-        f"is_whitelist_user={is_whitelist_user}"
-    )
-
-    if is_whitelist_user:
-        return True, None
-
-    if using_whitelist_line and not is_whitelist_user:
-        LOGGER.warning(
-            f"线路权限违规: 普通用户 {user_name}({emby_id}) 尝试使用白名单线路 {server_address}"
-        )
-        result = await handle_line_violation(
-            emby_id=emby_id,
-            user_name=user_name,
-            session_id=session_id,
-            client_name=client_name,
-            device_name=device_name,
-            remote_endpoint=remote_endpoint,
-            server_address=server_address,
-            user_details=user_details,
-        )
-        return False, result
-
-    return True, None
 
 
 @router.get("/line_report")
@@ -600,8 +538,6 @@ async def line_report(
 
         session_id = normalize_identifier(session.get("Id")) if session else ""
         client_name = normalize_identifier(session.get("Client")) if session else ""
-        device_name = normalize_identifier(session.get("DeviceName")) if session else deviceId
-        remote_endpoint = normalize_identifier(session.get("RemoteEndPoint")) if session else ""
         user_name = normalize_identifier(session.get("UserName")) if session else ""
 
         result = await handle_line_violation(
@@ -609,9 +545,6 @@ async def line_report(
             user_name=user_name or (user_details.name if user_details else ""),
             session_id=session_id,
             client_name=client_name,
-            device_name=device_name,
-            remote_endpoint=remote_endpoint,
-            server_address=server_address,
             user_details=user_details,
         )
 

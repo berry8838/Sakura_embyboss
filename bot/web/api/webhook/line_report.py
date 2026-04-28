@@ -17,11 +17,35 @@ from bot.func_helper.emby import emby
 import json
 import re
 from typing import Any, Dict, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.parse import parse_qs, urlparse
 
 router = APIRouter()
 
+# 违规冷却缓存: {user_id: last_violation_time}
+_violation_cooldown: Dict[str, datetime] = {}
+
+
+def is_in_cooldown(user_id: str) -> bool:
+    """检查用户是否在冷却期内（冷却期内的重复上报直接忽略）"""
+    cooldown_seconds = getattr(config, "line_filter_cooldown_seconds", 60)
+    last_time = _violation_cooldown.get(user_id)
+    if last_time and datetime.now() - last_time < timedelta(seconds=cooldown_seconds):
+        return True
+    return False
+
+
+def update_cooldown(user_id: str) -> None:
+    """更新用户的冷却时间戳，并清理过期条目"""
+    cooldown_seconds = getattr(config, "line_filter_cooldown_seconds", 60)
+    _violation_cooldown[user_id] = datetime.now()
+    # 顺手清理已过期的条目，防止内存无限增长
+    expired = [
+        uid for uid, t in _violation_cooldown.items()
+        if datetime.now() - t >= timedelta(seconds=cooldown_seconds)
+    ]
+    for uid in expired:
+        del _violation_cooldown[uid]
 
 # ==================== 线路权限控制 ====================
 
@@ -519,6 +543,21 @@ async def line_report(
     using_whitelist = is_whitelist_line(server_address)
 
     if using_whitelist:
+        # 冷却期内的重复上报直接忽略（播放器不响应终止会话时会持续上报）
+        if is_in_cooldown(resolved_user_id):
+            cooldown_seconds = getattr(config, "line_filter_cooldown_seconds", 60)
+            LOGGER.debug(
+                f"线路违规冷却中，忽略重复上报: 用户 {resolved_user_id} "
+                f"(冷却 {cooldown_seconds}s 内)"
+            )
+            return {
+                "status": "cooldown",
+                "message": "Violation already handled, in cooldown",
+                "userId": resolved_user_id,
+            }
+
+        update_cooldown(resolved_user_id)
+
         LOGGER.warning(
             f"线路权限违规(nginx): 用户 {resolved_user_id} 通过 {server_address} 使用白名单线路"
         )

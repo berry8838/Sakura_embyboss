@@ -1,9 +1,11 @@
 """
 兑换注册码exchange
 """
+import random
 from datetime import timedelta, datetime
 
 from bot import bot, _open, LOGGER, bot_photo, ranks
+from bot.schemas import Yulv
 from bot.func_helper.emby import emby
 from bot.func_helper.concurrency import get_user_lock
 from bot.func_helper.fix_bottons import register_code_ikb
@@ -18,6 +20,31 @@ def is_renew_code(input_string):
         return True
     else:
         return False
+
+
+def is_whitelist_code(input_string):
+    return "Whitelist" in input_string
+
+
+def _redeem_whitelist_code_atomic(register_code: str, user_id: int):
+    now = datetime.now()
+    with Session() as session:
+        user = session.query(Emby).filter(Emby.tg == user_id).with_for_update().first()
+        if not user:
+            return {"status": "no_user"}
+        if not user.embyid:
+            return {"status": "no_account"}
+
+        code = session.query(Code).filter(Code.code == register_code).with_for_update().first()
+        if not code:
+            return {"status": "invalid_code"}
+        if code.used is not None:
+            return {"status": "used", "used": code.used}
+
+        already_wl = user.lv == 'a'
+        if not already_wl:
+            user.lv = 'a'
+        return {"status": "already_wl" if already_wl else "ok", "issuer_tg": code.tg}
 
 
 def _redeem_register_code_atomic(register_code: str, user_id: int):
@@ -88,8 +115,39 @@ def _redeem_renew_code_atomic(register_code: str, user_id: int):
 
 
 async def rgs_code(_, msg, register_code):
+    # 白名单码独立于注册开关，优先处理
+    if is_whitelist_code(register_code):
+        async with get_user_lock(msg.from_user.id):
+            result = _redeem_whitelist_code_atomic(register_code, msg.from_user.id)
+        if result["status"] == "no_user":
+            return await sendMessage(msg, "出错了，不确定您是否有资格使用，请先 /start")
+        if result["status"] == "no_account":
+            return await sendMessage(msg, "🔔 白名单码需要您先拥有 Emby 账户，请先注册后再使用。", timer=60)
+        if result["status"] == "invalid_code":
+            return await sendMessage(msg, "⛔ **无效的白名单码，请确认后重试。**", timer=60)
+        if result["status"] == "used":
+            used = result["used"]
+            return await sendMessage(msg, f'此 `{register_code}` \n白名单码已被使用，是[{used}](tg://user?id={used})的形状了喔')
+        if result["status"] == "already_wl":
+            return await sendMessage(msg, "🌟 您已是白名单用户，无需重复激活。")
+        if result["status"] != "ok":
+            return await sendMessage(msg, "⚠️ 未知错误，请稍后重试。")
+        try:
+            first = await bot.get_chat(result["issuer_tg"])
+            issuer_name = f'[{first.first_name}](tg://user?id={result["issuer_tg"]})'
+        except Exception:
+            issuer_name = str(result["issuer_tg"])
+        user_link = f'[{msg.from_user.first_name}](tg://user?id={msg.from_user.id})'
+        masked = register_code[:-7] + "░" * 7
+        wh_text = random.choice(Yulv.load_yulv().wh_msg)
+        await sendMessage(msg, f'**{wh_text}**\n\n🎉 恭喜 {user_link} 获得 {issuer_name} 签出的白名单.')
+        await sendMessage(msg, f'· 🔑 白名单码激活 - {user_link} [{msg.from_user.id}] 使用了 {masked}', send=True)
+        LOGGER.info(f"【白名单码】：{msg.from_user.first_name}[{msg.from_user.id}] 激活白名单，码：{register_code}")
+        return
+
     if _open.stat:
         return await sendMessage(msg, "🤧 自由注册开启下无法使用注册码。")
+
 
     async with get_user_lock(msg.from_user.id):
         data = sql_get_emby(tg=msg.from_user.id)

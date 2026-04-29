@@ -46,6 +46,14 @@ def run_migrations():
     if os.getenv(_MIGRATION_GUARD_ENV) == "1":
         return
 
+    try:
+        alembic_command = importlib.import_module("alembic.command")
+        alembic_config = importlib.import_module("alembic.config")
+    except ImportError:
+        LOGGER.warning("未安装 alembic，跳过自动迁移")
+        _legacy_create_all_tables()
+        return
+
     alembic_ini = Path(__file__).resolve().parents[2] / "alembic.ini"
     if not alembic_ini.exists():
         LOGGER.warning(f"未找到 Alembic 配置文件，跳过自动迁移: {alembic_ini}")
@@ -54,14 +62,6 @@ def run_migrations():
 
     os.environ[_MIGRATION_GUARD_ENV] = "1"
     try:
-        try:
-            alembic_command = importlib.import_module("alembic.command")
-            alembic_config = importlib.import_module("alembic.config")
-        except ImportError:
-            LOGGER.warning("未安装 alembic，跳过自动迁移")
-            _legacy_create_all_tables()
-            return
-
         Config = getattr(alembic_config, "Config")
         config = Config(str(alembic_ini))
         config.set_main_option("sqlalchemy.url", DATABASE_URL)

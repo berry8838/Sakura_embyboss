@@ -12,9 +12,9 @@ from bot.schemas import ExDate
 from bot.sql_helper.sql_code import sql_count_code, sql_count_p_code, sql_delete_all_unused, sql_delete_unused_by_days
 from bot.sql_helper.sql_emby import sql_count_emby
 from bot.func_helper.fix_bottons import gm_ikb_content, open_menu_ikb, gog_rester_ikb, back_open_menu_ikb, \
-    back_free_ikb, re_cr_link_ikb, close_it_ikb, ch_link_ikb, date_ikb, cr_paginate, cr_renew_ikb, invite_lv_ikb, checkin_lv_ikb
+    back_free_ikb, re_cr_link_ikb, re_cr_whitelist_ikb, close_it_ikb, ch_link_ikb, date_ikb, cr_paginate, cr_renew_ikb, invite_lv_ikb, checkin_lv_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, sendPhoto, callListen, deleteMessage, sendMessage
-from bot.func_helper.utils import open_check, cr_link_one,rn_link_one
+from bot.func_helper.utils import open_check, cr_link_one, rn_link_one, wl_link_one
 
 
 @bot.on_callback_query(filters.regex('manage') & admins_on_filter)
@@ -269,6 +269,47 @@ async def cr_link(_, call):
                 await sendMessage(content, chunk, buttons=close_it_ikb)
             await editMessage(call, f'📂 {bot_name}已为 您 生成了 {count} 个 {days} 天续期码', buttons=re_cr_link_ikb)
             LOGGER.info(f"【admin】：{bot_name}已为 {content.from_user.id} 生成了 {count} 个 {days} 天续期码")
+
+
+# 创建白名单激活码
+@bot.on_callback_query(filters.regex('cr_whitelist') & admins_on_filter)
+async def cr_whitelist(_, call):
+    await callAnswer(call, '🔑 创建白名单激活码')
+    send = await editMessage(call,
+                             '🔑 请回复创建 [**数量**] [**模式**]\n\n'
+                             '**模式**： link -深链接 | code -码\n'
+                             '**示例**：`5 code` 记作 5 个白名单码\n'
+                             '__取消本次操作，请 /cancel__')
+    if send is False:
+        return
+
+    content = await callListen(call, 120, buttons=re_cr_whitelist_ikb)
+    if content is False:
+        return
+    elif content.text == '/cancel':
+        await content.delete()
+        return await editMessage(call, '⭕ 您已经取消操作了。', buttons=re_cr_whitelist_ikb)
+    try:
+        await content.delete()
+        parts = content.text.split()
+        count = int(parts[0])
+        method = parts[1]
+        if method not in ('code', 'link'):
+            return await editMessage(call, '⭕ 输入的 method 参数有误，请选择 code 或 link', buttons=re_cr_whitelist_ikb)
+        if count <= 0:
+            raise ValueError
+    except (ValueError, IndexError):
+        return await editMessage(call, '⚠️ 检查输入，有误。', buttons=re_cr_whitelist_ikb)
+    else:
+        links = await wl_link_one(call.from_user.id, count, method)
+        if links is None:
+            return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库。', buttons=re_cr_whitelist_ikb)
+        links = f"🎯 {bot_name}已为您生成了 {count} 个白名单激活码\n\n" + links
+        chunks = [links[i:i + 4096] for i in range(0, len(links), 4096)]
+        for chunk in chunks:
+            await sendMessage(content, chunk, buttons=close_it_ikb)
+        await editMessage(call, f'📂 {bot_name}已为您生成了 {count} 个白名单激活码', buttons=re_cr_whitelist_ikb)
+        LOGGER.info(f"【admin】：{bot_name}已为 {call.from_user.id} 生成了 {count} 个白名单激活码")
 
 
 # 检索

@@ -592,6 +592,20 @@ async def call_partition_code(_, call):
     await asyncio.gather(msg.delete(), sendMessage(call, text, timer=120 if ok else 60))
 
 
+@bot.on_callback_query(filters.regex('wl_exchange') & user_in_group_on_filter)
+async def call_wl_exchange(_, call):
+    await asyncio.gather(callAnswer(call, '🔑 使用白名单激活码'), deleteMessage(call))
+    msg = await ask_return(call, text='🔑 **【使用白名单激活码】**：\n\n'
+                                      f'- 请在120s内发送白名单激活码，形如\n`{ranks.logo}-Whitelist_xxxx`\n退出点 /cancel',
+                           button=re_exchange_b_ikb)
+    if not msg:
+        return
+    elif msg.text == '/cancel':
+        await asyncio.gather(msg.delete(), p_start(_, msg))
+    else:
+        await rgs_code(_, msg, register_code=msg.text)
+
+
 @bot.on_callback_query(filters.regex('storeall'))
 async def do_store(_, call):
     await asyncio.gather(callAnswer(call, '✔️ 欢迎进入兑换商店'),

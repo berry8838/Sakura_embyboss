@@ -159,6 +159,36 @@ async def rn_link_one(tg: int, times, count, days: int, method: str):
     return links
 
 
+async def wl_link_one(tg: int, count: int, method: str):
+    """
+    创建白名单激活码
+    :param tg: 创建者 tg id
+    :param count: 数量
+    :param method: 'code' 或 'link'
+    :return: 格式化字符串或 None（数据库失败）
+    """
+    links = ''
+    code_list = []
+    i = 1
+    if method == 'code':
+        while i <= count:
+            p = await pwd_create(10)
+            uid = f'{ranks.logo}-Whitelist_{p}'
+            code_list.append(uid)
+            links += f'`{uid}`\n'
+            i += 1
+    elif method == 'link':
+        while i <= count:
+            p = await pwd_create(10)
+            uid = f'{ranks.logo}-Whitelist_{p}'
+            code_list.append(uid)
+            links += f't.me/{bot_name}?start={uid}\n'
+            i += 1
+    if sql_add_code(code_list, tg, 0) is False:
+        return None
+    return links
+
+
 async def cr_link_two(tg: int, for_tg, days: int):
     code_list = []
     invite_code = await pwd_create(11)

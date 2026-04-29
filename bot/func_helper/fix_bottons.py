@@ -32,6 +32,7 @@ def judge_start_ikb(is_admin: bool, account: bool) -> InlineKeyboardMarkup:
             d.append(['🎟️ 使用续期码', 'exchange'])
         if schedall.partition_check and len(config.partition_libs) > 0:
             d.append(['🎟️ 使用分区码', 'partitioncode'])
+        d.append(['🔑 使用白名单码', 'wl_exchange'])
     if _open.checkin:
         d.append(['🎯 签到', 'checkin'])
     lines = array_chunk(d, 2)
@@ -135,7 +136,7 @@ async def cr_page_server():
 
 """admins ↓"""
 
-gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 注册/续期码', 'cr_link')],
+gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 注册/续期码', 'cr_link'), ('🔑 白名单码', 'cr_whitelist')],
                       [('💊 查询注册', 'ch_link'), ('🏬 兑换设置', 'set_renew')],
                       [('👥 用户列表', 'normaluser'), ('👑 白名单列表', 'whitelist'), ('💠 设备列表', 'user_devices')],
                       [('🌏 定时', 'schedall'), ('🕹️ 主界面', 'back_start'), ('其他 🪟', 'back_config')]])
@@ -149,6 +150,7 @@ def open_menu_ikb(openstats, timingstats) -> InlineKeyboardMarkup:
 back_free_ikb = ikb([[('🔙 返回上一级', 'open-menu')]])
 back_open_menu_ikb = ikb([[('🪪 重新定时', 'open_timing'), ('🔙 注册状态', 'open-menu')]])
 re_cr_link_ikb = ikb([[('♻️ 继续创建', 'cr_link'), ('🎗️ 返回主页', 'manage')]])
+re_cr_whitelist_ikb = ikb([[('♻️ 继续创建', 'cr_whitelist'), ('🎗️ 返回主页', 'manage')]])
 close_it_ikb = ikb([[('❌ - Close', 'closeit')]])
 
 

@@ -6,12 +6,28 @@ from asyncio import sleep
 import asyncio
 
 from pyrogram import filters, enums
-from pyrogram.errors import FloodWait, Forbidden, BadRequest
+from pyrogram.errors import FloodWait, Forbidden, BadRequest, PeerIdInvalid
 from pyrogram.types import CallbackQuery
-from pyromod.exceptions import ListenerTimeout
+from pyromod.exceptions import ListenerTimeout 
 from bot import LOGGER, group, bot
 from typing import Optional
 
+async def warmup_peer_cache():
+    """bot 重启后预热 peer 缓存。
+
+    bot.get_chat() 内部调用 resolve_peer，后者直接查询 session SQLite，
+    如果该群的 access_hash 已持久化（bot 之前收过该群的更新），则可正常预热。
+    对于从未在 session 中出现过的群组，bot 无法主动获取 access_hash，
+    需等待 Telegram 推送第一条更新后自动写入 session 并恢复正常。
+    """
+    for gid in group:
+        try:
+            await bot.get_chat(gid)
+            LOGGER.info(f"peer 预热成功: {gid}")
+        except PeerIdInvalid:
+            LOGGER.warning(f"peer 预热跳过 (gid={gid}): peer 不在 session 中，待群内有首条更新后自动写入并恢复")
+        except Exception as e:
+            LOGGER.warning(f"peer 预热失败 (gid={gid}): {e}")
 
 # 将来自己要是重写，希望不要把/cancel当关键词，用call.data，省代码还好看，切记。
 

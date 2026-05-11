@@ -8,7 +8,7 @@ from pyrogram.types import Message
 from bot import bot, sakura_b, schedall, save_config, prefixes, _open, owner, LOGGER, auto_update, group
 from bot.func_helper.filters import admins_on_filter, user_in_group_on_filter
 from bot.func_helper.fix_bottons import sched_buttons, plays_list_button
-from bot.func_helper.msg_utils import callAnswer, editMessage, deleteMessage
+from bot.func_helper.msg_utils import callAnswer, editMessage, deleteMessage, warmup_peer_cache
 from bot.func_helper.scheduler import scheduler
 from bot.scheduler import *
 
@@ -17,6 +17,7 @@ from bot.scheduler import *
 loop = asyncio.get_event_loop()
 loop.call_later(5, lambda: loop.create_task(BotCommands.set_commands(client=bot)))
 loop.call_later(5, lambda: loop.create_task(check_restart()))
+loop.call_later(8, lambda: loop.create_task(warmup_peer_cache()))
 
 # 启动定时任务
 auto_backup_db = DbBackupUtils.auto_backup_db

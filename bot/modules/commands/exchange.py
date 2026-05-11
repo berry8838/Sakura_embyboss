@@ -42,9 +42,13 @@ def _redeem_whitelist_code_atomic(register_code: str, user_id: int):
             return {"status": "used", "used": code.used}
 
         already_wl = user.lv == 'a'
-        if not already_wl:
-            user.lv = 'a'
-        return {"status": "already_wl" if already_wl else "ok", "issuer_tg": code.tg}
+        if already_wl:
+            return {"status": "already_wl"}
+        user.lv = 'a'
+        code.used = user_id
+        code.usedtime = now
+        session.commit()
+        return {"status": "ok", "issuer_tg": code.tg}
 
 
 def _redeem_register_code_atomic(register_code: str, user_id: int):

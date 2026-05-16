@@ -283,12 +283,14 @@ def sql_count_c_code(tg_id):
             print(e)
             return None, 1
 
-def sql_delete_unused_by_days(days: list[int], user_id: int = None) -> int:
+def sql_delete_unused_by_days(days: list[int], user_id: int = None, code_keyword: str = None) -> int:
     with Session() as session:
         try:
             query = session.query(Code).filter(Code.used == None)
             if user_id is not None:
                 query = query.filter(Code.tg == user_id)
+            if code_keyword is not None:
+                query = query.filter(Code.code.contains(code_keyword))
             query = query.filter(Code.us.in_(days))
             result = query.delete(synchronize_session=False)
             session.commit()
@@ -299,12 +301,14 @@ def sql_delete_unused_by_days(days: list[int], user_id: int = None) -> int:
             return 0
 
 
-def sql_delete_all_unused(user_id: int = None) -> int:
+def sql_delete_all_unused(user_id: int = None, code_keyword: str = None) -> int:
     with Session() as session:
         try:
             query = session.query(Code).filter(Code.used == None)
             if user_id is not None:
                 query = query.filter(Code.tg == user_id)
+            if code_keyword is not None:
+                query = query.filter(Code.code.contains(code_keyword))
             result = query.delete(synchronize_session=False)
             session.commit()
             return result

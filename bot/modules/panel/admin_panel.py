@@ -275,6 +275,48 @@ def _format_code_type_counts(stats):
     )
 
 
+def _code_kind_keyword(kind):
+    return {
+        'register': 'Register',
+        'renew': 'Renew',
+        'whitelist': 'Whitelist',
+    }.get(kind)
+
+
+def _code_kind_name(kind):
+    return {
+        'register': '注册码',
+        'renew': '续期码',
+        'whitelist': '白名单码',
+    }.get(kind, '所有类型')
+
+
+def _parse_delete_codes_input(text: str):
+    parts = text.split()
+    if not parts:
+        raise ValueError
+
+    first = parts[0].lower()
+    kind = _normalize_code_kind(parts[0])
+    if kind:
+        rest = parts[1:]
+        if len(rest) != 1:
+            raise ValueError
+        if rest[0].lower() == 'all':
+            return kind, None
+        return kind, [int(rest[0])]
+
+    if first == 'all':
+        if len(parts) == 1:
+            return None, None
+        kind = _normalize_code_kind(parts[1])
+        if kind and len(parts) == 2:
+            return kind, None
+        raise ValueError
+
+    raise ValueError
+
+
 @bot.on_callback_query(filters.regex('cr_link') & admins_on_filter)
 async def cr_link(_, call):
     await callAnswer(call, '✔️ 创建注册码/续期码/白名单码')
@@ -379,9 +421,15 @@ async def delete_unused_codes(_, call):
         return await callAnswer(call, '🚫 不可以哦！ 你又不是owner', True)
     
     await editMessage(call, 
-        "请回复要删除的未使用码天数类别，多个天数用空格分隔\n"
-        "例如: `5 30 180` 将删除属于5天、30天和180天类别的未使用码\n"
-        "输入 `all` 删除所有未使用码\n"
+        "请回复要删除的未使用码类型和天数，每次只支持一个类型和一个天数\n\n"
+        "**类型**：F - 注册码，T - 续期码，W - 白名单码\n"
+        "仅 `all` 可不填类型，直接输入天数不支持\n\n"
+        "**示例**：\n"
+        "`F 30` 删除 30 天未使用注册码\n"
+        "`T 180` 删除 180 天未使用续期码\n"
+        "`T all` 删除所有未使用续期码\n"
+        "`W all` 删除所有未使用白名单码\n"
+        "`all` 删除所有类型未使用码\n"
         "取消请输入 /cancel")
     
     content = await callListen(call, 120)
@@ -392,13 +440,15 @@ async def delete_unused_codes(_, call):
         return await gm_ikb(_, call)
         
     try:
-        if content.text.lower() == 'all':
-            count = sql_delete_all_unused()
-            text = f"已删除所有未使用码，共 {count} 个"
+        kind, days = _parse_delete_codes_input(content.text)
+        code_keyword = _code_kind_keyword(kind)
+        kind_name = _code_kind_name(kind)
+        if days is None:
+            count = sql_delete_all_unused(code_keyword=code_keyword)
+            text = f"已删除{kind_name}未使用码，共 {count} 个"
         else:
-            days = [int(x) for x in content.text.split()]
-            count = sql_delete_unused_by_days(days)
-            text = f"已删除指定天数的未使用码，共 {count} 个"
+            count = sql_delete_unused_by_days(days, code_keyword=code_keyword)
+            text = f"已删除{kind_name}指定天数的未使用码，共 {count} 个"
         await content.delete()
     except ValueError:
         text = "❌ 输入格式错误"

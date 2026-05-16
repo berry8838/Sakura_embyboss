@@ -116,6 +116,43 @@ def sql_count_code(tg: int = None):
                 return None
 
 
+def sql_count_code_types(tg: int = None):
+    with Session() as session:
+        try:
+            base_query = session.query(Code)
+            if tg is not None:
+                base_query = base_query.filter(Code.tg == tg)
+
+            def count_by_keyword(keyword: str, used=None):
+                query = base_query.filter(Code.code.contains(keyword))
+                if used is True:
+                    query = query.filter(Code.used != None)
+                elif used is False:
+                    query = query.filter(Code.used == None)
+                return query.count()
+
+            return {
+                "register": {
+                    "total": count_by_keyword("Register"),
+                    "used": count_by_keyword("Register", True),
+                    "unused": count_by_keyword("Register", False),
+                },
+                "renew": {
+                    "total": count_by_keyword("Renew"),
+                    "used": count_by_keyword("Renew", True),
+                    "unused": count_by_keyword("Renew", False),
+                },
+                "whitelist": {
+                    "total": count_by_keyword("Whitelist"),
+                    "used": count_by_keyword("Whitelist", True),
+                    "unused": count_by_keyword("Whitelist", False),
+                },
+            }
+        except Exception as e:
+            print(e)
+            return None
+
+
 def sql_count_p_code(tg_id, us):
     with Session() as session:
         try:

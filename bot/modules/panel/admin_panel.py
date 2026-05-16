@@ -9,10 +9,10 @@ from pyrogram import filters
 from bot import bot, _open, save_config, bot_photo, LOGGER, bot_name, admins, owner, config
 from bot.func_helper.filters import admins_on_filter
 from bot.schemas import ExDate
-from bot.sql_helper.sql_code import sql_count_code, sql_count_p_code, sql_delete_all_unused, sql_delete_unused_by_days
+from bot.sql_helper.sql_code import sql_count_code, sql_count_code_types, sql_count_p_code, sql_delete_all_unused, sql_delete_unused_by_days
 from bot.sql_helper.sql_emby import sql_count_emby
 from bot.func_helper.fix_bottons import gm_ikb_content, open_menu_ikb, gog_rester_ikb, back_open_menu_ikb, \
-    back_free_ikb, re_cr_link_ikb, re_cr_whitelist_ikb, close_it_ikb, ch_link_ikb, date_ikb, cr_paginate, cr_renew_ikb, invite_lv_ikb, checkin_lv_ikb
+    back_free_ikb, re_cr_link_ikb, close_it_ikb, ch_link_ikb, date_ikb, cr_paginate, cr_renew_ikb, invite_lv_ikb, checkin_lv_ikb
 from bot.func_helper.msg_utils import callAnswer, editMessage, sendPhoto, callListen, deleteMessage, sendMessage
 from bot.func_helper.utils import open_check, cr_link_one, rn_link_one, wl_link_one
 
@@ -218,16 +218,78 @@ async def open_us(_, call):
         await editMessage(call, f"✔️ 成功，您已设置 **开放注册时账号的有效天数 {a}**", buttons=back_free_ikb)
         LOGGER.info(f"【admin】：管理员 {call.from_user.first_name} 调整了开放注册时账号的有效天数：{a}")
 
-# 生成注册链接
+# 生成兑换码
+def _normalize_code_kind(kind: str):
+    kind = kind.lower()
+    if kind in ('f', 'register', 'reg', '注册码'):
+        return 'register'
+    if kind in ('t', 'renew', 'rn', '续期', '续期码'):
+        return 'renew'
+    if kind in ('w', 'whitelist', 'wl', '白名单', '白名单码'):
+        return 'whitelist'
+    return None
+
+
+def _parse_create_code_input(text: str):
+    parts = text.split()
+    days = None
+    times = None
+
+    if len(parts) == 3:
+        count, method, kind = parts
+        kind = _normalize_code_kind(kind)
+        if kind != 'whitelist':
+            raise ValueError
+    elif len(parts) == 4:
+        times, count, method, kind = parts
+        days = int(times)
+        kind = _normalize_code_kind(kind)
+    else:
+        raise ValueError
+
+    count = int(count)
+    method = method.lower()
+    if count <= 0 or method not in ('code', 'link') or kind is None:
+        raise ValueError
+    if kind != 'whitelist' and days <= 0:
+        raise ValueError
+
+    return kind, times, count, days, method
+
+
+def _format_code_type_counts(stats):
+    if not stats:
+        stats = {
+            "register": {"total": 0, "used": 0, "unused": 0},
+            "renew": {"total": 0, "used": 0, "unused": 0},
+            "whitelist": {"total": 0, "used": 0, "unused": 0},
+        }
+
+    register = stats["register"]
+    renew = stats["renew"]
+    whitelist = stats["whitelist"]
+    return (
+        f'• 注册码 - {register["total"]} | 未用 {register["unused"]} | 已用 {register["used"]}\n'
+        f'• 续期码 - {renew["total"]} | 未用 {renew["unused"]} | 已用 {renew["used"]}\n'
+        f'• 白名单码 - {whitelist["total"]} | 未用 {whitelist["unused"]} | 已用 {whitelist["used"]}'
+    )
+
+
 @bot.on_callback_query(filters.regex('cr_link') & admins_on_filter)
 async def cr_link(_, call):
-    await callAnswer(call, '✔️ 创建注册/续期码')
+    await callAnswer(call, '✔️ 创建注册码/续期码/白名单码')
     send = await editMessage(call,
-                             '🎟️ 请回复创建 [天数] [数量] [模式] [续期]\n\n'
+                             '🎟️ 请回复创建 [天数] [数量] [模式] [类型]\n\n'
                              '**天数**：月30，季90，半年180，年365\n'
                              '**模式**： link -深链接 | code -码\n'
-                             '**续期**： F - 注册码，T - 续期码\n'
-                             '**示例**：`30 1 link T` 记作 30天一条续期深链接\n'
+                             '**类型**： F - 注册码，T - 续期码，W - 白名单码\n'
+                             '**白名单码**：没有天数字段，必须带 `W`\n\n'
+                             '**注册码 code**：`30 1 code F` 记作 1 个 30 天注册码\n'
+                             '**注册码 link**：`30 1 link F` 记作 1 条 30 天注册深链接\n'
+                             '**续期码 code**：`90 2 code T` 记作 2 个 90 天续期码\n'
+                             '**续期码 link**：`90 2 link T` 记作 2 条 90 天续期深链接\n'
+                             '**白名单码 code**：`5 code W` 记作 5 个白名单码\n'
+                             '**白名单码 link**：`5 link W` 记作 5 条白名单深链接\n'
                              '__取消本次操作，请 /cancel__')
     if send is False:
         return
@@ -240,15 +302,11 @@ async def cr_link(_, call):
         return await editMessage(call, '⭕ 您已经取消操作了。', buttons=re_cr_link_ikb)
     try:
         await content.delete()
-        times, count, method, renew = content.text.split()
-        count = int(count)
-        days = int(times)
-        if method != 'code' and method != 'link':
-            return editMessage(call, '⭕ 输入的method参数有误', buttons=re_cr_link_ikb)
-    except (ValueError, IndexError):
+        kind, times, count, days, method = _parse_create_code_input(content.text)
+    except ValueError:
         return await editMessage(call, '⚠️ 检查输入，有误。', buttons=re_cr_link_ikb)
     else:
-        if renew == 'F':
+        if kind == 'register':
             links = await cr_link_one(call.from_user.id, times, count, days, method)
             if links is None:
                 return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库。', buttons=re_cr_link_ikb)
@@ -259,7 +317,7 @@ async def cr_link(_, call):
             await editMessage(call, f'📂 {bot_name}已为 您 生成了 {count} 个 {days} 天注册码', buttons=re_cr_link_ikb)
             LOGGER.info(f"【admin】：{bot_name}已为 {content.from_user.id} 生成了 {count} 个 {days} 天注册码")
 
-        else:
+        elif kind == 'renew':
             links = await rn_link_one(call.from_user.id, times, count, days, method)
             if links is None:
                 return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库。', buttons=re_cr_link_ikb)
@@ -269,47 +327,16 @@ async def cr_link(_, call):
                 await sendMessage(content, chunk, buttons=close_it_ikb)
             await editMessage(call, f'📂 {bot_name}已为 您 生成了 {count} 个 {days} 天续期码', buttons=re_cr_link_ikb)
             LOGGER.info(f"【admin】：{bot_name}已为 {content.from_user.id} 生成了 {count} 个 {days} 天续期码")
-
-
-# 创建白名单激活码
-@bot.on_callback_query(filters.regex('cr_whitelist') & admins_on_filter)
-async def cr_whitelist(_, call):
-    await callAnswer(call, '🔑 创建白名单激活码')
-    send = await editMessage(call,
-                             '🔑 请回复创建 [**数量**] [**模式**]\n\n'
-                             '**模式**： link -深链接 | code -码\n'
-                             '**示例**：`5 code` 记作 5 个白名单码\n'
-                             '__取消本次操作，请 /cancel__')
-    if send is False:
-        return
-
-    content = await callListen(call, 120, buttons=re_cr_whitelist_ikb)
-    if content is False:
-        return
-    elif content.text == '/cancel':
-        await content.delete()
-        return await editMessage(call, '⭕ 您已经取消操作了。', buttons=re_cr_whitelist_ikb)
-    try:
-        await content.delete()
-        parts = content.text.split()
-        count = int(parts[0])
-        method = parts[1]
-        if method not in ('code', 'link'):
-            return await editMessage(call, '⭕ 输入的 method 参数有误，请选择 code 或 link', buttons=re_cr_whitelist_ikb)
-        if count <= 0:
-            raise ValueError
-    except (ValueError, IndexError):
-        return await editMessage(call, '⚠️ 检查输入，有误。', buttons=re_cr_whitelist_ikb)
-    else:
-        links = await wl_link_one(call.from_user.id, count, method)
-        if links is None:
-            return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库。', buttons=re_cr_whitelist_ikb)
-        links = f"🎯 {bot_name}已为您生成了 {count} 个白名单激活码\n\n" + links
-        chunks = [links[i:i + 4096] for i in range(0, len(links), 4096)]
-        for chunk in chunks:
-            await sendMessage(content, chunk, buttons=close_it_ikb)
-        await editMessage(call, f'📂 {bot_name}已为您生成了 {count} 个白名单激活码', buttons=re_cr_whitelist_ikb)
-        LOGGER.info(f"【admin】：{bot_name}已为 {call.from_user.id} 生成了 {count} 个白名单激活码")
+        elif kind == 'whitelist':
+            links = await wl_link_one(call.from_user.id, count, method)
+            if links is None:
+                return await editMessage(call, '⚠️ 数据库插入失败，请检查数据库。', buttons=re_cr_link_ikb)
+            links = f"🎯 {bot_name}已为您生成了 {count} 个白名单激活码\n\n" + links
+            chunks = [links[i:i + 4096] for i in range(0, len(links), 4096)]
+            for chunk in chunks:
+                await sendMessage(content, chunk, buttons=close_it_ikb)
+            await editMessage(call, f'📂 {bot_name}已为您生成了 {count} 个白名单激活码', buttons=re_cr_link_ikb)
+            LOGGER.info(f"【admin】：{bot_name}已为 {call.from_user.id} 生成了 {count} 个白名单激活码")
 
 
 # 检索
@@ -317,13 +344,23 @@ async def cr_whitelist(_, call):
 async def ch_link(_, call):
     await callAnswer(call, '🔍 查看管理们注册码...时长会久一点', True)
     a, b, c, d, f, e = sql_count_code()
+    type_stats = sql_count_code_types()
     text = f'**🎫 常用code数据：\n• 已使用 - {a}  | • 未使用 - {e}\n• 月码 - {b}   | • 季码 - {c} \n• 半年码 - {d}  | • 年码 - {f}**'
+    text += f'\n\n**📦 按类型统计：**\n{_format_code_type_counts(type_stats)}'
     ls = []
     admins.append(owner)
     for i in admins:
         name = await bot.get_chat(i)
         a, b, c, d, f ,e= sql_count_code(i)
-        text += f'\n👮🏻`{name.first_name}`: 月/{b}，季/{c}，半年/{d}，年/{f}，已用/{a}，未用/{e}'
+        type_stats = sql_count_code_types(i) or {
+            "register": {"total": 0},
+            "renew": {"total": 0},
+            "whitelist": {"total": 0},
+        }
+        text += (
+            f'\n👮🏻`{name.first_name}`: 月/{b}，季/{c}，半年/{d}，年/{f}，已用/{a}，未用/{e}'
+            f' | 注册/{type_stats["register"]["total"]}，续期/{type_stats["renew"]["total"]}，白名单/{type_stats["whitelist"]["total"]}'
+        )
         f = [f"🔎 {name.first_name}", f"ch_admin_link-{i}"]
         ls.append(f)
     if call.from_user.id == owner:
@@ -379,8 +416,10 @@ async def ch_admin_link(client, call):
         return await callAnswer(call, '🚫 你怎么偷窥别人呀! 你又不是owner', True)
     await callAnswer(call, f'💫 管理员 {i} 的注册码')
     a, b, c, d, f, e= sql_count_code(i)
+    type_stats = sql_count_code_types(i)
     name = await client.get_chat(i)
     text = f'**🎫 [{name.first_name}-{i}](tg://user?id={i})：\n• 已使用 - {a}  | • 未使用 - {e}\n• 月码 - {b}    | • 季码 - {c} \n• 半年码 - {d}  | • 年码 - {f}**'
+    text += f'\n\n**📦 按类型统计：**\n{_format_code_type_counts(type_stats)}'
     await editMessage(call, text, date_ikb(i))
 
 

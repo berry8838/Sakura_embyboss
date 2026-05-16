@@ -136,7 +136,7 @@ async def cr_page_server():
 
 """admins ↓"""
 
-gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 注册/续期码', 'cr_link'), ('🔑 白名单码', 'cr_whitelist')],
+gm_ikb_content = ikb([[('⭕ 注册状态', 'open-menu'), ('🎟️ 创建兑换码', 'cr_link')],
                       [('💊 查询注册', 'ch_link'), ('🏬 兑换设置', 'set_renew')],
                       [('👥 用户列表', 'normaluser'), ('👑 白名单列表', 'whitelist'), ('💠 设备列表', 'user_devices')],
                       [('🌏 定时', 'schedall'), ('🕹️ 主界面', 'back_start'), ('其他 🪟', 'back_config')]])
@@ -150,7 +150,6 @@ def open_menu_ikb(openstats, timingstats) -> InlineKeyboardMarkup:
 back_free_ikb = ikb([[('🔙 返回上一级', 'open-menu')]])
 back_open_menu_ikb = ikb([[('🪪 重新定时', 'open_timing'), ('🔙 注册状态', 'open-menu')]])
 re_cr_link_ikb = ikb([[('♻️ 继续创建', 'cr_link'), ('🎗️ 返回主页', 'manage')]])
-re_cr_whitelist_ikb = ikb([[('♻️ 继续创建', 'cr_whitelist'), ('🎗️ 返回主页', 'manage')]])
 close_it_ikb = ikb([[('❌ - Close', 'closeit')]])
 
 

@@ -5,12 +5,92 @@ from asyncio import sleep
 
 import asyncio
 
+from pathlib import Path
 from pyrogram import filters, enums
 from pyrogram.errors import FloodWait, Forbidden, BadRequest, PeerIdInvalid
 from pyrogram.types import CallbackQuery
 from pyromod.exceptions import ListenerTimeout 
 from bot import LOGGER, group, bot
 from typing import Optional
+
+LOCAL_PHOTO_FALLBACK = Path(__file__).resolve().parents[2] / "image" / "bot2.png"
+
+PHOTO_SEND_FALLBACK_ERROR_IDS = {
+    "PHOTO_INVALID",
+    "PHOTO_EXT_INVALID",
+    "PHOTO_FILE_INVALID",
+    "PHOTO_INVALID_DIMENSIONS",
+    "WEBPAGE_MEDIA_EMPTY",
+    "WEBPAGE_CURL_FAILED",
+    "MEDIA_EMPTY",
+    "FILE_REFERENCE_EXPIRED",
+}
+
+
+def _is_photo_send_error(error: Exception) -> bool:
+    error_id = getattr(error, "ID", "")
+    error_text = str(error).upper()
+    return (
+        error_id in PHOTO_SEND_FALLBACK_ERROR_IDS
+        or "PHOTO" in error_text
+        or "WEBPAGE" in error_text
+        or "FILE_REFERENCE" in error_text
+        or "MEDIA_EMPTY" in error_text
+        or "FAILED TO DECODE" in error_text
+        or "VALID FILE ID" in error_text
+        or "EXISTING LOCAL FILE" in error_text
+    )
+
+
+async def _send_photo_payload(message, photo, caption=None, buttons=None, timer=None, send=False, chat_id=None):
+    if send is True:
+        if chat_id is None:
+            chat_id = group[0]
+        return await bot.send_photo(chat_id=chat_id, photo=photo, caption=caption, reply_markup=buttons)
+
+    sent = await message.reply_photo(photo=photo, caption=caption, disable_notification=True, reply_markup=buttons)
+    if timer is not None:
+        return await deleteMessage(sent, timer)
+    return True
+
+
+async def _send_photo_text_fallback(message, caption=None, buttons=None, timer=None, send=False, chat_id=None):
+    text = caption or "图片发送失败，暂无可显示内容。"
+    if send is True:
+        if chat_id is None:
+            chat_id = group[0]
+        return await bot.send_message(chat_id=chat_id, text=text, reply_markup=buttons)
+
+    sent = await bot.send_message(chat_id=message.chat.id, text=text, reply_markup=buttons)
+    if timer is not None:
+        return await deleteMessage(sent, timer)
+    return True
+
+
+async def _send_local_photo_fallback(message, caption=None, buttons=None, timer=None, send=False, chat_id=None):
+    if not LOCAL_PHOTO_FALLBACK.exists():
+        LOGGER.warning(f"本地默认图片不存在，已降级为文本消息: {LOCAL_PHOTO_FALLBACK}")
+        return await _send_photo_text_fallback(message, caption, buttons, timer, send, chat_id)
+
+    try:
+        LOGGER.warning(f"图片发送失败，尝试使用本地默认图片: {LOCAL_PHOTO_FALLBACK}")
+        return await _send_photo_payload(
+            message,
+            str(LOCAL_PHOTO_FALLBACK),
+            caption,
+            buttons,
+            timer,
+            send,
+            chat_id,
+        )
+    except FloodWait as f:
+        LOGGER.warning(str(f))
+        await sleep(f.value * 1.2)
+        return await _send_local_photo_fallback(message, caption, buttons, timer, send, chat_id)
+    except Exception as e:
+        LOGGER.error(f"本地默认图片发送失败，已降级为文本消息: {e}")
+        return await _send_photo_text_fallback(message, caption, buttons, timer, send, chat_id)
+
 
 async def warmup_peer_cache():
     """bot 重启后预热 peer 缓存。
@@ -136,21 +216,21 @@ async def sendPhoto(message, photo, caption=None, buttons=None, timer=None, send
     if isinstance(message, CallbackQuery):
         message = message.message
     try:
-        if send is True:
-            if chat_id is None:
-                chat_id = group[0]
-            return await bot.send_photo(chat_id=chat_id, photo=photo, caption=caption, reply_markup=buttons)
-        # quote=True 引用回复
-        send = await message.reply_photo(photo=photo, caption=caption, disable_notification=True,
-                                         reply_markup=buttons)
-        if timer is not None:
-            return await deleteMessage(send, timer)
-        return True
+        return await _send_photo_payload(message, photo, caption, buttons, timer, send, chat_id)
     except FloodWait as f:
         LOGGER.warning(str(f))
         await sleep(f.value * 1.2)
-        return await sendFile(message, photo, caption, buttons)
+        return await sendPhoto(message, photo, caption, buttons, timer, send, chat_id)
+    except BadRequest as e:
+        if _is_photo_send_error(e):
+            LOGGER.warning(f"图片发送失败，将尝试本地默认图片: {e}")
+            return await _send_local_photo_fallback(message, caption, buttons, timer, send, chat_id)
+        LOGGER.error(str(e))
+        return str(e)
     except Exception as e:
+        if _is_photo_send_error(e):
+            LOGGER.warning(f"图片发送失败，将尝试本地默认图片: {e}")
+            return await _send_local_photo_fallback(message, caption, buttons, timer, send, chat_id)
         LOGGER.error(str(e))
         return str(e)
 

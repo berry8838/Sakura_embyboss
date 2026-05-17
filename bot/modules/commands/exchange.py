@@ -121,6 +121,8 @@ def _redeem_renew_code_atomic(register_code: str, user_id: int):
 async def rgs_code(_, msg, register_code):
     # 白名单码独立于注册开关，优先处理
     if is_whitelist_code(register_code):
+        if not _open.use_whitelist_code:
+            return await sendMessage(msg, "❌ 管理员未开启白名单码功能。", timer=60)
         async with get_user_lock(msg.from_user.id):
             result = _redeem_whitelist_code_atomic(register_code, msg.from_user.id)
         if result["status"] == "no_user":

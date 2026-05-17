@@ -563,7 +563,7 @@ async def user_emby_unblock(_, call):
             await editMessage(call, f'🕶️ Error!\n 显示失败，请上报管理检查设置', buttons=back_members_ikb)
 
 
-@bot.on_callback_query(filters.regex('exchange') & user_in_group_on_filter)
+@bot.on_callback_query(filters.regex('^exchange$') & user_in_group_on_filter)
 async def call_exchange(_, call):
     await asyncio.gather(callAnswer(call, '🔋 使用注册/续期码'), deleteMessage(call))
     msg = await ask_return(call, text='🔋 **【使用注册/续期码】**：\n\n'
@@ -577,7 +577,7 @@ async def call_exchange(_, call):
         await rgs_code(_, msg, register_code=msg.text)
 
 
-@bot.on_callback_query(filters.regex('partitioncode') & user_in_group_on_filter)
+@bot.on_callback_query(filters.regex('^partitioncode$') & user_in_group_on_filter)
 async def call_partition_code(_, call):
     await asyncio.gather(callAnswer(call, '🎟️ 使用分区码'), deleteMessage(call))
     msg = await ask_return(call, text='🎟️ **【使用分区码】**：\n\n- 请在120s内发送分区码\n- 退出点 /cancel',
@@ -592,8 +592,10 @@ async def call_partition_code(_, call):
     await asyncio.gather(msg.delete(), sendMessage(call, text, timer=120 if ok else 60))
 
 
-@bot.on_callback_query(filters.regex('wl_exchange') & user_in_group_on_filter)
+@bot.on_callback_query(filters.regex('^wl_exchange$') & user_in_group_on_filter)
 async def call_wl_exchange(_, call):
+    if not _open.use_whitelist_code:
+        return await callAnswer(call, '❌ 管理员未开启白名单码功能', True)
     await asyncio.gather(callAnswer(call, '🔑 使用白名单激活码'), deleteMessage(call))
     msg = await ask_return(call, text='🔑 **【使用白名单激活码】**：\n\n'
                                       f'- 请在120s内发送白名单激活码，形如\n`{ranks.logo}-Whitelist_xxxx`\n退出点 /cancel',

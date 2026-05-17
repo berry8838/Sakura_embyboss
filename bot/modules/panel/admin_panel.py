@@ -501,9 +501,9 @@ async def paginate_keyboard(_, call):
     await editMessage(call, f'🔎当前模式- **{mode}**天，检索出以下 **{b}**页链接：\n\n{text}', keyboard)
 
 
-@bot.on_callback_query(filters.regex('set_renew'))
+@bot.on_callback_query(filters.regex('set_renew') & admins_on_filter)
 async def set_renew(_, call):
-    await callAnswer(call, '🚀 进入续期设置')
+    await callAnswer(call, '🚀 续期设置')
     try:
         method = call.data.split('-')[1]
         setattr(_open, method, not getattr(_open, method))

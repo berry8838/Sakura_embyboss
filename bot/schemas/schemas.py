@@ -52,6 +52,7 @@ class Open(BaseModel):
     checkin_lv: Optional[str] = 'd'
     exchange: bool
     whitelist: bool
+    use_whitelist_code: bool = False
     invite: bool
     invite_lv: Optional[str] = 'b'
     leave_ban: bool

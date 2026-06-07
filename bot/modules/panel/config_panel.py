@@ -456,7 +456,7 @@ async def set_tz_params(_, call):
 
 
 # 设置 emby 线路
-@bot.on_callback_query(filters.regex('set_line') & admins_on_filter)
+@bot.on_callback_query(filters.regex('^set_line$') & admins_on_filter)
 async def set_emby_line(_, call):
     await callAnswer(call, '📌 设置emby线路')
     send = await editMessage(call,
@@ -479,7 +479,7 @@ async def set_emby_line(_, call):
                           buttons=back_config_p_ikb)
         LOGGER.info(f"【admin】：{call.from_user.id} - 更新emby线路为{config.emby_line}设置完成")
 
-@bot.on_callback_query(filters.regex('set_whitelist_line') & admins_on_filter)
+@bot.on_callback_query(filters.regex('^set_whitelist_line$') & admins_on_filter)
 async def set_whitelist_emby_line(_, call):
     await callAnswer(call, '🌟 设置白名单线路')
     send = await editMessage(call,
@@ -828,7 +828,7 @@ async def set_activity_check_days(_, call):
             LOGGER.info(f"【admin】：{call.from_user.id} - 更新活跃检测天数为{days}天完成")
 
 
-@bot.on_callback_query(filters.regex('set_client_filter') & admins_on_filter)
+@bot.on_callback_query(filters.regex('^set_client_filter$') & admins_on_filter)
 async def set_client_filter_panel(_, call):
     """进入客户端过滤设置子面板"""
     await callAnswer(call, '📡 客户端过滤')
@@ -844,7 +844,7 @@ async def set_client_filter_panel(_, call):
     await editMessage(call, text, buttons=client_filter_panel())
 
 
-@bot.on_callback_query(filters.regex('toggle_client_filter') & admins_on_filter)
+@bot.on_callback_query(filters.regex('^toggle_client_filter$') & admins_on_filter)
 async def toggle_client_filter(_, call):
     """切换客户端过滤开关"""
     config.client_filter_enabled = not config.client_filter_enabled
@@ -860,9 +860,10 @@ async def toggle_client_filter(_, call):
     LOGGER.info(log_message)
 
 
-@bot.on_callback_query(filters.regex('set_client_filter_mode') & admins_on_filter)
+@bot.on_callback_query(filters.regex('^set_client_filter_mode$') & admins_on_filter)
 async def set_client_filter_mode(_, call):
     """切换客户端过滤模式"""
+    print(f"当前过滤模式: {config.client_filter_mode}")
     if config.client_filter_mode == 'blacklist':
         config.client_filter_mode = 'whitelist'
         message = '📡 已切换到 白名单模式'

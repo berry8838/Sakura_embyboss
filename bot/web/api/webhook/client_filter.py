@@ -156,6 +156,10 @@ async def terminate_blocked_session(session_id: str, client_name: str) -> bool:
 @router.post("/webhook/client-filter")
 async def handle_client_filter_webhook(request: Request):
     """处理Emby用户代理拦截webhook"""
+
+    # 检查客户端过滤是否开启
+    if not getattr(config, "client_filter_enabled", False):
+        return {"status": "skipped", "message": "Client filter disabled"}
     try:
         # 检查Content-Type
         content_type = request.headers.get("content-type", "").lower()
@@ -171,10 +175,6 @@ async def handle_client_filter_webhook(request: Request):
 
         if not webhook_data:
             return {"status": "error", "message": "No data received"}
-
-        # 检查客户端过滤是否开启
-        if not getattr(config, "client_filter_enabled", False):
-            return {"status": "skipped", "message": "Client filter disabled"}
 
         # 获取事件类型
         event = webhook_data.get("Event", "")

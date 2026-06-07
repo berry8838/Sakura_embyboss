@@ -33,13 +33,11 @@
   ],
   "client_filter_enabled": false,
   "client_filter_mode": "blacklist",
-  "allowed_clients": [
-    ".*Emby.*",
-    ".*Infuse.*",
-    ".*Fileball.*"
-  ],
+  "allowed_clients": [".*"],
   "client_filter_terminate_session": true,
   "client_filter_block_user": false,
+  "line_filter_terminate_session": true,
+  "line_filter_block_user": false,
   "partition_libs": {},
   "db_host": "localhost",
   "db_user": "",
@@ -68,7 +66,8 @@
     "exchange_cost": 100,
     "whitelist_cost": 9999,
     "invite_cost": 1000,
-    "srank_cost": 5
+    "srank_cost": 5,
+    "use_whitelist_code": true
   },
   "tz_ad": "",
   "tz_api": "",

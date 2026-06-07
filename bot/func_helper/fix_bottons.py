@@ -362,6 +362,7 @@ def config_preparation() -> InlineKeyboardMarkup:
         [[('📄 导出日志', 'log_out'), ('📌 设置探针', 'set_tz')],
          [('🎬 显/隐指定库', 'set_block'), (f'{fuxx_pt} 皮套人过滤功能', 'set_fuxx_pitao')],
          [('💠 普通用户线路', 'set_line'),('🌟 白名单线路', 'set_whitelist_line')],
+         [('📡 客户端过滤', 'set_client_filter')],
          [(f'{leave_ban} 退群封禁', 'leave_ban'), (f'{uplays} 观影奖励结算', 'set_uplays')],
          [(f'{auto_up} 自动更新bot', 'set_update'), (f'{mp_set} Moviepilot点播', 'set_mp')],
          [(f'{red_envelope_status} 红包', 'set_red_envelope_status'), (f'{allow_private} 专属红包', 'set_red_envelope_allow_private')],
@@ -370,6 +371,16 @@ def config_preparation() -> InlineKeyboardMarkup:
          [(f'设置封存账号天数({config.freeze_days}天)', 'set_freeze_days')],
          [(f'设置签到权限({checkin_lv_text})', 'set_checkin_lv')],
          [('🔙 返回', 'manage')]])
+    return keyboard
+
+
+def client_filter_panel() -> InlineKeyboardMarkup:
+    cf_enabled = '✅' if config.client_filter_enabled else '❎'
+    cf_mode_text = '🔲 黑名单模式' if config.client_filter_mode == 'blacklist' else '🔳 白名单模式'
+    keyboard = ikb([
+        [(f'{cf_enabled} 客户端过滤', 'toggle_client_filter'), (f'{cf_mode_text}', 'set_client_filter_mode')],
+        [('🔙 返回', 'back_config')]
+    ])
     return keyboard
 
 

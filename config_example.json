@@ -31,6 +31,13 @@
     ".*ffmpeg.*",
     ".*vlc.*"
   ],
+  "client_filter_enabled": false,
+  "client_filter_mode": "blacklist",
+  "allowed_clients": [
+    ".*Emby.*",
+    ".*Infuse.*",
+    ".*Fileball.*"
+  ],
   "client_filter_terminate_session": true,
   "client_filter_block_user": false,
   "partition_libs": {},

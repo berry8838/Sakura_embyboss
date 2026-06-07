@@ -26,6 +26,16 @@ DEFAULT_BLOCKED_CLIENTS = [
 ]
 
 
+def get_client_filter_mode() -> str:
+    """获取客户端过滤模式"""
+    mode = getattr(config, "client_filter_mode", "blacklist")
+    mode = str(mode).lower()
+    if mode not in ("blacklist", "whitelist"):
+        LOGGER.error(f"客户端过滤模式错误: {mode}，已使用黑名单模式")
+        return "blacklist"
+    return mode
+
+
 async def get_blocked_clients() -> List[str]:
     """获取被拦截的客户端模式列表"""
     try:
@@ -37,15 +47,21 @@ async def get_blocked_clients() -> List[str]:
         return DEFAULT_BLOCKED_CLIENTS
 
 
-async def is_client_blocked(client: str) -> bool:
-    """检查客户端是否被拦截"""
-    if not client:
-        return False
+async def get_allowed_clients() -> List[str]:
+    """获取被允许的客户端模式列表"""
+    try:
+        allowed_agents = getattr(config, "allowed_clients", None)
+        return allowed_agents if allowed_agents else []
+    except Exception as e:
+        LOGGER.error(f"获取被允许客户端列表失败: {str(e)}")
+        return []
 
-    blocked_clients = await get_blocked_clients()
+
+def match_client_patterns(client: str, patterns: List[str]) -> bool:
+    """检查客户端是否匹配任意正则模式"""
     client_lower = client.lower()
 
-    for pattern in blocked_clients:
+    for pattern in patterns:
         try:
             if re.search(pattern.lower(), client_lower):
                 return True
@@ -54,6 +70,21 @@ async def is_client_blocked(client: str) -> bool:
             continue
 
     return False
+
+
+async def is_client_blocked(client: str) -> bool:
+    """检查客户端是否被拦截"""
+    if not client:
+        return False
+
+    mode = get_client_filter_mode()
+
+    if mode == "whitelist":
+        allowed_clients = await get_allowed_clients()
+        return not match_client_patterns(client, allowed_clients)
+
+    blocked_clients = await get_blocked_clients()
+    return match_client_patterns(client, blocked_clients)
 
 
 async def log_blocked_request(
@@ -141,6 +172,10 @@ async def handle_client_filter_webhook(request: Request):
         if not webhook_data:
             return {"status": "error", "message": "No data received"}
 
+        # 检查客户端过滤是否开启
+        if not getattr(config, "client_filter_enabled", False):
+            return {"status": "skipped", "message": "Client filter disabled"}
+
         # 获取事件类型
         event = webhook_data.get("Event", "")
 
@@ -172,6 +207,7 @@ async def handle_client_filter_webhook(request: Request):
 
         # 检查Client是否被拦截
         is_blocked = await is_client_blocked(client_name)
+        filter_mode = get_client_filter_mode()
 
         if is_blocked:
             terminate_success = False
@@ -207,8 +243,14 @@ async def handle_client_filter_webhook(request: Request):
                     "user_name": user_name,
                     "session_id": session_id,
                     "client_name": client_name,
-                    "user_details": user_details,
+                    "user_details": {
+                        "tg": user_details.tg,
+                        "embyid": user_details.embyid,
+                        "name": user_details.name,
+                        "lv": user_details.lv,
+                    } if user_details else None,
                     "event": event,
+                    "filter_mode": filter_mode,
                     "timestamp": datetime.now().isoformat(),
                 },
             }
@@ -216,7 +258,12 @@ async def handle_client_filter_webhook(request: Request):
         return {
             "status": "allowed",
             "message": "Client allowed",
-            "data": {"client": client_name, "user_id": emby_id, "event": event},
+            "data": {
+                "client": client_name,
+                "user_id": emby_id,
+                "event": event,
+                "filter_mode": filter_mode,
+            },
         }
 
     except Exception as e:

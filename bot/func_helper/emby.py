@@ -460,7 +460,7 @@ class Embyservice(metaclass=Singleton):
             success, rep = await self.user(emby_id=emby_id)
             if not success:
                 LOGGER.error(f"获取用户信息失败: {emby_id}")
-                return [], False
+                return [], False, []
             
             policy = rep.get("Policy", {})
             enable_all_folders = policy.get("EnableAllFolders", False)
@@ -477,7 +477,7 @@ class Embyservice(metaclass=Singleton):
                 
         except Exception as e:
             LOGGER.error(f"获取当前启用文件夹ID异常: {emby_id} - {str(e)}")
-            return [], False
+            return [], False, []
 
     async def hide_folders_by_names(self, emby_id: str, folder_names: List[str]) -> bool:
         """
@@ -650,7 +650,21 @@ class Embyservice(metaclass=Singleton):
         :return: 是否成功
         """
         try:
+            current_policy = {}
+            user_result = await self._request('GET', f'/emby/Users/{emby_id}')
+            if user_result.success:
+                current_policy = user_result.data.get("Policy", {}) if user_result.data else {}
+            else:
+                LOGGER.warning(f"获取用户当前策略失败，将使用默认策略更新: {emby_id} - {user_result.error}")
+
             policy = create_policy(admin=admin, disable=disable)
+            if current_policy:
+                policy.update({
+                    "EnableAllFolders": current_policy.get("EnableAllFolders", False),
+                    "EnabledFolders": current_policy.get("EnabledFolders", []),
+                    "BlockedMediaFolders": current_policy.get("BlockedMediaFolders", policy.get("BlockedMediaFolders", [])),
+                })
+
             result = await self._request('POST', f'/emby/Users/{emby_id}/Policy', json=policy)
             if result.success:
                 LOGGER.info(f"成功修改用户策略: {emby_id}")

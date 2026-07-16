@@ -50,7 +50,7 @@ async def user_in_group_filter(client, update):
     for i in group:
         try:
             u = await client.get_chat_member(chat_id=int(i), user_id=uid)
-            if u.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER, ChatMemberStatus.OWNER]:
+            if u.status in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER, ChatMemberStatus.OWNER, ChatMemberStatus.RESTRICTED]:
                 return True
         except BadRequest as e:
             if e.ID == 'USER_NOT_PARTICIPANT':

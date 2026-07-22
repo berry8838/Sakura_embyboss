@@ -10,6 +10,7 @@ from bot import bot, prefixes
 from bot.func_helper.emby import emby
 from bot.func_helper.filters import admins_on_filter
 from bot.func_helper.utils import split_long_message
+from bot.func_helper.msg_utils import deleteMessage
 
 
 @bot.on_message(filters.command(["watching", "playing"], prefixes) & admins_on_filter)
@@ -17,6 +18,7 @@ async def watching_command(_, message: Message):
     """
     watching / playing 命令 - 查看当前播放状态（不显示用户名、设备名）
     """
+    await deleteMessage(message)
     processing_msg = await message.reply("📊 正在获取 Emby 服务器当前状态...")
 
     try:
@@ -24,7 +26,7 @@ async def watching_command(_, message: Message):
         result = await emby._request("GET", "/emby/Sessions")
 
         if not result.success:
-            error_text = f"**Emby 服务器状态：🔴 OFFLINE**\n\n**错误原因:** {result.error or '连接超时或未知错误'}\n请检查 Emby 服务状态或网络配置。"
+            error_text = f"**Emby 服务器状态：🔴 OFFLINE**\n\n**错误原因:** {'连接超时或未知错误'}\n请检查 Emby 服务状态或网络配置。"
             await processing_msg.edit_text(error_text)
             return
 

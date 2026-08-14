@@ -44,4 +44,4 @@
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=berry8838/Sakura_embyboss&type=Date)](https://star-history.com/#berry8838/Sakura_embyboss)
+[![Star History Chart](https://star-history.dera.page/svg?repos=berry8838/Sakura_embyboss&type=Date)](https://star-history.dera.page/#berry8838/Sakura_embyboss)

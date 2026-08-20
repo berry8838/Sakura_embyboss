@@ -29,6 +29,28 @@ from bot.schemas import Yulv, MAX_INT_VALUE, MIN_INT_VALUE
 red_envelopes = {}
 
 
+def build_amounts(money, members, envelope_type="random"):
+    """预生成红包每份金额序列。
+
+    随机（拼手气）模式采用「均匀随机切分」算法：在 [1, money-1] 中随机选取
+    members-1 个切分点，相邻切分点之差即为每份金额。该算法保证：
+    - 每份金额 >= 1，且所有份数之和恰好等于总金额；
+    - 每份金额的边际分布完全相同（对各抢红包位置公平）；
+    - 再打乱顺序，消除切分点排序带来的相邻份数负相关，使每个领取位置等概率。
+    """
+    if envelope_type == "equal":
+        return [money // members] * members
+
+    if members <= 1:
+        return [money]
+
+    cuts = sorted(random.sample(range(1, money), members - 1))
+    points = [0] + cuts + [money]
+    amounts = [points[i + 1] - points[i] for i in range(members)]
+    random.shuffle(amounts)
+    return amounts
+
+
 class RedEnvelope:
     def __init__(self, money, members, sender_id, sender_name, envelope_type="random"):
         self.id = None
@@ -40,6 +62,7 @@ class RedEnvelope:
         self.sender_name = sender_name  # 发送者名称
         self.type = envelope_type  # random/equal/private
         self.receivers = {}  # {user_id: {"amount": xx, "name": "xx"}}
+        self.amounts = []  # 预生成的每份金额序列（随机/均分模式共用）
         self.target_user = None  # 专享红包接收者ID
         self.message = None  # 红包消息（普通红包和专享红包共用）
 
@@ -71,6 +94,7 @@ async def create_reds(
     else:
         envelope.message = private_text
     envelope.id = red_id
+    envelope.amounts = build_amounts(money, members, envelope_type)
     red_envelopes[red_id] = envelope
 
     return InlineKeyboardMarkup(
@@ -251,7 +275,7 @@ async def grab_red_envelope(_, call):
     amount = 0
     # 处理均分红包
     if envelope.type == "equal":
-        amount = envelope.money // envelope.members
+        amount = envelope.amounts[envelope.members - envelope.rest_members]
 
     # 处理专享红包
     elif envelope.type == "private":
@@ -266,11 +290,7 @@ async def grab_red_envelope(_, call):
 
     # 处理拼手气红包
     else:
-        if envelope.rest_members > 1:
-            k = 2 * envelope.rest_money / envelope.rest_members
-            amount = int(random.uniform(1, k))
-        else:
-            amount = envelope.rest_money
+        amount = envelope.amounts[envelope.members - envelope.rest_members]
 
     # 更新用户余额
     new_balance = e.iv + amount

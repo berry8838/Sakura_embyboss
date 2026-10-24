@@ -303,15 +303,13 @@ class Embyservice(metaclass=Singleton):
         """
         try:
             LOGGER.info(f"开始重置密码: {emby_id}")
-            
-            # 第一步：重置密码
-            pwd_data = pwd_policy(emby_id, stats=True, new=None)
-            result = await self._request('POST', f'/emby/Users/{emby_id}/Password', json=pwd_data)
-            if not result.success:
-                LOGGER.error(f"重置密码失败: {emby_id} - {result.error}")
-                return False
-            
             if new_password is None:
+                # 重置为空密码
+                pwd_data = pwd_policy(emby_id, stats=True, new=None)
+                result = await self._request('POST', f'/emby/Users/{emby_id}/Password', json=pwd_data)
+                if not result.success:
+                    LOGGER.error(f"重置密码失败: {emby_id} - {result.error}")
+                    return False
                 # 更新数据库记录为无密码
                 if sql_update_emby(Emby.embyid == emby_id, pwd=None):
                     LOGGER.info(f"成功重置密码为空: {emby_id}")
@@ -320,9 +318,9 @@ class Embyservice(metaclass=Singleton):
                     LOGGER.error(f"更新数据库失败: {emby_id}")
                     return False
             else:
-                # 设置新密码
-                pwd_data2 = pwd_policy(emby_id, new=new_password)
-                result = await self._request('POST', f'/emby/Users/{emby_id}/Password', json=pwd_data2)
+                # 直接设置新密码
+                pwd_data = pwd_policy(emby_id, new=new_password)
+                result = await self._request('POST', f'/emby/Users/{emby_id}/Password', json=pwd_data)
                 if not result.success:
                     LOGGER.error(f"设置新密码失败: {emby_id} - {result.error}")
                     return False
